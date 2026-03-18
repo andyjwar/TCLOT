@@ -7,6 +7,10 @@ on:
     branches: [main, master]
   workflow_dispatch:
 
+# Quiets Node 20 deprecation on actions (see GitHub changelog 2025-09-19)
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 permissions:
   contents: read
   pages: write
@@ -19,20 +23,59 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # Same environment as deploy so FPL_LEAGUE_ID works whether you put it under
+    # Repository secrets OR Environment (github-pages) secrets.
+    environment:
+      name: github-pages
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+
+      # League ID: Repository secret/variable FPL_LEAGUE_ID, OR Environment secret on github-pages
+      - name: Fetch real league from FPL API
+        run: |
+          set -e
+          ID="${{ secrets.FPL_LEAGUE_ID }}"
+          if [ -z "$ID" ]; then ID="${{ vars.FPL_LEAGUE_ID }}"; fi
+          if [ -n "$ID" ]; then
+            echo "Ingest: league ID is configured — fetching from FPL…"
+            python3 -m pip install --user requests
+            LEAGUE_ID="$ID" python3 ingest.py
+            echo "Ingest OK ($(wc -c < data/details.json) bytes)"
+          else
+            echo "No FPL_LEAGUE_ID — build will use committed web/public/league-data/ or demo."
+            echo "Add secret: Settings → Secrets → Actions → FPL_LEAGUE_ID (your draft league number)"
+          fi
+
+      - uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: web/package-lock.json
+      # Project site: /repo/  |  User site (repo named user.github.io): /
       - name: Install & build
         working-directory: web
-        env:
-          VITE_BASE_PATH: /${{ github.event.repository.name }}/
         run: |
+          REPO_LOWER=$(echo '${{ github.event.repository.name }}' | tr '[:upper:]' '[:lower:]')
+          if [[ "$REPO_LOWER" == *.github.io ]]; then
+            export VITE_BASE_PATH="/"
+            echo "User/Org Pages repo → site at root"
+          else
+            export VITE_BASE_PATH="/${REPO_LOWER}/"
+            echo "Project Pages → site at ${VITE_BASE_PATH}"
+          fi
+          echo "VITE_BASE_PATH=$VITE_BASE_PATH"
           npm ci
           npm run build
+      - name: Verify league data shipped
+        run: |
+          test -f web/dist/league-data/details.json || { echo "ERROR: no details.json in dist"; exit 1; }
+          test -s web/dist/league-data/details.json || { echo "ERROR: empty details.json"; exit 1; }
+          echo "OK — league-data in dist ($(wc -c < web/dist/league-data/details.json) bytes)"
+          if grep -q '"isSample".*true' web/dist/league-data/details.json 2>/dev/null; then
+            echo "::warning::Site is still DEMO sample data. Set FPL_LEAGUE_ID (secret or variable) or run publish-real-league and commit league-data."
+          fi
+          PNGS=$(find web/dist/team-logos -maxdepth 1 -name '*.png' 2>/dev/null | wc -l | tr -d ' ')
+          echo "Team logo PNGs in build: $PNGS (commit web/public/team-logos/*.png to ship logos)"
       - uses: actions/upload-pages-artifact@v3
         with:
           path: web/dist

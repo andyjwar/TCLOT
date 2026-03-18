@@ -76,6 +76,19 @@ def ingest_league(league_id: int, output_dir: Path) -> None:
     except Exception as e:
         print(f"  -> error: {e}")
 
+    details_path = output_dir / "details.json"
+    if not details_path.is_file() or details_path.stat().st_size < 100:
+        print("\nERROR: details.json missing or empty — league ID wrong or API failed.", file=sys.stderr)
+        sys.exit(1)
+    try:
+        d = json.loads(details_path.read_text())
+        if not d.get("league_entries"):
+            print("\nERROR: details.json has no league_entries.", file=sys.stderr)
+            sys.exit(1)
+    except (json.JSONDecodeError, OSError) as e:
+        print(f"\nERROR: invalid details.json: {e}", file=sys.stderr)
+        sys.exit(1)
+
     print("\nIngestion complete. Data saved to", output_dir)
 
 

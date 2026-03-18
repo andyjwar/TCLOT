@@ -78,6 +78,8 @@ for s in standings:
 
 ## Website
 
+**Deploying to GitHub Pages (data + logos):** see **[DEPLOY.md](./DEPLOY.md)** and open **`/deploy-check.json`** on your live site to verify the build.
+
 A simple web dashboard to view standings and form:
 
 ```bash
@@ -104,6 +106,16 @@ Re-run `ingest.py` whenever you want fresh scores and fixtures.
 ### Dashboard data (waivers, player names)
 
 `copy-data` also builds **`fpl-mini.json`** from `bootstrap_fpl.json` (player + team names for **Most waivered**). Ensure **`transactions.json`** and **`bootstrap_fpl.json`** exist (full `ingest.py`). Then `cd web && npm run dev`.
+
+### GitHub Pages — link the live site to your league
+
+1. On GitHub: **Settings → Secrets and variables → Actions → New repository secret**
+2. Name: **`FPL_LEAGUE_ID`** — Value: your league ID (the number in `draft.premierleague.com/league/**THIS**`)
+3. Push any change (or **Actions → Deploy site to Pages → Run workflow**)
+
+Each deploy runs `ingest.py` with that ID, then builds the site with **real** standings, fixtures, and waivers — no need to commit JSON files. Re-push or **Run workflow** anytime you want a refresh.
+
+If **`FPL_LEAGUE_ID`** is not set, the build uses committed `web/public/league-data/` or demo data.
 
 ### Team logos (replace letter bubbles)
 

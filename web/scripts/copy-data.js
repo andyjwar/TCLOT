@@ -12,6 +12,7 @@ const sampleDetails = join(__dirname, '../sample-details.json');
 const bootstrapFpl = join(dataDir, 'bootstrap_fpl.json');
 
 mkdirSync(dest, { recursive: true });
+const destDetails = join(dest, 'details.json');
 
 if (existsSync(ingestedDetails)) {
   for (const f of readdirSync(dataDir)) {
@@ -20,8 +21,12 @@ if (existsSync(ingestedDetails)) {
     }
   }
   console.log('League data copied from data/ → public/league-data/ (from ingest.py).');
+} else if (existsSync(destDetails)) {
+  console.log(
+    'Using committed web/public/league-data/details.json (CI/GitHub Pages).'
+  );
 } else if (existsSync(sampleDetails)) {
-  copyFileSync(sampleDetails, join(dest, 'details.json'));
+  copyFileSync(sampleDetails, destDetails);
   console.warn(
     '\n⚠ No data/details.json — using DEMO sample data for the UI.\n' +
       '  To show your Tri Continental League of Titans data, from the repo root run:\n' +

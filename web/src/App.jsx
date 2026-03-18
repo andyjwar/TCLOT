@@ -91,6 +91,7 @@ function App() {
     previousGameweek,
     previousGameweekFixtures,
     isSampleData,
+    fetchFailedDemo,
     teamLogoMap,
     mostWaiveredPlayers,
   } = data
@@ -138,11 +139,21 @@ function App() {
             </div>
           ))}
         </div>
-        {isSampleData && (
+        {fetchFailedDemo && (
+          <div className="data-banner data-banner--error" role="alert">
+            <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}
+            Use <code>https://YOUR_USER.github.io/repo-name/</code> with your real repo name (often
+            lowercase). If the repo is <code>you.github.io</code>, use <code>https://you.github.io/</code>{' '}
+            — no <code>/repo/</code> path.
+          </div>
+        )}
+        {isSampleData && !fetchFailedDemo && (
           <div className="data-banner" role="status">
-            <strong>Demo data</strong> — not your league. From the repo root run{' '}
-            <code>python3 ingest.py YOUR_LEAGUE_ID</code> then restart the dev server. ID:{' '}
-            URL <code>draft.premierleague.com/league/YOUR_ID</code>
+            <strong>Demo data</strong> — site owner: add GitHub secret{' '}
+            <code>FPL_LEAGUE_ID</code> (your draft league number) under Settings → Secrets, then redeploy.
+            Or publish files: <code>python3 ingest.py ID</code>,{' '}
+            <code>cd web && npm run publish-real-league</code>, commit{' '}
+            <code>web/public/league-data/</code>. ID: <code>draft.premierleague.com/league/YOUR_ID</code>
           </div>
         )}
       </header>

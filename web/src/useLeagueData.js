@@ -4,8 +4,12 @@ const DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
 const FORM_LAST_N = 7;
 
 async function fetchJSON(path) {
-  const res = await fetch(`${DATA_BASE}/${path}`);
-  if (!res.ok) throw new Error(`Failed to load ${path}`);
+  const url = `${DATA_BASE}/${path}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const abs = new URL(url, window.location.href).href;
+    throw new Error(`${path} (${res.status}). Tried: ${abs}`);
+  }
   return res.json();
 }
 
@@ -73,14 +77,29 @@ export function useLeagueData() {
     let cancelled = false;
     async function load() {
       try {
-        const details = await fetchJSON('details.json');
+        let details;
+        let fetchFailedDemo = false;
+        try {
+          details = await fetchJSON('details.json');
+        } catch (fetchErr) {
+          try {
+            const mod = await import('../sample-details.json');
+            details = mod.default;
+            fetchFailedDemo = true;
+            console.warn('[TCLOT] details.json failed, using bundled demo', fetchErr);
+          } catch {
+            throw fetchErr;
+          }
+        }
         const [transactions, fplMini] = await Promise.all([
           fetchJSONOptional('transactions.json'),
           fetchJSONOptional('fpl-mini.json'),
         ]);
         let teamLogoMap = {};
         try {
-          const r = await fetch(`${DATA_BASE}/team-logos/manifest.json`);
+          const r = await fetch(
+            `${import.meta.env.BASE_URL}team-logos/manifest.json`
+          );
           if (r.ok) {
             const j = await r.json();
             if (j && typeof j === 'object' && !Array.isArray(j)) {
@@ -94,6 +113,7 @@ export function useLeagueData() {
           setData({
             ...processLeagueData(details, { transactions, fplMini }),
             teamLogoMap,
+            fetchFailedDemo,
           });
       } catch (e) {
         if (!cancelled) setError(e.message);
@@ -133,9 +153,109 @@ function formSequence(entryId, finishedMatches, n) {
   const mine = finishedMatches.filter(
     (m) => m.league_entry_1 === entryId || m.league_entry_2 === entryId
   );
-  mine.sort((a, b) => a.event - b.event || a.id - b.id);
+  mine.sort(
+    (a, b) =>
+      a.event - b.event || (a.id ?? 0) - (b.id ?? 0) || String(a).localeCompare(String(b))
+  );
   const last = mine.slice(-n);
   return last.map((m) => resultForEntry(m, entryId));
+}
+
+function displayEntryName(e) {
+  if (!e) return 'Unknown';
+  const name = (e.entry_name || '').trim();
+  if (name) return name;
+  const mgr = `${e.player_first_name || ''} ${e.player_last_name || ''}`.trim();
+  if (mgr) return mgr;
+  if (e.short_name) return String(e.short_name);
+  const id = e.id ?? e.entry_id;
+  return id != null ? `Team ${id}` : 'Unknown';
+}
+
+/** FPL draft uses `id` in matches/standings; `entry_id` can differ — index both. */
+function buildTeamsMap(leagueEntries) {
+  const teams = {};
+  for (const e of leagueEntries || []) {
+    if (!e || e.id == null) continue;
+    const row = { ...e, entry_name: displayEntryName(e) };
+    teams[e.id] = row;
+    if (e.entry_id != null && e.entry_id !== e.id) {
+      teams[e.entry_id] = row;
+    }
+  }
+  return teams;
+}
+
+/** When details.json has matches but empty/missing standings (bad deploy / old file). */
+function deriveStandingsFromMatches(leagueEntries, matchList, teams) {
+  const idSet = new Set();
+  for (const e of leagueEntries || []) {
+    if (e?.id != null) idSet.add(e.id);
+  }
+  for (const m of matchList) {
+    if (!m.finished) continue;
+    idSet.add(m.league_entry_1);
+    idSet.add(m.league_entry_2);
+  }
+  const ids = [...idSet].filter((x) => x != null).sort((a, b) => a - b);
+  if (ids.length === 0) return [];
+  for (const id of ids) {
+    if (!teams[id]) {
+      teams[id] = { id, entry_id: id, entry_name: `Team ${id}` };
+    }
+  }
+  const st = Object.fromEntries(
+    ids.map((id) => [
+      id,
+      { league_entry: id, w: 0, d: 0, l: 0, pf: 0, pa: 0 },
+    ])
+  );
+  for (const m of matchList) {
+    if (!m.finished) continue;
+    const id1 = m.league_entry_1;
+    const id2 = m.league_entry_2;
+    const p1 = m.league_entry_1_points ?? 0;
+    const p2 = m.league_entry_2_points ?? 0;
+    if (!st[id1] || !st[id2]) continue;
+    st[id1].pf += p1;
+    st[id1].pa += p2;
+    st[id2].pf += p2;
+    st[id2].pa += p1;
+    if (p1 > p2) {
+      st[id1].w += 1;
+      st[id2].l += 1;
+    } else if (p2 > p1) {
+      st[id2].w += 1;
+      st[id1].l += 1;
+    } else {
+      st[id1].d += 1;
+      st[id2].d += 1;
+    }
+  }
+  const rows = ids.map((id) => {
+    const s = st[id];
+    const total = s.w * 3 + s.d;
+    return {
+      league_entry: id,
+      rank: 0,
+      total,
+      matches_won: s.w,
+      matches_drawn: s.d,
+      matches_lost: s.l,
+      points_for: s.pf,
+      points_against: s.pa,
+    };
+  });
+  rows.sort(
+    (a, b) =>
+      b.total - a.total ||
+      b.points_for - a.points_for ||
+      a.points_against - b.points_against
+  );
+  rows.forEach((r, i) => {
+    r.rank = i + 1;
+  });
+  return rows;
 }
 
 function nextOpponent(entryId, matches, teams) {
@@ -160,23 +280,37 @@ function processLeagueData(raw, extras = {}) {
   const details = { ...raw };
   delete details._tcMeta;
 
-  const teams = Object.fromEntries(
-    (details.league_entries || []).map((e) => [e.id, { ...e }])
-  );
+  let leagueEntries = details.league_entries || [];
+  const matches = details.matches || [];
+  let standingsRaw = details.standings || [];
 
-  const standings = (details.standings || []).map((s) => ({
+  const teams = buildTeamsMap(leagueEntries);
+  const finishedCount = matches.filter((m) => m.finished).length;
+
+  if (
+    (!standingsRaw.length || standingsRaw.every((s) => !teams[s.league_entry])) &&
+    finishedCount > 0 &&
+    leagueEntries.length > 0
+  ) {
+    standingsRaw = deriveStandingsFromMatches(leagueEntries, matches, teams);
+  }
+  if (!standingsRaw.length && finishedCount > 0 && leagueEntries.length === 0) {
+    standingsRaw = deriveStandingsFromMatches([], matches, teams);
+  }
+
+  const standings = standingsRaw.map((s) => ({
     ...s,
-    teamName: teams[s.league_entry]?.entry_name ?? 'Unknown',
+    teamName: teams[s.league_entry]?.entry_name ?? `Team ${s.league_entry}`,
     manager: `${teams[s.league_entry]?.player_first_name ?? ''} ${teams[s.league_entry]?.player_last_name ?? ''}`.trim(),
   }));
 
   const sortedByRank = [...standings].sort((a, b) => a.rank - b.rank);
-  const matches = details.matches || [];
   const finished = matches.filter((m) => m.finished);
 
   const tableRows = sortedByRank.map((s) => {
     const eid = s.league_entry;
-    const pl = s.matches_won + s.matches_drawn + s.matches_lost;
+    const pl =
+      (s.matches_won ?? 0) + (s.matches_drawn ?? 0) + (s.matches_lost ?? 0);
     const gf = s.points_for ?? 0;
     const ga = s.points_against ?? 0;
     const seq = formSequence(eid, finished, FORM_LAST_N);
