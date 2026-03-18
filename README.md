@@ -86,7 +86,28 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. The site reads from `data/` — re-run `ingest.py` to refresh, then restart the dev server (or run `npm run dev` which copies data automatically).
+Open http://localhost:5173.
+
+**The site always uses your real league only after you run ingest.** It copies `data/details.json` (created by `ingest.py`) into `web/public/data/`. If that file is missing, the UI falls back to **demo sample data** and shows a yellow banner.
+
+### Wrong teams / not your league?
+
+Demo data was previously saved by mistake into `data/details.json` for some setups. **Fix:** from the repo root, re-fetch your league (your ID is in the URL `draft.premierleague.com/league/**THIS_NUMBER**`):
+
+```bash
+python3 ingest.py YOUR_LEAGUE_ID
+cd web && npm run dev
+```
+
+Re-run `ingest.py` whenever you want fresh scores and fixtures.
+
+### Dashboard data (waivers, player names)
+
+`copy-data` also builds **`fpl-mini.json`** from `bootstrap_fpl.json` (player + team names for **Most waivered**). Ensure **`transactions.json`** and **`bootstrap_fpl.json`** exist (full `ingest.py`). Then `cd web && npm run dev`.
+
+### Team logos (replace letter bubbles)
+
+Copy images into **`web/public/team-logos/`**. Name each file **`{id}.png`** where `id` is the FPL `league_entries[].id` (see `web/public/team-logos/README.md`), or add a **`manifest.json`** mapping ids to filenames. No upload step — files on disk are served by the dev server and included in `npm run build`.
 
 Build for production: `npm run build` (output in `web/dist/`).
 

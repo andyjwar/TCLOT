@@ -1,0 +1,409 @@
+{
+  "league": {
+    "id": 1,
+    "name": "Tri Continental League of Titans"
+  },
+  "league_entries": [
+    {
+      "id": 101,
+      "entry_name": "Apex Titans",
+      "player_first_name": "Manager",
+      "player_last_name": "101"
+    },
+    {
+      "id": 102,
+      "entry_name": "Dynamo North",
+      "player_first_name": "Manager",
+      "player_last_name": "102"
+    },
+    {
+      "id": 103,
+      "entry_name": "Pacific Rovers",
+      "player_first_name": "Manager",
+      "player_last_name": "103"
+    },
+    {
+      "id": 104,
+      "entry_name": "Atlantic City FC",
+      "player_first_name": "Manager",
+      "player_last_name": "104"
+    },
+    {
+      "id": 105,
+      "entry_name": "Summit SC",
+      "player_first_name": "Manager",
+      "player_last_name": "105"
+    },
+    {
+      "id": 106,
+      "entry_name": "Harbor Lights",
+      "player_first_name": "Manager",
+      "player_last_name": "106"
+    }
+  ],
+  "standings": [
+    {
+      "league_entry": 104,
+      "rank": 1,
+      "total": 21,
+      "matches_won": 7,
+      "matches_drawn": 0,
+      "matches_lost": 3,
+      "points_for": 606,
+      "points_against": 547
+    },
+    {
+      "league_entry": 102,
+      "rank": 2,
+      "total": 18,
+      "matches_won": 6,
+      "matches_drawn": 0,
+      "matches_lost": 4,
+      "points_for": 576,
+      "points_against": 555
+    },
+    {
+      "league_entry": 103,
+      "rank": 3,
+      "total": 15,
+      "matches_won": 5,
+      "matches_drawn": 0,
+      "matches_lost": 5,
+      "points_for": 577,
+      "points_against": 623
+    },
+    {
+      "league_entry": 101,
+      "rank": 4,
+      "total": 15,
+      "matches_won": 5,
+      "matches_drawn": 0,
+      "matches_lost": 5,
+      "points_for": 533,
+      "points_against": 560
+    },
+    {
+      "league_entry": 105,
+      "rank": 5,
+      "total": 12,
+      "matches_won": 4,
+      "matches_drawn": 0,
+      "matches_lost": 6,
+      "points_for": 595,
+      "points_against": 592
+    },
+    {
+      "league_entry": 106,
+      "rank": 6,
+      "total": 9,
+      "matches_won": 3,
+      "matches_drawn": 0,
+      "matches_lost": 7,
+      "points_for": 549,
+      "points_against": 559
+    }
+  ],
+  "matches": [
+    {
+      "id": 1,
+      "league_entry_1": 106,
+      "league_entry_2": 101,
+      "event": 1,
+      "finished": true,
+      "league_entry_1_points": 50,
+      "league_entry_2_points": 42
+    },
+    {
+      "id": 2,
+      "league_entry_1": 102,
+      "league_entry_2": 105,
+      "event": 1,
+      "finished": true,
+      "league_entry_1_points": 56,
+      "league_entry_2_points": 60
+    },
+    {
+      "id": 3,
+      "league_entry_1": 104,
+      "league_entry_2": 103,
+      "event": 1,
+      "finished": true,
+      "league_entry_1_points": 68,
+      "league_entry_2_points": 63
+    },
+    {
+      "id": 4,
+      "league_entry_1": 105,
+      "league_entry_2": 101,
+      "event": 2,
+      "finished": true,
+      "league_entry_1_points": 59,
+      "league_entry_2_points": 60
+    },
+    {
+      "id": 5,
+      "league_entry_1": 106,
+      "league_entry_2": 104,
+      "event": 2,
+      "finished": true,
+      "league_entry_1_points": 59,
+      "league_entry_2_points": 66
+    },
+    {
+      "id": 6,
+      "league_entry_1": 103,
+      "league_entry_2": 102,
+      "event": 2,
+      "finished": true,
+      "league_entry_1_points": 50,
+      "league_entry_2_points": 65
+    },
+    {
+      "id": 7,
+      "league_entry_1": 104,
+      "league_entry_2": 101,
+      "event": 3,
+      "finished": true,
+      "league_entry_1_points": 67,
+      "league_entry_2_points": 45
+    },
+    {
+      "id": 8,
+      "league_entry_1": 105,
+      "league_entry_2": 103,
+      "event": 3,
+      "finished": true,
+      "league_entry_1_points": 66,
+      "league_entry_2_points": 73
+    },
+    {
+      "id": 9,
+      "league_entry_1": 106,
+      "league_entry_2": 102,
+      "event": 3,
+      "finished": true,
+      "league_entry_1_points": 62,
+      "league_entry_2_points": 42
+    },
+    {
+      "id": 10,
+      "league_entry_1": 103,
+      "league_entry_2": 101,
+      "event": 4,
+      "finished": true,
+      "league_entry_1_points": 45,
+      "league_entry_2_points": 55
+    },
+    {
+      "id": 11,
+      "league_entry_1": 102,
+      "league_entry_2": 104,
+      "event": 4,
+      "finished": true,
+      "league_entry_1_points": 68,
+      "league_entry_2_points": 64
+    },
+    {
+      "id": 12,
+      "league_entry_1": 105,
+      "league_entry_2": 106,
+      "event": 4,
+      "finished": true,
+      "league_entry_1_points": 54,
+      "league_entry_2_points": 41
+    },
+    {
+      "id": 13,
+      "league_entry_1": 102,
+      "league_entry_2": 101,
+      "event": 5,
+      "finished": true,
+      "league_entry_1_points": 44,
+      "league_entry_2_points": 52
+    },
+    {
+      "id": 14,
+      "league_entry_1": 103,
+      "league_entry_2": 106,
+      "event": 5,
+      "finished": true,
+      "league_entry_1_points": 48,
+      "league_entry_2_points": 47
+    },
+    {
+      "id": 15,
+      "league_entry_1": 104,
+      "league_entry_2": 105,
+      "event": 5,
+      "finished": true,
+      "league_entry_1_points": 47,
+      "league_entry_2_points": 51
+    },
+    {
+      "id": 16,
+      "league_entry_1": 101,
+      "league_entry_2": 106,
+      "event": 6,
+      "finished": true,
+      "league_entry_1_points": 55,
+      "league_entry_2_points": 54
+    },
+    {
+      "id": 17,
+      "league_entry_1": 102,
+      "league_entry_2": 105,
+      "event": 6,
+      "finished": true,
+      "league_entry_1_points": 54,
+      "league_entry_2_points": 53
+    },
+    {
+      "id": 18,
+      "league_entry_1": 104,
+      "league_entry_2": 103,
+      "event": 6,
+      "finished": true,
+      "league_entry_1_points": 74,
+      "league_entry_2_points": 57
+    },
+    {
+      "id": 19,
+      "league_entry_1": 105,
+      "league_entry_2": 101,
+      "event": 7,
+      "finished": true,
+      "league_entry_1_points": 62,
+      "league_entry_2_points": 65
+    },
+    {
+      "id": 20,
+      "league_entry_1": 106,
+      "league_entry_2": 104,
+      "event": 7,
+      "finished": true,
+      "league_entry_1_points": 52,
+      "league_entry_2_points": 69
+    },
+    {
+      "id": 21,
+      "league_entry_1": 102,
+      "league_entry_2": 103,
+      "event": 7,
+      "finished": true,
+      "league_entry_1_points": 68,
+      "league_entry_2_points": 40
+    },
+    {
+      "id": 22,
+      "league_entry_1": 104,
+      "league_entry_2": 101,
+      "event": 8,
+      "finished": true,
+      "league_entry_1_points": 42,
+      "league_entry_2_points": 41
+    },
+    {
+      "id": 23,
+      "league_entry_1": 103,
+      "league_entry_2": 105,
+      "event": 8,
+      "finished": true,
+      "league_entry_1_points": 73,
+      "league_entry_2_points": 66
+    },
+    {
+      "id": 24,
+      "league_entry_1": 106,
+      "league_entry_2": 102,
+      "event": 8,
+      "finished": true,
+      "league_entry_1_points": 71,
+      "league_entry_2_points": 56
+    },
+    {
+      "id": 25,
+      "league_entry_1": 101,
+      "league_entry_2": 103,
+      "event": 9,
+      "finished": true,
+      "league_entry_1_points": 68,
+      "league_entry_2_points": 70
+    },
+    {
+      "id": 26,
+      "league_entry_1": 104,
+      "league_entry_2": 102,
+      "event": 9,
+      "finished": true,
+      "league_entry_1_points": 53,
+      "league_entry_2_points": 56
+    },
+    {
+      "id": 27,
+      "league_entry_1": 106,
+      "league_entry_2": 105,
+      "event": 9,
+      "finished": true,
+      "league_entry_1_points": 67,
+      "league_entry_2_points": 69
+    },
+    {
+      "id": 28,
+      "league_entry_1": 101,
+      "league_entry_2": 102,
+      "event": 10,
+      "finished": true,
+      "league_entry_1_points": 50,
+      "league_entry_2_points": 67
+    },
+    {
+      "id": 29,
+      "league_entry_1": 106,
+      "league_entry_2": 103,
+      "event": 10,
+      "finished": true,
+      "league_entry_1_points": 46,
+      "league_entry_2_points": 58
+    },
+    {
+      "id": 30,
+      "league_entry_1": 104,
+      "league_entry_2": 105,
+      "event": 10,
+      "finished": true,
+      "league_entry_1_points": 56,
+      "league_entry_2_points": 55
+    },
+    {
+      "id": 31,
+      "league_entry_1": 101,
+      "league_entry_2": 104,
+      "event": 11,
+      "finished": false,
+      "league_entry_1_points": 0,
+      "league_entry_2_points": 0
+    },
+    {
+      "id": 32,
+      "league_entry_1": 102,
+      "league_entry_2": 105,
+      "event": 11,
+      "finished": false,
+      "league_entry_1_points": 0,
+      "league_entry_2_points": 0
+    },
+    {
+      "id": 33,
+      "league_entry_1": 103,
+      "league_entry_2": 106,
+      "event": 11,
+      "finished": false,
+      "league_entry_1_points": 0,
+      "league_entry_2_points": 0
+    }
+  ],
+  "_tcMeta": {
+    "isSample": true,
+    "note": "Demo only — run python3 ingest.py <LEAGUE_ID> for your league"
+  }
+}
