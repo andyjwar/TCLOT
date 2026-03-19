@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Fetches FPL event/live per GW, then:
- * 1) drops-gw-live.json — dropped player’s pts in waiver GW (neutral name: ad blockers often block "waiver" in URLs)
+ * 1) drops-gw-live.json — dropped player’s pts that GW for successful waivers + free-agency swaps (neutral path name)
  * 2) pickups-tenure.json — top 10 pickup pairs + team tenure totals
  *    from each waiver-in until that player left the squad (same entry).
  */
@@ -302,15 +302,8 @@ async function main() {
 
   const sorted = [...transactions].sort(compareTx)
 
-  /* —— waiver out (drop GW only) —— */
-  const waiversDrop = transactions.filter(
-    (t) =>
-      t.kind === 'w' &&
-      t.result === 'a' &&
-      t.element_out != null &&
-      Number(t.event) > 0
-  )
-  const rowsOut = waiversDrop.map((t) => {
+  /* —— waiver + free-agency swap (drop GW only) —— */
+  function mapSwapRow(t, transactionKind) {
     const gw = Number(t.event)
     const outId = Number(t.element_out)
     const inId =
@@ -336,8 +329,22 @@ async function main() {
       added: t.added ?? null,
       droppedPlayerGwPoints: ptsOut,
       pickedUpPlayerGwPoints: ptsIn,
+      transactionKind,
     }
-  })
+  }
+
+  const isSuccessfulSwap = (t) =>
+    t.result === 'a' &&
+    t.element_out != null &&
+    Number(t.event) > 0
+
+  const waiversDrop = transactions.filter((t) => t.kind === 'w' && isSuccessfulSwap(t))
+  const freeAgentDrop = transactions.filter((t) => t.kind === 'f' && isSuccessfulSwap(t))
+
+  const rowsOut = [
+    ...waiversDrop.map((t) => mapSwapRow(t, 'w')),
+    ...freeAgentDrop.map((t) => mapSwapRow(t, 'f')),
+  ]
   rowsOut.sort((a, b) => {
     const ta = a.added ? Date.parse(a.added) : 0
     const tb = b.added ? Date.parse(b.added) : 0
@@ -350,7 +357,7 @@ async function main() {
       JSON.stringify(
         {
           generated: new Date().toISOString(),
-          note: 'droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)',
+          note: 'Successful waiver (transactionKind w) and free-agency (f) swaps. droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)',
           rows: rowsOut,
         },
         null,
@@ -500,7 +507,7 @@ async function main() {
   }
 
   console.log(
-    `build-waiver-gw-analytics: drops-gw-live ${rowsOut.length} rows; pickups-tenure ${transactions.length ? `${top10.length} top + ${teamWaiverInTotals.length} team` : 'skipped'}; trades-panel ${executedTrades.length} trade(s)`
+    `build-waiver-gw-analytics: drops-gw-live ${rowsOut.length} rows (${waiversDrop.length} w + ${freeAgentDrop.length} fa); pickups-tenure ${transactions.length ? `${top10.length} top + ${teamWaiverInTotals.length} team` : 'skipped'}; trades-panel ${executedTrades.length} trade(s)`
   )
 }
 

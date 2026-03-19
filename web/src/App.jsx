@@ -177,8 +177,14 @@ function App() {
   const [dashboardView, setDashboardView] = useState('standings') // standings | waivers | trades | live
   const [liveGw, setLiveGw] = useState(null)
 
+  /** drops-gw-live rows: waivers only (excludes free-agency rows used in Latest Waivers). */
+  const waiverOutRowsWaiverOnly = useMemo(
+    () => (data?.waiverOutGwRows ?? []).filter((r) => r.transactionKind !== 'f'),
+    [data?.waiverOutGwRows],
+  )
+
   const waiverOutTeamOptions = useMemo(() => {
-    const rows = data?.waiverOutGwRows ?? []
+    const rows = waiverOutRowsWaiverOnly
     const m = new Map()
     for (const r of rows) {
       if (r.entry != null && !m.has(r.entry)) {
@@ -186,16 +192,16 @@ function App() {
       }
     }
     return [...m.entries()].sort((a, b) => String(a[1]).localeCompare(String(b[1])))
-  }, [data?.waiverOutGwRows])
+  }, [waiverOutRowsWaiverOnly])
 
   const waiverOutGwOptions = useMemo(() => {
-    const rows = data?.waiverOutGwRows ?? []
+    const rows = waiverOutRowsWaiverOnly
     const s = new Set(rows.map((r) => r.gameweek).filter((g) => g != null))
     return [...s].sort((a, b) => a - b)
-  }, [data?.waiverOutGwRows])
+  }, [waiverOutRowsWaiverOnly])
 
   const filteredWaiverOutRows = useMemo(() => {
-    const rows = data?.waiverOutGwRows ?? []
+    const rows = waiverOutRowsWaiverOnly
     return rows.filter((r) => {
       if (
         waiverOutTeamFilter !== 'all' &&
@@ -211,7 +217,7 @@ function App() {
       }
       return true
     })
-  }, [data?.waiverOutGwRows, waiverOutTeamFilter, waiverOutGwFilter])
+  }, [waiverOutRowsWaiverOnly, waiverOutTeamFilter, waiverOutGwFilter])
 
   const waiverOutTeamPointsTotal = useMemo(() => {
     if (waiverOutTeamFilter === 'all') return null
@@ -240,6 +246,49 @@ function App() {
     }
     return m
   }, [data?.tableRows])
+
+  /** Highest GW present in waiver-out rows, grouped by team (FPL entry). */
+  const latestWaiversModel = useMemo(() => {
+    const rows = data?.waiverOutGwRows ?? []
+    const fplToLeague = new Map()
+    for (const t of data?.teamsForFormSelect ?? []) {
+      if (t.fplEntryId != null) fplToLeague.set(Number(t.fplEntryId), t.id)
+    }
+    if (!rows.length) return { gw: null, groups: [] }
+    let maxGw = 0
+    for (const r of rows) {
+      const g = Number(r.gameweek)
+      if (Number.isFinite(g) && g > maxGw) maxGw = g
+    }
+    if (maxGw <= 0) return { gw: null, groups: [] }
+    const inGw = rows.filter((r) => Number(r.gameweek) === maxGw)
+    const byEntry = new Map()
+    for (const r of inGw) {
+      const k = r.entry
+      if (!byEntry.has(k)) {
+        const leagueEntryId = fplToLeague.get(Number(k)) ?? Number(k)
+        byEntry.set(k, {
+          entry: k,
+          leagueEntryId,
+          teamName: r.teamName,
+          moves: [],
+        })
+      }
+      byEntry.get(k).moves.push(r)
+    }
+    for (const g of byEntry.values()) {
+      g.moves.sort((a, b) => {
+        const da = a.added ? Date.parse(a.added) : 0
+        const db = b.added ? Date.parse(b.added) : 0
+        if (db !== da) return db - da
+        return (b.transactionId ?? 0) - (a.transactionId ?? 0)
+      })
+    }
+    const groups = [...byEntry.values()].sort((a, b) =>
+      a.teamName.localeCompare(b.teamName, undefined, { sensitivity: 'base' })
+    )
+    return { gw: maxGw, groups }
+  }, [data?.waiverOutGwRows, data?.teamsForFormSelect])
 
   if (loading) {
     return (
@@ -285,7 +334,6 @@ function App() {
     teamLogoMap,
     mostWaiveredPlayers,
     pointsAgainstList,
-    waiverOutGwRows,
     waiverOutPointsByTeam,
     waiverInTenureTopRows,
     waiverInPointsByTeam,
@@ -495,7 +543,15 @@ function App() {
                       .join(' ')
                     return (
                       <tr key={row.league_entry} className={rowClass || undefined}>
-                        <td className="col-rank">{row.rank}</td>
+                        <td className="col-rank">
+                          {row.rank === 8 ? (
+                            <span role="img" className="standings-rank-8" aria-label="8">
+                              💩
+                            </span>
+                          ) : (
+                            row.rank
+                          )}
+                        </td>
                         <td className="col-team">
                           <span className="team-cell">
                             <TeamAvatar entryId={row.league_entry} name={row.teamName} size="sm" logoMap={teamLogoMap} />
@@ -798,6 +854,84 @@ function App() {
 
           {dashboardView === 'waivers' && (
             <div className="dashboard-stack">
+              <section className="tile tile--compact" aria-labelledby="latest-waivers-heading">
+                <div className="tile-head-row tile-head-row--tight">
+                  <h2 id="latest-waivers-heading" className="tile-title tile-title--sm">
+                    Latest Waivers
+                    {latestWaiversModel.gw != null ? (
+                      <span className="latest-waivers__gw muted"> (GW {latestWaiversModel.gw})</span>
+                    ) : null}
+                  </h2>
+                </div>
+                <p className="tile-hint muted tile-hint--tight">
+                  Successful <strong>waivers</strong> and <strong>free agency</strong> pickups from the
+                  latest gameweek in your data. Per team, moves sit in one horizontal row; each move stacks{' '}
+                  <strong>In</strong> above <strong>Out</strong> (kits from FPL). Scroll sideways if needed.{' '}
+                  <span className="muted">FA</span> = free agency.
+                </p>
+                {latestWaiversModel.groups.length ? (
+                  <div className="latest-waivers">
+                    {latestWaiversModel.groups.map((g) => (
+                      <div key={g.entry} className="latest-waivers__team-block">
+                        <h3 className="latest-waivers__team-title">
+                          <TeamAvatar
+                            entryId={g.leagueEntryId}
+                            name={g.teamName}
+                            size="sm"
+                            logoMap={teamLogoMap}
+                          />
+                          <span>{g.teamName}</span>
+                        </h3>
+                        <ul className="latest-waivers__move-list">
+                          {g.moves.map((r) => (
+                            <li
+                              key={r.transactionId}
+                              className={`latest-waivers__move${r.transactionKind === 'f' ? ' latest-waivers__move--fa' : ''}`}
+                            >
+                              <div className="latest-waivers__move-stack">
+                                <div className="latest-waivers__fa-row">
+                                  {r.transactionKind === 'f' ? (
+                                    <span
+                                      className="latest-waivers__txn-badge"
+                                      title="Free agency pickup"
+                                    >
+                                      FA
+                                    </span>
+                                  ) : null}
+                                </div>
+                                <div className="latest-waivers__swap-line">
+                                  <span className="latest-waivers__io-label muted">In</span>
+                                  <PlayerKit
+                                    shirtUrl={r.pickedShirtUrl}
+                                    badgeUrl={r.pickedBadgeUrl}
+                                    teamShort={r.pickedTeamShort}
+                                  />
+                                  <span className="latest-waivers__player-name">{r.pickedName}</span>
+                                </div>
+                                <div className="latest-waivers__swap-line">
+                                  <span className="latest-waivers__io-label muted">Out</span>
+                                  <PlayerKit
+                                    shirtUrl={r.droppedShirtUrl}
+                                    badgeUrl={r.droppedBadgeUrl}
+                                    teamShort={r.droppedTeamShort}
+                                  />
+                                  <span className="latest-waivers__player-name">{r.droppedName}</span>
+                                </div>
+                              </div>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="muted muted--tight">
+                    No waiver / free-agency rows in <code>drops-gw-live.json</code> yet. Run{' '}
+                    <code>npm run dev</code> / <code>npm run build</code> (runs waiver analytics) after{' '}
+                    <code>transactions.json</code> is present.
+                  </p>
+                )}
+              </section>
           <section className="tile tile--compact" aria-labelledby="waiver-in-by-team-heading">
             <div className="tile-head-row tile-head-row--tight">
               <h2 id="waiver-in-by-team-heading" className="tile-title tile-title--sm">
@@ -969,7 +1103,7 @@ function App() {
               that GW; <strong>Waivers in</strong> = points the picked-up player scored that GW (same
               official live data). Filter by team and gameweek.
             </p>
-            {waiverOutGwRows?.length ? (
+            {waiverOutRowsWaiverOnly.length ? (
               <>
                 <div className="waiver-out-filters">
                   <div className="waiver-out-filter">

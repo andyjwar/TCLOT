@@ -650,14 +650,39 @@ function processLeagueData(raw, extras = {}) {
   const teamById = Object.fromEntries(
     (extras.fplMini?.teams || []).map((t) => [t.id, t])
   );
-  const waiverOutGwRows = (extras.waiverOutGw?.rows || []).map((row) => ({
-    ...row,
-    teamName: teams[row.entry]?.entry_name ?? `Team ${row.entry}`,
-    droppedName:
-      elemById[row.element_out]?.web_name ?? `Player #${row.element_out}`,
-    pickedName:
-      elemById[row.element_in]?.web_name ?? `Player #${row.element_in}`,
-  }));
+  const waiverOutGwRows = (extras.waiverOutGw?.rows || []).map((row) => {
+    const dropEl = elemById[row.element_out];
+    const pickEl = elemById[row.element_in];
+    const dropTm = dropEl ? teamById[dropEl.team] : null;
+    const pickTm = pickEl ? teamById[pickEl.team] : null;
+    const dropTeamId = dropEl?.team;
+    const pickTeamId = pickEl?.team;
+    return {
+      ...row,
+      teamName: teams[row.entry]?.entry_name ?? `Team ${row.entry}`,
+      droppedName:
+        dropEl?.web_name ?? `Player #${row.element_out}`,
+      pickedName: pickEl?.web_name ?? `Player #${row.element_in}`,
+      droppedTeamShort: dropTm?.short_name ?? '—',
+      pickedTeamShort: pickTm?.short_name ?? '—',
+      droppedShirtUrl:
+        dropTeamId != null
+          ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${dropTeamId}-1.png`
+          : null,
+      droppedBadgeUrl:
+        dropTm?.code != null
+          ? `https://resources.premierleague.com/premierleague/badges/50/t${dropTm.code}.png`
+          : null,
+      pickedShirtUrl:
+        pickTeamId != null
+          ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${pickTeamId}-1.png`
+          : null,
+      pickedBadgeUrl:
+        pickTm?.code != null
+          ? `https://resources.premierleague.com/premierleague/badges/50/t${pickTm.code}.png`
+          : null,
+    };
+  });
 
   const waiverInTenureTopRows = (extras.waiverInTenureTop?.rows || []).map(
     (r) => {
@@ -728,6 +753,7 @@ function processLeagueData(raw, extras = {}) {
       let knownPtsCount = 0;
       for (const r of waiverOutGwRows) {
         if (r.entry !== entryId) continue;
+        if (r.transactionKind === 'f') continue;
         waiverOutCount += 1;
         if (typeof r.droppedPlayerGwPoints === 'number') {
           totalDroppedGwPoints += r.droppedPlayerGwPoints;

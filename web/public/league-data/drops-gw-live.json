@@ -1,7 +1,73 @@
 {
-  "generated": "2026-03-19T22:20:30.179Z",
-  "note": "droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)",
+  "generated": "2026-03-19T22:51:31.374Z",
+  "note": "Successful waiver (transactionKind w) and free-agency (f) swaps. droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)",
   "rows": [
+    {
+      "transactionId": 49792480,
+      "entry": 40385,
+      "gameweek": 31,
+      "element_in": 568,
+      "element_out": 402,
+      "added": "2026-03-19T22:06:13.847454Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 49778345,
+      "entry": 41410,
+      "gameweek": 31,
+      "element_in": 139,
+      "element_out": 502,
+      "added": "2026-03-19T19:16:58.031997Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 49777414,
+      "entry": 41410,
+      "gameweek": 31,
+      "element_in": 106,
+      "element_out": 290,
+      "added": "2026-03-19T19:09:15.876633Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 49777335,
+      "entry": 41410,
+      "gameweek": 31,
+      "element_in": 603,
+      "element_out": 531,
+      "added": "2026-03-19T19:08:39.357667Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 49775167,
+      "entry": 74425,
+      "gameweek": 31,
+      "element_in": 593,
+      "element_out": 646,
+      "added": "2026-03-19T18:52:50.228111Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 49773935,
+      "entry": 27040,
+      "gameweek": 31,
+      "element_in": 354,
+      "element_out": 169,
+      "added": "2026-03-19T18:45:38.794441Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
     {
       "transactionId": 49766319,
       "entry": 74425,
@@ -10,7 +76,8 @@
       "element_out": 813,
       "added": "2026-03-19T18:27:20.330934Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49766317,
@@ -20,7 +87,8 @@
       "element_out": 806,
       "added": "2026-03-19T18:27:20.330906Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49766314,
@@ -30,7 +98,8 @@
       "element_out": 283,
       "added": "2026-03-19T18:27:20.330862Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49766312,
@@ -40,7 +109,8 @@
       "element_out": 342,
       "added": "2026-03-19T18:27:20.330832Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49766309,
@@ -50,7 +120,8 @@
       "element_out": 808,
       "added": "2026-03-19T18:27:20.330770Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49766308,
@@ -60,7 +131,8 @@
       "element_out": 200,
       "added": "2026-03-19T18:27:20.330711Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49552413,
@@ -70,7 +142,8 @@
       "element_out": 469,
       "added": "2026-03-19T15:47:56.283177Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49552409,
@@ -80,7 +153,8 @@
       "element_out": 225,
       "added": "2026-03-19T15:47:56.283084Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49080273,
@@ -90,7 +164,8 @@
       "element_out": 714,
       "added": "2026-03-17T20:34:45.670230Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49080270,
@@ -100,7 +175,8 @@
       "element_out": 408,
       "added": "2026-03-17T20:34:45.670186Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 49080268,
@@ -110,7 +186,8 @@
       "element_out": 26,
       "added": "2026-03-17T20:34:45.670155Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48788878,
@@ -120,7 +197,8 @@
       "element_out": 36,
       "added": "2026-03-16T07:46:44.833277Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48706035,
@@ -130,7 +208,8 @@
       "element_out": 258,
       "added": "2026-03-15T17:12:06.039791Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48687675,
@@ -140,7 +219,8 @@
       "element_out": 261,
       "added": "2026-03-15T15:43:31.732129Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48687674,
@@ -150,7 +230,8 @@
       "element_out": 547,
       "added": "2026-03-15T15:43:31.732109Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48673260,
@@ -160,7 +241,8 @@
       "element_out": 628,
       "added": "2026-03-15T13:11:36.517210Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48673259,
@@ -170,7 +252,19 @@
       "element_out": 256,
       "added": "2026-03-15T13:11:36.517168Z",
       "droppedPlayerGwPoints": null,
-      "pickedUpPlayerGwPoints": null
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 48545934,
+      "entry": 27134,
+      "gameweek": 30,
+      "element_in": 316,
+      "element_out": 109,
+      "added": "2026-03-13T14:06:38.138701Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "f"
     },
     {
       "transactionId": 48538458,
@@ -180,7 +274,8 @@
       "element_out": 450,
       "added": "2026-03-13T13:27:28.796955Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48538457,
@@ -190,7 +285,8 @@
       "element_out": 139,
       "added": "2026-03-13T13:27:28.796940Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48538456,
@@ -200,7 +296,8 @@
       "element_out": 40,
       "added": "2026-03-13T13:27:28.796921Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48538455,
@@ -210,7 +307,8 @@
       "element_out": 792,
       "added": "2026-03-13T13:27:28.796874Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48330722,
@@ -220,7 +318,8 @@
       "element_out": 108,
       "added": "2026-03-13T01:41:29.582583Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48302811,
@@ -230,7 +329,8 @@
       "element_out": 293,
       "added": "2026-03-12T22:20:33.863571Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48302808,
@@ -240,7 +340,8 @@
       "element_out": 20,
       "added": "2026-03-12T22:20:33.863471Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48224894,
@@ -250,7 +351,8 @@
       "element_out": 736,
       "added": "2026-03-12T13:54:34.370059Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48224887,
@@ -260,7 +362,8 @@
       "element_out": 413,
       "added": "2026-03-12T13:54:34.369940Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 48170316,
@@ -270,7 +373,8 @@
       "element_out": 414,
       "added": "2026-03-11T20:22:56.374020Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47821647,
@@ -280,7 +384,8 @@
       "element_out": 386,
       "added": "2026-03-05T09:20:48.437815Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47816768,
@@ -290,7 +395,8 @@
       "element_out": 343,
       "added": "2026-03-05T07:59:18.151687Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47816766,
@@ -300,7 +406,52 @@
       "element_out": 299,
       "added": "2026-03-05T07:59:18.151585Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 47638892,
+      "entry": 27134,
+      "gameweek": 29,
+      "element_in": 109,
+      "element_out": 292,
+      "added": "2026-03-02T20:44:04.366514Z",
+      "droppedPlayerGwPoints": 6,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 47629024,
+      "entry": 40385,
+      "gameweek": 29,
+      "element_in": 667,
+      "element_out": 266,
+      "added": "2026-03-02T18:33:53.390469Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 47628014,
+      "entry": 40385,
+      "gameweek": 29,
+      "element_in": 414,
+      "element_out": 236,
+      "added": "2026-03-02T18:25:27.643278Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 47626609,
+      "entry": 41410,
+      "gameweek": 29,
+      "element_in": 322,
+      "element_out": 36,
+      "added": "2026-03-02T18:15:44.081628Z",
+      "droppedPlayerGwPoints": -1,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
     },
     {
       "transactionId": 47606269,
@@ -310,7 +461,8 @@
       "element_out": 400,
       "added": "2026-03-02T17:49:53.471033Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47606266,
@@ -320,7 +472,8 @@
       "element_out": 442,
       "added": "2026-03-02T17:49:53.470974Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47562891,
@@ -330,7 +483,8 @@
       "element_out": 348,
       "added": "2026-03-02T17:07:39.368107Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47562889,
@@ -340,7 +494,8 @@
       "element_out": 418,
       "added": "2026-03-02T17:07:39.368065Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47559735,
@@ -350,7 +505,8 @@
       "element_out": 148,
       "added": "2026-03-02T17:04:15.701670Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47559733,
@@ -360,7 +516,8 @@
       "element_out": 735,
       "added": "2026-03-02T17:04:15.701590Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47559732,
@@ -370,7 +527,8 @@
       "element_out": 52,
       "added": "2026-03-02T17:04:15.701534Z",
       "droppedPlayerGwPoints": -2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47489366,
@@ -380,7 +538,8 @@
       "element_out": 146,
       "added": "2026-03-02T15:05:28.459334Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47420291,
@@ -390,7 +549,8 @@
       "element_out": 575,
       "added": "2026-03-02T12:15:28.502396Z",
       "droppedPlayerGwPoints": -3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47214952,
@@ -400,7 +560,8 @@
       "element_out": 39,
       "added": "2026-03-01T20:57:45.562800Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47214948,
@@ -410,7 +571,8 @@
       "element_out": 697,
       "added": "2026-03-01T20:57:45.562725Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47214946,
@@ -420,7 +582,8 @@
       "element_out": 250,
       "added": "2026-03-01T20:57:45.562649Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47168492,
@@ -430,7 +593,8 @@
       "element_out": 38,
       "added": "2026-03-01T18:50:36.915213Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47168491,
@@ -440,7 +604,8 @@
       "element_out": 50,
       "added": "2026-03-01T18:50:36.915194Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47168488,
@@ -450,7 +615,8 @@
       "element_out": 17,
       "added": "2026-03-01T18:50:36.915047Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 47148402,
@@ -460,7 +626,19 @@
       "element_out": 7,
       "added": "2026-03-01T17:48:02.324545Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 46933788,
+      "entry": 27134,
+      "gameweek": 28,
+      "element_in": 292,
+      "element_out": 258,
+      "added": "2026-02-26T18:46:24.156374Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
     },
     {
       "transactionId": 46922064,
@@ -470,7 +648,8 @@
       "element_out": 672,
       "added": "2026-02-26T18:24:27.756734Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46922059,
@@ -480,7 +659,8 @@
       "element_out": 708,
       "added": "2026-02-26T18:24:27.756644Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46922057,
@@ -490,7 +670,8 @@
       "element_out": 338,
       "added": "2026-02-26T18:24:27.756572Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46839624,
@@ -500,7 +681,8 @@
       "element_out": 531,
       "added": "2026-02-26T16:54:48.170172Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46839621,
@@ -510,7 +692,8 @@
       "element_out": 238,
       "added": "2026-02-26T16:54:48.170123Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46762775,
@@ -520,7 +703,8 @@
       "element_out": 684,
       "added": "2026-02-26T13:59:25.480083Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46762771,
@@ -530,7 +714,8 @@
       "element_out": 414,
       "added": "2026-02-26T13:59:25.479989Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 12
+      "pickedUpPlayerGwPoints": 12,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46619129,
@@ -540,7 +725,8 @@
       "element_out": 224,
       "added": "2026-02-25T20:54:15.885656Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46619127,
@@ -550,7 +736,8 @@
       "element_out": 437,
       "added": "2026-02-25T20:54:15.885551Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46454786,
@@ -560,7 +747,8 @@
       "element_out": 694,
       "added": "2026-02-24T12:15:38.544663Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46424462,
@@ -570,7 +758,8 @@
       "element_out": 796,
       "added": "2026-02-24T08:30:00.935825Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46424461,
@@ -580,7 +769,8 @@
       "element_out": 733,
       "added": "2026-02-24T08:30:00.935777Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46362748,
@@ -590,7 +780,8 @@
       "element_out": 230,
       "added": "2026-02-23T23:53:08.827308Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46315780,
@@ -600,7 +791,8 @@
       "element_out": 261,
       "added": "2026-02-23T20:19:25.865287Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46315779,
@@ -610,7 +802,52 @@
       "element_out": 26,
       "added": "2026-02-23T20:19:25.865223Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 46075575,
+      "entry": 74425,
+      "gameweek": 27,
+      "element_in": 40,
+      "element_out": 633,
+      "added": "2026-02-21T01:56:02.593573Z",
+      "droppedPlayerGwPoints": 4,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 46075503,
+      "entry": 74425,
+      "gameweek": 27,
+      "element_in": 806,
+      "element_out": 365,
+      "added": "2026-02-21T01:51:13.284958Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 46046780,
+      "entry": 74425,
+      "gameweek": 27,
+      "element_in": 708,
+      "element_out": 664,
+      "added": "2026-02-20T15:05:34.788223Z",
+      "droppedPlayerGwPoints": 11,
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 46040746,
+      "entry": 31812,
+      "gameweek": 27,
+      "element_in": 424,
+      "element_out": 458,
+      "added": "2026-02-20T14:02:06.923079Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
     },
     {
       "transactionId": 46019726,
@@ -620,7 +857,8 @@
       "element_out": 293,
       "added": "2026-02-20T13:24:19.968150Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46019725,
@@ -630,7 +868,8 @@
       "element_out": 18,
       "added": "2026-02-20T13:24:19.968132Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 46019721,
@@ -640,7 +879,8 @@
       "element_out": 19,
       "added": "2026-02-20T13:24:19.968022Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45871944,
@@ -650,7 +890,8 @@
       "element_out": 30,
       "added": "2026-02-20T11:10:46.578969Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45871942,
@@ -660,7 +901,8 @@
       "element_out": 374,
       "added": "2026-02-20T11:10:46.578896Z",
       "droppedPlayerGwPoints": 9,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45863913,
@@ -670,7 +912,8 @@
       "element_out": 106,
       "added": "2026-02-20T10:58:51.254209Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45863283,
@@ -680,7 +923,8 @@
       "element_out": 74,
       "added": "2026-02-20T10:58:05.929805Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45863280,
@@ -690,7 +934,8 @@
       "element_out": 457,
       "added": "2026-02-20T10:58:05.929690Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45693987,
@@ -700,7 +945,8 @@
       "element_out": 615,
       "added": "2026-02-20T04:51:24.320942Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 11
+      "pickedUpPlayerGwPoints": 11,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45693986,
@@ -710,7 +956,8 @@
       "element_out": 817,
       "added": "2026-02-20T04:51:24.320927Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45693982,
@@ -720,7 +967,8 @@
       "element_out": 508,
       "added": "2026-02-20T04:51:24.320865Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45693981,
@@ -730,7 +978,8 @@
       "element_out": 804,
       "added": "2026-02-20T04:51:24.320846Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 45693980,
@@ -740,7 +989,8 @@
       "element_out": 329,
       "added": "2026-02-20T04:51:24.320798Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44975024,
@@ -750,7 +1000,8 @@
       "element_out": 228,
       "added": "2026-02-16T11:35:44.928315Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44975022,
@@ -760,7 +1011,8 @@
       "element_out": 646,
       "added": "2026-02-16T11:35:44.928286Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44789221,
@@ -770,7 +1022,8 @@
       "element_out": 507,
       "added": "2026-02-13T10:36:24.048993Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44789217,
@@ -780,7 +1033,8 @@
       "element_out": 452,
       "added": "2026-02-13T10:36:24.048928Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44789215,
@@ -790,7 +1044,41 @@
       "element_out": 718,
       "added": "2026-02-13T10:36:24.048860Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 44491918,
+      "entry": 74425,
+      "gameweek": 26,
+      "element_in": 817,
+      "element_out": 792,
+      "added": "2026-02-10T16:43:47.821494Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 44433180,
+      "entry": 27134,
+      "gameweek": 26,
+      "element_in": 74,
+      "element_out": 146,
+      "added": "2026-02-09T19:00:21.903206Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 44425620,
+      "entry": 74425,
+      "gameweek": 26,
+      "element_in": 633,
+      "element_out": 406,
+      "added": "2026-02-09T18:08:54.224694Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "f"
     },
     {
       "transactionId": 44403659,
@@ -800,7 +1088,8 @@
       "element_out": 39,
       "added": "2026-02-09T17:50:09.844660Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44403656,
@@ -810,7 +1099,8 @@
       "element_out": 231,
       "added": "2026-02-09T17:50:09.844604Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 15
+      "pickedUpPlayerGwPoints": 15,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44403654,
@@ -820,7 +1110,8 @@
       "element_out": 135,
       "added": "2026-02-09T17:50:09.844540Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44403653,
@@ -830,7 +1121,8 @@
       "element_out": 697,
       "added": "2026-02-09T17:50:09.844469Z",
       "droppedPlayerGwPoints": 10,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44372412,
@@ -840,7 +1132,8 @@
       "element_out": 148,
       "added": "2026-02-09T17:29:21.320014Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44279649,
@@ -850,7 +1143,8 @@
       "element_out": 600,
       "added": "2026-02-09T15:47:50.902571Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44279646,
@@ -860,7 +1154,8 @@
       "element_out": 506,
       "added": "2026-02-09T15:47:50.902476Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44279644,
@@ -870,7 +1165,8 @@
       "element_out": 473,
       "added": "2026-02-09T15:47:50.902417Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44279643,
@@ -880,7 +1176,8 @@
       "element_out": 714,
       "added": "2026-02-09T15:47:50.902383Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
     },
     {
       "transactionId": 44279642,
@@ -890,7 +1187,8 @@
       "element_out": 784,
       "added": "2026-02-09T15:47:50.902302Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43968397,
@@ -900,7 +1198,8 @@
       "element_out": 671,
       "added": "2026-02-08T22:18:02.849927Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43968395,
@@ -910,7 +1209,8 @@
       "element_out": 283,
       "added": "2026-02-08T22:18:02.849864Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43947893,
@@ -920,7 +1220,8 @@
       "element_out": 33,
       "added": "2026-02-08T21:36:17.149994Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 13
+      "pickedUpPlayerGwPoints": 13,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43947892,
@@ -930,7 +1231,8 @@
       "element_out": 151,
       "added": "2026-02-08T21:36:17.149979Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": -2
+      "pickedUpPlayerGwPoints": -2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43947890,
@@ -940,7 +1242,8 @@
       "element_out": 50,
       "added": "2026-02-08T21:36:17.149919Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43935578,
@@ -950,7 +1253,8 @@
       "element_out": 17,
       "added": "2026-02-08T21:10:10.814637Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43935577,
@@ -960,7 +1264,8 @@
       "element_out": 350,
       "added": "2026-02-08T21:10:10.814622Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43935575,
@@ -970,7 +1275,30 @@
       "element_out": 505,
       "added": "2026-02-08T21:10:10.814558Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 43551115,
+      "entry": 40385,
+      "gameweek": 25,
+      "element_in": 350,
+      "element_out": 236,
+      "added": "2026-02-06T15:46:59.439050Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 43500091,
+      "entry": 40385,
+      "gameweek": 25,
+      "element_in": 236,
+      "element_out": 487,
+      "added": "2026-02-05T18:45:15.992896Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
     },
     {
       "transactionId": 43414109,
@@ -980,7 +1308,8 @@
       "element_out": 531,
       "added": "2026-02-05T17:35:08.830409Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43414108,
@@ -990,7 +1319,8 @@
       "element_out": 437,
       "added": "2026-02-05T17:35:08.830394Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43414106,
@@ -1000,7 +1330,8 @@
       "element_out": 733,
       "added": "2026-02-05T17:35:08.830360Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43414105,
@@ -1010,7 +1341,8 @@
       "element_out": 166,
       "added": "2026-02-05T17:35:08.830297Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 11
+      "pickedUpPlayerGwPoints": 11,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43306054,
@@ -1020,7 +1352,8 @@
       "element_out": 502,
       "added": "2026-02-05T14:44:25.652702Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43306049,
@@ -1030,7 +1363,8 @@
       "element_out": 120,
       "added": "2026-02-05T14:44:25.652573Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 43182407,
@@ -1040,7 +1374,8 @@
       "element_out": 664,
       "added": "2026-02-05T09:23:05.370956Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42921289,
@@ -1050,7 +1385,8 @@
       "element_out": 413,
       "added": "2026-02-04T10:15:41.543383Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42921287,
@@ -1060,7 +1396,8 @@
       "element_out": 160,
       "added": "2026-02-04T10:15:41.543346Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42921283,
@@ -1070,7 +1407,8 @@
       "element_out": 532,
       "added": "2026-02-04T10:15:41.543230Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42876331,
@@ -1080,7 +1418,8 @@
       "element_out": 266,
       "added": "2026-02-04T01:39:56.571700Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42876326,
@@ -1090,7 +1429,8 @@
       "element_out": 414,
       "added": "2026-02-04T01:39:56.571561Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42795872,
@@ -1100,7 +1440,8 @@
       "element_out": 387,
       "added": "2026-02-03T16:18:21.478780Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42485336,
@@ -1110,7 +1451,8 @@
       "element_out": 684,
       "added": "2026-02-01T18:27:14.563242Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42485333,
@@ -1120,7 +1462,41 @@
       "element_out": 508,
       "added": "2026-02-01T18:27:14.563140Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 42301747,
+      "entry": 74425,
+      "gameweek": 24,
+      "element_in": 39,
+      "element_out": 74,
+      "added": "2026-01-31T03:05:42.677216Z",
+      "droppedPlayerGwPoints": 6,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 42276087,
+      "entry": 27040,
+      "gameweek": 24,
+      "element_in": 33,
+      "element_out": 565,
+      "added": "2026-01-30T17:29:33.021930Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 42258127,
+      "entry": 40385,
+      "gameweek": 24,
+      "element_in": 505,
+      "element_out": 41,
+      "added": "2026-01-30T14:03:02.652288Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
     },
     {
       "transactionId": 42175647,
@@ -1130,7 +1506,8 @@
       "element_out": 158,
       "added": "2026-01-30T12:59:52.637760Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42122546,
@@ -1140,7 +1517,8 @@
       "element_out": 106,
       "added": "2026-01-30T12:25:18.349377Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42122544,
@@ -1150,7 +1528,8 @@
       "element_out": 568,
       "added": "2026-01-30T12:25:18.349336Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42025280,
@@ -1160,7 +1539,8 @@
       "element_out": 574,
       "added": "2026-01-30T10:54:03.453632Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42025278,
@@ -1170,7 +1550,8 @@
       "element_out": 720,
       "added": "2026-01-30T10:54:03.453581Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42025275,
@@ -1180,7 +1561,8 @@
       "element_out": 236,
       "added": "2026-01-30T10:54:03.453520Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 42025274,
@@ -1190,7 +1572,8 @@
       "element_out": 83,
       "added": "2026-01-30T10:54:03.453446Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41485630,
@@ -1200,7 +1583,8 @@
       "element_out": 679,
       "added": "2026-01-29T17:34:12.392016Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41485629,
@@ -1210,7 +1594,8 @@
       "element_out": 48,
       "added": "2026-01-29T17:34:12.391997Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41426689,
@@ -1220,7 +1605,8 @@
       "element_out": 148,
       "added": "2026-01-29T14:35:33.197498Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41426686,
@@ -1230,7 +1616,8 @@
       "element_out": 157,
       "added": "2026-01-29T14:35:33.197400Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41186629,
@@ -1240,7 +1627,8 @@
       "element_out": 370,
       "added": "2026-01-28T20:25:31.796514Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41186621,
@@ -1250,7 +1638,8 @@
       "element_out": 569,
       "added": "2026-01-28T20:25:31.796373Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41186620,
@@ -1260,7 +1649,8 @@
       "element_out": 667,
       "added": "2026-01-28T20:25:31.796354Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41003084,
@@ -1270,7 +1660,8 @@
       "element_out": 293,
       "added": "2026-01-27T18:58:12.433200Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": -2
+      "pickedUpPlayerGwPoints": -2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 41003081,
@@ -1280,7 +1671,8 @@
       "element_out": 441,
       "added": "2026-01-27T18:58:12.433105Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40873097,
@@ -1290,7 +1682,30 @@
       "element_out": 419,
       "added": "2026-01-27T08:25:53.999838Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 40387875,
+      "entry": 41410,
+      "gameweek": 23,
+      "element_in": 242,
+      "element_out": 580,
+      "added": "2026-01-23T14:01:02.214709Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 40378194,
+      "entry": 40240,
+      "gameweek": 23,
+      "element_in": 72,
+      "element_out": 408,
+      "added": "2026-01-23T11:28:56.301047Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
     },
     {
       "transactionId": 40273739,
@@ -1300,7 +1715,8 @@
       "element_out": 560,
       "added": "2026-01-23T08:47:44.283342Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40188099,
@@ -1310,7 +1726,8 @@
       "element_out": 752,
       "added": "2026-01-23T03:36:55.745190Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40188098,
@@ -1320,7 +1737,8 @@
       "element_out": 38,
       "added": "2026-01-23T03:36:55.745173Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40188097,
@@ -1330,7 +1748,8 @@
       "element_out": 39,
       "added": "2026-01-23T03:36:55.745153Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40188096,
@@ -1340,7 +1759,8 @@
       "element_out": 487,
       "added": "2026-01-23T03:36:55.745109Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40036897,
@@ -1350,7 +1770,8 @@
       "element_out": 573,
       "added": "2026-01-22T15:52:44.911354Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40036894,
@@ -1360,7 +1781,8 @@
       "element_out": 497,
       "added": "2026-01-22T15:52:44.911300Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40036892,
@@ -1370,7 +1792,8 @@
       "element_out": 37,
       "added": "2026-01-22T15:52:44.911261Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 40019432,
@@ -1380,7 +1803,8 @@
       "element_out": 475,
       "added": "2026-01-22T13:58:41.520730Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 39776469,
@@ -1390,7 +1814,8 @@
       "element_out": 84,
       "added": "2026-01-20T22:00:41.179101Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 39539773,
@@ -1400,7 +1825,8 @@
       "element_out": 490,
       "added": "2026-01-19T08:56:30.082426Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 39539772,
@@ -1410,7 +1836,52 @@
       "element_out": 367,
       "added": "2026-01-19T08:56:30.082403Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 39331296,
+      "entry": 74425,
+      "gameweek": 22,
+      "element_in": 39,
+      "element_out": 437,
+      "added": "2026-01-17T02:39:08.151039Z",
+      "droppedPlayerGwPoints": 8,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 39293681,
+      "entry": 40385,
+      "gameweek": 22,
+      "element_in": 532,
+      "element_out": 478,
+      "added": "2026-01-16T12:33:44.667357Z",
+      "droppedPlayerGwPoints": 6,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 39288243,
+      "entry": 27134,
+      "gameweek": 22,
+      "element_in": 684,
+      "element_out": 72,
+      "added": "2026-01-16T11:34:35.938948Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 39288042,
+      "entry": 27134,
+      "gameweek": 22,
+      "element_in": 573,
+      "element_out": 293,
+      "added": "2026-01-16T11:32:47.070465Z",
+      "droppedPlayerGwPoints": 9,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
     },
     {
       "transactionId": 39157119,
@@ -1420,7 +1891,8 @@
       "element_out": 292,
       "added": "2026-01-16T09:57:14.096672Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 39157117,
@@ -1430,7 +1902,8 @@
       "element_out": 667,
       "added": "2026-01-16T09:57:14.096594Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 39144741,
@@ -1440,7 +1913,8 @@
       "element_out": 120,
       "added": "2026-01-16T09:48:09.043909Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38963597,
@@ -1450,7 +1924,8 @@
       "element_out": 729,
       "added": "2026-01-16T04:25:19.324365Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38963596,
@@ -1460,7 +1935,8 @@
       "element_out": 733,
       "added": "2026-01-16T04:25:19.324345Z",
       "droppedPlayerGwPoints": 9,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38963594,
@@ -1470,7 +1946,8 @@
       "element_out": 450,
       "added": "2026-01-16T04:25:19.324261Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38834868,
@@ -1480,7 +1957,8 @@
       "element_out": 443,
       "added": "2026-01-15T22:25:52.775941Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38834867,
@@ -1490,7 +1968,8 @@
       "element_out": 26,
       "added": "2026-01-15T22:25:52.775923Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38653713,
@@ -1500,7 +1979,8 @@
       "element_out": 427,
       "added": "2026-01-15T14:30:38.234945Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38653709,
@@ -1510,7 +1990,8 @@
       "element_out": 405,
       "added": "2026-01-15T14:30:38.234871Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38653707,
@@ -1520,7 +2001,8 @@
       "element_out": 474,
       "added": "2026-01-15T14:30:38.234800Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38294318,
@@ -1530,7 +2012,8 @@
       "element_out": 440,
       "added": "2026-01-13T20:50:21.230674Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38294314,
@@ -1540,7 +2023,8 @@
       "element_out": 477,
       "added": "2026-01-13T20:50:21.230573Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38294311,
@@ -1550,7 +2034,8 @@
       "element_out": 693,
       "added": "2026-01-13T20:50:21.230478Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 38072466,
@@ -1560,7 +2045,74 @@
       "element_out": 597,
       "added": "2026-01-12T01:28:30.558195Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 37273322,
+      "entry": 40385,
+      "gameweek": 21,
+      "element_in": 261,
+      "element_out": 371,
+      "added": "2026-01-06T16:33:26.184677Z",
+      "droppedPlayerGwPoints": 9,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 37269449,
+      "entry": 27134,
+      "gameweek": 21,
+      "element_in": 72,
+      "element_out": 569,
+      "added": "2026-01-06T15:49:32.643667Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 37266882,
+      "entry": 41410,
+      "gameweek": 21,
+      "element_in": 106,
+      "element_out": 694,
+      "added": "2026-01-06T15:19:20.855091Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 13,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 37263891,
+      "entry": 31812,
+      "gameweek": 21,
+      "element_in": 230,
+      "element_out": 403,
+      "added": "2026-01-06T14:41:56.148025Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 37221332,
+      "entry": 27134,
+      "gameweek": 21,
+      "element_in": 443,
+      "element_out": 505,
+      "added": "2026-01-05T21:53:01.842983Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 37218254,
+      "entry": 40385,
+      "gameweek": 21,
+      "element_in": 490,
+      "element_out": 299,
+      "added": "2026-01-05T21:12:05.497595Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "f"
     },
     {
       "transactionId": 37195908,
@@ -1570,7 +2122,8 @@
       "element_out": 441,
       "added": "2026-01-05T18:27:43.401824Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 37027600,
@@ -1580,7 +2133,8 @@
       "element_out": 31,
       "added": "2026-01-05T15:52:21.206006Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 37027598,
@@ -1590,7 +2144,8 @@
       "element_out": 350,
       "added": "2026-01-05T15:52:21.205976Z",
       "droppedPlayerGwPoints": 14,
-      "pickedUpPlayerGwPoints": 15
+      "pickedUpPlayerGwPoints": 15,
+      "transactionKind": "w"
     },
     {
       "transactionId": 37027597,
@@ -1600,7 +2155,8 @@
       "element_out": 659,
       "added": "2026-01-05T15:52:21.205958Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 37027596,
@@ -1610,7 +2166,8 @@
       "element_out": 107,
       "added": "2026-01-05T15:52:21.205914Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36987727,
@@ -1620,7 +2177,8 @@
       "element_out": 151,
       "added": "2026-01-05T14:48:31.755077Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36987723,
@@ -1630,7 +2188,8 @@
       "element_out": 266,
       "added": "2026-01-05T14:48:31.755018Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36987718,
@@ -1640,7 +2199,8 @@
       "element_out": 582,
       "added": "2026-01-05T14:48:31.754904Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36829039,
@@ -1650,7 +2210,8 @@
       "element_out": 612,
       "added": "2026-01-05T08:22:09.260681Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36829034,
@@ -1660,7 +2221,8 @@
       "element_out": 573,
       "added": "2026-01-05T08:22:09.260556Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36829031,
@@ -1670,7 +2232,8 @@
       "element_out": 146,
       "added": "2026-01-05T08:22:09.260460Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36762540,
@@ -1680,7 +2243,8 @@
       "element_out": 664,
       "added": "2026-01-05T02:45:59.814933Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36760860,
@@ -1690,7 +2254,8 @@
       "element_out": 139,
       "added": "2026-01-05T02:38:02.696192Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36648581,
@@ -1700,7 +2265,63 @@
       "element_out": 470,
       "added": "2026-01-04T21:24:42.159677Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 36342103,
+      "entry": 74425,
+      "gameweek": 20,
+      "element_in": 31,
+      "element_out": 678,
+      "added": "2026-01-02T20:04:49.221500Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 36335902,
+      "entry": 40385,
+      "gameweek": 20,
+      "element_in": 573,
+      "element_out": 477,
+      "added": "2026-01-02T18:27:20.723873Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 36320082,
+      "entry": 41410,
+      "gameweek": 20,
+      "element_in": 694,
+      "element_out": 316,
+      "added": "2026-01-02T14:48:13.520104Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 36316286,
+      "entry": 41410,
+      "gameweek": 20,
+      "element_in": 596,
+      "element_out": 654,
+      "added": "2026-01-02T13:56:11.385226Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 36312780,
+      "entry": 41410,
+      "gameweek": 20,
+      "element_in": 36,
+      "element_out": 447,
+      "added": "2026-01-02T13:15:04.295746Z",
+      "droppedPlayerGwPoints": 4,
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "f"
     },
     {
       "transactionId": 36289775,
@@ -1710,7 +2331,8 @@
       "element_out": 457,
       "added": "2026-01-02T10:54:39.230746Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36176453,
@@ -1720,7 +2342,8 @@
       "element_out": 440,
       "added": "2026-01-02T09:00:36.042112Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36176447,
@@ -1730,7 +2353,8 @@
       "element_out": 717,
       "added": "2026-01-02T09:00:36.041946Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36147908,
@@ -1740,7 +2364,8 @@
       "element_out": 387,
       "added": "2026-01-02T08:05:14.184363Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36147907,
@@ -1750,7 +2375,8 @@
       "element_out": 673,
       "added": "2026-01-02T08:05:14.184307Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36078298,
@@ -1760,7 +2386,8 @@
       "element_out": 506,
       "added": "2026-01-02T04:13:14.827066Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36078296,
@@ -1770,7 +2397,8 @@
       "element_out": 693,
       "added": "2026-01-02T04:13:14.826989Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36059527,
@@ -1780,7 +2408,8 @@
       "element_out": 169,
       "added": "2026-01-02T02:58:36.674638Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36059524,
@@ -1790,7 +2419,8 @@
       "element_out": 443,
       "added": "2026-01-02T02:58:36.674562Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 36059523,
@@ -1800,7 +2430,8 @@
       "element_out": 145,
       "added": "2026-01-02T02:58:36.674510Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35982809,
@@ -1810,7 +2441,8 @@
       "element_out": 508,
       "added": "2026-01-01T23:27:07.906743Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35870684,
@@ -1820,7 +2452,8 @@
       "element_out": 516,
       "added": "2026-01-01T18:18:37.940879Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35870681,
@@ -1830,7 +2463,8 @@
       "element_out": 505,
       "added": "2026-01-01T18:18:37.940797Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35766329,
@@ -1840,7 +2474,85 @@
       "element_out": 455,
       "added": "2025-12-31T06:42:11.628662Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 35679625,
+      "entry": 41410,
+      "gameweek": 19,
+      "element_in": 568,
+      "element_out": 261,
+      "added": "2025-12-30T16:25:24.365320Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 35674526,
+      "entry": 41410,
+      "gameweek": 19,
+      "element_in": 580,
+      "element_out": 487,
+      "added": "2025-12-30T15:21:31.357255Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 35655160,
+      "entry": 27134,
+      "gameweek": 19,
+      "element_in": 717,
+      "element_out": 293,
+      "added": "2025-12-30T09:27:15.879629Z",
+      "droppedPlayerGwPoints": 8,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 35628887,
+      "entry": 40385,
+      "gameweek": 19,
+      "element_in": 516,
+      "element_out": 299,
+      "added": "2025-12-29T20:32:37.343916Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 35616984,
+      "entry": 40385,
+      "gameweek": 19,
+      "element_in": 612,
+      "element_out": 517,
+      "added": "2025-12-29T18:21:29.604196Z",
+      "droppedPlayerGwPoints": 4,
+      "pickedUpPlayerGwPoints": 13,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 35616742,
+      "entry": 74425,
+      "gameweek": 19,
+      "element_in": 678,
+      "element_out": 733,
+      "added": "2025-12-29T18:19:53.604976Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 35615876,
+      "entry": 74425,
+      "gameweek": 19,
+      "element_in": 443,
+      "element_out": 72,
+      "added": "2025-12-29T18:15:01.084558Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
     },
     {
       "transactionId": 35551900,
@@ -1850,7 +2562,8 @@
       "element_out": 708,
       "added": "2025-12-29T17:22:00.049052Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35425645,
@@ -1860,7 +2573,8 @@
       "element_out": 48,
       "added": "2025-12-29T14:49:09.649265Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35425642,
@@ -1870,7 +2584,8 @@
       "element_out": 215,
       "added": "2025-12-29T14:49:09.649112Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35408025,
@@ -1880,7 +2595,8 @@
       "element_out": 314,
       "added": "2025-12-29T14:18:59.724548Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35408018,
@@ -1890,7 +2606,8 @@
       "element_out": 531,
       "added": "2025-12-29T14:18:59.724427Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35408016,
@@ -1900,7 +2617,8 @@
       "element_out": 694,
       "added": "2025-12-29T14:18:59.724391Z",
       "droppedPlayerGwPoints": 11,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35408013,
@@ -1910,7 +2628,8 @@
       "element_out": 712,
       "added": "2025-12-29T14:18:59.724336Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35408010,
@@ -1920,7 +2639,8 @@
       "element_out": 325,
       "added": "2025-12-29T14:18:59.724243Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35393557,
@@ -1930,7 +2650,8 @@
       "element_out": 476,
       "added": "2025-12-29T13:51:08.910883Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35386305,
@@ -1940,7 +2661,8 @@
       "element_out": 84,
       "added": "2025-12-29T13:36:28.365378Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35386303,
@@ -1950,7 +2672,8 @@
       "element_out": 317,
       "added": "2025-12-29T13:36:28.365270Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35340309,
@@ -1960,7 +2683,8 @@
       "element_out": 682,
       "added": "2025-12-29T11:57:31.817289Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35340306,
@@ -1970,7 +2694,8 @@
       "element_out": 667,
       "added": "2025-12-29T11:57:31.817228Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35340300,
@@ -1980,7 +2705,8 @@
       "element_out": 684,
       "added": "2025-12-29T11:57:31.817116Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 35260654,
@@ -1990,7 +2716,8 @@
       "element_out": 257,
       "added": "2025-12-29T08:29:49.350788Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34976479,
@@ -2000,7 +2727,30 @@
       "element_out": 292,
       "added": "2025-12-28T16:03:43.442500Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 34683987,
+      "entry": 27040,
+      "gameweek": 18,
+      "element_in": 310,
+      "element_out": 526,
+      "added": "2025-12-26T09:33:01.496875Z",
+      "droppedPlayerGwPoints": 5,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 34654751,
+      "entry": 41410,
+      "gameweek": 18,
+      "element_in": 325,
+      "element_out": 693,
+      "added": "2025-12-25T18:52:45.265286Z",
+      "droppedPlayerGwPoints": 9,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
     },
     {
       "transactionId": 34439404,
@@ -2010,7 +2760,8 @@
       "element_out": 284,
       "added": "2025-12-25T11:20:01.234063Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34439402,
@@ -2020,7 +2771,8 @@
       "element_out": 516,
       "added": "2025-12-25T11:20:01.234028Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34439401,
@@ -2030,7 +2782,8 @@
       "element_out": 113,
       "added": "2025-12-25T11:20:01.233982Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34414379,
@@ -2040,7 +2793,8 @@
       "element_out": 714,
       "added": "2025-12-25T10:01:02.460143Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34287248,
@@ -2050,7 +2804,8 @@
       "element_out": 502,
       "added": "2025-12-24T20:53:21.136278Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34287243,
@@ -2060,7 +2815,8 @@
       "element_out": 263,
       "added": "2025-12-24T20:53:21.136149Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34082892,
@@ -2070,7 +2826,8 @@
       "element_out": 505,
       "added": "2025-12-23T22:00:14.918202Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34082887,
@@ -2080,7 +2837,8 @@
       "element_out": 387,
       "added": "2025-12-23T22:00:14.918114Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 34082883,
@@ -2090,7 +2848,8 @@
       "element_out": 228,
       "added": "2025-12-23T22:00:14.918000Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33827585,
@@ -2100,7 +2859,8 @@
       "element_out": 106,
       "added": "2025-12-22T21:26:08.762846Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33827582,
@@ -2110,7 +2870,8 @@
       "element_out": 74,
       "added": "2025-12-22T21:26:08.762791Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33827579,
@@ -2120,7 +2881,8 @@
       "element_out": 506,
       "added": "2025-12-22T21:26:08.762710Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33583381,
@@ -2130,7 +2892,19 @@
       "element_out": 258,
       "added": "2025-12-21T02:10:38.889185Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 33519991,
+      "entry": 27134,
+      "gameweek": 17,
+      "element_in": 714,
+      "element_out": 474,
+      "added": "2025-12-20T10:51:01.636931Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
     },
     {
       "transactionId": 33271915,
@@ -2140,7 +2914,8 @@
       "element_out": 54,
       "added": "2025-12-19T09:13:18.487259Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33271908,
@@ -2150,7 +2925,8 @@
       "element_out": 83,
       "added": "2025-12-19T09:13:18.487102Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33260172,
@@ -2160,7 +2936,8 @@
       "element_out": 473,
       "added": "2025-12-19T08:57:24.021677Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33260169,
@@ -2170,7 +2947,8 @@
       "element_out": 11,
       "added": "2025-12-19T08:57:24.021546Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33137060,
@@ -2180,7 +2958,8 @@
       "element_out": 36,
       "added": "2025-12-19T03:54:34.786177Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33137054,
@@ -2190,7 +2969,8 @@
       "element_out": 173,
       "added": "2025-12-19T03:54:34.786089Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33137053,
@@ -2200,7 +2980,8 @@
       "element_out": 10,
       "added": "2025-12-19T03:54:34.786074Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33137051,
@@ -2210,7 +2991,8 @@
       "element_out": 517,
       "added": "2025-12-19T03:54:34.786009Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 33105042,
@@ -2220,7 +3002,8 @@
       "element_out": 242,
       "added": "2025-12-19T02:13:00.856883Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 32980392,
@@ -2230,7 +3013,8 @@
       "element_out": 33,
       "added": "2025-12-18T20:20:53.631430Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 32980391,
@@ -2240,7 +3024,8 @@
       "element_out": 26,
       "added": "2025-12-18T20:20:53.631412Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 32980390,
@@ -2250,7 +3035,8 @@
       "element_out": 418,
       "added": "2025-12-18T20:20:53.631364Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 32610294,
@@ -2260,7 +3046,8 @@
       "element_out": 452,
       "added": "2025-12-17T20:00:49.782806Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 32400581,
@@ -2270,7 +3057,8 @@
       "element_out": 108,
       "added": "2025-12-16T19:27:39.987197Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 32400577,
@@ -2280,7 +3068,8 @@
       "element_out": 322,
       "added": "2025-12-16T19:27:39.987128Z",
       "droppedPlayerGwPoints": 9,
-      "pickedUpPlayerGwPoints": -1
+      "pickedUpPlayerGwPoints": -1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 32400573,
@@ -2290,7 +3079,8 @@
       "element_out": 38,
       "added": "2025-12-16T19:27:39.987018Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31943306,
@@ -2300,7 +3090,52 @@
       "element_out": 664,
       "added": "2025-12-15T01:36:22.744306Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 31654603,
+      "entry": 27040,
+      "gameweek": 16,
+      "element_in": 263,
+      "element_out": 37,
+      "added": "2025-12-13T11:22:34.862369Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 31653269,
+      "entry": 27040,
+      "gameweek": 16,
+      "element_in": 33,
+      "element_out": 32,
+      "added": "2025-12-13T11:00:02.469394Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 31653248,
+      "entry": 27040,
+      "gameweek": 16,
+      "element_in": 37,
+      "element_out": 293,
+      "added": "2025-12-13T10:59:40.446389Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 31598165,
+      "entry": 27134,
+      "gameweek": 16,
+      "element_in": 691,
+      "element_out": 365,
+      "added": "2025-12-12T14:24:38.389812Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "f"
     },
     {
       "transactionId": 31531477,
@@ -2310,7 +3145,8 @@
       "element_out": 453,
       "added": "2025-12-12T12:55:34.571984Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31531471,
@@ -2320,7 +3156,8 @@
       "element_out": 413,
       "added": "2025-12-12T12:55:34.571892Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31531469,
@@ -2330,7 +3167,8 @@
       "element_out": 682,
       "added": "2025-12-12T12:55:34.571823Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31271734,
@@ -2340,7 +3178,8 @@
       "element_out": 515,
       "added": "2025-12-12T07:22:32.274871Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31271732,
@@ -2350,7 +3189,8 @@
       "element_out": 100,
       "added": "2025-12-12T07:22:32.274797Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31239423,
@@ -2360,7 +3200,8 @@
       "element_out": 148,
       "added": "2025-12-12T05:41:36.971294Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31239420,
@@ -2370,7 +3211,8 @@
       "element_out": 505,
       "added": "2025-12-12T05:41:36.971208Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31211350,
@@ -2380,7 +3222,8 @@
       "element_out": 502,
       "added": "2025-12-12T03:51:07.337040Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31211348,
@@ -2390,7 +3233,8 @@
       "element_out": 474,
       "added": "2025-12-12T03:51:07.337004Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31211346,
@@ -2400,7 +3244,8 @@
       "element_out": 671,
       "added": "2025-12-12T03:51:07.336968Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31211344,
@@ -2410,7 +3255,8 @@
       "element_out": 726,
       "added": "2025-12-12T03:51:07.336890Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 16
+      "pickedUpPlayerGwPoints": 16,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31035173,
@@ -2420,7 +3266,8 @@
       "element_out": 673,
       "added": "2025-12-11T17:44:32.809106Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 31035171,
@@ -2430,7 +3277,8 @@
       "element_out": 146,
       "added": "2025-12-11T17:44:32.809035Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 30576328,
@@ -2440,7 +3288,8 @@
       "element_out": 436,
       "added": "2025-12-09T12:19:35.878470Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 30534863,
@@ -2450,7 +3299,8 @@
       "element_out": 151,
       "added": "2025-12-09T08:58:33.132534Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 30534861,
@@ -2460,7 +3310,52 @@
       "element_out": 22,
       "added": "2025-12-09T08:58:33.132479Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 29985963,
+      "entry": 31812,
+      "gameweek": 15,
+      "element_in": 455,
+      "element_out": 712,
+      "added": "2025-12-05T16:34:22.971658Z",
+      "droppedPlayerGwPoints": 5,
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29979606,
+      "entry": 41410,
+      "gameweek": 15,
+      "element_in": 505,
+      "element_out": 506,
+      "added": "2025-12-05T14:49:15.137016Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29970809,
+      "entry": 41410,
+      "gameweek": 15,
+      "element_in": 314,
+      "element_out": 139,
+      "added": "2025-12-05T12:36:48.669932Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29968586,
+      "entry": 40385,
+      "gameweek": 15,
+      "element_in": 322,
+      "element_out": 11,
+      "added": "2025-12-05T12:07:16.102965Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
     },
     {
       "transactionId": 29785080,
@@ -2470,7 +3365,8 @@
       "element_out": 525,
       "added": "2025-12-05T06:52:17.775974Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29785079,
@@ -2480,7 +3376,8 @@
       "element_out": 295,
       "added": "2025-12-05T06:52:17.775956Z",
       "droppedPlayerGwPoints": 9,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29785078,
@@ -2490,7 +3387,8 @@
       "element_out": 660,
       "added": "2025-12-05T06:52:17.775912Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29718501,
@@ -2500,7 +3398,8 @@
       "element_out": 228,
       "added": "2025-12-05T03:00:35.727779Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29718497,
@@ -2510,7 +3409,8 @@
       "element_out": 693,
       "added": "2025-12-05T03:00:35.727718Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29718495,
@@ -2520,7 +3420,8 @@
       "element_out": 284,
       "added": "2025-12-05T03:00:35.727683Z",
       "droppedPlayerGwPoints": 9,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29718494,
@@ -2530,7 +3431,8 @@
       "element_out": 487,
       "added": "2025-12-05T03:00:35.727632Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29585268,
@@ -2540,7 +3442,8 @@
       "element_out": 717,
       "added": "2025-12-04T19:55:43.509260Z",
       "droppedPlayerGwPoints": -1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29547808,
@@ -2550,7 +3453,8 @@
       "element_out": 372,
       "added": "2025-12-04T15:01:36.497457Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29547805,
@@ -2560,7 +3464,8 @@
       "element_out": 74,
       "added": "2025-12-04T15:01:36.497399Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29547804,
@@ -2570,7 +3475,96 @@
       "element_out": 667,
       "added": "2025-12-04T15:01:36.497344Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 29242924,
+      "entry": 27134,
+      "gameweek": 14,
+      "element_in": 673,
+      "element_out": 220,
+      "added": "2025-12-02T07:29:07.266150Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29221854,
+      "entry": 41410,
+      "gameweek": 14,
+      "element_in": 372,
+      "element_out": 148,
+      "added": "2025-12-01T20:58:04.128771Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29221724,
+      "entry": 41410,
+      "gameweek": 14,
+      "element_in": 382,
+      "element_out": 173,
+      "added": "2025-12-01T20:56:10.455054Z",
+      "droppedPlayerGwPoints": 8,
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29218060,
+      "entry": 41410,
+      "gameweek": 14,
+      "element_in": 139,
+      "element_out": 101,
+      "added": "2025-12-01T20:06:17.676492Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29214746,
+      "entry": 74425,
+      "gameweek": 14,
+      "element_in": 693,
+      "element_out": 267,
+      "added": "2025-12-01T19:27:40.546960Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29213815,
+      "entry": 74425,
+      "gameweek": 14,
+      "element_in": 145,
+      "element_out": 110,
+      "added": "2025-12-01T19:16:55.805403Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29208393,
+      "entry": 41410,
+      "gameweek": 14,
+      "element_in": 74,
+      "element_out": 106,
+      "added": "2025-12-01T18:26:25.925369Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 29205968,
+      "entry": 27134,
+      "gameweek": 14,
+      "element_in": 146,
+      "element_out": 505,
+      "added": "2025-12-01T18:10:18.691616Z",
+      "droppedPlayerGwPoints": 6,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
     },
     {
       "transactionId": 29106571,
@@ -2580,7 +3574,8 @@
       "element_out": 568,
       "added": "2025-12-01T17:13:38.215130Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29106566,
@@ -2590,7 +3585,8 @@
       "element_out": 674,
       "added": "2025-12-01T17:13:38.215051Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29106563,
@@ -2600,7 +3596,8 @@
       "element_out": 120,
       "added": "2025-12-01T17:13:38.214967Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29093766,
@@ -2610,7 +3607,8 @@
       "element_out": 694,
       "added": "2025-12-01T17:06:12.296208Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29093765,
@@ -2620,7 +3618,8 @@
       "element_out": 671,
       "added": "2025-12-01T17:06:12.296190Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29093764,
@@ -2630,7 +3629,8 @@
       "element_out": 48,
       "added": "2025-12-01T17:06:12.296148Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 29047102,
@@ -2640,7 +3640,8 @@
       "element_out": 596,
       "added": "2025-12-01T16:24:10.788596Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28972040,
@@ -2650,7 +3651,8 @@
       "element_out": 450,
       "added": "2025-12-01T14:58:42.105183Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28610307,
@@ -2660,7 +3662,8 @@
       "element_out": 317,
       "added": "2025-11-30T21:58:12.479674Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28564089,
@@ -2670,7 +3673,8 @@
       "element_out": 597,
       "added": "2025-11-30T20:37:07.485119Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28564088,
@@ -2680,7 +3684,8 @@
       "element_out": 474,
       "added": "2025-11-30T20:37:07.485075Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28512395,
@@ -2690,7 +3695,8 @@
       "element_out": 575,
       "added": "2025-11-30T18:48:38.019120Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 12
+      "pickedUpPlayerGwPoints": 12,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28512394,
@@ -2700,7 +3706,30 @@
       "element_out": 84,
       "added": "2025-11-30T18:48:38.019100Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 13
+      "pickedUpPlayerGwPoints": 13,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 28339752,
+      "entry": 41410,
+      "gameweek": 13,
+      "element_in": 568,
+      "element_out": 74,
+      "added": "2025-11-29T12:35:24.744571Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 28318736,
+      "entry": 74425,
+      "gameweek": 13,
+      "element_in": 48,
+      "element_out": 452,
+      "added": "2025-11-29T04:34:34.615217Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
     },
     {
       "transactionId": 28248390,
@@ -2710,7 +3739,8 @@
       "element_out": 157,
       "added": "2025-11-28T13:19:02.628361Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28237872,
@@ -2720,7 +3750,8 @@
       "element_out": 443,
       "added": "2025-11-28T13:13:46.825990Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 28237867,
@@ -2730,7 +3761,8 @@
       "element_out": 569,
       "added": "2025-11-28T13:13:46.825916Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27856840,
@@ -2740,7 +3772,8 @@
       "element_out": 148,
       "added": "2025-11-28T02:21:28.014281Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27856837,
@@ -2750,7 +3783,8 @@
       "element_out": 22,
       "added": "2025-11-28T02:21:28.014221Z",
       "droppedPlayerGwPoints": 9,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27783600,
@@ -2760,7 +3794,8 @@
       "element_out": 531,
       "added": "2025-11-27T22:08:52.121937Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27783596,
@@ -2770,7 +3805,8 @@
       "element_out": 37,
       "added": "2025-11-27T22:08:52.121867Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27783594,
@@ -2780,7 +3816,8 @@
       "element_out": 667,
       "added": "2025-11-27T22:08:52.121802Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27644065,
@@ -2790,7 +3827,8 @@
       "element_out": 660,
       "added": "2025-11-27T14:38:37.769356Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27644059,
@@ -2800,7 +3838,8 @@
       "element_out": 228,
       "added": "2025-11-27T14:38:37.769237Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27538451,
@@ -2810,7 +3849,8 @@
       "element_out": 50,
       "added": "2025-11-27T00:26:00.888347Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27538449,
@@ -2820,7 +3860,8 @@
       "element_out": 457,
       "added": "2025-11-27T00:26:00.888268Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27363039,
@@ -2830,7 +3871,8 @@
       "element_out": 402,
       "added": "2025-11-25T21:28:26.256053Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27363034,
@@ -2840,7 +3882,8 @@
       "element_out": 41,
       "added": "2025-11-25T21:28:26.255982Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 27363031,
@@ -2850,7 +3893,107 @@
       "element_out": 215,
       "added": "2025-11-25T21:28:26.255906Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 26836638,
+      "entry": 27134,
+      "gameweek": 12,
+      "element_in": 569,
+      "element_out": 230,
+      "added": "2025-11-22T10:49:41.667297Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26808992,
+      "entry": 41410,
+      "gameweek": 12,
+      "element_in": 531,
+      "element_out": 506,
+      "added": "2025-11-21T21:46:29.477023Z",
+      "droppedPlayerGwPoints": 17,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26778343,
+      "entry": 40385,
+      "gameweek": 12,
+      "element_in": 41,
+      "element_out": 376,
+      "added": "2025-11-21T12:34:07.162024Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26778311,
+      "entry": 40385,
+      "gameweek": 12,
+      "element_in": 376,
+      "element_out": 41,
+      "added": "2025-11-21T12:33:44.385631Z",
+      "droppedPlayerGwPoints": 4,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26778214,
+      "entry": 40385,
+      "gameweek": 12,
+      "element_in": 84,
+      "element_out": 515,
+      "added": "2025-11-21T12:32:36.967297Z",
+      "droppedPlayerGwPoints": 8,
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26778027,
+      "entry": 40385,
+      "gameweek": 12,
+      "element_in": 215,
+      "element_out": 338,
+      "added": "2025-11-21T12:30:36.260354Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26777848,
+      "entry": 40385,
+      "gameweek": 12,
+      "element_in": 41,
+      "element_out": 372,
+      "added": "2025-11-21T12:28:39.527104Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26777785,
+      "entry": 40385,
+      "gameweek": 12,
+      "element_in": 372,
+      "element_out": 375,
+      "added": "2025-11-21T12:27:58.865650Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 26775658,
+      "entry": 41410,
+      "gameweek": 12,
+      "element_in": 674,
+      "element_out": 382,
+      "added": "2025-11-21T12:02:48.161420Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "f"
     },
     {
       "transactionId": 26760828,
@@ -2860,7 +4003,8 @@
       "element_out": 337,
       "added": "2025-11-21T10:57:47.756595Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26760826,
@@ -2870,7 +4014,8 @@
       "element_out": 200,
       "added": "2025-11-21T10:57:47.756566Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26760824,
@@ -2880,7 +4025,8 @@
       "element_out": 474,
       "added": "2025-11-21T10:57:47.756537Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26691224,
@@ -2890,7 +4036,8 @@
       "element_out": 575,
       "added": "2025-11-21T10:26:09.684024Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26691223,
@@ -2900,7 +4047,8 @@
       "element_out": 158,
       "added": "2025-11-21T10:26:09.683971Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26479304,
@@ -2910,7 +4058,8 @@
       "element_out": 348,
       "added": "2025-11-21T02:44:17.225442Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26479301,
@@ -2920,7 +4069,8 @@
       "element_out": 610,
       "added": "2025-11-21T02:44:17.225390Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26479299,
@@ -2930,7 +4080,8 @@
       "element_out": 489,
       "added": "2025-11-21T02:44:17.225353Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26479296,
@@ -2940,7 +4091,8 @@
       "element_out": 526,
       "added": "2025-11-21T02:44:17.225293Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 12
+      "pickedUpPlayerGwPoints": 12,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26479295,
@@ -2950,7 +4102,8 @@
       "element_out": 505,
       "added": "2025-11-21T02:44:17.225244Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26291799,
@@ -2960,7 +4113,8 @@
       "element_out": 139,
       "added": "2025-11-20T14:07:07.305076Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26291797,
@@ -2970,7 +4124,8 @@
       "element_out": 317,
       "added": "2025-11-20T14:07:07.305005Z",
       "droppedPlayerGwPoints": 10,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26254338,
@@ -2980,7 +4135,8 @@
       "element_out": 712,
       "added": "2025-11-20T10:19:32.933342Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26254337,
@@ -2990,7 +4146,8 @@
       "element_out": 717,
       "added": "2025-11-20T10:19:32.933293Z",
       "droppedPlayerGwPoints": 12,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26231046,
@@ -3000,7 +4157,8 @@
       "element_out": 568,
       "added": "2025-11-20T07:02:35.169170Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26231043,
@@ -3010,7 +4168,8 @@
       "element_out": 612,
       "added": "2025-11-20T07:02:35.169115Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26231041,
@@ -3020,7 +4179,8 @@
       "element_out": 225,
       "added": "2025-11-20T07:02:35.169043Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26135055,
@@ -3030,7 +4190,8 @@
       "element_out": 121,
       "added": "2025-11-19T12:50:36.328184Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 26135053,
@@ -3040,7 +4201,8 @@
       "element_out": 664,
       "added": "2025-11-19T12:50:36.328121Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 25822465,
@@ -3050,7 +4212,19 @@
       "element_out": 735,
       "added": "2025-11-13T18:21:09.909483Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 25288678,
+      "entry": 40385,
+      "gameweek": 11,
+      "element_in": 612,
+      "element_out": 417,
+      "added": "2025-11-07T11:58:42.579300Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "f"
     },
     {
       "transactionId": 25280879,
@@ -3060,7 +4234,8 @@
       "element_out": 238,
       "added": "2025-11-07T10:59:10.760617Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 25280877,
@@ -3070,7 +4245,8 @@
       "element_out": 691,
       "added": "2025-11-07T10:59:10.760557Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 25008949,
@@ -3080,7 +4256,8 @@
       "element_out": 295,
       "added": "2025-11-07T03:16:50.260822Z",
       "droppedPlayerGwPoints": 15,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 25008944,
@@ -3090,7 +4267,8 @@
       "element_out": 660,
       "added": "2025-11-07T03:16:50.260730Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 25008941,
@@ -3100,7 +4278,8 @@
       "element_out": 324,
       "added": "2025-11-07T03:16:50.260634Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24987994,
@@ -3110,7 +4289,8 @@
       "element_out": 151,
       "added": "2025-11-07T01:46:03.097099Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24987992,
@@ -3120,7 +4300,8 @@
       "element_out": 444,
       "added": "2025-11-07T01:46:03.096987Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24987990,
@@ -3130,7 +4311,8 @@
       "element_out": 217,
       "added": "2025-11-07T01:46:03.096931Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24987984,
@@ -3140,7 +4322,8 @@
       "element_out": 674,
       "added": "2025-11-07T01:46:03.096812Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24987982,
@@ -3150,7 +4333,8 @@
       "element_out": 488,
       "added": "2025-11-07T01:46:03.096735Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24911918,
@@ -3160,7 +4344,8 @@
       "element_out": 694,
       "added": "2025-11-06T21:27:08.120360Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 15
+      "pickedUpPlayerGwPoints": 15,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24865539,
@@ -3170,7 +4355,8 @@
       "element_out": 531,
       "added": "2025-11-06T19:04:06.161018Z",
       "droppedPlayerGwPoints": 10,
-      "pickedUpPlayerGwPoints": 13
+      "pickedUpPlayerGwPoints": 13,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24865537,
@@ -3180,7 +4366,8 @@
       "element_out": 233,
       "added": "2025-11-06T19:04:06.160940Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24579888,
@@ -3190,7 +4377,8 @@
       "element_out": 718,
       "added": "2025-11-05T13:02:03.235067Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24579884,
@@ -3200,7 +4388,8 @@
       "element_out": 475,
       "added": "2025-11-05T13:02:03.234996Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24579878,
@@ -3210,7 +4399,8 @@
       "element_out": 597,
       "added": "2025-11-05T13:02:03.234873Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24579877,
@@ -3220,7 +4410,8 @@
       "element_out": 486,
       "added": "2025-11-05T13:02:03.234818Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24440549,
@@ -3230,7 +4421,8 @@
       "element_out": 478,
       "added": "2025-11-04T16:17:11.966480Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 24440546,
@@ -3240,7 +4432,41 @@
       "element_out": 427,
       "added": "2025-11-04T16:17:11.966382Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 24010995,
+      "entry": 41410,
+      "gameweek": 10,
+      "element_in": 660,
+      "element_out": 36,
+      "added": "2025-11-01T11:58:20.641429Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 24010154,
+      "entry": 41410,
+      "gameweek": 10,
+      "element_in": 36,
+      "element_out": 318,
+      "added": "2025-11-01T11:42:49.509812Z",
+      "droppedPlayerGwPoints": 6,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 23959333,
+      "entry": 74425,
+      "gameweek": 10,
+      "element_in": 444,
+      "element_out": 411,
+      "added": "2025-10-31T13:44:28.197377Z",
+      "droppedPlayerGwPoints": 8,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
     },
     {
       "transactionId": 23958807,
@@ -3250,7 +4476,8 @@
       "element_out": 375,
       "added": "2025-10-31T13:29:58.430612Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23958803,
@@ -3260,7 +4487,8 @@
       "element_out": 667,
       "added": "2025-10-31T13:29:58.430541Z",
       "droppedPlayerGwPoints": 10,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23958800,
@@ -3270,7 +4498,8 @@
       "element_out": 81,
       "added": "2025-10-31T13:29:58.430452Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23953274,
@@ -3280,7 +4509,8 @@
       "element_out": 407,
       "added": "2025-10-31T13:27:51.305464Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23953273,
@@ -3290,7 +4520,8 @@
       "element_out": 191,
       "added": "2025-10-31T13:27:51.305446Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23953272,
@@ -3300,7 +4531,8 @@
       "element_out": 517,
       "added": "2025-10-31T13:27:51.305428Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23953269,
@@ -3310,7 +4542,8 @@
       "element_out": 721,
       "added": "2025-10-31T13:27:51.305340Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23800715,
@@ -3320,7 +4553,8 @@
       "element_out": 17,
       "added": "2025-10-31T10:52:53.975829Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23715648,
@@ -3330,7 +4564,8 @@
       "element_out": 569,
       "added": "2025-10-31T08:09:39.191786Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23715643,
@@ -3340,7 +4575,8 @@
       "element_out": 633,
       "added": "2025-10-31T08:09:39.191683Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23514166,
@@ -3350,7 +4586,8 @@
       "element_out": 200,
       "added": "2025-10-30T16:31:30.307344Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23458581,
@@ -3360,7 +4597,8 @@
       "element_out": 120,
       "added": "2025-10-30T11:53:03.347610Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 23134463,
@@ -3370,7 +4608,30 @@
       "element_out": 32,
       "added": "2025-10-27T21:34:34.737188Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 22680651,
+      "entry": 74425,
+      "gameweek": 9,
+      "element_in": 217,
+      "element_out": 311,
+      "added": "2025-10-24T02:29:55.688276Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 22661847,
+      "entry": 41410,
+      "gameweek": 9,
+      "element_in": 191,
+      "element_out": 575,
+      "added": "2025-10-23T18:29:37.250647Z",
+      "droppedPlayerGwPoints": 23,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
     },
     {
       "transactionId": 22622254,
@@ -3380,7 +4641,8 @@
       "element_out": 370,
       "added": "2025-10-23T17:07:03.660839Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22560026,
@@ -3390,7 +4652,8 @@
       "element_out": 603,
       "added": "2025-10-23T16:04:01.642547Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22560023,
@@ -3400,7 +4663,8 @@
       "element_out": 712,
       "added": "2025-10-23T16:04:01.642496Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22560022,
@@ -3410,7 +4674,8 @@
       "element_out": 303,
       "added": "2025-10-23T16:04:01.642477Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22553899,
@@ -3420,7 +4685,8 @@
       "element_out": 669,
       "added": "2025-10-23T15:56:53.167932Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22553898,
@@ -3430,7 +4696,8 @@
       "element_out": 531,
       "added": "2025-10-23T15:56:53.167916Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22553896,
@@ -3440,7 +4707,8 @@
       "element_out": 53,
       "added": "2025-10-23T15:56:53.167879Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22468461,
@@ -3450,7 +4718,8 @@
       "element_out": 26,
       "added": "2025-10-23T13:35:13.828062Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22376923,
@@ -3460,7 +4729,8 @@
       "element_out": 228,
       "added": "2025-10-23T09:23:03.922984Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 22225721,
@@ -3470,7 +4740,8 @@
       "element_out": 684,
       "added": "2025-10-22T19:56:12.828216Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21931495,
@@ -3480,7 +4751,8 @@
       "element_out": 205,
       "added": "2025-10-20T22:44:04.944542Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21931494,
@@ -3490,7 +4762,41 @@
       "element_out": 526,
       "added": "2025-10-20T22:44:04.944490Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 21575093,
+      "entry": 74425,
+      "gameweek": 8,
+      "element_in": 729,
+      "element_out": 314,
+      "added": "2025-10-18T00:28:49.731993Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 21540230,
+      "entry": 31812,
+      "gameweek": 8,
+      "element_in": 205,
+      "element_out": 674,
+      "added": "2025-10-17T10:48:41.942823Z",
+      "droppedPlayerGwPoints": 9,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 21538575,
+      "entry": 74425,
+      "gameweek": 8,
+      "element_in": 311,
+      "element_out": 310,
+      "added": "2025-10-17T10:31:57.888492Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
     },
     {
       "transactionId": 21516281,
@@ -3500,7 +4806,8 @@
       "element_out": 200,
       "added": "2025-10-17T09:52:58.160633Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21516278,
@@ -3510,7 +4817,8 @@
       "element_out": 324,
       "added": "2025-10-17T09:52:58.160551Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21516276,
@@ -3520,7 +4828,8 @@
       "element_out": 337,
       "added": "2025-10-17T09:52:58.160513Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21288894,
@@ -3530,7 +4839,8 @@
       "element_out": 40,
       "added": "2025-10-17T02:13:40.624192Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21288890,
@@ -3540,7 +4850,8 @@
       "element_out": 227,
       "added": "2025-10-17T02:13:40.624135Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21288889,
@@ -3550,7 +4861,8 @@
       "element_out": 410,
       "added": "2025-10-17T02:13:40.624121Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 11
+      "pickedUpPlayerGwPoints": 11,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21288884,
@@ -3560,7 +4872,8 @@
       "element_out": 586,
       "added": "2025-10-17T02:13:40.624050Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21273367,
@@ -3570,7 +4883,8 @@
       "element_out": 158,
       "added": "2025-10-17T00:51:07.400780Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21273365,
@@ -3580,7 +4894,8 @@
       "element_out": 67,
       "added": "2025-10-17T00:51:07.400714Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21192226,
@@ -3590,7 +4905,8 @@
       "element_out": 295,
       "added": "2025-10-16T19:41:15.598868Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21192223,
@@ -3600,7 +4916,8 @@
       "element_out": 371,
       "added": "2025-10-16T19:41:15.598815Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21192222,
@@ -3610,7 +4927,8 @@
       "element_out": 217,
       "added": "2025-10-16T19:41:15.598798Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21192220,
@@ -3620,7 +4938,8 @@
       "element_out": 390,
       "added": "2025-10-16T19:41:15.598763Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21137813,
@@ -3630,7 +4949,8 @@
       "element_out": 37,
       "added": "2025-10-16T15:39:24.613667Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 17
+      "pickedUpPlayerGwPoints": 17,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21137809,
@@ -3640,7 +4960,8 @@
       "element_out": 50,
       "added": "2025-10-16T15:39:24.613595Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21137806,
@@ -3650,7 +4971,8 @@
       "element_out": 338,
       "added": "2025-10-16T15:39:24.613519Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21013624,
@@ -3660,7 +4982,8 @@
       "element_out": 508,
       "added": "2025-10-15T20:02:40.015517Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21013621,
@@ -3670,7 +4993,8 @@
       "element_out": 442,
       "added": "2025-10-15T20:02:40.015463Z",
       "droppedPlayerGwPoints": 11,
-      "pickedUpPlayerGwPoints": 18
+      "pickedUpPlayerGwPoints": 18,
+      "transactionKind": "w"
     },
     {
       "transactionId": 21013615,
@@ -3680,7 +5004,8 @@
       "element_out": 387,
       "added": "2025-10-15T20:02:40.015332Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 20635649,
@@ -3690,7 +5015,8 @@
       "element_out": 36,
       "added": "2025-10-07T21:30:46.189521Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 20635644,
@@ -3700,7 +5026,52 @@
       "element_out": 671,
       "added": "2025-10-07T21:30:46.189409Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 20176751,
+      "entry": 40385,
+      "gameweek": 7,
+      "element_in": 442,
+      "element_out": 683,
+      "added": "2025-10-03T14:51:04.744917Z",
+      "droppedPlayerGwPoints": 8,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 20152095,
+      "entry": 40385,
+      "gameweek": 7,
+      "element_in": 683,
+      "element_out": 441,
+      "added": "2025-10-03T08:36:17.101948Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 20119413,
+      "entry": 40240,
+      "gameweek": 7,
+      "element_in": 436,
+      "element_out": 684,
+      "added": "2025-10-02T19:25:30.934413Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 20109658,
+      "entry": 27040,
+      "gameweek": 7,
+      "element_in": 37,
+      "element_out": 694,
+      "added": "2025-10-02T17:44:00.312538Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
     },
     {
       "transactionId": 19959024,
@@ -3710,7 +5081,8 @@
       "element_out": 290,
       "added": "2025-10-02T15:25:13.033407Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19959020,
@@ -3720,7 +5092,8 @@
       "element_out": 316,
       "added": "2025-10-02T15:25:13.033262Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19943234,
@@ -3730,7 +5103,8 @@
       "element_out": 411,
       "added": "2025-10-02T15:05:22.280737Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19602723,
@@ -3740,7 +5114,8 @@
       "element_out": 517,
       "added": "2025-10-01T21:48:25.895301Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19602720,
@@ -3750,7 +5125,8 @@
       "element_out": 477,
       "added": "2025-10-01T21:48:25.895198Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19597421,
@@ -3760,7 +5136,8 @@
       "element_out": 515,
       "added": "2025-10-01T21:28:26.207610Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19324804,
@@ -3770,7 +5147,8 @@
       "element_out": 293,
       "added": "2025-09-30T16:25:11.942254Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19324802,
@@ -3780,7 +5158,8 @@
       "element_out": 242,
       "added": "2025-09-30T16:25:11.942213Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19286521,
@@ -3790,7 +5169,8 @@
       "element_out": 311,
       "added": "2025-09-30T12:14:40.636604Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19286518,
@@ -3800,7 +5180,8 @@
       "element_out": 573,
       "added": "2025-09-30T12:14:40.636544Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19286517,
@@ -3810,7 +5191,8 @@
       "element_out": 384,
       "added": "2025-09-30T12:14:40.636487Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19108068,
@@ -3820,7 +5202,8 @@
       "element_out": 182,
       "added": "2025-09-29T20:30:46.225611Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 19108067,
@@ -3830,7 +5213,8 @@
       "element_out": 505,
       "added": "2025-09-29T20:30:46.225558Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 18754066,
@@ -3840,7 +5224,107 @@
       "element_out": 682,
       "added": "2025-09-27T16:27:55.485104Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 18700131,
+      "entry": 31812,
+      "gameweek": 6,
+      "element_in": 526,
+      "element_out": 180,
+      "added": "2025-09-27T00:14:50.060519Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18678474,
+      "entry": 41410,
+      "gameweek": 6,
+      "element_in": 67,
+      "element_out": 32,
+      "added": "2025-09-26T16:10:27.522002Z",
+      "droppedPlayerGwPoints": 3,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18676408,
+      "entry": 40385,
+      "gameweek": 6,
+      "element_in": 441,
+      "element_out": 438,
+      "added": "2025-09-26T15:38:36.005599Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18669737,
+      "entry": 74425,
+      "gameweek": 6,
+      "element_in": 410,
+      "element_out": 631,
+      "added": "2025-09-26T14:02:44.657914Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18669625,
+      "entry": 74425,
+      "gameweek": 6,
+      "element_in": 586,
+      "element_out": 19,
+      "added": "2025-09-26T14:01:08.096296Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18667329,
+      "entry": 74425,
+      "gameweek": 6,
+      "element_in": 19,
+      "element_out": 120,
+      "added": "2025-09-26T13:30:25.454636Z",
+      "droppedPlayerGwPoints": 4,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18666674,
+      "entry": 74425,
+      "gameweek": 6,
+      "element_in": 682,
+      "element_out": 348,
+      "added": "2025-09-26T13:21:51.652072Z",
+      "droppedPlayerGwPoints": 7,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18654125,
+      "entry": 74425,
+      "gameweek": 6,
+      "element_in": 310,
+      "element_out": 691,
+      "added": "2025-09-26T10:51:37.422154Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 18652056,
+      "entry": 40385,
+      "gameweek": 6,
+      "element_in": 438,
+      "element_out": 442,
+      "added": "2025-09-26T10:36:47.371814Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
     },
     {
       "transactionId": 18631657,
@@ -3850,7 +5334,8 @@
       "element_out": 474,
       "added": "2025-09-26T09:54:47.075401Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 18293652,
@@ -3860,7 +5345,8 @@
       "element_out": 83,
       "added": "2025-09-26T00:03:23.496439Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 18293646,
@@ -3870,7 +5356,8 @@
       "element_out": 593,
       "added": "2025-09-26T00:03:23.496312Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 18068860,
@@ -3880,7 +5367,8 @@
       "element_out": 18,
       "added": "2025-09-25T14:11:27.308257Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
     },
     {
       "transactionId": 17186349,
@@ -3890,7 +5378,8 @@
       "element_out": 612,
       "added": "2025-09-21T20:44:00.430612Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 17141998,
@@ -3900,7 +5389,8 @@
       "element_out": 258,
       "added": "2025-09-21T19:03:57.238756Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 17140773,
@@ -3910,7 +5400,8 @@
       "element_out": 37,
       "added": "2025-09-21T19:01:36.747595Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 17140768,
@@ -3920,7 +5411,8 @@
       "element_out": 516,
       "added": "2025-09-21T19:01:36.747429Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 17015601,
@@ -3930,7 +5422,30 @@
       "element_out": 372,
       "added": "2025-09-21T13:31:24.518332Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 11
+      "pickedUpPlayerGwPoints": 11,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 16815912,
+      "entry": 27040,
+      "gameweek": 5,
+      "element_in": 37,
+      "element_out": 507,
+      "added": "2025-09-19T16:22:27.851662Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 16803940,
+      "entry": 74425,
+      "gameweek": 5,
+      "element_in": 631,
+      "element_out": 232,
+      "added": "2025-09-19T13:25:15.795452Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "f"
     },
     {
       "transactionId": 16731319,
@@ -3940,7 +5455,8 @@
       "element_out": 625,
       "added": "2025-09-19T09:35:41.706248Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16731318,
@@ -3950,7 +5466,8 @@
       "element_out": 387,
       "added": "2025-09-19T09:35:41.706189Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16456977,
@@ -3960,7 +5477,8 @@
       "element_out": 473,
       "added": "2025-09-19T02:19:37.628353Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16456973,
@@ -3970,7 +5488,8 @@
       "element_out": 660,
       "added": "2025-09-19T02:19:37.628296Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16456970,
@@ -3980,7 +5499,8 @@
       "element_out": 389,
       "added": "2025-09-19T02:19:37.628249Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16260568,
@@ -3990,7 +5510,8 @@
       "element_out": 310,
       "added": "2025-09-18T18:57:21.153220Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16260566,
@@ -4000,7 +5521,8 @@
       "element_out": 261,
       "added": "2025-09-18T18:57:21.153155Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16217021,
@@ -4010,7 +5532,8 @@
       "element_out": 238,
       "added": "2025-09-18T16:26:55.868074Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16217020,
@@ -4020,7 +5543,8 @@
       "element_out": 421,
       "added": "2025-09-18T16:26:55.868030Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16044838,
@@ -4030,7 +5554,8 @@
       "element_out": 561,
       "added": "2025-09-17T23:40:11.621854Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16044834,
@@ -4040,7 +5565,8 @@
       "element_out": 2,
       "added": "2025-09-17T23:40:11.621783Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 16044830,
@@ -4050,7 +5576,8 @@
       "element_out": 475,
       "added": "2025-09-17T23:40:11.621670Z",
       "droppedPlayerGwPoints": 8,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 15737179,
@@ -4060,7 +5587,8 @@
       "element_out": 580,
       "added": "2025-09-16T10:58:16.563344Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 15737177,
@@ -4070,7 +5598,8 @@
       "element_out": 67,
       "added": "2025-09-16T10:58:16.563269Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 15534741,
@@ -4080,7 +5609,8 @@
       "element_out": 399,
       "added": "2025-09-15T11:13:24.887663Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 15285544,
@@ -4090,7 +5620,8 @@
       "element_out": 228,
       "added": "2025-09-14T18:07:20.794086Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 15285542,
@@ -4100,7 +5631,8 @@
       "element_out": 303,
       "added": "2025-09-14T18:07:20.794008Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 15285541,
@@ -4110,7 +5642,41 @@
       "element_out": 424,
       "added": "2025-09-14T18:07:20.793950Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 14856602,
+      "entry": 74425,
+      "gameweek": 4,
+      "element_in": 691,
+      "element_out": 217,
+      "added": "2025-09-12T14:56:53.607997Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 14824069,
+      "entry": 41410,
+      "gameweek": 4,
+      "element_in": 290,
+      "element_out": 508,
+      "added": "2025-09-12T11:05:21.613915Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 14822613,
+      "entry": 31812,
+      "gameweek": 4,
+      "element_in": 671,
+      "element_out": 365,
+      "added": "2025-09-12T10:58:43.543764Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
     },
     {
       "transactionId": 14807460,
@@ -4120,7 +5686,8 @@
       "element_out": 517,
       "added": "2025-09-12T09:59:57.526438Z",
       "droppedPlayerGwPoints": 4,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 14807459,
@@ -4130,7 +5697,8 @@
       "element_out": 500,
       "added": "2025-09-12T09:59:57.526420Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 13868339,
@@ -4140,7 +5708,8 @@
       "element_out": 431,
       "added": "2025-09-12T03:55:51.241540Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 13868337,
@@ -4150,7 +5719,8 @@
       "element_out": 36,
       "added": "2025-09-12T03:55:51.241501Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 13868335,
@@ -4160,7 +5730,8 @@
       "element_out": 113,
       "added": "2025-09-12T03:55:51.241425Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 13734492,
@@ -4170,7 +5741,8 @@
       "element_out": 444,
       "added": "2025-09-12T01:14:48.835625Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 7
+      "pickedUpPlayerGwPoints": 7,
+      "transactionKind": "w"
     },
     {
       "transactionId": 13734490,
@@ -4180,7 +5752,8 @@
       "element_out": 84,
       "added": "2025-09-12T01:14:48.835589Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 13734486,
@@ -4190,7 +5763,8 @@
       "element_out": 487,
       "added": "2025-09-12T01:14:48.835503Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 13021170,
@@ -4200,7 +5774,8 @@
       "element_out": 436,
       "added": "2025-09-11T14:42:52.396424Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 10
+      "pickedUpPlayerGwPoints": 10,
+      "transactionKind": "w"
     },
     {
       "transactionId": 8041393,
@@ -4210,7 +5785,8 @@
       "element_out": 26,
       "added": "2025-09-01T19:18:30.766696Z",
       "droppedPlayerGwPoints": 16,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 8041389,
@@ -4220,7 +5796,8 @@
       "element_out": 417,
       "added": "2025-09-01T19:18:30.766626Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 8041384,
@@ -4230,7 +5807,8 @@
       "element_out": 110,
       "added": "2025-09-01T19:18:30.766538Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 8041379,
@@ -4240,7 +5818,8 @@
       "element_out": 443,
       "added": "2025-09-01T19:18:30.766404Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 7825364,
@@ -4250,7 +5829,8 @@
       "element_out": 32,
       "added": "2025-09-01T12:53:53.558881Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 7825358,
@@ -4260,7 +5840,8 @@
       "element_out": 441,
       "added": "2025-09-01T12:53:53.558793Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 7825354,
@@ -4270,7 +5851,8 @@
       "element_out": 250,
       "added": "2025-09-01T12:53:53.558699Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 7716379,
@@ -4280,7 +5862,8 @@
       "element_out": 30,
       "added": "2025-09-01T06:43:50.551189Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 7716378,
@@ -4290,7 +5873,8 @@
       "element_out": 386,
       "added": "2025-09-01T06:43:50.551145Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 7593780,
@@ -4300,7 +5884,41 @@
       "element_out": 506,
       "added": "2025-08-31T22:00:09.031050Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 7137026,
+      "entry": 40385,
+      "gameweek": 3,
+      "element_in": 110,
+      "element_out": 11,
+      "added": "2025-08-29T17:26:16.515240Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 7101739,
+      "entry": 27870,
+      "gameweek": 3,
+      "element_in": 324,
+      "element_out": 160,
+      "added": "2025-08-29T10:55:17.240850Z",
+      "droppedPlayerGwPoints": 4,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 7095278,
+      "entry": 74425,
+      "gameweek": 3,
+      "element_in": 217,
+      "element_out": 678,
+      "added": "2025-08-29T10:18:04.232873Z",
+      "droppedPlayerGwPoints": 0,
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "f"
     },
     {
       "transactionId": 6920576,
@@ -4310,7 +5928,8 @@
       "element_out": 164,
       "added": "2025-08-29T08:13:47.339598Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 4
+      "pickedUpPlayerGwPoints": 4,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6757391,
@@ -4320,7 +5939,8 @@
       "element_out": 67,
       "added": "2025-08-29T03:52:09.719887Z",
       "droppedPlayerGwPoints": 5,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6757389,
@@ -4330,7 +5950,8 @@
       "element_out": 74,
       "added": "2025-08-29T03:52:09.719851Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6757387,
@@ -4340,7 +5961,8 @@
       "element_out": 531,
       "added": "2025-08-29T03:52:09.719809Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6757386,
@@ -4350,7 +5972,8 @@
       "element_out": 120,
       "added": "2025-08-29T03:52:09.719742Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6706224,
@@ -4360,7 +5983,8 @@
       "element_out": 432,
       "added": "2025-08-29T01:58:03.236234Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6706220,
@@ -4370,7 +5994,8 @@
       "element_out": 40,
       "added": "2025-08-29T01:58:03.236164Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 8
+      "pickedUpPlayerGwPoints": 8,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6706218,
@@ -4380,7 +6005,8 @@
       "element_out": 236,
       "added": "2025-08-29T01:58:03.236120Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6552180,
@@ -4390,7 +6016,8 @@
       "element_out": 37,
       "added": "2025-08-28T20:38:24.943445Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6552177,
@@ -4400,7 +6027,8 @@
       "element_out": 48,
       "added": "2025-08-28T20:38:24.943390Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6552174,
@@ -4410,7 +6038,8 @@
       "element_out": 19,
       "added": "2025-08-28T20:38:24.943329Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6552173,
@@ -4420,7 +6049,8 @@
       "element_out": 337,
       "added": "2025-08-28T20:38:24.943276Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6421575,
@@ -4430,7 +6060,8 @@
       "element_out": 251,
       "added": "2025-08-28T16:42:06.474159Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6421568,
@@ -4440,7 +6071,8 @@
       "element_out": 424,
       "added": "2025-08-28T16:42:06.474003Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6421566,
@@ -4450,7 +6082,8 @@
       "element_out": 311,
       "added": "2025-08-28T16:42:06.473965Z",
       "droppedPlayerGwPoints": 7,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6421564,
@@ -4460,7 +6093,8 @@
       "element_out": 233,
       "added": "2025-08-28T16:42:06.473891Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6272037,
@@ -4470,7 +6104,8 @@
       "element_out": 158,
       "added": "2025-08-28T10:37:23.647975Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 6272036,
@@ -4480,7 +6115,8 @@
       "element_out": 225,
       "added": "2025-08-28T10:37:23.647913Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 5268351,
@@ -4490,7 +6126,30 @@
       "element_out": 145,
       "added": "2025-08-25T23:33:51.432270Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 4345699,
+      "entry": 31812,
+      "gameweek": 2,
+      "element_in": 365,
+      "element_out": 625,
+      "added": "2025-08-22T11:41:51.903531Z",
+      "droppedPlayerGwPoints": 1,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 4288239,
+      "entry": 41410,
+      "gameweek": 2,
+      "element_in": 531,
+      "element_out": 232,
+      "added": "2025-08-21T18:57:17.454905Z",
+      "droppedPlayerGwPoints": 2,
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "f"
     },
     {
       "transactionId": 4105491,
@@ -4500,7 +6159,8 @@
       "element_out": 610,
       "added": "2025-08-21T17:00:04.187840Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 4105490,
@@ -4510,7 +6170,8 @@
       "element_out": 178,
       "added": "2025-08-21T17:00:04.187823Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 4105486,
@@ -4520,7 +6181,8 @@
       "element_out": 668,
       "added": "2025-08-21T17:00:04.187749Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 11
+      "pickedUpPlayerGwPoints": 11,
+      "transactionKind": "w"
     },
     {
       "transactionId": 4014159,
@@ -4530,7 +6192,8 @@
       "element_out": 404,
       "added": "2025-08-21T16:18:01.423682Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 4014158,
@@ -4540,7 +6203,8 @@
       "element_out": 612,
       "added": "2025-08-21T16:18:01.423660Z",
       "droppedPlayerGwPoints": 9,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3806500,
@@ -4550,7 +6214,8 @@
       "element_out": 516,
       "added": "2025-08-21T14:09:28.466347Z",
       "droppedPlayerGwPoints": 10,
-      "pickedUpPlayerGwPoints": 5
+      "pickedUpPlayerGwPoints": 5,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3806498,
@@ -4560,7 +6225,8 @@
       "element_out": 316,
       "added": "2025-08-21T14:09:28.466264Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 13
+      "pickedUpPlayerGwPoints": 13,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3653532,
@@ -4570,7 +6236,8 @@
       "element_out": 314,
       "added": "2025-08-21T12:02:42.314771Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3653530,
@@ -4580,7 +6247,8 @@
       "element_out": 10,
       "added": "2025-08-21T12:02:42.314733Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3653529,
@@ -4590,7 +6258,8 @@
       "element_out": 293,
       "added": "2025-08-21T12:02:42.314714Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3653525,
@@ -4600,7 +6269,8 @@
       "element_out": 603,
       "added": "2025-08-21T12:02:42.314610Z",
       "droppedPlayerGwPoints": 3,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3484869,
@@ -4610,7 +6280,8 @@
       "element_out": 415,
       "added": "2025-08-21T08:17:24.710928Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 3484866,
@@ -4620,7 +6291,8 @@
       "element_out": 325,
       "added": "2025-08-21T08:17:24.710866Z",
       "droppedPlayerGwPoints": 6,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 2276373,
@@ -4630,7 +6302,8 @@
       "element_out": 8,
       "added": "2025-08-19T07:08:52.336147Z",
       "droppedPlayerGwPoints": 24,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 2276369,
@@ -4640,7 +6313,8 @@
       "element_out": 362,
       "added": "2025-08-19T07:08:52.336068Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 2276368,
@@ -4650,7 +6324,8 @@
       "element_out": 53,
       "added": "2025-08-19T07:08:52.335997Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 835994,
@@ -4660,7 +6335,8 @@
       "element_out": 452,
       "added": "2025-08-14T17:11:43.910688Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 3
+      "pickedUpPlayerGwPoints": 3,
+      "transactionKind": "w"
     },
     {
       "transactionId": 835989,
@@ -4670,7 +6346,8 @@
       "element_out": 301,
       "added": "2025-08-14T17:11:43.910553Z",
       "droppedPlayerGwPoints": 1,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 741626,
@@ -4680,7 +6357,8 @@
       "element_out": 290,
       "added": "2025-08-14T11:48:09.376971Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 739765,
@@ -4690,7 +6368,8 @@
       "element_out": 300,
       "added": "2025-08-14T11:39:54.739090Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 2
+      "pickedUpPlayerGwPoints": 2,
+      "transactionKind": "w"
     },
     {
       "transactionId": 739764,
@@ -4700,7 +6379,8 @@
       "element_out": 421,
       "added": "2025-08-14T11:39:54.739037Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 658036,
@@ -4710,7 +6390,8 @@
       "element_out": 431,
       "added": "2025-08-14T02:08:23.973935Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 0
+      "pickedUpPlayerGwPoints": 0,
+      "transactionKind": "w"
     },
     {
       "transactionId": 658035,
@@ -4720,7 +6401,8 @@
       "element_out": 81,
       "added": "2025-08-14T02:08:23.973915Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 1
+      "pickedUpPlayerGwPoints": 1,
+      "transactionKind": "w"
     },
     {
       "transactionId": 658033,
@@ -4730,7 +6412,8 @@
       "element_out": 324,
       "added": "2025-08-14T02:08:23.973845Z",
       "droppedPlayerGwPoints": 2,
-      "pickedUpPlayerGwPoints": 9
+      "pickedUpPlayerGwPoints": 9,
+      "transactionKind": "w"
     },
     {
       "transactionId": 479092,
@@ -4740,7 +6423,8 @@
       "element_out": 292,
       "added": "2025-08-13T06:21:11.328441Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     },
     {
       "transactionId": 60672,
@@ -4750,7 +6434,8 @@
       "element_out": 227,
       "added": "2025-08-07T22:56:12.877694Z",
       "droppedPlayerGwPoints": 0,
-      "pickedUpPlayerGwPoints": 6
+      "pickedUpPlayerGwPoints": 6,
+      "transactionKind": "w"
     }
   ]
 }

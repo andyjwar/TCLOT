@@ -404,6 +404,109 @@
   opacity: 0.9;
 }
 
+/* Latest Waivers tile */
+.latest-waivers__gw {
+  font-weight: 600;
+  font-size: 0.9em;
+}
+
+.latest-waivers {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.latest-waivers__team-block {
+  padding: 10px 12px;
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  background: var(--fm-card);
+}
+
+.latest-waivers__team-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+}
+
+.latest-waivers__move-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 4px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: nowrap;
+  gap: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+.latest-waivers__move {
+  margin: 0;
+  flex: 0 0 auto;
+  min-width: min(100%, 12.5rem);
+  max-width: 18rem;
+  padding: 0 12px;
+  border-left: 1px solid var(--fm-border);
+}
+
+.latest-waivers__move:first-child {
+  padding-left: 0;
+  border-left: none;
+}
+
+.latest-waivers__move-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 0.82rem;
+}
+
+.latest-waivers__fa-row {
+  min-height: 1.35rem;
+  display: flex;
+  align-items: center;
+}
+
+.latest-waivers__txn-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 2px 5px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--fm-accent, #3b82f6) 22%, transparent);
+  color: var(--fm-text-strong);
+  line-height: 1.2;
+}
+
+.latest-waivers__swap-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.latest-waivers__io-label {
+  flex: 0 0 1.75rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.latest-waivers__player-name {
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  min-width: 0;
+}
+
 /* Waiver list */
 .waiver-list {
   list-style: none;
@@ -2219,6 +2322,13 @@ button.live-fixture-banner--toggle {
   width: 36px;
   color: var(--fm-text);
   font-weight: 600;
+}
+
+.standings-table .standings-rank-8 {
+  display: inline-block;
+  font-size: 1.05rem;
+  line-height: 1;
+  vertical-align: middle;
 }
 
 .standings-table .col-team {
