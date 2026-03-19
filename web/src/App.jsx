@@ -324,7 +324,7 @@ function App() {
           >
             <span className="gw-fixture-name-text">{fx.homeName}</span>
             {homeRank != null ? (
-              <span className="gw-fixture-rank muted"> (#{homeRank})</span>
+              <span className="gw-fixture-rank muted"> ({homeRank})</span>
             ) : null}
           </span>
           {fx.homePts != null ? (
@@ -339,7 +339,7 @@ function App() {
           >
             <span className="gw-fixture-name-text">{fx.awayName}</span>
             {awayRank != null ? (
-              <span className="gw-fixture-rank muted"> (#{awayRank})</span>
+              <span className="gw-fixture-rank muted"> ({awayRank})</span>
             ) : null}
           </span>
           <span className="gw-fixture-avatar gw-fixture-avatar--away">
