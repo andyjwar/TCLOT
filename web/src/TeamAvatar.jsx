@@ -41,8 +41,6 @@ export function TeamAvatar({ entryId, name, size = 'md', logoMap = {} }) {
   const [idx, setIdx] = useState(0)
   const [showInitials, setShowInitials] = useState(false)
 
-  const isHeader = size === 'header'
-
   if (entryId == null || showInitials) {
     return <InitialsBadge name={name} size={size} />
   }
@@ -57,11 +55,10 @@ export function TeamAvatar({ entryId, name, size = 'md', logoMap = {} }) {
       className={`team-avatar team-avatar--${size}`}
       src={src}
       alt=""
-      width={isHeader ? 60 : size === 'sm' ? 28 : 36}
-      height={isHeader ? 60 : size === 'sm' ? 28 : 36}
-      loading={isHeader ? 'eager' : 'lazy'}
-      decoding={isHeader ? 'sync' : 'async'}
-      fetchPriority={isHeader ? 'high' : undefined}
+      width={size === 'sm' ? 28 : 36}
+      height={size === 'sm' ? 28 : 36}
+      loading="lazy"
+      decoding="async"
       onError={() => {
         if (idx < srcList.length - 1) setIdx((i) => i + 1)
         else setShowInitials(true)

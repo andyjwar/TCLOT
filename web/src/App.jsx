@@ -327,13 +327,6 @@ function App() {
           <h1 className="page-title-main">{LEAGUE_TITLE}</h1>
           <h2 className="page-title-season">{LEAGUE_SEASON_SUB}</h2>
         </section>
-        <div className="header-team-strip" aria-label="League teams">
-          {teamsForFormSelect.map((t) => (
-            <div key={t.id} className="header-team-strip__item" title={t.teamName}>
-              <TeamAvatar entryId={t.id} name={t.teamName} size="header" logoMap={teamLogoMap} />
-            </div>
-          ))}
-        </div>
         {fetchFailedDemo && (
           <div className="data-banner data-banner--error" role="alert">
             <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}

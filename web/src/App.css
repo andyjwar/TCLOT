@@ -1370,37 +1370,6 @@ button.live-fixture-banner--toggle {
   color: var(--fm-text);
 }
 
-.header-team-strip {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 10px 14px;
-  padding: 8px 8px 4px;
-  margin-top: 0;
-}
-
-.header-team-strip__item {
-  flex-shrink: 0;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  transition:
-    box-shadow 0.15s ease,
-    background 0.15s ease;
-}
-
-.header-team-strip__item:hover {
-  background: rgba(0, 0, 0, 0.04);
-  box-shadow:
-    0 0 0 2px rgba(0, 0, 0, 0.08),
-    0 1px 4px rgba(0, 0, 0, 0.08);
-}
-
 .brand-row {
   display: flex;
   align-items: center;
@@ -1878,18 +1847,6 @@ button.live-fixture-banner--toggle {
 .team-avatar--sm {
   width: 28px;
   height: 28px;
-}
-
-.team-avatar--header {
-  width: 60px;
-  height: 60px;
-  box-shadow: none;
-}
-
-.team-badge--header {
-  width: 60px;
-  height: 60px;
-  font-size: 1rem;
 }
 
 /* Form dots: W / D / L */
