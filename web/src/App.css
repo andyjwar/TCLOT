@@ -1818,6 +1818,14 @@ button.live-fixture-banner--toggle {
   margin-right: 12px;
 }
 
+.live-auto-subs--projected .live-auto-subs__note {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  font-weight: 400;
+  font-style: italic;
+}
+
 .live-picks-table {
   width: 100%;
   min-width: 33rem;
@@ -1951,6 +1959,12 @@ button.live-fixture-banner--toggle {
 }
 
 .live-player-injury {
+  flex-shrink: 0;
+  font-size: 0.95em;
+  line-height: 1;
+}
+
+.live-player-autosub {
   flex-shrink: 0;
   font-size: 0.95em;
   line-height: 1;

@@ -78,7 +78,10 @@ function KitThumb({ shirtUrl, badgeUrl, teamShort }) {
   );
 }
 
-function PicksTable({ rows }) {
+/**
+ * @param {{ rows: object[], autosubInElementIds?: Set<number> }} props
+ */
+function PicksTable({ rows, autosubInElementIds }) {
   const portraitLineup = usePortraitLineupMatch();
   if (!rows.length) return <p className="muted muted--tight">No picks</p>;
   return (
@@ -196,6 +199,16 @@ function PicksTable({ rows }) {
                           🚑
                         </span>
                       ) : null}
+                      {autosubInElementIds?.has(r.element) ? (
+                        <span
+                          className="live-player-autosub"
+                          title="Autosubbed in from the bench"
+                          aria-label="Autosubbed in from the bench"
+                          role="img"
+                        >
+                          🔄
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
@@ -257,14 +270,26 @@ function sumStarterPoints(starters) {
   return starters.reduce((acc, r) => acc + (Number(r.total_points) || 0), 0);
 }
 
+/** Use post-autosub XI when we have a full 11 from `buildEffectiveLineup`. */
+function effectiveStartersForDisplay(squad) {
+  if (!squad || squad.error) return null;
+  const nBench = squad.bench?.length ?? 0;
+  if (squad.displayStarters?.length === 11 && squad.displayBench?.length === nBench) {
+    return squad.displayStarters;
+  }
+  return squad.starters?.length ? squad.starters : null;
+}
+
 /**
- * XI total for banners / meta: sum of per-player Pts (includes provisional bonus when shown).
- * Matches `entry_history.points` when FPL bonus matches our Bonus column; otherwise reflects BPS estimate.
+ * GW total for banners: prefer FPL `entry_history.points` (includes autosubs). If missing, sum
+ * effective XI points (after projected/official autosub display rows).
  */
 function liveGwDisplayTotal(squad) {
   if (!squad || squad.error) return null;
-  if (!squad.starters?.length) return null;
-  return sumStarterPoints(squad.starters);
+  if (typeof squad.gwPoints === 'number') return squad.gwPoints;
+  const xs = effectiveStartersForDisplay(squad);
+  if (!xs?.length) return null;
+  return sumStarterPoints(xs);
 }
 
 /** 3 / 1 / 0 from live GW score vs opponent (same as H2H table stakes). */
@@ -308,15 +333,46 @@ function SquadLineupPanel({ squad }) {
   if (squad.error) {
     return <p className="muted">{squad.error}</p>;
   }
+
+  const nBench = squad.bench?.length ?? 0;
+  const useEffective =
+    squad.displayStarters?.length === 11 && squad.displayBench?.length === nBench;
+  const starters = useEffective ? squad.displayStarters : squad.starters;
+  const bench = useEffective ? squad.displayBench : squad.bench;
+
+  const allRows = [...squad.starters, ...squad.bench];
+  const subsToShow =
+    squad.autosubSource === 'official' && squad.autoSubs?.length
+      ? squad.autoSubs
+      : squad.autosubSource === 'projected' && squad.projectedAutoSubs?.length
+        ? squad.projectedAutoSubs
+        : [];
+
+  const autosubInElementIds =
+    useEffective && subsToShow.length > 0
+      ? new Set(
+          subsToShow
+            .map((a) => Number(a.element_in))
+            .filter((id) => Number.isFinite(id))
+        )
+      : undefined;
+
   return (
     <>
-      {squad.autoSubs?.length ? (
-        <div className="live-auto-subs muted" role="status">
-          <strong>Auto subs:</strong>{' '}
-          {squad.autoSubs.map((a) => {
-            const all = [...squad.starters, ...squad.bench];
-            const rowIn = all.find((r) => r.element === Number(a.element_in));
-            const rowOut = all.find((r) => r.element === Number(a.element_out));
+      {subsToShow.length ? (
+        <div
+          className={
+            'live-auto-subs muted' +
+            (squad.autosubSource === 'projected' ? ' live-auto-subs--projected' : '')
+          }
+          role="status"
+        >
+          <strong>
+            {squad.autosubSource === 'official' ? 'Auto subs:' : 'Projected auto subs:'}
+          </strong>{' '}
+          {subsToShow.map((a) => {
+            const rowIn = allRows.find((r) => r.element === Number(a.element_in));
+            const rowOut = allRows.find((r) => r.element === Number(a.element_out));
             const nameIn = rowIn?.displayName ?? rowIn?.web_name ?? `#${a.element_in}`;
             const nameOut = rowOut?.displayName ?? rowOut?.web_name ?? `#${a.element_out}`;
             return (
@@ -325,15 +381,21 @@ function SquadLineupPanel({ squad }) {
               </span>
             );
           })}
+          {squad.autosubSource === 'projected' ? (
+            <span className="live-auto-subs__note">
+              {' '}
+              Provisional until FPL posts official autosubs.
+            </span>
+          ) : null}
         </div>
       ) : null}
       <h4 className="live-lineup-heading">Starting XI</h4>
       <div className="live-picks-table-wrap live-picks-table-wrap--lineup-portrait">
-        <PicksTable rows={squad.starters} />
+        <PicksTable rows={starters} autosubInElementIds={autosubInElementIds} />
       </div>
       <h4 className="live-lineup-heading live-lineup-heading--bench">Bench</h4>
       <div className="live-picks-table-wrap live-picks-table-wrap--lineup-portrait">
-        <PicksTable rows={squad.bench} />
+        <PicksTable rows={bench} />
       </div>
     </>
   );

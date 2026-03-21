@@ -4,6 +4,7 @@ import {
   defensiveContributionCountFromLiveRow,
   selectDisplayBonus,
 } from './fplBonusFromBps';
+import { buildEffectiveLineup } from './fplAutosubProjection';
 
 /** Classic host — only used when resolving `fplApiBase()` with no proxy / non-dev. */
 const FPL_DIRECT = 'https://fantasy.premierleague.com/api';
@@ -343,8 +344,12 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
                 'Missing FPL entry id in league data (need real details.json with entry_id).',
               starters: [],
               bench: [],
+              displayStarters: [],
+              displayBench: [],
               gwPoints: null,
               autoSubs: [],
+              autosubSource: 'none',
+              projectedAutoSubs: [],
               leftToPlayCount: null,
             };
           }
@@ -359,8 +364,12 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
               error: `Draft picks HTTP ${pr.status}`,
               starters: [],
               bench: [],
+              displayStarters: [],
+              displayBench: [],
               gwPoints: null,
               autoSubs: [],
+              autosubSource: 'none',
+              projectedAutoSubs: [],
               leftToPlayCount: null,
             };
           }
@@ -389,6 +398,13 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
           const autoSubs =
             picksPayload.automatic_subs ?? picksPayload.subs ?? [];
 
+          const {
+            displayStarters,
+            displayBench,
+            autosubSource,
+            projectedAutoSubs,
+          } = buildEffectiveLineup({ starters, bench, autoSubs });
+
           const leftToPlayCount = countStartersLeftToPlay(
             starters,
             elementById,
@@ -402,9 +418,13 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
             error: null,
             starters,
             bench,
+            displayStarters,
+            displayBench,
             gwPoints,
             pointsOnBench,
             autoSubs,
+            autosubSource,
+            projectedAutoSubs,
             leftToPlayCount,
           };
         })
