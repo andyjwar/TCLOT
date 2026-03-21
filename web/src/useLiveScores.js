@@ -181,6 +181,9 @@ function mapPickRows(
       element: pid,
       web_name: webName,
       displayName: displayPlayerName(el, pid),
+      /** FPL element `status`: `i` = injured (see bootstrap-static). */
+      availabilityStatus: el?.status != null ? String(el.status) : null,
+      availabilityNews: el?.news != null ? String(el.news) : null,
       teamShort: tm?.short_name ?? '—',
       teamName: tm?.name ?? null,
       posSingular: typ?.singular_name_short ?? '—',

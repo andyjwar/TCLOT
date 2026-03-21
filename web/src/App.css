@@ -1938,6 +1938,24 @@ button.live-fixture-banner--toggle {
   flex: 1;
 }
 
+.live-player-name-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.live-player-name-row .live-player-name {
+  flex: 1;
+  min-width: 0;
+}
+
+.live-player-injury {
+  flex-shrink: 0;
+  font-size: 0.95em;
+  line-height: 1;
+}
+
 .live-kit-img {
   width: 28px;
   height: 36px;

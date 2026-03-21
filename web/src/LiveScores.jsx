@@ -172,14 +172,30 @@ function PicksTable({ rows }) {
                     teamShort={r.teamShort}
                   />
                   <div className="live-player-text">
-                    <div
-                      className={
-                        'live-player-name' +
-                        (portraitLineup ? ' live-player-name--lineup-portrait' : '')
-                      }
-                      title={fullLabel}
-                    >
-                      {shownName}
+                    <div className="live-player-name-row">
+                      <div
+                        className={
+                          'live-player-name' +
+                          (portraitLineup ? ' live-player-name--lineup-portrait' : '')
+                        }
+                        title={fullLabel}
+                      >
+                        {shownName}
+                      </div>
+                      {r.availabilityStatus === 'i' ? (
+                        <span
+                          className="live-player-injury"
+                          title={
+                            r.availabilityNews?.trim()
+                              ? r.availabilityNews
+                              : 'Injured'
+                          }
+                          aria-label="Injured"
+                          role="img"
+                        >
+                          🚑
+                        </span>
+                      ) : null}
                     </div>
                   </div>
                 </div>
