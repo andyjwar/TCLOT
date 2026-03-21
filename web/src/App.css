@@ -221,6 +221,29 @@
   }
 }
 
+/* Narrow portrait: grid instead of horizontal scroll (phones / tablets upright) */
+@media (max-width: 1080px) and (orientation: portrait) {
+  .dashboard-layout--with-nav > .dashboard-nav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    overflow-x: visible;
+    padding-bottom: 0;
+  }
+
+  .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
+    flex: unset;
+    min-width: 0;
+    width: auto;
+    justify-content: center;
+    text-align: center;
+  }
+
+  .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn:nth-child(5) {
+    grid-column: 1 / -1;
+  }
+}
+
 .dashboard-sidebar {
   position: sticky;
   top: 12px;
@@ -2859,6 +2882,17 @@ button.live-fixture-banner--toggle {
   border-bottom: none;
 }
 
+/* Shown only when standings columns are collapsed (portrait) */
+.standings-landscape-hint {
+  display: none;
+}
+
+@media (orientation: portrait) {
+  .standings-landscape-hint {
+    display: block;
+  }
+}
+
 /* Portrait phones: compact standings (#, Team, PL, For, PTS) — landscape & desktop keep full table */
 @media (orientation: portrait) {
   .standings-table .col-wdl,
@@ -3148,21 +3182,17 @@ button.live-fixture-banner--toggle {
   background: var(--fm-table-head);
 }
 
-.page-footer {
+/* Casual brush script (matches reference), white on dark */
+.page-footer--script {
+  font-family: 'Pacifico', cursive;
+  font-size: clamp(1.2rem, 3.2vw, 1.75rem);
+  font-weight: 400;
+  color: #ffffff;
   text-align: center;
-  font-size: 0.8rem;
-  padding-top: 8px;
-}
-
-.page-footer a {
-  color: var(--fm-text-strong);
-}
-
-.page-footer code {
-  background: var(--fm-row-hi);
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  margin: 0;
+  padding: 1.5rem 1rem 0;
+  border-top: 1px solid var(--fm-border);
+  letter-spacing: 0.02em;
 }
 
 .muted {

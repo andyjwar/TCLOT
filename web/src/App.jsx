@@ -683,19 +683,19 @@ function App() {
                     <th className="col-num col-wdl">L</th>
                     <th
                       className="col-num col-for"
-                      title="Your team’s total FPL points in every H2H gameweek"
+                      title="Your team’s total FPL points across all H2H gameweeks"
                     >
                       For
                     </th>
-                    <th
-                      className="col-num col-faced"
-                      title="Opponents’ total FPL points in every H2H gameweek"
-                    >
-                      Faced
-                    </th>
+                    <th className="col-num col-faced">Faced</th>
                     <th className="col-num col-gd">GD</th>
                     <th className="col-num col-pts">PTS</th>
-                    <th className="col-form">Form</th>
+                    <th
+                      className="col-form"
+                      title={`Last ${FORM_LAST_N} H2H matches (W / D / L)`}
+                    >
+                      Form
+                    </th>
                     <th className="col-next">Nxt</th>
                   </tr>
                 </thead>
@@ -733,7 +733,7 @@ function App() {
                         <td className="col-num col-for tabular" title="Your points for, all GWs">
                           {row.gf}
                         </td>
-                        <td className="col-num col-faced tabular" title="Opponent points faced, all GWs">
+                        <td className="col-num col-faced tabular">
                           {row.ga}
                         </td>
                         <td className="col-num col-gd tabular">{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
@@ -756,9 +756,8 @@ function App() {
                 </tbody>
               </table>
             </div>
-            <p className="table-foot muted">
-              Form = last {FORM_LAST_N} H2H. <strong>For</strong> / <strong>Faced</strong> = your team’s vs
-              opponents’ total FPL points across all H2H gameweeks.
+            <p className="table-foot muted standings-landscape-hint">
+              On mobile, turn your device to landscape for the full table.
             </p>
           </section>
 
@@ -880,10 +879,6 @@ function App() {
             <h2 id="win-margin-buckets-heading" className="tile-title tile-title--sm">
               Wins by margin
             </h2>
-            <p className="tile-hint muted tile-hint--tight">
-              Count of H2H wins where you won by that many FPL points (e.g. 41–40 → 1). Draws
-              excluded. <strong>Σ</strong> = total wins.
-            </p>
             {winMarginBucketRows?.some((r) => r.totalWins > 0) ? (
               <div className="table-scroll table-scroll--win-margin">
                 <table className="win-margin-table">
@@ -952,10 +947,6 @@ function App() {
             <h2 id="loss-margin-buckets-heading" className="tile-title tile-title--sm">
               Losses by margin
             </h2>
-            <p className="tile-hint muted tile-hint--tight">
-              Count of H2H losses where you lost by that many FPL points (e.g. 40–41 → 1). Draws
-              excluded. <strong>Σ</strong> = total losses.
-            </p>
             {lossMarginBucketRows?.some((r) => r.totalLosses > 0) ? (
               <div className="table-scroll table-scroll--win-margin">
                 <table className="win-margin-table">
@@ -1033,12 +1024,6 @@ function App() {
                     ) : null}
                   </h2>
                 </div>
-                <p className="tile-hint muted tile-hint--tight">
-                  Successful <strong>waivers</strong> and <strong>free agency</strong> pickups from the
-                  latest gameweek in your data. Per team, moves sit in one horizontal row; each move stacks{' '}
-                  <strong>In</strong> above <strong>Out</strong> (kits from FPL). Scroll sideways if needed.{' '}
-                  <span className="muted">FA</span> = free agency.
-                </p>
                 {latestWaiversModel.groups.length ? (
                   <div className="latest-waivers">
                     {latestWaiversModel.groups.map((g) => (
@@ -1504,16 +1489,9 @@ function App() {
             />
           )}
 
-          <footer className="page-footer muted">
-            Draft data from{' '}
-            <a href="https://draft.premierleague.com" target="_blank" rel="noopener noreferrer">
-              draft.premierleague.com
-            </a>{' '}
-            (refresh with <code>ingest.py</code>). <strong>Live Scoring</strong> tab loads picks &amp; scores
-            via your proxy from the draft FPL APIs in your browser.
-          </footer>
         </div>
       </main>
+      <footer className="page-footer--script">Tery is a Racist</footer>
     </div>
   )
 }
