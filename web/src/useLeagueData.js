@@ -572,7 +572,10 @@ function processLeagueData(raw, extras = {}) {
   );
 
   const teamsForFormSelect = sortedByRank.map((s) => {
-    const entryRow = leagueEntries.find((e) => e.id === s.league_entry);
+    const lid = Number(s.league_entry);
+    const entryRow = leagueEntries.find(
+      (e) => e?.id != null && Number(e.id) === lid
+    );
     return {
       id: s.league_entry,
       fplEntryId:

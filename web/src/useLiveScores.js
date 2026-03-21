@@ -303,10 +303,16 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
   /** When this goes 0 → N, we must re-fetch (load is not tied to `teams` by reference). */
   const teamCount = teams?.length ?? 0;
 
+  /** Bumps on each load start so a slow stale request cannot overwrite newer squads (wrong players / GW). */
+  const loadGenerationRef = useRef(0);
+
   const load = useCallback(async () => {
     const teamList = teamsRef.current;
     const gw = Number(gameweek);
     if (!enabled || !Number.isFinite(gw) || !teamList?.length) return;
+
+    loadGenerationRef.current += 1;
+    const loadGen = loadGenerationRef.current;
 
     setLoading(true);
     setError(null);
@@ -332,6 +338,7 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
         is_current: e.id === currentGw,
         is_next: e.id === nextGw,
       }));
+      if (loadGen !== loadGenerationRef.current) return;
       setEvents(evs);
       const ev = evs.find((e) => e.id === gw);
       setEventSnapshot(ev ?? { id: gw, name: `Gameweek ${gw}` });
@@ -370,6 +377,8 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
         liveFull,
         gwFixtures
       );
+
+      if (loadGen !== loadGenerationRef.current) return;
 
       const squadList = await Promise.all(
         teamList.map(async (t) => {
@@ -464,13 +473,18 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
         })
       );
 
+      if (loadGen !== loadGenerationRef.current) return;
       setSquads(squadList);
       setLastUpdated(new Date().toISOString());
     } catch (e) {
-      setError(e?.message || String(e));
-      setSquads([]);
+      if (loadGen === loadGenerationRef.current) {
+        setError(e?.message || String(e));
+        setSquads([]);
+      }
     } finally {
-      setLoading(false);
+      if (loadGen === loadGenerationRef.current) {
+        setLoading(false);
+      }
     }
   }, [enabled, gameweek, teamCount]);
 

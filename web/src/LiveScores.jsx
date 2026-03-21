@@ -35,15 +35,6 @@ function usePortraitLineupMatch() {
   return useSyncExternalStore(subscribe, getSnapshot, () => false);
 }
 
-/** Portrait lineup: if more than two name tokens, show first + last only. */
-function playerNameLineupPortrait(displayName, webName) {
-  const raw = String(displayName ?? webName ?? '').trim();
-  if (!raw) return '—';
-  const parts = raw.split(/\s+/).filter(Boolean);
-  if (parts.length <= 2) return raw;
-  return `${parts[0]} ${parts[parts.length - 1]}`;
-}
-
 /** DC cell: DEF ≥10, MID/FWD ≥12 (FPL defensive contribution count) */
 function livePickDcGreen(r) {
   const dc = Number(r.dcCount) || 0;
@@ -161,10 +152,10 @@ function PicksTable({ rows, autosubInElementIds }) {
         <tbody>
           {rows.map((r) => {
             const minsTone = livePickMinsCellClass(r);
-            const fullLabel = `${r.displayName ?? r.web_name}${r.opponentShortLabel ? ` (${r.opponentShortLabel})` : ''} · #${r.element}${r.teamName ? ` · ${r.teamName}` : ''}`;
-            const shownName = portraitLineup
-              ? playerNameLineupPortrait(r.displayName, r.web_name)
-              : r.displayName ?? r.web_name;
+            const playerColName = portraitLineup
+              ? (r.web_name ?? r.displayName ?? '—')
+              : (r.displayName ?? r.web_name ?? '—');
+            const fullLabel = `${playerColName}${r.opponentShortLabel ? ` (${r.opponentShortLabel})` : ''} · #${r.element}${r.teamName ? ` · ${r.teamName}` : ''}`;
             return (
             <tr key={`${r.pickPosition}-${r.element}`}>
               <td className="live-picks-col-player">
@@ -183,7 +174,7 @@ function PicksTable({ rows, autosubInElementIds }) {
                         }
                         title={fullLabel}
                       >
-                        {shownName}
+                        {playerColName}
                         {r.opponentShortLabel ? (
                           <span className="live-player-opponent">
                             {' '}
@@ -317,14 +308,6 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
-/** Last name token for live LTP summary (displayName is usually “First Last”). */
-function lastNameFromPickRow(r) {
-  const d = String(r.displayName ?? r.web_name ?? '').trim();
-  if (!d) return '?';
-  const parts = d.split(/\s+/).filter(Boolean);
-  return parts.length ? parts[parts.length - 1] : d;
-}
-
 /** Effective XI rows (post-autosub when available). */
 function startersForEffectiveXi(squad) {
   if (!squad || squad.error) return [];
@@ -338,10 +321,23 @@ function startersForEffectiveXi(squad) {
   return squad.starters ?? [];
 }
 
+/** Element ids on this squad’s submitted picks (starters ∪ bench) — guards against stale/mixed rows. */
+function pickElementIdSet(squad) {
+  const s = new Set();
+  for (const r of squad?.starters ?? []) {
+    if (r?.element != null) s.add(r.element);
+  }
+  for (const r of squad?.bench ?? []) {
+    if (r?.element != null) s.add(r.element);
+  }
+  return s;
+}
+
+/** FPL `web_name` (e.g. Martinez) — matches game UI better than derived displayName. */
 function formatPlayerLtpSegment(r) {
-  const last = lastNameFromPickRow(r);
+  const name = String(r.web_name ?? r.displayName ?? '').trim() || '?';
   const opp = r.opponentShortLabel ?? '—';
-  return `${last} (${opp})`;
+  return `${name} (${opp})`;
 }
 
 const LEFT_TO_PLAY_TITLE =
@@ -597,10 +593,13 @@ export function LiveScores({
     if (!gwMatches.length) return [];
     const buildSide = (leagueEntryId) => {
       const squad = squadByLeagueEntry.get(leagueEntryId);
-      const name = teamNameForEntry(teams, leagueEntryId);
+      const name =
+        squad?.teamName ?? teamNameForEntry(teams, leagueEntryId);
       const live = liveGwDisplayTotal(squad);
       const xi = startersForEffectiveXi(squad);
+      const allowed = pickElementIdSet(squad);
       const segments = xi
+        .filter((r) => allowed.has(r.element))
         .filter((r) => r.stillYetToPlayPl)
         .map(formatPlayerLtpSegment);
       return { leagueEntryId, name, live, segments };

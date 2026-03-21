@@ -2124,7 +2124,7 @@ button.live-fixture-banner--toggle {
   line-height: 1.2;
 }
 
-/* Lineup tables (Starting XI + bench): portrait phones — short names, Mins / DC / ⚽ / 🍑 / Pts */
+/* Lineup tables (Starting XI + bench): portrait phones — web_name + opponent (muted), Mins / DC / ⚽ / 🍑 / Pts */
 @media (max-width: 560px) and (orientation: portrait) {
   .live-picks-table-wrap--lineup-portrait .table-scroll {
     overflow-x: visible;
