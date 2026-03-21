@@ -634,20 +634,6 @@ function App() {
             type="button"
             className={
               'dashboard-nav__btn' +
-              (dashboardView === 'live' ? ' dashboard-nav__btn--active' : '')
-            }
-            onClick={() => setDashboardView('live')}
-            aria-current={dashboardView === 'live' ? 'page' : undefined}
-          >
-            <span className="dashboard-nav__emoji" aria-hidden="true">
-              ⚽
-            </span>
-            <span className="dashboard-nav__label">Live Scoring</span>
-          </button>
-          <button
-            type="button"
-            className={
-              'dashboard-nav__btn' +
               (dashboardView === 'hall' ? ' dashboard-nav__btn--active' : '')
             }
             onClick={() => setDashboardView('hall')}
@@ -657,6 +643,20 @@ function App() {
               🏆
             </span>
             <span className="dashboard-nav__label">Hall of Champions</span>
+          </button>
+          <button
+            type="button"
+            className={
+              'dashboard-nav__btn' +
+              (dashboardView === 'live' ? ' dashboard-nav__btn--active' : '')
+            }
+            onClick={() => setDashboardView('live')}
+            aria-current={dashboardView === 'live' ? 'page' : undefined}
+          >
+            <span className="dashboard-nav__emoji" aria-hidden="true">
+              ⚽
+            </span>
+            <span className="dashboard-nav__label">Live Scoring</span>
           </button>
         </nav>
         <div className="dashboard-content">
