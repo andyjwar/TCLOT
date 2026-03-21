@@ -56,33 +56,62 @@
 }
 
 .dashboard-layout--with-nav {
-  grid-template-columns: minmax(168px, 200px) minmax(0, 1fr);
-  grid-template-rows: auto auto;
-  gap: 18px 24px;
-  align-items: start;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  gap: 14px 0;
+  align-items: stretch;
 }
 
-/* Row 1: title + team strip full width; row 2: nav lines up with first content tile */
+/* Row 1: league title + team strip */
 .dashboard-layout--with-nav > .dashboard-page-hero {
-  grid-column: 1 / -1;
+  grid-column: 1;
   grid-row: 1;
   min-width: 0;
 }
 
+/* Row 2: section tabs in one horizontal row (above Hall of Champions & rest) */
 .dashboard-layout--with-nav > .dashboard-nav {
   grid-column: 1;
   grid-row: 2;
   display: flex;
-  flex-direction: column;
-  gap: 8px;
-  position: sticky;
-  top: 12px;
-  align-self: start;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 10px;
+  align-items: stretch;
+  position: static;
+  align-self: stretch;
+  min-width: 0;
 }
 
 .dashboard-layout--with-nav > .dashboard-content {
-  grid-column: 2;
-  grid-row: 2;
+  grid-column: 1;
+  grid-row: 3;
+  min-width: 0;
+}
+
+.dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Match default .tile horizontal padding so league title lines up with tiles below */
+.dashboard-layout--with-nav .dashboard-page-hero .tile.tile--title-banner {
+  padding: 16px 18px;
+}
+
+.dashboard-layout--with-nav .dashboard-page-hero .header-team-strip {
+  padding-left: 18px;
+  padding-right: 18px;
+  box-sizing: border-box;
+}
+
+.dashboard-layout--with-nav .dashboard-page-hero .data-banner {
+  margin-left: 18px;
+  margin-right: 18px;
+  box-sizing: border-box;
 }
 
 .dashboard-nav__btn {
@@ -158,35 +187,34 @@
     grid-template-columns: 1fr;
   }
 
-  .dashboard-layout--with-nav {
-    grid-template-columns: 1fr;
-    grid-template-rows: none;
+  .dashboard-layout--with-nav .dashboard-page-hero .tile.tile--title-banner {
+    padding: 18px 22px;
   }
 
-  .dashboard-layout--with-nav > .dashboard-page-hero {
-    grid-column: 1;
-    grid-row: auto;
+  .dashboard-layout--with-nav .dashboard-page-hero .header-team-strip {
+    padding-left: 8px;
+    padding-right: 8px;
   }
 
+  .dashboard-layout--with-nav .dashboard-page-hero .data-banner {
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  /* Keep one row: scroll horizontally if tabs don’t fit */
   .dashboard-layout--with-nav > .dashboard-nav {
-    grid-column: 1;
-    grid-row: auto;
-    position: static;
-    flex-direction: row;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: 8px;
+    padding-bottom: 4px;
+    scrollbar-color: rgba(255, 213, 74, 0.45) transparent;
   }
 
-  .dashboard-layout--with-nav > .dashboard-content {
-    grid-column: 1;
-    grid-row: auto;
-  }
-
-  .dashboard-layout--with-nav .dashboard-nav__btn {
-    flex: 1;
-    min-width: 140px;
-    justify-content: center;
-    text-align: center;
-    justify-content: center;
+  .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__btn {
+    flex: 0 0 auto;
+    min-width: 132px;
+    width: auto;
   }
 
   .dashboard-sidebar {
@@ -1359,6 +1387,7 @@ button.live-fixture-banner--toggle {
   min-width: 0;
   width: fit-content;
   max-width: 100%;
+  align-self: center;
 }
 
 .live-fixture-banner__team--home {
@@ -1378,17 +1407,40 @@ button.live-fixture-banner--toggle {
   gap: 2px;
   min-width: 0;
   text-align: inherit;
+  justify-content: center;
 }
 
-.live-fixture-banner__team-text--end {
+/* Name + (left to play) share one baseline; edge aligns toward the score */
+.live-fixture-banner__team-text--home {
   align-items: flex-end;
   text-align: right;
+}
+
+.live-fixture-banner__team-text--away {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.live-fixture-banner__name-line {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  max-width: 100%;
+  gap: 0;
+}
+
+.live-fixture-banner__team--home .live-fixture-banner__name-line {
+  justify-content: flex-end;
+}
+
+.live-fixture-banner__team--away .live-fixture-banner__name-line {
+  justify-content: flex-start;
 }
 
 .live-fixture-banner__name {
   font-weight: 700;
   font-size: 0.95rem;
-  line-height: 1.2;
+  line-height: 1.25;
   word-break: break-word;
 }
 
@@ -1420,8 +1472,10 @@ button.live-fixture-banner--toggle {
   font-size: 1.35rem;
   font-weight: 800;
   letter-spacing: 0.02em;
+  line-height: 1.15;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 
@@ -2103,7 +2157,8 @@ button.live-fixture-banner--toggle {
 /* Hall of Champions — dark prestige list (gold headers, white body) */
 .tile.hall-of-champions {
   --hall-bg: #121212;
-  --hall-gold: #e2b13c;
+  /* Match baked banner typography (#ffd54a in generate-*-banner.mjs) */
+  --hall-gold: #ffd54a;
   --hall-rule: rgba(255, 255, 255, 0.22);
   --hall-muted: rgba(255, 255, 255, 0.55);
   background: var(--hall-bg);
@@ -2117,7 +2172,7 @@ button.live-fixture-banner--toggle {
   font-weight: 800;
   line-height: 1.12;
   letter-spacing: -0.03em;
-  color: #fff;
+  color: var(--hall-gold);
   text-align: center;
 }
 
@@ -2142,7 +2197,7 @@ button.live-fixture-banner--toggle {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding: 4px 4px 8px;
-  scrollbar-color: rgba(226, 177, 60, 0.45) transparent;
+  scrollbar-color: rgba(255, 213, 74, 0.45) transparent;
 }
 
 /* Arena-style hanging banner per champion */
@@ -2174,7 +2229,7 @@ button.live-fixture-banner--toggle {
     90deg,
     #4a453c 0%,
     #8a7a58 22%,
-    #e2b13c 50%,
+    var(--hall-gold) 50%,
     #8a7a58 78%,
     #4a453c 100%
   );
@@ -2233,10 +2288,10 @@ button.live-fixture-banner--toggle {
 .hall-champion-banner__sheet--fullbleed {
   /* Lower % = anchor higher on source art → more “sky” at top of tile → figure sits lower → title clears head */
   --hall-fullbleed-focus-y: 27%;
-  border-color: rgba(226, 177, 60, 0.35);
+  border-color: rgba(255, 213, 74, 0.35);
   box-shadow:
     0 10px 22px rgba(0, 0, 0, 0.42),
-    inset 0 0 0 1px rgba(226, 177, 60, 0.12);
+    inset 0 0 0 1px rgba(255, 213, 74, 0.12);
 }
 
 /* Edge-to-edge cover; vertical % nudges where the “subject” sits between title + season */
@@ -2297,7 +2352,7 @@ button.live-fixture-banner--toggle {
   letter-spacing: 0.015em;
   line-height: 1.05;
   text-transform: none;
-  color: #ffe566;
+  color: var(--hall-gold);
   text-shadow:
     0 2px 14px rgba(0, 0, 0, 0.92),
     0 0 2px rgba(0, 0, 0, 0.85),
@@ -2359,7 +2414,7 @@ button.live-fixture-banner--toggle {
   letter-spacing: 0.015em;
   line-height: 1.05;
   text-transform: none;
-  color: #ffe566;
+  color: var(--hall-gold);
   text-shadow:
     0 2px 14px rgba(0, 0, 0, 0.92),
     0 0 2px rgba(0, 0, 0, 0.85),

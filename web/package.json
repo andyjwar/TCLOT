@@ -8,6 +8,11 @@
     "build": "node scripts/build-team-logos-webp.mjs && node scripts/fetch-league-if-needed.mjs && node scripts/copy-data.js && node scripts/build-waiver-gw-analytics.mjs && vite build && node scripts/write-deploy-check.mjs && node scripts/postbuild-gh-pages.mjs",
     "deploy": "npm run build && npx gh-pages -d dist",
     "publish-real-league": "node scripts/publish-real-league.mjs",
+    "hall-banner:toronto-wiggum": "node scripts/generate-toronto-wiggum-banner.mjs",
+    "hall-banner:soul-ze-moles": "node scripts/generate-soul-ze-moles-banner.mjs",
+    "hall-banner:dalston-bellsprouts": "node scripts/generate-dalston-bellsprouts-banner.mjs",
+    "hall-banner:essex-ratigans": "node scripts/generate-essex-ratigans-banner.mjs",
+    "hall-banner:dalston-benoit": "node scripts/generate-dalston-benoit-banner.mjs",
     "lint": "eslint .",
     "preview": "vite preview"
   },
@@ -17,6 +22,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",
+    "@resvg/resvg-js": "^2.6.2",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.0",

@@ -50,13 +50,14 @@ export function TeamAvatar({ entryId, name, size = 'md', logoMap = {} }) {
     return <InitialsBadge name={name} size={size} />
   }
 
+  const px = size === 'sm' ? 28 : size === 'lg' ? 64 : 36
   return (
     <img
       className={`team-avatar team-avatar--${size}`}
       src={src}
       alt=""
-      width={size === 'sm' ? 28 : 36}
-      height={size === 'sm' ? 28 : 36}
+      width={px}
+      height={px}
       loading="lazy"
       decoding="async"
       onError={() => {

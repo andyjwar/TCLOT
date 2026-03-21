@@ -279,14 +279,14 @@ export function allFixturesFinished(fixtureIds, fixtureById) {
 }
 
 /**
- * One column: FPL bonus when settled / posted; else BPS-based provisional.
+ * One column: prefer FPL `stats.bonus` once it is non-zero; otherwise keep BPS-based projection.
+ * After a match ends, FPL often leaves bonus at 0 until confirmation — using provisional avoids
+ * the bonus column going blank during that gap.
  *
  * @param {number} apiBonus — stats.bonus
- * @param {number} provisionalSum — sum across GW fixtures
- * @param {boolean} participatingFinished — all fixtures this player played in are finished_provisional
+ * @param {number} provisionalSum — sum across GW fixtures from BPS tiers
  */
-export function selectDisplayBonus(apiBonus, provisionalSum, participatingFinished) {
-  if (participatingFinished) return apiBonus;
+export function selectDisplayBonus(apiBonus, provisionalSum) {
   if (apiBonus > 0) return apiBonus;
   return provisionalSum;
 }

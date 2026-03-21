@@ -67,7 +67,7 @@ function PicksTable({ rows }) {
             <th
               scope="col"
               className="live-picks-col-num"
-              title="FPL bonus when posted or after your fixtures finish; otherwise estimated from live BPS and official tie rules."
+              title="Uses FPL bonus when stats.bonus is non-zero; otherwise BPS-based projection (keeps showing after full-time until FPL posts the final number)."
             >
               Bonus
             </th>
@@ -140,17 +140,7 @@ function teamNameForEntry(teams, leagueEntryId) {
 const LEFT_TO_PLAY_TITLE =
   'Starting XI players on 0 minutes whose club still has a Premier League fixture to finish this gameweek';
 
-/** Bracketed count before the name (home / left). */
-function LeftToPlayOutsideBefore({ count }) {
-  if (typeof count !== 'number') return null;
-  return (
-    <span className="live-left-to-play tabular" title={LEFT_TO_PLAY_TITLE}>
-      ({count}){' '}
-    </span>
-  );
-}
-
-/** Bracketed count after the name (away / right). */
+/** Bracketed count after the team name (both sides — keeps layout symmetrical). */
 function LeftToPlayOutsideAfter({ count }) {
   if (typeof count !== 'number') return null;
   return (
@@ -436,12 +426,14 @@ export function LiveScores({
                         size="sm"
                         logoMap={teamLogoMap}
                       />
-                      <span className="live-fixture-banner__team-text">
-                        <span className="live-fixture-banner__name">
-                          <LeftToPlayOutsideBefore count={homeLtp} />
-                          <span className={homeLead ? 'live-fixture-banner__name--lead' : undefined}>
+                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--home">
+                        <span className="live-fixture-banner__name-line">
+                          <span
+                            className={`live-fixture-banner__name ${homeLead ? 'live-fixture-banner__name--lead' : ''}`}
+                          >
                             {homeName}
                           </span>
+                          <LeftToPlayOutsideAfter count={homeLtp} />
                         </span>
                       </span>
                     </span>
@@ -460,9 +452,11 @@ export function LiveScores({
                     </span>
 
                     <span className="live-fixture-banner__team live-fixture-banner__team--away">
-                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--end">
-                        <span className="live-fixture-banner__name">
-                          <span className={awayLead ? 'live-fixture-banner__name--lead' : undefined}>
+                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--away">
+                        <span className="live-fixture-banner__name-line">
+                          <span
+                            className={`live-fixture-banner__name ${awayLead ? 'live-fixture-banner__name--lead' : ''}`}
+                          >
                             {awayName}
                           </span>
                           <LeftToPlayOutsideAfter count={awayLtp} />
@@ -483,8 +477,8 @@ export function LiveScores({
                   <div className="live-fixture-column">
                     <div className="live-fixture-column-head">
                       <h3 className="live-fixture-column-title">
-                        <LeftToPlayOutsideBefore count={homeLtp} />
                         {homeName}
+                        <LeftToPlayOutsideAfter count={homeLtp} />
                       </h3>
                       <div className="live-squad-meta tabular">
                         {homeLive != null ? (

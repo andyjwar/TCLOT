@@ -13,9 +13,21 @@ const LEAGUE_SEASON_SUB = '2025/26'
 
 /** Past champions — optional `entryId` (team-logos-web), or `bannerImage` (fills entire banner sheet) */
 const HALL_OF_CHAMPIONS = [
-  { season: '2020-21', team: 'Essex Ratigans' },
-  { season: '2021-22', team: 'Dalston Bellsprouts' },
-  { season: '2022-23', team: 'Dalston Benoit' },
+  {
+    season: '2020-21',
+    team: 'Essex Ratigans',
+    bannerImage: 'hall-champions/essex-ratigans.png',
+  },
+  {
+    season: '2021-22',
+    team: 'Dalston Bellsprouts',
+    bannerImage: 'hall-champions/dalston-bellsprouts.png',
+  },
+  {
+    season: '2022-23',
+    team: 'Dalston Benoit',
+    bannerImage: 'hall-champions/dalston-benoit.png',
+  },
   {
     season: '2023-24',
     team: 'Toronto Wiggum',

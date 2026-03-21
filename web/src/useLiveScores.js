@@ -1,9 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  allFixturesFinished,
   computeProvisionalGwBonusByElementId,
   hasTwoDefensiveContributionPoints,
-  participatingFixtureIdsForElement,
   selectDisplayBonus,
 } from './fplBonusFromBps';
 
@@ -209,16 +207,10 @@ function countStartersLeftToPlay(starters, elementById, gwFixtures) {
   return n;
 }
 
-function applyBonusColumn(rows, ctx) {
-  const { elementById, liveFullByElementId: liveFull, provisionalByElement, fixtureById, gwFixtures } =
-    ctx;
+function applyBonusColumn(rows, provisionalByElement) {
   return rows.map((r) => {
-    const el = elementById[r.element];
-    const liveRow = liveFull[r.element];
-    const fxIds = participatingFixtureIdsForElement(el, liveRow, gwFixtures);
-    const finished = allFixturesFinished(fxIds, fixtureById);
     const prov = provisionalByElement.get(r.element) ?? 0;
-    const display = selectDisplayBonus(r.bonusApi, prov, finished);
+    const display = selectDisplayBonus(r.bonusApi, prov);
     const total_points =
       Number(r.total_points) - Number(r.bonusApi) + Number(display);
     return { ...r, bonus: display, total_points };
@@ -309,21 +301,12 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
       const gwFixtures = Array.isArray(fixturesPayload)
         ? fixturesPayload.filter((f) => Number(f.event) === gw)
         : [];
-      const fixtureById = new Map(gwFixtures.map((f) => [Number(f.id), f]));
 
       const provisionalByElement = computeProvisionalGwBonusByElementId(
         boot.elements || [],
         liveFull,
         gwFixtures
       );
-
-      const bonusCtx = {
-        elementById,
-        liveFullByElementId: liveFull,
-        provisionalByElement,
-        fixtureById,
-        gwFixtures,
-      };
 
       const squadList = await Promise.all(
         teamList.map(async (t) => {
@@ -367,7 +350,7 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
             teamById,
             typeById
           );
-          const withBonus = applyBonusColumn(rows, bonusCtx);
+          const withBonus = applyBonusColumn(rows, provisionalByElement);
           const starters = withBonus.filter((r) => r.pickPosition <= 11);
           const bench = withBonus.filter((r) => r.pickPosition > 11);
 

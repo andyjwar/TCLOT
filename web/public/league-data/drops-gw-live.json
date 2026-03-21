@@ -1,7 +1,29 @@
 {
-  "generated": "2026-03-19T22:51:31.374Z",
+  "generated": "2026-03-21T01:08:37.407Z",
   "note": "Successful waiver (transactionKind w) and free-agency (f) swaps. droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)",
   "rows": [
+    {
+      "transactionId": 49834531,
+      "entry": 31812,
+      "gameweek": 31,
+      "element_in": 735,
+      "element_out": 100,
+      "added": "2026-03-20T12:38:07.841036Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 49834144,
+      "entry": 31812,
+      "gameweek": 31,
+      "element_in": 443,
+      "element_out": 226,
+      "added": "2026-03-20T12:33:36.383435Z",
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
     {
       "transactionId": 49792480,
       "entry": 40385,
