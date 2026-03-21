@@ -114,6 +114,45 @@ export function explainBlocksFromLiveElement(raw) {
 const DEFENSIVE_CONTRIBUTION_KEY = 'defensive_contribution';
 
 /**
+ * Live GW count of defensive contribution **actions** (FPL stat), not fantasy points.
+ * Prefer `stats.defensive_contribution` from `event/live`; else sum `value` from explain lines.
+ * @param {object | null | undefined} raw — full live element row
+ * @returns {number}
+ */
+export function defensiveContributionCountFromLiveRow(raw) {
+  const st = raw?.stats;
+  const direct = st?.defensive_contribution;
+  if (Number.isFinite(Number(direct))) return Number(direct);
+
+  const ex = raw?.explain;
+  if (!Array.isArray(ex) || ex.length === 0) return 0;
+  let sum = 0;
+  const first = ex[0];
+
+  if (Array.isArray(first) && first.length === 2 && typeof first[1] === 'number') {
+    for (const pair of ex) {
+      for (const s of pair[0] || []) {
+        if (s.stat === DEFENSIVE_CONTRIBUTION_KEY && Number.isFinite(Number(s.value))) {
+          sum += Number(s.value);
+        }
+      }
+    }
+    return sum;
+  }
+
+  if (first && first.fixture != null) {
+    for (const block of ex) {
+      for (const s of block.stats || []) {
+        if (s.identifier === DEFENSIVE_CONTRIBUTION_KEY && Number.isFinite(Number(s.value))) {
+          sum += Number(s.value);
+        }
+      }
+    }
+  }
+  return sum;
+}
+
+/**
  * Sum of points from the defensive-contribution line in `event/live` explain (draft + classic).
  * @param {object | null | undefined} raw — full live element row
  * @returns {number}

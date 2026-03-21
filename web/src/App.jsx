@@ -1094,10 +1094,8 @@ function App() {
               </h2>
             </div>
             <p className="tile-hint muted tile-hint--tight">
-              Total FPL points scored by every player this team has <strong>waivered in</strong>,
-              from pickup until they left (same method as Best waiver pickups).{' '}
-              <strong>Players</strong> = distinct waiver pickups. <strong>Avg</strong> = total ÷
-              players. Sorted by avg (highest first).
+              Total FPL points scored by every player this team has <strong>waivered in</strong>, from
+              pickup until they left.
             </p>
             {waiverInPointsByTeam?.length ? (
               <div className="waiver-in-team-wrap">
@@ -1184,8 +1182,7 @@ function App() {
               </h2>
             </div>
             <p className="tile-hint muted tile-hint--tight">
-              Sum of dropped players’ FPL points in the gameweek each waiver hit (same basis as the
-              table below). <strong>Avg</strong> = total ÷ waivers. Ordered by avg (highest first).
+              Sum of dropped players’ FPL points in the gameweek each waiver hit.
             </p>
             {waiverOutPointsByTeam?.some((t) => t.waiverOutCount > 0) ? (
               <>
@@ -1253,11 +1250,6 @@ function App() {
                 Waived out — GW points
               </h2>
             </div>
-            <p className="tile-hint muted tile-hint--tight">
-              Per successful waiver: <strong>Waivers out</strong> = points the dropped player scored
-              that GW; <strong>Waivers in</strong> = points the picked-up player scored that GW (same
-              official live data). Filter by team and gameweek.
-            </p>
             {waiverOutRowsWaiverOnly.length ? (
               <>
                 <div className="waiver-out-filters">
@@ -1391,8 +1383,8 @@ function App() {
             </h2>
             <p className="tile-hint muted tile-hint--tight">
               Top 10 player–team pairs by total FPL points from each <strong>waiver in</strong> until
-              that player left the squad (drop / swap). Same player re-waived later: stints added
-              together. Uses official GW live scores through the last finished gameweek.
+              that player left the squad. Same player re-waived later: stints added together. Uses
+              official GW live scores through the last finished gameweek.
             </p>
             {waiverInTenureTopRows?.length ? (
               <ol className="waiver-list waiver-list--tight waiver-pickup-list">

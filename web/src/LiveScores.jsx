@@ -2,6 +2,26 @@ import { useMemo, useState, useCallback } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { useLiveScores } from './useLiveScores';
 
+/**
+ * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
+ */
+function livePickMinsCellClass(r) {
+  const m = Number(r.minutes) || 0;
+  if (m >= 60) return 'live-pick-cell--green';
+  if (m === 0 && r.clubGwFixturesFinished === true) return 'live-pick-cell--red';
+  if (m > 1 && m < 60) return 'live-pick-cell--yellow';
+  return '';
+}
+
+/** DC cell: DEF ≥10, MID/FWD ≥12 (FPL defensive contribution count) */
+function livePickDcGreen(r) {
+  const dc = Number(r.dcCount) || 0;
+  const pos = r.posSingular;
+  if (pos === 'DEF') return dc >= 10;
+  if (pos === 'MID' || pos === 'FWD') return dc >= 12;
+  return false;
+}
+
 function KitThumb({ shirtUrl, badgeUrl, teamShort }) {
   const src = shirtUrl || badgeUrl;
   if (!src) {
@@ -36,6 +56,7 @@ function PicksTable({ rows }) {
           <col className="live-picks-col-player" />
           <col className="live-picks-col-pos" />
           <col className="live-picks-col-num" />
+          <col className="live-picks-col-num live-picks-col-dc" />
           <col className="live-picks-col-alarm" />
           <col className="live-picks-col-num live-picks-col-pts" />
           <col className="live-picks-col-num" />
@@ -53,8 +74,15 @@ function PicksTable({ rows }) {
             </th>
             <th
               scope="col"
+              className="live-picks-col-num live-picks-col-dc"
+              title="Defensive contributions this gameweek (FPL live stats)"
+            >
+              DC
+            </th>
+            <th
+              scope="col"
               className="live-picks-col-alarm live-picks-col-alarm--head"
-              aria-label="Defensive contribution"
+              aria-label="Defensive contribution highlight"
               title="Shows when FPL awards exactly 2 pts from defensive contributions in live explain."
             />
             <th
@@ -74,7 +102,9 @@ function PicksTable({ rows }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {rows.map((r) => {
+            const minsTone = livePickMinsCellClass(r);
+            return (
             <tr key={`${r.pickPosition}-${r.element}`}>
               <td className="live-picks-col-player">
                 <div className="live-player-cell">
@@ -94,7 +124,19 @@ function PicksTable({ rows }) {
                 </div>
               </td>
               <td className="live-picks-col-pos tabular">{r.posSingular}</td>
-              <td className="live-picks-col-num tabular">{r.minutes}</td>
+              <td
+                className={['live-picks-col-num', 'tabular', minsTone].filter(Boolean).join(' ')}
+              >
+                {r.minutes}
+              </td>
+              <td
+                className={
+                  'live-picks-col-num live-picks-col-dc tabular' +
+                  (livePickDcGreen(r) ? ' live-pick-cell--green' : '')
+                }
+              >
+                {r.dcCount}
+              </td>
               <td
                 className="live-picks-col-alarm tabular"
                 {...(r.defensiveContribAlarm
@@ -112,7 +154,8 @@ function PicksTable({ rows }) {
               </td>
               <td className="live-picks-col-num tabular">{r.bonus}</td>
             </tr>
-          ))}
+            );
+          })}
         </tbody>
       </table>
     </div>

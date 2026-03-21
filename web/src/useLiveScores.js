@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   computeProvisionalGwBonusByElementId,
+  defensiveContributionCountFromLiveRow,
   hasTwoDefensiveContributionPoints,
   selectDisplayBonus,
 } from './fplBonusFromBps';
@@ -139,13 +140,28 @@ function displayPlayerName(el, elementId) {
   return el.web_name ?? `Player #${elementId}`;
 }
 
+/**
+ * True when this PL team has at least one GW fixture and all are finished (provisional).
+ * Used to style 0 minutes as DNP after the club’s match(es).
+ */
+function teamAllGwFixturesFinished(teamId, gwFixtures) {
+  if (teamId == null || !Number.isFinite(teamId)) return false;
+  if (!Array.isArray(gwFixtures) || !gwFixtures.length) return false;
+  const mine = gwFixtures.filter(
+    (f) => Number(f.team_h) === teamId || Number(f.team_a) === teamId
+  );
+  if (!mine.length) return false;
+  return mine.every((f) => f.finished_provisional === true);
+}
+
 function mapPickRows(
   picks,
   liveByElementId,
   liveFullByElementId,
   elementById,
   teamById,
-  typeById
+  typeById,
+  gwFixtures
 ) {
   const rows = (picks || []).map((p) => {
     const pid = Number(p.element);
@@ -159,6 +175,7 @@ function mapPickRows(
     const bps = st.bps ?? 0;
     const bonusApi = st.bonus ?? 0;
     const webName = el?.web_name ?? `Player #${pid}`;
+    const tid = el?.team != null ? Number(el.team) : null;
     return {
       element: pid,
       web_name: webName,
@@ -175,6 +192,8 @@ function mapPickRows(
       bonus: bonusApi,
       pickPosition: p.position,
       defensiveContribAlarm: hasTwoDefensiveContributionPoints(liveRow),
+      dcCount: defensiveContributionCountFromLiveRow(liveRow),
+      clubGwFixturesFinished: teamAllGwFixturesFinished(tid, gwFixtures),
     };
   });
   rows.sort((a, b) => a.pickPosition - b.pickPosition);
@@ -348,7 +367,8 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
             liveFull,
             elementById,
             teamById,
-            typeById
+            typeById,
+            gwFixtures
           );
           const withBonus = applyBonusColumn(rows, provisionalByElement);
           const starters = withBonus.filter((r) => r.pickPosition <= 11);

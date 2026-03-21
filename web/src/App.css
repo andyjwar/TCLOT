@@ -1646,7 +1646,7 @@ button.live-fixture-banner--toggle {
 
 .live-picks-table {
   width: 100%;
-  min-width: 26rem;
+  min-width: 29rem;
   table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.8rem;
@@ -1663,6 +1663,10 @@ button.live-fixture-banner--toggle {
 
 .live-picks-table col.live-picks-col-num {
   width: 3rem;
+}
+
+.live-picks-table col.live-picks-col-dc {
+  width: 2.5rem;
 }
 
 .live-picks-table col.live-picks-col-alarm {
@@ -1686,6 +1690,22 @@ button.live-fixture-banner--toggle {
   font-size: 0.72rem;
   text-transform: uppercase;
   letter-spacing: 0.02em;
+}
+
+/* Live Mins column (see livePickMinsCellClass in LiveScores.jsx) */
+.live-picks-table tbody td.live-pick-cell--green {
+  background: rgba(18, 161, 90, 0.18);
+  color: var(--fm-win, #34d399);
+}
+
+.live-picks-table tbody td.live-pick-cell--yellow {
+  background: rgba(234, 179, 8, 0.12);
+  color: #fcd34d;
+}
+
+.live-picks-table tbody td.live-pick-cell--red {
+  background: rgba(248, 113, 113, 0.12);
+  color: var(--fm-loss, #f87171);
 }
 
 .live-picks-col-player {
