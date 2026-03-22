@@ -273,13 +273,19 @@ function TradeCardArticle({ trade, teamLogoMap }) {
   )
 }
 
+/** Match `max-width: 1080px` nav breakpoint — phones / narrow tablets default to Live. */
+function initialDashboardViewForViewport() {
+  if (typeof window === 'undefined') return 'standings'
+  return window.matchMedia('(max-width: 1080px)').matches ? 'live' : 'standings'
+}
+
 function App() {
   const { data, error, loading } = useLeagueData()
   const [formTeamId, setFormTeamId] = useState(null)
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
   const [waiverOutGwFilter, setWaiverOutGwFilter] = useState('all')
   const [waiverGwTableMode, setWaiverGwTableMode] = useState('out')
-  const [dashboardView, setDashboardView] = useState('live') // standings | playoff | waivers | trades | live | hall
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | waivers | trades | live | hall
   const [liveGw, setLiveGw] = useState(null)
   /** Draft bootstrap `events.current` — default Live tab GW when user has not chosen one. */
   const [fplLiveLandingGw, setFplLiveLandingGw] = useState(null)
