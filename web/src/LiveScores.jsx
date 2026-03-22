@@ -447,7 +447,7 @@ function isLikelyLocalDev() {
 }
 
 /**
- * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object }}
+ * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object }}
  */
 export function LiveScores({
   teams,
@@ -457,6 +457,7 @@ export function LiveScores({
   onGameweekChange,
   onBootstrapLiveMeta,
   teamLogoMap,
+  kitIndexByEntry,
 }) {
   const { loading, error, refresh, lastUpdated, events, eventSnapshot, squads } =
     useLiveScores({
@@ -794,6 +795,7 @@ export function LiveScores({
                           name={homeName}
                           size="sm"
                           logoMap={teamLogoMap}
+                          kitIndexByEntry={kitIndexByEntry}
                         />
                       </span>
                       <span className="live-fixture-banner__team-text live-fixture-banner__team-text--home">
@@ -829,6 +831,7 @@ export function LiveScores({
                             name={homeName}
                             size="sm"
                             logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
                           />
                         </span>
                         {homeLive != null && awayLive != null ? (
@@ -849,6 +852,7 @@ export function LiveScores({
                             name={awayName}
                             size="sm"
                             logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
                           />
                         </span>
                       </span>
@@ -878,6 +882,7 @@ export function LiveScores({
                           name={awayName}
                           size="sm"
                           logoMap={teamLogoMap}
+                          kitIndexByEntry={kitIndexByEntry}
                         />
                       </span>
                     </span>
@@ -957,6 +962,7 @@ export function LiveScores({
                     name={squad.teamName}
                     size="sm"
                     logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
                   />
                   <span>
                     {squad.teamName}
@@ -1003,6 +1009,7 @@ export function LiveScores({
                     name={squad.teamName}
                     size="sm"
                     logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
                   />
                   <span>
                     {squad.teamName}
@@ -1068,6 +1075,7 @@ export function LiveScores({
                             name={row.name}
                             size="sm"
                             logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
                           />
                           <strong className="live-ltp-summary-team-name">
                             {row.name}
@@ -1213,6 +1221,7 @@ export function LiveScores({
                             name={row.teamName}
                             size="sm"
                             logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
                           />
                           <span className="team-name team-name--sidebar live-standings-team-name">
                             {row.teamName}

@@ -45,7 +45,7 @@ const HALL_OF_CHAMPIONS = [
   },
 ]
 
-function HallOfChampions({ logoMap }) {
+function HallOfChampions({ logoMap, kitIndexByEntry = {} }) {
   return (
     <section
       className="tile hall-of-champions"
@@ -96,6 +96,7 @@ function HallOfChampions({ logoMap }) {
                       name={row.team}
                       size="lg"
                       logoMap={logoMap ?? {}}
+                      kitIndexByEntry={kitIndexByEntry}
                     />
                   </div>
                 )}
@@ -158,7 +159,7 @@ function PlayerKit({ shirtUrl, badgeUrl, teamShort }) {
 }
 
 /** Single processed-trade card (GW, date, managers, pairs + tenure points). */
-function TradeCardArticle({ trade, teamLogoMap }) {
+function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
   const pairs = trade.pairs || []
   const offeredPtsTotal = pairs.reduce(
     (s, p) => s + (Number(p.offeredLeg?.totalPoints) || 0),
@@ -190,6 +191,7 @@ function TradeCardArticle({ trade, teamLogoMap }) {
               name={trade.offeredTeamName}
               size="sm"
               logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
             />
             <span className="trade-card__mgr-name">{trade.offeredTeamName}</span>
           </div>
@@ -202,6 +204,7 @@ function TradeCardArticle({ trade, teamLogoMap }) {
               name={trade.receivedTeamName}
               size="sm"
               logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
             />
             <span className="trade-card__mgr-name">{trade.receivedTeamName}</span>
           </div>
@@ -485,6 +488,7 @@ function App() {
     isSampleData,
     fetchFailedDemo,
     teamLogoMap,
+    defaultKitIndexByLeagueEntry: kitIndexByEntry = {},
     mostWaiveredPlayers,
     pointsAgainstList,
     waiverOutPointsByTeam,
@@ -521,7 +525,13 @@ function App() {
       <li key={`${fx.event}-${fx.homeId}-${fx.awayId}-${i}`} className="gw-fixture-row">
         <div className="gw-fixture-teams">
           <span className="gw-fixture-avatar gw-fixture-avatar--home">
-            <TeamAvatar entryId={fx.homeId} name={fx.homeName} size="sm" logoMap={teamLogoMap} />
+            <TeamAvatar
+              entryId={fx.homeId}
+              name={fx.homeName}
+              size="sm"
+              logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
           </span>
           <span
             className={`gw-fixture-name-cell gw-fixture-name-cell--home${homeWin ? ' gw-fixture-name--winner' : ''}`}
@@ -547,7 +557,13 @@ function App() {
             ) : null}
           </span>
           <span className="gw-fixture-avatar gw-fixture-avatar--away">
-            <TeamAvatar entryId={fx.awayId} name={fx.awayName} size="sm" logoMap={teamLogoMap} />
+            <TeamAvatar
+              entryId={fx.awayId}
+              name={fx.awayName}
+              size="sm"
+              logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
           </span>
         </div>
       </li>
@@ -576,6 +592,7 @@ function App() {
                         name={t.teamName}
                         size="lg"
                         logoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
                       />
                     </div>
                   ))}
@@ -598,6 +615,7 @@ function App() {
                         name={t.teamName}
                         size="lg"
                         logoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
                       />
                     </div>
                   ))}
@@ -784,7 +802,13 @@ function App() {
                         </td>
                         <td className="col-team">
                           <span className="team-cell">
-                            <TeamAvatar entryId={row.league_entry} name={row.teamName} size="sm" logoMap={teamLogoMap} />
+                            <TeamAvatar
+                              entryId={row.league_entry}
+                              name={row.teamName}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
                             <span className="team-name team-name--sidebar">{row.teamName}</span>
                           </span>
                         </td>
@@ -807,7 +831,13 @@ function App() {
                         </td>
                         <td className="col-next">
                           {row.next ? (
-                            <TeamAvatar entryId={row.next.id} name={row.next.name} size="sm" logoMap={teamLogoMap} />
+                            <TeamAvatar
+                              entryId={row.next.id}
+                              name={row.next.name}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
                           ) : (
                             <span className="muted">—</span>
                           )}
@@ -894,7 +924,13 @@ function App() {
                       {row.scoreStr}
                     </div>
                     <span className="form-strip__opp" title={row.opponentName}>
-                      <TeamAvatar entryId={row.opponentEntryId} name={row.opponentName} size="sm" logoMap={teamLogoMap} />
+                      <TeamAvatar
+                        entryId={row.opponentEntryId}
+                        name={row.opponentName}
+                        size="sm"
+                        logoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
                     </span>
                   </div>
                 ))
@@ -923,6 +959,7 @@ function App() {
                       name={row.teamName}
                       size="sm"
                       logoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
                     />
                     <span className="pa-team">{row.teamName}</span>
                     <span className="pa-value tabular">{row.pointsAgainst}</span>
@@ -980,6 +1017,7 @@ function App() {
                               name={row.teamName}
                               size="sm"
                               logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
                             />
                             <span className="win-margin-table__name">{row.teamName}</span>
                           </span>
@@ -1048,6 +1086,7 @@ function App() {
                               name={row.teamName}
                               size="sm"
                               logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
                             />
                             <span className="win-margin-table__name">{row.teamName}</span>
                           </span>
@@ -1075,12 +1114,16 @@ function App() {
 
           {showDashboardPlayoff && dashboardView === 'playoff' ? (
             <div className="dashboard-stack">
-              <PlayOffBracket tableRows={tableRows} teamLogoMap={teamLogoMap} />
+              <PlayOffBracket
+                tableRows={tableRows}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
             </div>
           ) : null}
 
           {showDashboardHall && dashboardView === 'hall' ? (
-            <HallOfChampions logoMap={teamLogoMap} />
+            <HallOfChampions logoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
           ) : null}
 
           {dashboardView === 'waivers' && (
@@ -1104,6 +1147,7 @@ function App() {
                             name={g.teamName}
                             size="sm"
                             logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
                           />
                           <span>{g.teamName}</span>
                         </h3>
@@ -1210,6 +1254,7 @@ function App() {
                             name={t.teamName}
                             size="sm"
                             logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
                           />
                         </td>
                         <td className="waiver-in-team__team">
@@ -1282,6 +1327,7 @@ function App() {
                         name={t.teamName}
                         size="sm"
                         logoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
                       />
                       <div className="waiver-total-main">
                         <span className="pa-team">{t.teamName}</span>
@@ -1526,7 +1572,12 @@ function App() {
                 {tradesPanelRows?.length ? (
                   <div className="trades-list">
                     {tradesPanelRows.map((trade) => (
-                      <TradeCardArticle key={trade.id} trade={trade} teamLogoMap={teamLogoMap} />
+                      <TradeCardArticle
+                        key={trade.id}
+                        trade={trade}
+                        teamLogoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -1549,6 +1600,7 @@ function App() {
               onGameweekChange={setLiveGw}
               onBootstrapLiveMeta={onBootstrapLiveMeta}
               teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
             />
           )}
 

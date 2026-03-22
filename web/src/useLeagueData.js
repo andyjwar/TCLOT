@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { TEAM_KIT_COUNT } from './teamKitStyles';
 
 const DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
 const FORM_LAST_N = 7;
@@ -335,6 +336,22 @@ function buildTeamsMap(leagueEntries) {
   return teams;
 }
 
+/** Standings rank order → default shirt kit index (wraps when more teams than kits). */
+function buildDefaultKitIndexByLeagueEntry(sortedByRank, teams) {
+  const out = Object.create(null);
+  for (let i = 0; i < sortedByRank.length; i++) {
+    const idx = i % TEAM_KIT_COUNT;
+    const le = sortedByRank[i].league_entry;
+    if (le == null) continue;
+    out[le] = idx;
+    const fpl = teams[le]?.entry_id;
+    if (fpl != null && Number(fpl) !== Number(le)) {
+      out[fpl] = idx;
+    }
+  }
+  return out;
+}
+
 /** When details.json has matches but empty/missing standings (bad deploy / old file). */
 function deriveStandingsFromMatches(leagueEntries, matchList, teams) {
   const idSet = new Set();
@@ -454,6 +471,10 @@ function processLeagueData(raw, extras = {}) {
   }));
 
   const sortedByRank = [...standings].sort((a, b) => a.rank - b.rank);
+  const defaultKitIndexByLeagueEntry = buildDefaultKitIndexByLeagueEntry(
+    sortedByRank,
+    teams,
+  );
 
   const winMarginByEntry = {};
   for (const e of leagueEntries || []) {
@@ -819,6 +840,8 @@ function processLeagueData(raw, extras = {}) {
 
   return {
     league: details.league,
+    /** `league_entry` / `entry_id` → 0–11 shirt kit (standings order). */
+    defaultKitIndexByLeagueEntry,
     /** Raw H2H schedule (pair with `gameweek` for Live tab fixtures). */
     matches: details.matches || [],
     standings: sortedByRank,

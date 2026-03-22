@@ -25,7 +25,7 @@ function buildQuarterMatchups(tableRows) {
 }
 
 /** One team — own bordered tile (same look as former team “bar”, now standalone). */
-function TeamTile({ side, teamLogoMap }) {
+function TeamTile({ side, teamLogoMap, kitIndexByEntry }) {
   if (!side) {
     return (
       <div className="playoff-team-tile playoff-team-tile--empty">
@@ -40,7 +40,13 @@ function TeamTile({ side, teamLogoMap }) {
         {side.bracketSeed}
       </span>
       <span className="playoff-team-tile__avatar">
-        <TeamAvatar entryId={side.league_entry} name={side.teamName} size="sm" logoMap={teamLogoMap} />
+        <TeamAvatar
+          entryId={side.league_entry}
+          name={side.teamName}
+          size="sm"
+          logoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
       </span>
       <span className="playoff-team-tile__name" title={side.teamName}>
         {side.teamName}
@@ -57,23 +63,23 @@ function PlaceholderTile({ text }) {
   )
 }
 
-function QfPair({ matchup, teamLogoMap }) {
+function QfPair({ matchup, teamLogoMap, kitIndexByEntry }) {
   return (
     <div className="playoff-qf-pair" aria-label={`Quarter-final ${matchup.pairing}`}>
       <div className="playoff-qf-pair__tiles">
-        <TeamTile side={matchup.sideA} teamLogoMap={teamLogoMap} />
-        <TeamTile side={matchup.sideB} teamLogoMap={teamLogoMap} />
+        <TeamTile side={matchup.sideA} teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
+        <TeamTile side={matchup.sideB} teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
       </div>
     </div>
   )
 }
 
 /** QF column: two fixtures (four teams), each fixture = two tiles. */
-function QfColumn({ top, bottom, teamLogoMap }) {
+function QfColumn({ top, bottom, teamLogoMap, kitIndexByEntry }) {
   return (
     <div className="playoff-qf-col">
-      <QfPair matchup={top} teamLogoMap={teamLogoMap} />
-      <QfPair matchup={bottom} teamLogoMap={teamLogoMap} />
+      <QfPair matchup={top} teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
+      <QfPair matchup={bottom} teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
     </div>
   )
 }
@@ -226,7 +232,7 @@ function FinalColumn({ tilesShiftPx = 0 }) {
   )
 }
 
-export function PlayOffBracket({ tableRows, teamLogoMap }) {
+export function PlayOffBracket({ tableRows, teamLogoMap, kitIndexByEntry }) {
   const q = useMemo(() => buildQuarterMatchups(tableRows || []), [tableRows])
   const [qf1, qf2, qf3, qf4] = q
 
@@ -341,7 +347,7 @@ export function PlayOffBracket({ tableRows, teamLogoMap }) {
 
       <div className="playoff-bracket-grid" ref={gridRef}>
         <div className="playoff-grid__qf1" ref={qf1Ref}>
-          <QfColumn top={qf1} bottom={qf2} teamLogoMap={teamLogoMap} />
+          <QfColumn top={qf1} bottom={qf2} teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
         </div>
         <div className="playoff-grid__br1" ref={br1Ref}>
           <BracketBridgeToSf pathD={pathToSf1} />
@@ -355,7 +361,7 @@ export function PlayOffBracket({ tableRows, teamLogoMap }) {
           />
         </div>
         <div className="playoff-grid__qf2" ref={qf2Ref}>
-          <QfColumn top={qf3} bottom={qf4} teamLogoMap={teamLogoMap} />
+          <QfColumn top={qf3} bottom={qf4} teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
         </div>
         <div className="playoff-grid__br2" ref={br2Ref}>
           <BracketBridgeToSf pathD={pathToSf2} />

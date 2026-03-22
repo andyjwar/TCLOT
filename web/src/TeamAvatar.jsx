@@ -5,6 +5,7 @@ import {
   SHIRT_TEXT_ANCHOR,
   SHIRT_VIEW_BOX,
 } from './shirtSilhouettePaths'
+import { TEAM_KITS, TEAM_KIT_COUNT } from './teamKitStyles'
 
 const RAW_BASE = `${import.meta.env.BASE_URL}team-logos/`
 const WEB_BASE = `${import.meta.env.BASE_URL}team-logos-web/`
@@ -27,22 +28,6 @@ function buildSrcList(entryId, logoMap) {
   return list
 }
 
-/**
- * Eight kit designs (hash % 8): solid blue; blue/white stripes; matte red; forest green;
- * black/white stripes; rust orange; yellow/green stripes; aubergine.
- * `text` = initials colour chosen for contrast on each kit.
- */
-const KITS = [
-  { mode: 'solid', fill: '#1d4ed8', text: '#f0f7ff', outline: 'dark' },
-  { mode: 'stripes', a: '#e8f0fe', b: '#1e40af', text: '#ffffff', outline: 'dark' },
-  { mode: 'solid', fill: '#9f1b2e', text: '#fff5f5', outline: 'dark' },
-  { mode: 'solid', fill: '#14532d', text: '#ecfdf3', outline: 'dark' },
-  { mode: 'stripes', a: '#f5f5f5', b: '#1a1a1a', text: '#ffffff', outline: 'dark' },
-  { mode: 'solid', fill: '#c2410c', text: '#fff8f0', outline: 'dark' },
-  { mode: 'stripes', a: '#facc15', b: '#166534', text: '#1a1a0a', outline: 'light' },
-  { mode: 'solid', fill: '#4a1d4d', text: '#faf5ff', outline: 'dark' },
-]
-
 function fnv1a32(str) {
   let h = 0x811c9dc5
   for (let i = 0; i < str.length; i++) {
@@ -52,23 +37,33 @@ function fnv1a32(str) {
   return h >>> 0
 }
 
-function kitStyleIndex(entryId, name) {
+/** Map hit from standings-assigned kits; else stable hash fallback. */
+function resolveKitIndex(entryId, kitIndexByEntry, name) {
+  if (entryId != null && kitIndexByEntry && typeof kitIndexByEntry === 'object') {
+    const n = Number(entryId)
+    const raw = kitIndexByEntry[n] ?? kitIndexByEntry[String(n)]
+    if (typeof raw === 'number' && Number.isFinite(raw)) {
+      const m = Math.floor(raw) % TEAM_KIT_COUNT
+      return ((m % TEAM_KIT_COUNT) + TEAM_KIT_COUNT) % TEAM_KIT_COUNT
+    }
+  }
   const key = `${entryId == null ? '' : String(entryId)}\u{1e}${name == null ? '' : String(name)}`
   const h = fnv1a32(key)
   const mixed = Math.imul(h, 2654435769) >>> 0
-  return mixed % KITS.length
+  return mixed % TEAM_KIT_COUNT
 }
 
 function patternIdBase(reactId) {
   return `k${reactId.replace(/[^a-zA-Z0-9]/g, '')}`
 }
 
-function ShirtInitialsBadge({ name, entryId, size }) {
+function ShirtInitialsBadge({ name, entryId, size, kitIndex }) {
   const initial = (name || '?').slice(0, 2).toUpperCase()
-  const kit = KITS[kitStyleIndex(entryId, name)]
+  const kit = TEAM_KITS[kitIndex] ?? TEAM_KITS[0]
   const reactId = useId()
   const pid = patternIdBase(reactId)
-  const stripeId = `${pid}-stripe`
+  const stripeVId = `${pid}-sv`
+  const stripeHId = `${pid}-sh`
   const { fontSize } = SHIRT_TEXT[size] ?? SHIRT_TEXT.md
   const { x: textX, y: textY } = SHIRT_TEXT_ANCHOR
 
@@ -76,7 +71,14 @@ function ShirtInitialsBadge({ name, entryId, size }) {
     kit.outline === 'light'
       ? 'rgba(255, 255, 255, 0.72)'
       : 'rgba(0, 0, 0, 0.38)'
-  const strokeW = kit.mode === 'stripes' ? 1.45 : 1.05
+  const strokeW = kit.mode === 'solid' ? 1.05 : 1.45
+
+  const fill =
+    kit.mode === 'solid'
+      ? kit.fill
+      : kit.mode === 'stripes-v'
+        ? `url(#${stripeVId})`
+        : `url(#${stripeHId})`
 
   return (
     <svg
@@ -85,10 +87,10 @@ function ShirtInitialsBadge({ name, entryId, size }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
-      {kit.mode === 'stripes' ? (
+      {kit.mode === 'stripes-v' ? (
         <defs>
           <pattern
-            id={stripeId}
+            id={stripeVId}
             width="11"
             height="140"
             y="-10"
@@ -98,11 +100,21 @@ function ShirtInitialsBadge({ name, entryId, size }) {
             <rect y="-10" x="5.5" width="5.5" height="140" fill={kit.b} />
           </pattern>
         </defs>
+      ) : kit.mode === 'stripes-h' ? (
+        <defs>
+          <pattern
+            id={stripeHId}
+            width="140"
+            height="12"
+            y="-10"
+            patternUnits="userSpaceOnUse"
+          >
+            <rect y="-10" width="140" height="6" fill={kit.a} />
+            <rect y="-4" width="140" height="6" fill={kit.b} />
+          </pattern>
+        </defs>
       ) : null}
-      <path
-        d={SHIRT_FILL_PATH}
-        fill={kit.mode === 'solid' ? kit.fill : `url(#${stripeId})`}
-      />
+      <path d={SHIRT_FILL_PATH} fill={fill} />
       <path
         d={SHIRT_OUTLINE_PATH}
         fill="none"
@@ -135,18 +147,42 @@ function ShirtInitialsBadge({ name, entryId, size }) {
 /**
  * Prefers pre-sized assets in team-logos-web/ (run: npm run dev / npm run build).
  */
-export function TeamAvatar({ entryId, name, size = 'md', logoMap = {} }) {
+export function TeamAvatar({
+  entryId,
+  name,
+  size = 'md',
+  logoMap = {},
+  kitIndexByEntry,
+}) {
+  const kitIndex = useMemo(
+    () => resolveKitIndex(entryId, kitIndexByEntry, name),
+    [entryId, kitIndexByEntry, name],
+  )
   const srcList = useMemo(() => buildSrcList(entryId, logoMap), [entryId, logoMap])
   const [idx, setIdx] = useState(0)
   const [showInitials, setShowInitials] = useState(false)
 
   if (entryId == null || showInitials) {
-    return <ShirtInitialsBadge name={name} entryId={entryId} size={size} />
+    return (
+      <ShirtInitialsBadge
+        name={name}
+        entryId={entryId}
+        size={size}
+        kitIndex={kitIndex}
+      />
+    )
   }
 
   const src = srcList[idx]
   if (!src) {
-    return <ShirtInitialsBadge name={name} entryId={entryId} size={size} />
+    return (
+      <ShirtInitialsBadge
+        name={name}
+        entryId={entryId}
+        size={size}
+        kitIndex={kitIndex}
+      />
+    )
   }
 
   const px = size === 'sm' ? 28 : size === 'lg' ? 64 : 36
