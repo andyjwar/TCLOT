@@ -62,6 +62,9 @@ jobs:
           VITE_BASE_PATH: "./"
           # Repository secret/variable, or add the same name under Settings → Environments → github-pages
           VITE_FPL_PROXY_URL: ${{ secrets.VITE_FPL_PROXY_URL || vars.VITE_FPL_PROXY_URL }}
+          # Optional per-repo title tile (omit = TCLOT defaults). ExFOS / EAGalaxy set in Variables.
+          VITE_LEAGUE_TITLE_ABBR: ${{ vars.VITE_LEAGUE_TITLE_ABBR }}
+          VITE_LEAGUE_TITLE: ${{ vars.VITE_LEAGUE_TITLE }}
           # Optional per-repo: omit = show tile. EAGalaxy: set both to false in repo Variables.
           VITE_SHOW_DASHBOARD_TRADES: ${{ vars.VITE_SHOW_DASHBOARD_TRADES }}
           VITE_SHOW_DASHBOARD_HALL: ${{ vars.VITE_SHOW_DASHBOARD_HALL }}

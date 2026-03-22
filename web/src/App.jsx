@@ -1,5 +1,10 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { showDashboardHall, showDashboardTrades } from './siteFeatures'
+import {
+  LEAGUE_TITLE,
+  LEAGUE_TITLE_ABBR,
+  showDashboardHall,
+  showDashboardTrades,
+} from './siteFeatures'
 import {
   useLeagueData,
   FORM_LAST_N,
@@ -8,9 +13,6 @@ import {
 import { TeamAvatar } from './TeamAvatar'
 import { LiveScores } from './LiveScores'
 import './App.css'
-
-const LEAGUE_TITLE_ABBR = 'TCLOT'
-const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
 
 /** Past champions — optional `entryId` (team-logos-web), or `bannerImage` (fills entire banner sheet) */
 const HALL_OF_CHAMPIONS = [
