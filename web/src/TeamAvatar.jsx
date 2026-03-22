@@ -15,26 +15,51 @@ function buildSrcList(entryId, logoMap) {
   return list
 }
 
-/** Stable, well-spread hue per team (golden ratio on numeric id; else string hash). */
-function hueForBadge(entryId, name) {
-  if (entryId != null && entryId !== '') {
-    const n = Number(entryId)
-    if (!Number.isNaN(n)) return (n * 137.508) % 360
-    const k = String(entryId)
-    let h = 0
-    for (let i = 0; i < k.length; i++) h = (h * 31 + k.charCodeAt(i)) >>> 0
-    return h % 360
+/**
+ * Hand-picked dark backgrounds (white initials): spaced around the wheel with varied
+ * saturation/chroma so neighbours don’t read as “another blue-green”.
+ */
+const BADGE_BG_PALETTE = [
+  '#b42318',
+  '#c2410c',
+  '#b45309',
+  '#a15c07',
+  '#3f6212',
+  '#166534',
+  '#047857',
+  '#0f766e',
+  '#0e7490',
+  '#0369a1',
+  '#1d4ed8',
+  '#3730a3',
+  '#5b21b6',
+  '#6b21a8',
+  '#86198f',
+  '#a3005c',
+  '#be123c',
+  '#854d0e',
+]
+
+function fnv1a32(str) {
+  let h = 0x811c9dc5
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
   }
-  let h = 0
-  const s = String(name || '?')
-  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0
-  return h % 360
+  return h >>> 0
+}
+
+/** Index into palette — FNV + golden-ratio mix so sequential ids don’t pick adjacent slots. */
+function badgePaletteIndex(entryId, name) {
+  const key = `${entryId == null ? '' : String(entryId)}\u{1e}${name == null ? '' : String(name)}`
+  const h = fnv1a32(key)
+  const mixed = Math.imul(h, 2654435769) >>> 0
+  return mixed % BADGE_BG_PALETTE.length
 }
 
 function InitialsBadge({ name, entryId, size }) {
   const initial = (name || '?').slice(0, 2).toUpperCase()
-  const hue = hueForBadge(entryId, name)
-  const bg = `hsl(${Math.round(hue)} 58% 40%)`
+  const bg = BADGE_BG_PALETTE[badgePaletteIndex(entryId, name)]
   const fg = '#f5f5f5'
   return (
     <span
