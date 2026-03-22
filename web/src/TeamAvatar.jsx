@@ -1,17 +1,19 @@
 import { useState, useMemo, useId } from 'react'
+import {
+  SHIRT_FILL_PATH,
+  SHIRT_OUTLINE_PATH,
+  SHIRT_TEXT_ANCHOR,
+  SHIRT_VIEW_BOX,
+} from './shirtSilhouettePaths'
 
 const RAW_BASE = `${import.meta.env.BASE_URL}team-logos/`
 const WEB_BASE = `${import.meta.env.BASE_URL}team-logos-web/`
 const LOGO_EXTS = ['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'webp', 'WEBP']
 
-/** Simple short-sleeve shirt silhouette (viewBox 0 0 48 56). */
-const SHIRT_PATH =
-  'M24 9 C19 9 15 11 14 14 L9 18 6 25 9 29 11 51 h26 l2-22 3-4-3-7-5-3 C33 11 29 9 24 9 Z'
-
 const SHIRT_TEXT = {
-  sm: { fontSize: 8.5, y: 32 },
-  md: { fontSize: 11.5, y: 33.5 },
-  lg: { fontSize: 18, y: 35 },
+  sm: { fontSize: 15 },
+  md: { fontSize: 20 },
+  lg: { fontSize: 33 },
 }
 
 function buildSrcList(entryId, logoMap) {
@@ -67,7 +69,8 @@ function ShirtInitialsBadge({ name, entryId, size }) {
   const reactId = useId()
   const pid = patternIdBase(reactId)
   const stripeId = `${pid}-stripe`
-  const { fontSize, y } = SHIRT_TEXT[size] ?? SHIRT_TEXT.md
+  const { fontSize } = SHIRT_TEXT[size] ?? SHIRT_TEXT.md
+  const { x: textX, y: textY } = SHIRT_TEXT_ANCHOR
 
   const textStroke =
     kit.outline === 'light'
@@ -78,7 +81,7 @@ function ShirtInitialsBadge({ name, entryId, size }) {
   return (
     <svg
       className={`team-shirt team-shirt--${size}`}
-      viewBox="0 0 48 56"
+      viewBox={SHIRT_VIEW_BOX}
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden
     >
@@ -86,25 +89,30 @@ function ShirtInitialsBadge({ name, entryId, size }) {
         <defs>
           <pattern
             id={stripeId}
-            width="10"
-            height="56"
+            width="11"
+            height="140"
+            y="-10"
             patternUnits="userSpaceOnUse"
           >
-            <rect width="5" height="56" fill={kit.a} />
-            <rect x="5" width="5" height="56" fill={kit.b} />
+            <rect y="-10" width="5.5" height="140" fill={kit.a} />
+            <rect y="-10" x="5.5" width="5.5" height="140" fill={kit.b} />
           </pattern>
         </defs>
       ) : null}
       <path
-        d={SHIRT_PATH}
+        d={SHIRT_FILL_PATH}
         fill={kit.mode === 'solid' ? kit.fill : `url(#${stripeId})`}
-        stroke="rgba(0,0,0,0.22)"
-        strokeWidth="0.6"
+      />
+      <path
+        d={SHIRT_OUTLINE_PATH}
+        fill="none"
+        stroke="rgba(0, 0, 0, 0.34)"
+        strokeWidth="0.75"
         vectorEffect="non-scaling-stroke"
       />
       <text
-        x="24"
-        y={y}
+        x={textX}
+        y={textY}
         textAnchor="middle"
         dominantBaseline="middle"
         fill={kit.text}
