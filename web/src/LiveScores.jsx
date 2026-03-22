@@ -524,10 +524,21 @@ export function LiveScores({
     return m;
   }, [gwMatches, squadByLeagueEntry]);
 
+  /** After the GW ends, official league standings already include its PTS / For / Faced. */
+  const gwStandingsFrozen = useMemo(
+    () =>
+      Boolean(eventSnapshot?.finished) ||
+      (gwMatches.length > 0 && gwMatches.every((m) => m.finished)),
+    [eventSnapshot?.finished, gwMatches]
+  );
+
   /**
    * Projected For / Faced / GD / PTS from this GW’s live fixtures, then sorted by projected PTS,
    * then For, then GD. `liveRank` = competition rank (ties share a #). `rankMove` uses ordinal
    * list position (i + 1) vs season rank so movement still shows inside tied groups.
+   *
+   * When this GW is already finished, league `tableRows` totals (PTS, For, Faced) already include
+   * it — do not add live H2H points or GW FPL totals again (would double-count e.g. +3).
    */
   const liveStandingsRows = useMemo(() => {
     if (!Array.isArray(tableRows) || tableRows.length === 0) return [];
@@ -541,11 +552,15 @@ export function LiveScores({
       const gf = Number(row.gf) || 0;
       const ga = Number(row.ga) || 0;
       const total = Number(row.total) || 0;
-      const addMine = liveGw != null ? liveGw : 0;
+      const addMine =
+        gwStandingsFrozen || liveGw == null ? 0 : liveGw;
       const addOpp =
-        inFixture && oppLiveGw != null && Number.isFinite(Number(oppLiveGw))
-          ? Number(oppLiveGw)
-          : 0;
+        gwStandingsFrozen ||
+        !inFixture ||
+        oppLiveGw == null ||
+        !Number.isFinite(Number(oppLiveGw))
+          ? 0
+          : Number(oppLiveGw);
 
       const projectedFor = gf + addMine;
       const projectedGa = ga + addOpp;
@@ -554,7 +569,7 @@ export function LiveScores({
         inFixture && liveGw != null && oppLiveGw != null
           ? liveH2hBonusPts(liveGw, oppLiveGw)
           : 0;
-      const projectedPts = total + h2hBonus;
+      const projectedPts = gwStandingsFrozen ? total : total + h2hBonus;
 
       return {
         ...row,
@@ -586,7 +601,7 @@ export function LiveScores({
       const rankMove = (row.rank ?? 999) - ordinalLive;
       return { ...row, liveRank, ordinalLive, rankMove };
     });
-  }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry]);
+  }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry, gwStandingsFrozen]);
 
   /** One object per H2H fixture with both sides’ “left to play” lines. */
   const leftToPlayByFixture = useMemo(() => {
@@ -1084,7 +1099,7 @@ export function LiveScores({
       >
         <div className="tile-head-row tile-head-row--tight">
           <h2 id="live-standings-heading" className="tile-title tile-title--sm">
-            Live standings
+            {gwStandingsFrozen ? 'Standings' : 'Live standings'}
           </h2>
           <span className="league-pill league-pill--sm">GW {gameweek}</span>
         </div>
@@ -1095,7 +1110,14 @@ export function LiveScores({
             <table className="standings-table standings-table--sidebar standings-table--live">
               <thead>
                 <tr>
-                  <th className="col-rank" title="Position by projected points this GW">
+                  <th
+                    className="col-rank"
+                    title={
+                      gwStandingsFrozen
+                        ? 'League position (this GW is finished)'
+                        : 'Position by projected points including this GW'
+                    }
+                  >
                     #
                   </th>
                   <th className="col-team">Team</th>
@@ -1105,31 +1127,51 @@ export function LiveScores({
                   <th className="col-num col-wdl">L</th>
                   <th
                     className="col-num col-for"
-                    title="Season points for, plus this GW’s live score vs your opponent"
+                    title={
+                      gwStandingsFrozen
+                        ? 'Season points for (includes this GW)'
+                        : 'Season points for, plus this GW’s live score vs your opponent'
+                    }
                   >
                     For
                   </th>
                   <th
                     className="col-num col-faced"
-                    title="Season points against, plus your opponent’s live GW score vs you (when paired)"
+                    title={
+                      gwStandingsFrozen
+                        ? 'Season points against (includes this GW)'
+                        : 'Season points against, plus your opponent’s live GW score vs you (when paired)'
+                    }
                   >
                     Faced
                   </th>
                   <th
                     className="col-num col-gd"
-                    title="Projected GD: projected For minus projected Faced"
+                    title={
+                      gwStandingsFrozen
+                        ? 'Goal difference: For minus Faced'
+                        : 'Projected GD: projected For minus projected Faced'
+                    }
                   >
                     GD
                   </th>
                   <th
                     className="col-num col-live-gw"
-                    title="League points from this GW’s live fixture: +3 win, +1 draw, 0 loss"
+                    title={
+                      gwStandingsFrozen
+                        ? 'League points from this GW’s result: +3 win, +1 draw, 0 loss'
+                        : 'League points from this GW’s live fixture: +3 win, +1 draw, 0 loss'
+                    }
                   >
                     GW
                   </th>
                   <th
                     className="col-num col-pts"
-                    title="Season H2H points plus 3 / 1 / 0 from live score vs opponent this GW"
+                    title={
+                      gwStandingsFrozen
+                        ? 'Season H2H points (includes this GW)'
+                        : 'Season H2H points plus 3 / 1 / 0 from live score vs opponent this GW'
+                    }
                   >
                     PTS
                   </th>
