@@ -2966,6 +2966,14 @@ button.live-fixture-banner--toggle {
   border: none;
 }
 
+.hall-champion-banner__avatar .team-shirt {
+  width: 52px !important;
+  height: 61px !important;
+  border: none !important;
+  border-radius: 0 !important;
+  vertical-align: middle;
+}
+
 .hall-champion-banner__avatar .team-badge {
   font-size: 0.9rem !important;
   background: #2c2c2c !important;
@@ -3472,6 +3480,28 @@ button.live-fixture-banner--toggle {
   height: 64px;
   font-size: 1.05rem;
   border-width: 2px;
+}
+
+/* Default kit: football-shirt SVG (no uploaded logo) */
+.team-shirt {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+.team-shirt--sm {
+  width: 26px;
+  height: 30px;
+}
+
+.team-shirt--md {
+  width: 34px;
+  height: 40px;
+}
+
+.team-shirt--lg {
+  width: 56px;
+  height: 66px;
 }
 
 /* No translateZ/backface — those promote GPU layers and often blur downscaled photos */
