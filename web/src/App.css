@@ -1052,28 +1052,20 @@
   align-items: stretch;
 }
 
-/* Two trade cards across only on wider landscape; portrait stays one column */
-@media (min-width: 720px) and (orientation: landscape) {
+/*
+ * Two columns only on wide landscape. At 720px+ phone landscape (~800px wide),
+ * two cards are too narrow — team names + scores overlap. Need ~550px+ per card.
+ */
+@media (min-width: 1100px) and (orientation: landscape) {
   .trades-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 14px 16px;
   }
 }
 
-/* Portrait: one trade per row, each card tall enough to use the viewport */
 @media (max-width: 1080px) and (orientation: portrait) {
   .trades-list {
-    gap: 20px;
-  }
-
-  .trades-list .trade-card {
-    min-height: min(820px, calc(100vh - 100px));
-  }
-
-  @supports (height: 100dvh) {
-    .trades-list .trade-card {
-      min-height: min(820px, calc(100dvh - 100px));
-    }
+    gap: 16px;
   }
 }
 
@@ -1174,8 +1166,108 @@
 }
 
 @media (max-width: 1080px) and (orientation: portrait) {
+  /* One row: avatar + name | pts | name + avatar (overrides narrow-width stacked layout) */
+  .trade-card {
+    padding: 10px 12px;
+  }
+
+  .trade-card__teams-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 6px;
+    padding-bottom: 6px;
+    text-align: left;
+  }
+
+  .trade-card__mgr {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .trade-card__mgr--left {
+    justify-content: flex-start;
+  }
+
+  .trade-card__mgr--right {
+    flex-direction: row-reverse;
+    justify-content: flex-start;
+    text-align: right;
+  }
+
+  .trade-card__pts-summary--center {
+    order: 0;
+    flex: 0 0 auto;
+  }
+
+  .trade-card__mgr-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .trade-card__pts-summary {
+    font-size: 0.62rem;
+  }
+
+  .trade-card__pts-summary strong {
+    font-size: 0.72rem;
+  }
+
   .trade-pairs-grid {
     grid-template-columns: 1fr;
+    gap: 4px;
+  }
+
+  .trade-pair {
+    gap: 4px 6px;
+  }
+
+  .trade-player-tile {
+    padding: 4px 6px;
+  }
+
+  .trade-player-tile--group {
+    gap: 4px;
+  }
+
+  .trade-player-line {
+    gap: 3px;
+    align-items: center;
+  }
+
+  .trade-player-line__text {
+    gap: 0;
+  }
+
+  .trade-player-line__name {
+    font-size: 0.62rem;
+    line-height: 1.15;
+  }
+
+  .trade-player-line__club {
+    font-size: 0.55rem;
+  }
+
+  .trade-player-line__pts {
+    font-size: 0.55rem;
+    margin-top: 0;
+    line-height: 1.2;
+  }
+
+  .trade-player-tile .pl-kit-shirt {
+    width: 16px;
+    height: 20px;
+  }
+
+  .trade-player-tile .pl-kit-badge,
+  .trade-player-tile .pl-kit-fallback {
+    width: 18px;
+    height: 18px;
+    font-size: 0.4rem;
   }
 }
 
@@ -1250,41 +1342,14 @@
 }
 
 @media (max-width: 560px) {
-  .trade-card__teams-row {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    text-align: center;
-  }
-
-  .trade-card__mgr--left,
-  .trade-card__mgr--right {
-    justify-self: stretch;
-    justify-content: center;
-    flex-direction: row;
-    text-align: center;
-  }
-
-  .trade-card__mgr--right {
-    flex-direction: row-reverse;
-  }
-
-  .trade-card__mgr-name {
-    white-space: normal;
-    text-align: inherit;
-  }
-
-  .trade-card__pts-summary--center {
-    order: -1;
-  }
-
-  /* Keep 2×2 tile grid; stack players inside each tile */
+  /* Stack swap columns vertically on very narrow widths (any orientation) */
   .trade-pairs-grid {
-    gap: 6px;
+    gap: 4px;
   }
 
   .trade-pair {
     grid-template-columns: 1fr;
-    gap: 8px;
+    gap: 4px 6px;
     justify-items: stretch;
   }
 
@@ -1293,10 +1358,6 @@
     width: auto;
     margin: -2px 0;
     transform: rotate(90deg);
-  }
-
-  .trade-player-tile {
-    padding: 8px;
   }
 }
 
