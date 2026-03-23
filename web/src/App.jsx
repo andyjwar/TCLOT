@@ -461,6 +461,9 @@ function App() {
     matches = [],
     waiverOutGwRows = [],
     firstWaiverOrderPicks = [],
+    gwRankExtremesMeta = { maxGw: 0, teamCount: 0 },
+    gwWeeksAtFirst = [],
+    gwWeeksAtLast = [],
   } = data ?? {}
   const [formTeamId, setFormTeamId] = useState(null)
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
@@ -1451,6 +1454,118 @@ function App() {
               <p className="muted muted--tight">No losses in finished matches yet.</p>
             )}
           </section>
+
+                <div className="dashboard-gw-two">
+                  <section className="tile tile--compact" aria-labelledby="gw-weeks-first-heading">
+                    <div className="tile-head-row tile-head-row--tight">
+                      <h2 id="gw-weeks-first-heading" className="tile-title tile-title--sm">
+                        Game weeks in 1st
+                      </h2>
+                    </div>
+                    <p className="tile-hint muted tile-hint--tight">
+                      Weeks where this team sat <strong>top</strong> of the cumulative H2H table after
+                      that gameweek (PTS, then For, then Faced).
+                      {gwRankExtremesMeta.maxGw > 0 ? (
+                        <>
+                          {' '}
+                          Through <span className="tabular">GW {gwRankExtremesMeta.maxGw}</span>.
+                        </>
+                      ) : null}
+                    </p>
+                    {gwWeeksAtFirst.length > 0 ? (
+                      <ol className="gw-rank-extremes-list">
+                        {gwWeeksAtFirst.map((r) => (
+                          <li key={r.league_entry} className="gw-rank-extremes-item">
+                            <span className="gw-rank-extremes-item__rank tabular">{r.listRank}</span>
+                            <TeamAvatar
+                              entryId={r.league_entry}
+                              name={r.teamName}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
+                            <div className="gw-rank-extremes-item__main">
+                              <span className="gw-rank-extremes-item__team">{r.teamName}</span>
+                              <span
+                                className="gw-rank-extremes-item__weeks muted"
+                                title={r.weeksTitle || undefined}
+                              >
+                                {r.weeksLabel}
+                              </span>
+                            </div>
+                            <span className="gw-rank-extremes-item__count tabular" title="Gameweeks">
+                              {r.count}
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <p className="muted muted--tight">
+                        {gwRankExtremesMeta.maxGw > 0
+                          ? 'No team data for weeks at 1st.'
+                          : 'No finished gameweeks in the schedule yet.'}
+                      </p>
+                    )}
+                  </section>
+
+                  <section className="tile tile--compact" aria-labelledby="gw-weeks-last-heading">
+                    <div className="tile-head-row tile-head-row--tight">
+                      <h2 id="gw-weeks-last-heading" className="tile-title tile-title--sm">
+                        Game weeks in last
+                      </h2>
+                    </div>
+                    <p className="tile-hint muted tile-hint--tight">
+                      Weeks where this team sat <strong>last</strong> in the cumulative H2H table after
+                      that gameweek (same ordering as the standings table).
+                      {gwRankExtremesMeta.teamCount > 0 ? (
+                        <>
+                          {' '}
+                          <span className="tabular">{gwRankExtremesMeta.teamCount}</span>-team league.
+                        </>
+                      ) : null}
+                      {gwRankExtremesMeta.maxGw > 0 ? (
+                        <>
+                          {' '}
+                          Through <span className="tabular">GW {gwRankExtremesMeta.maxGw}</span>.
+                        </>
+                      ) : null}
+                    </p>
+                    {gwWeeksAtLast.length > 0 ? (
+                      <ol className="gw-rank-extremes-list">
+                        {gwWeeksAtLast.map((r) => (
+                          <li key={r.league_entry} className="gw-rank-extremes-item">
+                            <span className="gw-rank-extremes-item__rank tabular">{r.listRank}</span>
+                            <TeamAvatar
+                              entryId={r.league_entry}
+                              name={r.teamName}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
+                            <div className="gw-rank-extremes-item__main">
+                              <span className="gw-rank-extremes-item__team">{r.teamName}</span>
+                              <span
+                                className="gw-rank-extremes-item__weeks muted"
+                                title={r.weeksTitle || undefined}
+                              >
+                                {r.weeksLabel}
+                              </span>
+                            </div>
+                            <span className="gw-rank-extremes-item__count tabular" title="Gameweeks">
+                              {r.count}
+                            </span>
+                          </li>
+                        ))}
+                      </ol>
+                    ) : (
+                      <p className="muted muted--tight">
+                        {gwRankExtremesMeta.maxGw > 0
+                          ? 'No team data for weeks at last.'
+                          : 'No finished gameweeks in the schedule yet.'}
+                      </p>
+                    )}
+                  </section>
+                </div>
               </div>
             </>
           )}

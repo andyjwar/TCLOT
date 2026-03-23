@@ -503,6 +503,136 @@ function deriveStandingsFromMatches(leagueEntries, matchList, teams) {
   return rows;
 }
 
+/** e.g. [1,2,3,7] → "GW 1–3, GW 7" */
+function formatGwWeekRangeList(gameweeks) {
+  if (!gameweeks?.length) return '—';
+  const g = [...gameweeks].sort((a, b) => a - b);
+  const parts = [];
+  let i = 0;
+  while (i < g.length) {
+    const start = g[i];
+    let end = start;
+    while (i + 1 < g.length && g[i + 1] === end + 1) {
+      i += 1;
+      end = g[i];
+    }
+    parts.push(start === end ? `GW ${start}` : `GW ${start}–${end}`);
+    i += 1;
+  }
+  return parts.join(', ');
+}
+
+/**
+ * After each finished gameweek G, cumulative H2H table through G (same ordering as
+ * deriveStandingsFromMatches). Records which weeks each team ranks 1st or last.
+ */
+function buildGwRankExtremes(matchList, leagueEntries, teams) {
+  const idSet = new Set();
+  for (const e of leagueEntries || []) {
+    if (e?.id != null) idSet.add(e.id);
+  }
+  const finished = (matchList || []).filter((m) => m.finished);
+  for (const m of finished) {
+    idSet.add(m.league_entry_1);
+    idSet.add(m.league_entry_2);
+  }
+  const ids = [...idSet].filter((x) => x != null).sort((a, b) => a - b);
+  const teamCount = ids.length;
+  if (teamCount === 0) {
+    return {
+      gwRankExtremesMeta: { maxGw: 0, teamCount: 0 },
+      gwWeeksAtFirst: [],
+      gwWeeksAtLast: [],
+    };
+  }
+  for (const id of ids) {
+    if (!teams[id]) {
+      teams[id] = { id, entry_id: id, entry_name: `Team ${id}` };
+    }
+  }
+
+  const maxGw = Math.max(0, ...finished.map((m) => Number(m.event) || 0));
+  const firstMap = Object.fromEntries(ids.map((id) => [id, []]));
+  const lastMap = Object.fromEntries(ids.map((id) => [id, []]));
+
+  for (let gw = 1; gw <= maxGw; gw++) {
+    const st = Object.fromEntries(
+      ids.map((id) => [id, { w: 0, d: 0, l: 0, pf: 0, pa: 0 }]),
+    );
+    for (const m of finished) {
+      if (Number(m.event) > gw) continue;
+      const id1 = m.league_entry_1;
+      const id2 = m.league_entry_2;
+      const p1 = m.league_entry_1_points ?? 0;
+      const p2 = m.league_entry_2_points ?? 0;
+      if (!st[id1] || !st[id2]) continue;
+      st[id1].pf += p1;
+      st[id1].pa += p2;
+      st[id2].pf += p2;
+      st[id2].pa += p1;
+      if (p1 > p2) {
+        st[id1].w += 1;
+        st[id2].l += 1;
+      } else if (p2 > p1) {
+        st[id2].w += 1;
+        st[id1].l += 1;
+      } else {
+        st[id1].d += 1;
+        st[id2].d += 1;
+      }
+    }
+    const rows = ids.map((id) => {
+      const s = st[id];
+      const total = s.w * 3 + s.d;
+      return { id, total, pf: s.pf, pa: s.pa };
+    });
+    rows.sort(
+      (a, b) =>
+        b.total - a.total ||
+        b.pf - a.pf ||
+        a.pa - b.pa,
+    );
+    firstMap[rows[0].id].push(gw);
+    lastMap[rows[teamCount - 1].id].push(gw);
+  }
+
+  function pack(map) {
+    return ids
+      .map((id) => {
+        const gameweeks = map[id];
+        return {
+          league_entry: id,
+          teamName: teams[id]?.entry_name ?? `Team ${id}`,
+          count: gameweeks.length,
+          gameweeks,
+          weeksLabel: formatGwWeekRangeList(gameweeks),
+          weeksTitle: gameweeks.length
+            ? gameweeks
+                .slice()
+                .sort((a, b) => a - b)
+                .map((x) => `GW ${x}`)
+                .join(', ')
+            : '',
+        };
+      })
+      .filter((r) => r.count > 0)
+      .sort(
+        (a, b) =>
+          b.count - a.count ||
+          a.teamName.localeCompare(b.teamName, undefined, {
+            sensitivity: 'base',
+          }),
+      )
+      .map((r, idx) => ({ ...r, listRank: idx + 1 }));
+  }
+
+  return {
+    gwRankExtremesMeta: { maxGw, teamCount },
+    gwWeeksAtFirst: pack(firstMap),
+    gwWeeksAtLast: pack(lastMap),
+  };
+}
+
 function nextOpponent(entryId, matches, teams) {
   const upcoming = matches
     .filter(
@@ -552,6 +682,12 @@ function processLeagueData(raw, extras = {}) {
   const sortedByRank = [...standings].sort((a, b) => a.rank - b.rank);
   const defaultKitIndexByLeagueEntry = buildDefaultKitIndexByLeagueEntry(
     sortedByRank,
+    teams,
+  );
+
+  const { gwRankExtremesMeta, gwWeeksAtFirst, gwWeeksAtLast } = buildGwRankExtremes(
+    matches,
+    leagueEntries,
     teams,
   );
 
@@ -946,6 +1082,9 @@ function processLeagueData(raw, extras = {}) {
     previousGameweekFixtures,
     upcomingRounds,
     nextMatchHeadline,
+    gwRankExtremesMeta,
+    gwWeeksAtFirst,
+    gwWeeksAtLast,
     mostWaiveredPlayers,
     pointsAgainstList,
     waiverOutGwRows,

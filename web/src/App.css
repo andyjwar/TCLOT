@@ -197,6 +197,63 @@
   min-width: 0;
 }
 
+/* Standings: gameweeks spent 1st / last (cumulative table) */
+.gw-rank-extremes-list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.gw-rank-extremes-item {
+  display: grid;
+  grid-template-columns: 1.35rem 28px 1fr auto;
+  gap: 8px 10px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--fm-border);
+  font-size: 0.82rem;
+}
+
+.gw-rank-extremes-item:last-child {
+  border-bottom: none;
+  padding-bottom: 2px;
+}
+
+.gw-rank-extremes-item__rank {
+  font-weight: 800;
+  color: var(--fm-text-strong);
+  font-size: 0.78rem;
+}
+
+.gw-rank-extremes-item__main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.gw-rank-extremes-item__team {
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  line-height: 1.25;
+}
+
+.gw-rank-extremes-item__weeks {
+  font-size: 0.74rem;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.gw-rank-extremes-item__count {
+  font-weight: 800;
+  font-size: 0.9rem;
+  color: var(--fm-text-strong);
+  padding-left: 4px;
+}
+
 /* Side-by-side GW tiles → single column in portrait (avoid condensed split panes) */
 @media (max-width: 1080px) and (orientation: portrait) {
   .dashboard-gw-two {
