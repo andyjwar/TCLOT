@@ -20,9 +20,10 @@ permissions:
   pages: write
   id-token: write
 
+# Latest run wins — avoids deploy-pages 400 when two runs hit Pages API at once
 concurrency:
   group: pages
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   build:
