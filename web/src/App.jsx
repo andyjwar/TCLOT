@@ -234,7 +234,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="Last"
                 title="Times finished last in the table that season"
-                className="tabular hall-manager-th--num"
+                className="tabular hall-manager-th--num hall-manager-col--hide-portrait"
               />
               <HallManagerSortTh
                 columnKey="avgRank"
@@ -242,7 +242,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="Average Rank"
                 title="Mean finishing position (lower is better)"
-                className="tabular hall-manager-th--num"
+                className="tabular hall-manager-th--num hall-manager-col--hide-portrait"
               />
               <HallManagerSortTh
                 columnKey="totalPf"
@@ -278,8 +278,8 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 </th>
                 <td className="tabular">{r.seasons}</td>
                 <td className="tabular">{r.titles}</td>
-                <td className="tabular">{r.lastPlaceCount}</td>
-                <td className="tabular">{r.avgRank.toFixed(2)}</td>
+                <td className="tabular hall-manager-col--hide-portrait">{r.lastPlaceCount}</td>
+                <td className="tabular hall-manager-col--hide-portrait">{r.avgRank.toFixed(2)}</td>
                 <td className="tabular">{r.totalPf}</td>
                 <td className="tabular">
                   <strong>{r.totalPts}</strong>

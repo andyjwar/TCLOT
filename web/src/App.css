@@ -3460,6 +3460,48 @@ button.live-fixture-banner--toggle {
   text-align: left;
 }
 
+/* Portrait phones: show Manager, Seasons, Titles, For, Total Pts, Algorithm only */
+@media (max-width: 1080px) and (orientation: portrait) {
+  .hall-manager-table {
+    min-width: 0;
+    width: 100%;
+    font-size: 0.7rem;
+  }
+
+  .hall-manager-table th,
+  .hall-manager-table td {
+    padding: 6px 5px;
+  }
+
+  .hall-manager-table td.tabular {
+    white-space: nowrap;
+  }
+
+  .hall-manager-table .hall-manager-sort-btn {
+    font-size: 0.62rem;
+    gap: 2px;
+  }
+
+  .hall-manager-table thead th .standings-sort-btn__label {
+    font-size: 0.62rem;
+  }
+
+  .hall-manager-table .standings-sort-arrow {
+    font-size: 0.75em;
+  }
+
+  .hall-manager-table .hall-manager-col--hide-portrait {
+    display: none;
+  }
+
+  .hall-manager-table tbody th.hall-manager-table__name {
+    max-width: 5.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
 .hall-of-champions__rule {
   height: 1px;
   margin: 0 auto 22px;
