@@ -746,6 +746,119 @@
   min-width: 0;
 }
 
+/* First Waiver Picks tile — horizontal strip (~10 cards on wide viewports) */
+.first-waiver-picks-wrap {
+  position: relative;
+  margin-top: 6px;
+}
+
+.first-waiver-picks-strip {
+  display: flex;
+  flex-direction: row;
+  gap: 0.65rem;
+  overflow-x: auto;
+  padding: 6px 4px 4px;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-gutter: stable;
+}
+
+.first-waiver-pick-card {
+  flex: 0 0 calc((100% - 9 * 0.65rem) / 10);
+  min-width: 7.35rem;
+  max-width: 12rem;
+  scroll-snap-align: start;
+  padding: 10px 10px 8px;
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  background: var(--fm-card);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+}
+
+.first-waiver-pick-card__gw {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fm-text-strong);
+}
+
+.first-waiver-pick-card__team {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.first-waiver-pick-card__team-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  line-height: 1.25;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.first-waiver-pick-card__player {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.first-waiver-pick-card__player-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  line-height: 1.2;
+  min-width: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.first-waiver-pick-card__pts {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 0.72rem;
+  margin-top: auto;
+  padding-top: 2px;
+  border-top: 1px solid var(--fm-border);
+}
+
+.first-waiver-pick-card__pts-label {
+  font-weight: 600;
+}
+
+.first-waiver-pick-card__pts-num {
+  font-weight: 800;
+  font-size: 0.88rem;
+  color: var(--fm-text-strong);
+}
+
+.first-waiver-picks-scroll-hint {
+  text-align: center;
+  font-size: 0.68rem;
+  margin: 6px 0 0;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 520px) {
+  .first-waiver-pick-card {
+    flex-basis: 42%;
+    min-width: 8.5rem;
+  }
+}
+
 /* Waiver list */
 .waiver-list {
   list-style: none;

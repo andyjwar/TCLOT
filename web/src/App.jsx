@@ -460,6 +460,7 @@ function App() {
     tradesPanelRows = [],
     matches = [],
     waiverOutGwRows = [],
+    firstWaiverOrderPicks = [],
   } = data ?? {}
   const [formTeamId, setFormTeamId] = useState(null)
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
@@ -1565,6 +1566,74 @@ function App() {
                   </p>
                 )}
               </section>
+
+              <section className="tile tile--compact" aria-labelledby="first-waiver-picks-heading">
+                <div className="tile-head-row tile-head-row--tight">
+                  <h2 id="first-waiver-picks-heading" className="tile-title tile-title--sm">
+                    First Waiver Picks
+                  </h2>
+                </div>
+                <p className="tile-hint muted tile-hint--tight">
+                  Each week: the team <strong>first in the waiver order</strong> when waivers ran, and
+                  the player they successfully picked up. Newest gameweeks first — about ten cards fit
+                  on a wide screen; scroll sideways for earlier weeks.
+                </p>
+                {firstWaiverOrderPicks.length > 0 ? (
+                  <div className="first-waiver-picks-wrap">
+                    <div
+                      className="first-waiver-picks-strip"
+                      role="list"
+                      aria-label="First waiver slot by gameweek, newest first"
+                    >
+                      {firstWaiverOrderPicks.map((row) => (
+                        <article
+                          key={row.gameweek}
+                          className="first-waiver-pick-card"
+                          role="listitem"
+                        >
+                          <div className="first-waiver-pick-card__gw tabular">GW {row.gameweek}</div>
+                          <div className="first-waiver-pick-card__team">
+                            <TeamAvatar
+                              entryId={row.leagueEntryId}
+                              name={row.teamName}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
+                            <span className="first-waiver-pick-card__team-name">{row.teamName}</span>
+                          </div>
+                          <div className="first-waiver-pick-card__player">
+                            <PlayerKit
+                              shirtUrl={row.pickedShirtUrl}
+                              badgeUrl={row.pickedBadgeUrl}
+                              teamShort={row.pickedTeamShort}
+                            />
+                            <span className="first-waiver-pick-card__player-name">
+                              {row.pickedName}
+                            </span>
+                          </div>
+                          <div className="first-waiver-pick-card__pts muted">
+                            <span className="first-waiver-pick-card__pts-label">GW pts</span>
+                            <span className="tabular first-waiver-pick-card__pts-num">
+                              {row.pickedUpPlayerGwPoints != null ? row.pickedUpPlayerGwPoints : '—'}
+                            </span>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    <p className="first-waiver-picks-scroll-hint muted" aria-hidden>
+                      ← Scroll for earlier gameweeks →
+                    </p>
+                  </div>
+                ) : (
+                  <p className="muted muted--tight">
+                    Need <code>transactions.json</code> with waiver <code>index</code> fields. Run a
+                    full ingest, then <code>npm run dev</code> / build for GW points in{' '}
+                    <code>drops-gw-live.json</code>.
+                  </p>
+                )}
+              </section>
+
           <section className="tile tile--compact" aria-labelledby="waiver-in-by-team-heading">
             <div className="tile-head-row tile-head-row--tight">
               <h2 id="waiver-in-by-team-heading" className="tile-title tile-title--sm">

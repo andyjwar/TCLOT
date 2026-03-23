@@ -104,6 +104,83 @@ function buildMostWaivered(transactionsPayload, fplMini) {
     });
 }
 
+/**
+ * Per gameweek: the successful waiver with the lowest FPL `index` (first slot in the
+ * league waiver run that week). Joins GW pickup points from drops-gw-live when present.
+ */
+function buildFirstWaiverOrderPicks(
+  transactionsPayload,
+  teams,
+  elemById,
+  teamById,
+  waiverOutByTxId,
+) {
+  const txs = transactionsPayload?.transactions;
+  if (!txs?.length) return [];
+
+  const byGw = new Map();
+  for (const t of txs) {
+    if (t.kind !== 'w' || t.result !== 'a') continue;
+    const gw = Number(t.event);
+    if (!Number.isFinite(gw) || gw < 1) continue;
+    const idx = t.index;
+    if (idx == null || typeof idx !== 'number' || !Number.isFinite(idx)) continue;
+    if (!byGw.has(gw)) byGw.set(gw, []);
+    byGw.get(gw).push(t);
+  }
+
+  const out = [];
+  for (const [gw, list] of byGw) {
+    let minIdx = Infinity;
+    for (const t of list) {
+      if (t.index < minIdx) minIdx = t.index;
+    }
+    if (!Number.isFinite(minIdx)) continue;
+    const atSlot = list.filter((t) => t.index === minIdx);
+    atSlot.sort((a, b) => (a.id ?? 0) - (b.id ?? 0));
+    const pick = atSlot[0];
+    const fplEntry = Number(pick.entry);
+    const leagueEntryId = teams[fplEntry]?.id ?? fplEntry;
+    const elementIn =
+      pick.element_in != null && pick.element_in !== ''
+        ? Number(pick.element_in)
+        : null;
+    const pickEl = elementIn != null ? elemById[elementIn] : null;
+    const pickTm = pickEl ? teamById[pickEl.team] : null;
+    const pickTeamId = pickEl?.team;
+    const dropRow = waiverOutByTxId.get(pick.id);
+
+    out.push({
+      gameweek: gw,
+      waiverRunIndex: minIdx,
+      transactionId: pick.id,
+      entry: fplEntry,
+      leagueEntryId,
+      teamName: teams[fplEntry]?.entry_name ?? `Team ${fplEntry}`,
+      element_in: elementIn,
+      pickedName:
+        pickEl?.web_name ??
+        (elementIn != null ? `Player #${elementIn}` : '—'),
+      pickedTeamShort: pickTm?.short_name ?? '—',
+      pickedShirtUrl:
+        pickTeamId != null
+          ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${pickTeamId}-1.png`
+          : null,
+      pickedBadgeUrl:
+        pickTm?.code != null
+          ? `https://resources.premierleague.com/premierleague/badges/50/t${pickTm.code}.png`
+          : null,
+      pickedUpPlayerGwPoints:
+        typeof dropRow?.pickedUpPlayerGwPoints === 'number'
+          ? dropRow.pickedUpPlayerGwPoints
+          : null,
+    });
+  }
+
+  out.sort((a, b) => b.gameweek - a.gameweek);
+  return out;
+}
+
 function enrichTradePlayer(elementId, elemById, teamById) {
   const e = elemById[elementId];
   const tm = e ? teamById[e.team] : null;
@@ -723,6 +800,17 @@ function processLeagueData(raw, extras = {}) {
     };
   });
 
+  const waiverOutByTxId = new Map(
+    waiverOutGwRows.map((r) => [r.transactionId, r]),
+  );
+  const firstWaiverOrderPicks = buildFirstWaiverOrderPicks(
+    extras.transactions,
+    teams,
+    elemById,
+    teamById,
+    waiverOutByTxId,
+  );
+
   const waiverInTenureTopRows = (extras.waiverInTenureTop?.rows || []).map(
     (r) => {
       const e = elemById[r.elementId];
@@ -861,6 +949,7 @@ function processLeagueData(raw, extras = {}) {
     mostWaiveredPlayers,
     pointsAgainstList,
     waiverOutGwRows,
+    firstWaiverOrderPicks,
     waiverOutPointsByTeam,
     waiverInTenureTopRows,
     waiverInPointsByTeam,
