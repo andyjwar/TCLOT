@@ -17,15 +17,25 @@ const SHIRT_TEXT = {
   lg: { fontSize: 33 },
 }
 
-function buildSrcList(entryId, logoMap) {
+/**
+ * @param {boolean} [customLogoOnly] If true, skip auto-generated team-logos-web assets; only
+ *   `logoMap` entries and raw files under team-logos/ (custom uploads).
+ */
+function buildSrcList(entryId, logoMap, customLogoOnly) {
   const key = String(entryId)
   const mapped = logoMap[key]
   if (mapped) return [`${RAW_BASE}${mapped}`]
-  const list = [`${WEB_BASE}${entryId}.png`]
+
+  const rawList = []
   for (const ext of LOGO_EXTS) {
-    list.push(`${RAW_BASE}${entryId}.${ext}`)
+    rawList.push(`${RAW_BASE}${entryId}.${ext}`)
   }
-  return list
+
+  if (customLogoOnly) {
+    return rawList
+  }
+  // Prefer uploads in team-logos/ before pipeline output in team-logos-web/
+  return [...rawList, `${WEB_BASE}${entryId}.png`]
 }
 
 function fnv1a32(str) {
@@ -153,16 +163,24 @@ export function TeamAvatar({
   size = 'md',
   logoMap = {},
   kitIndexByEntry,
+  /** If true, render nothing when no custom logo image loads (no shirt initials fallback). */
+  noFallback = false,
+  /** If true, only try custom uploads (team-logos/ + logoMap), not team-logos-web pipeline. */
+  customLogoOnly = false,
 }) {
   const kitIndex = useMemo(
     () => resolveKitIndex(entryId, kitIndexByEntry, name),
     [entryId, kitIndexByEntry, name],
   )
-  const srcList = useMemo(() => buildSrcList(entryId, logoMap), [entryId, logoMap])
+  const srcList = useMemo(
+    () => buildSrcList(entryId, logoMap, customLogoOnly),
+    [entryId, logoMap, customLogoOnly],
+  )
   const [idx, setIdx] = useState(0)
   const [showInitials, setShowInitials] = useState(false)
 
   if (entryId == null || showInitials) {
+    if (noFallback) return null
     return (
       <ShirtInitialsBadge
         name={name}
@@ -175,6 +193,7 @@ export function TeamAvatar({
 
   const src = srcList[idx]
   if (!src) {
+    if (noFallback) return null
     return (
       <ShirtInitialsBadge
         name={name}

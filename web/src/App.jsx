@@ -21,6 +21,7 @@ import {
 import { TeamAvatar } from './TeamAvatar'
 import { LiveScores } from './LiveScores'
 import { PlayOffBracket } from './PlayOffBracket'
+import { DraftBoard } from './DraftBoard'
 import {
   HALL_SEASON_FINAL_TABLES,
   computeHallManagerCareerRows,
@@ -847,6 +848,8 @@ function StandingsSortTh({ columnKey, sortState, onSort, label, title, className
   )
 }
 
+const EMPTY_LEAGUE_ENTRIES = []
+
 function App() {
   const { data, error, loading } = useLeagueData()
   const {
@@ -874,11 +877,12 @@ function App() {
     gwWeeksAtFirst = [],
     gwWeeksAtLast = [],
   } = data ?? {}
+  const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [formTeamId, setFormTeamId] = useState(null)
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
   const [waiverOutGwFilter, setWaiverOutGwFilter] = useState('all')
   const [waiverGwTableMode, setWaiverGwTableMode] = useState('out')
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | waivers | trades | live | hall
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | waivers | trades | draft | live | hall
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
   const [liveGw, setLiveGw] = useState(null)
@@ -1414,6 +1418,20 @@ function App() {
               <span className="dashboard-nav__label">Trades</span>
             </button>
           ) : null}
+          <button
+            type="button"
+            className={
+              'dashboard-nav__btn' +
+              (dashboardView === 'draft' ? ' dashboard-nav__btn--active' : '')
+            }
+            onClick={() => setDashboardView('draft')}
+            aria-current={dashboardView === 'draft' ? 'page' : undefined}
+          >
+            <span className="dashboard-nav__emoji" aria-hidden="true">
+              📋
+            </span>
+            <span className="dashboard-nav__label">Draft</span>
+          </button>
           {showDashboardHall ? (
             <button
               type="button"
@@ -1995,6 +2013,18 @@ function App() {
               kitIndexByEntry={kitIndexByEntry}
               tableRows={tableRows}
             />
+          ) : null}
+
+          {dashboardView === 'draft' ? (
+            <div className="dashboard-stack">
+              <DraftBoard
+                league={data?.league}
+                leagueEntries={leagueEntries}
+                tableRows={tableRows}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </div>
           ) : null}
 
           {dashboardView === 'waivers' && (

@@ -1,0 +1,271 @@
+import { useMemo, useState, useCallback, Fragment } from 'react'
+import { TeamAvatar } from './TeamAvatar'
+
+const EMPTY_POINTS_FOR_BY_FPL = new Map()
+
+function ClubBadge({ src }) {
+  const [hidden, setHidden] = useState(false)
+  if (!src || hidden) return null
+  return (
+    <img
+      src={src}
+      alt=""
+      className="draft-quality__club-badge"
+      width={22}
+      height={22}
+      loading="lazy"
+      decoding="async"
+      onError={() => setHidden(true)}
+    />
+  )
+}
+
+function deltaVersusDrafted(pointsFor, draftedTotal) {
+  if (pointsFor == null || draftedTotal == null) {
+    return { text: '—', tone: null }
+  }
+  const d = pointsFor - draftedTotal
+  const text = d > 0 ? `+${d}` : String(d)
+  const tone = d > 0 ? 'pos' : d < 0 ? 'neg' : 'zero'
+  return { text, tone }
+}
+
+function buildTeamRows(picks) {
+  const byEntry = new Map()
+  for (const p of picks) {
+    if (!byEntry.has(p.entryId)) {
+      byEntry.set(p.entryId, {
+        entryId: p.entryId,
+        leagueEntryId: p.leagueEntryId ?? null,
+        teamName: p.teamName,
+        picks: [],
+      })
+    } else {
+      const row = byEntry.get(p.entryId)
+      if (row.leagueEntryId == null && p.leagueEntryId != null) {
+        row.leagueEntryId = p.leagueEntryId
+      }
+    }
+    byEntry.get(p.entryId).picks.push(p)
+  }
+  const rows = [...byEntry.values()].map((row) => {
+    let total = 0
+    let hasAny = false
+    for (const p of row.picks) {
+      if (p.totalPoints != null) {
+        const n = Number(p.totalPoints)
+        if (Number.isFinite(n)) {
+          total += n
+          hasAny = true
+        }
+      }
+    }
+    row.picks.sort((a, b) => a.overallPick - b.overallPick)
+    return {
+      ...row,
+      totalPoints: hasAny ? total : null,
+    }
+  })
+  rows.sort((a, b) => {
+    const ta = a.totalPoints
+    const tb = b.totalPoints
+    if (ta != null && tb != null && tb !== ta) return tb - ta
+    if (ta != null && tb == null) return -1
+    if (ta == null && tb != null) return 1
+    return String(a.teamName ?? '').localeCompare(String(b.teamName ?? ''), undefined, {
+      sensitivity: 'base',
+    })
+  })
+  let displayRank = 1
+  for (let i = 0; i < rows.length; i++) {
+    if (i > 0 && rows[i].totalPoints !== rows[i - 1].totalPoints) {
+      displayRank = i + 1
+    }
+    rows[i].rank = displayRank
+  }
+  return rows
+}
+
+export function DraftQuality({
+  picks,
+  loading,
+  error,
+  pointsForByFplEntryId = EMPTY_POINTS_FOR_BY_FPL,
+  teamLogoMap = {},
+  kitIndexByEntry = {},
+}) {
+  const [openIds, setOpenIds] = useState(() => new Set())
+
+  const teamRows = useMemo(() => buildTeamRows(picks), [picks])
+
+  const detailOpen = openIds.size > 0
+
+  const toggle = useCallback((entryId) => {
+    setOpenIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(entryId)) next.delete(entryId)
+      else next.add(entryId)
+      return next
+    })
+  }, [])
+
+  return (
+    <section
+      className={
+        detailOpen
+          ? 'tile tile--standings draft-quality-tile draft-quality-tile--expanded'
+          : 'tile tile--standings draft-quality-tile'
+      }
+      aria-labelledby="draft-quality-heading"
+    >
+      <div className="tile-head-row tile-head-row--tight">
+        <h2 id="draft-quality-heading" className="tile-title tile-title--sm">
+          Draft Quality
+        </h2>
+      </div>
+      <p className="draft-quality-hint muted">
+        Total fantasy points if drafted team kept.
+      </p>
+
+      {error ? (
+        <p className="muted draft-quality-loading">Draft data unavailable.</p>
+      ) : loading ? (
+        <p className="muted draft-quality-loading">Loading…</p>
+      ) : !picks.length ? (
+        <p className="muted draft-quality-loading">No draft data.</p>
+      ) : (
+        <div
+          className={
+            detailOpen
+              ? 'draft-quality-scroll draft-quality-scroll--expanded'
+              : 'draft-quality-scroll'
+          }
+        >
+          <table className="draft-quality-table">
+            <thead>
+              <tr>
+                <th scope="col" className="draft-quality-th draft-quality-th--rank">
+                  #
+                </th>
+                <th scope="col" className="draft-quality-th">
+                  Team
+                </th>
+                <th scope="col" className="draft-quality-th draft-quality-th--pts">
+                  Points
+                </th>
+                <th
+                  scope="col"
+                  className="draft-quality-th draft-quality-th--delta"
+                  title="Season points For minus drafted squad total (Points)"
+                >
+                  +/-
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {teamRows.map((team) => {
+                const open = openIds.has(team.entryId)
+                const displayFull = (p) => p.playerFullName ?? p.playerName
+                const forPts = pointsForByFplEntryId.get(Number(team.entryId))
+                const { text: deltaText, tone: deltaTone } = deltaVersusDrafted(
+                  forPts,
+                  team.totalPoints,
+                )
+                const deltaClass =
+                  deltaTone === 'pos'
+                    ? 'draft-quality-td--delta-pos'
+                    : deltaTone === 'neg'
+                      ? 'draft-quality-td--delta-neg'
+                      : deltaTone === 'zero'
+                        ? 'draft-quality-td--delta-zero'
+                        : ''
+                return (
+                  <Fragment key={team.entryId}>
+                    <tr className="draft-quality-row draft-quality-row--team">
+                      <td className="draft-quality-td draft-quality-td--rank tabular">
+                        {team.rank}
+                      </td>
+                      <td className="draft-quality-td draft-quality-td--team">
+                        <button
+                          type="button"
+                          className="draft-quality-team-toggle"
+                          onClick={() => toggle(team.entryId)}
+                          aria-expanded={open}
+                          aria-controls={`draft-quality-picks-${team.entryId}`}
+                          id={`draft-quality-team-${team.entryId}`}
+                        >
+                          <span
+                            className={
+                              open
+                                ? 'draft-quality-chevron draft-quality-chevron--open'
+                                : 'draft-quality-chevron'
+                            }
+                            aria-hidden
+                          >
+                            ▶
+                          </span>
+                          <TeamAvatar
+                            entryId={team.leagueEntryId ?? team.entryId}
+                            name={team.teamName}
+                            size="sm"
+                            logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
+                          />
+                          <span className="draft-quality-team-name">{team.teamName}</span>
+                        </button>
+                      </td>
+                      <td className="draft-quality-td draft-quality-td--pts tabular">
+                        {team.totalPoints != null ? team.totalPoints : '—'}
+                      </td>
+                      <td
+                        className={['draft-quality-td', 'draft-quality-td--delta', 'tabular', deltaClass]
+                          .filter(Boolean)
+                          .join(' ')}
+                        title={
+                          forPts != null && team.totalPoints != null
+                            ? `For ${forPts} − drafted ${team.totalPoints}`
+                            : undefined
+                        }
+                      >
+                        {deltaText}
+                      </td>
+                    </tr>
+                    {open ? (
+                      <tr className="draft-quality-row draft-quality-row--detail">
+                        <td className="draft-quality-td draft-quality-td--detail" colSpan={4}>
+                          <div
+                            className="draft-quality-pick-panel"
+                            id={`draft-quality-picks-${team.entryId}`}
+                            role="region"
+                            aria-labelledby={`draft-quality-team-${team.entryId}`}
+                          >
+                            <ul className="draft-quality-pick-list">
+                              {team.picks.map((p) => (
+                                <li key={`${team.entryId}-${p.overallPick}`} className="draft-quality-pick-item">
+                                  <span className="draft-quality-pick-round">
+                                    Round {p.round} pick {p.pickInRound}
+                                  </span>
+                                  <span className="draft-quality-pick-player">
+                                    <ClubBadge src={p.badgeUrl} />
+                                    <span className="draft-quality-pick-name">{displayFull(p)}</span>
+                                  </span>
+                                  <span className="draft-quality-pick-pts tabular">
+                                    {p.totalPoints != null ? p.totalPoints : '—'}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Fragment>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  )
+}

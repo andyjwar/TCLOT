@@ -185,6 +185,572 @@
   gap: 12px;
 }
 
+/* Draft board (full snake + filters) */
+.draft-board-tile__head.tile-head-row {
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.draft-board-title-inline {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+}
+
+@media (min-width: 720px) {
+  .draft-board-title-inline {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px 12px;
+  }
+}
+
+.draft-board-tile__title {
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.draft-board-filter-scroll {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+}
+
+.draft-board-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+}
+
+.draft-board-filter-select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 38px;
+  font-size: 0.84rem;
+  box-sizing: border-box;
+}
+
+.draft-board-hint {
+  margin: 0 16px 10px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.draft-board-loading {
+  margin: 16px;
+}
+
+.draft-board-banner {
+  margin: 12px 16px;
+}
+
+/* ~15 player rows visible; sticky head uses --draft-head-block */
+.draft-board-scroll {
+  --draft-head-block: 2.85rem;
+  --draft-row-block: 2.58rem;
+  --draft-visible-player-rows: 15;
+  max-height: min(
+    calc(var(--draft-head-block) + var(--draft-visible-player-rows) * var(--draft-row-block)),
+    72vh
+  );
+  overflow-y: auto;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid var(--fm-border);
+}
+
+.draft-board-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Pick | Team | Round | Player | Pos | Pts | Status */
+.draft-board-head,
+.draft-board-row {
+  display: grid;
+  grid-template-columns:
+    minmax(2rem, 2.6rem) minmax(4.5rem, 1.15fr) minmax(0, 1fr) minmax(0, 1.25fr) minmax(2.25rem, 0.72fr)
+    minmax(2.25rem, 0.75fr) minmax(5.5rem, 1.05fr);
+  gap: 10px 12px;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 0.82rem;
+}
+
+/* + squad # when filtering by team */
+.draft-board-scroll--team-slot .draft-board-head,
+.draft-board-scroll--team-slot .draft-board-row {
+  grid-template-columns:
+    minmax(2rem, 2.6rem) minmax(4.5rem, 1.05fr) minmax(0, 0.95fr) minmax(2rem, 2.5rem)
+    minmax(0, 1.15fr) minmax(2rem, 0.68fr) minmax(2.25rem, 0.72fr) minmax(5.5rem, 1fr);
+}
+
+.draft-board-head__cell--slot {
+  text-align: center;
+}
+
+.draft-board-row__team-slot {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--fm-text-strong, #fff) 78%, transparent);
+}
+
+.draft-board-head {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fm-text, #fff) 58%, transparent);
+  background: var(--fm-card, #1e1e1e);
+  border-bottom: 1px dotted var(--fm-border, #333);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--fm-bg, #121212) 40%, transparent);
+}
+
+.draft-board-head__cell--pts {
+  text-align: right;
+}
+
+.draft-board-head__cell--status {
+  text-align: start;
+}
+
+.draft-board-row {
+  border-bottom: 1px dotted var(--fm-border, #333);
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+.draft-board-row--round-start {
+  border-top: 2px dotted var(--fm-accent, #12a15a);
+  padding-top: 12px;
+  margin-top: 0;
+}
+
+.draft-board-row:last-child {
+  border-bottom: none;
+}
+
+.draft-board-row__fantasy-team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.draft-board-row__fantasy-team .team-avatar,
+.draft-board-row__fantasy-team .team-shirt {
+  flex-shrink: 0;
+}
+
+.draft-board-row__fantasy-team-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.draft-board-row__player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.draft-board-row__club-badge {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+.draft-board-row__player-names {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.draft-board-row__player-short {
+  display: none;
+}
+
+.draft-board-row__player-full {
+  display: inline;
+}
+
+.draft-board-row__pts {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.draft-board-row__status {
+  position: relative;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.25;
+  color: color-mix(in srgb, var(--fm-text-strong, #fff) 88%, transparent);
+  min-width: 0;
+}
+
+.draft-board-a11y-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 560px) {
+  .draft-board-head,
+  .draft-board-row {
+    gap: 8px 10px;
+    padding: 8px 12px;
+    font-size: 0.76rem;
+  }
+
+  .draft-board-row__round {
+    font-size: 0.72rem;
+    line-height: 1.25;
+  }
+}
+
+/* Mobile landscape: full table (match narrow-width draft layout) */
+@media (max-width: 560px) and (orientation: landscape) {
+  .draft-board-head,
+  .draft-board-row {
+    grid-template-columns:
+      minmax(1.75rem, 2.2rem) minmax(0, 1fr) minmax(0, 0.95fr) minmax(0, 1.05fr) minmax(2rem, 0.65fr)
+      minmax(1.75rem, 0.68fr) minmax(4.5rem, 0.95fr);
+  }
+
+  .draft-board-scroll--team-slot .draft-board-head,
+  .draft-board-scroll--team-slot .draft-board-row {
+    grid-template-columns:
+      minmax(1.75rem, 2.2rem) minmax(0, 0.95fr) minmax(0, 0.85fr) 1.6rem minmax(0, 1fr) minmax(1.85rem, 0.62fr)
+      minmax(1.75rem, 0.65fr) minmax(4.5rem, 0.88fr);
+  }
+
+  .draft-board-row__player-full {
+    display: inline;
+  }
+
+  .draft-board-row__player-short {
+    display: none;
+  }
+}
+
+/*
+ * Mobile portrait: same breakpoint as Live lineup — hide Pick + Pos, short names (web_name).
+ */
+@media (max-width: 560px) and (orientation: portrait) {
+  .draft-board-head__cell--pick,
+  .draft-board-row__pick,
+  .draft-board-head__cell--pos,
+  .draft-board-row__pos {
+    display: none !important;
+  }
+
+  .draft-board-head__cell--status,
+  .draft-board-row__status {
+    font-size: 0.7rem;
+  }
+
+  .draft-board-head,
+  .draft-board-row {
+    grid-template-columns:
+      minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 1.25fr) minmax(2rem, 0.72fr) minmax(0, 1.05fr);
+  }
+
+  .draft-board-scroll--team-slot .draft-board-head,
+  .draft-board-scroll--team-slot .draft-board-row {
+    grid-template-columns:
+      minmax(0, 1.05fr) minmax(0, 0.88fr) minmax(1.5rem, 2rem) minmax(0, 1.15fr) minmax(2rem, 0.68fr)
+      minmax(0, 0.95fr);
+  }
+
+  .draft-board-row__player-full {
+    display: none;
+  }
+
+  .draft-board-row__player-short {
+    display: inline;
+  }
+
+  .draft-board-row__player-names {
+    font-size: 0.68rem;
+    font-weight: 700;
+  }
+
+  .draft-board-row__club-badge {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Draft quality (team totals + expandable drafted squad) */
+.draft-quality-hint {
+  margin: 0 16px 12px;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+.draft-quality-loading {
+  margin: 16px;
+}
+
+.draft-quality-scroll {
+  max-height: min(60vh, 28rem);
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid var(--fm-border);
+}
+
+/* Grow with content when a team is expanded so ~15 picks stay visible without inner scroll */
+.draft-quality-scroll--expanded {
+  max-height: none;
+  overflow: visible;
+}
+
+.draft-quality-scroll--expanded .draft-quality-th {
+  position: static;
+}
+
+.draft-quality-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.draft-quality-th {
+  text-align: left;
+  padding: 10px 16px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--fm-text, #fff) 58%, transparent);
+  background: var(--fm-card, #1e1e1e);
+  border-bottom: 1px dotted var(--fm-border, #333);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.draft-quality-th--rank {
+  width: 2.5rem;
+  text-align: center;
+}
+
+.draft-quality-th--pts {
+  text-align: right;
+  width: 4rem;
+}
+
+.draft-quality-th--delta {
+  text-align: right;
+  width: 4.25rem;
+}
+
+.draft-quality-row--team {
+  border-bottom: 1px dotted var(--fm-border, #333);
+}
+
+.draft-quality-row--team td {
+  padding: 10px 16px;
+  vertical-align: middle;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+.draft-quality-td--rank {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: color-mix(in srgb, var(--fm-text-strong, #fff) 78%, transparent);
+}
+
+.draft-quality-team-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 600;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.draft-quality-team-toggle:hover {
+  color: var(--fm-accent, #12a15a);
+}
+
+.draft-quality-team-toggle:focus-visible {
+  outline: 2px solid var(--fm-accent, #12a15a);
+  outline-offset: 2px;
+}
+
+.draft-quality-chevron {
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 1.1rem;
+  justify-content: center;
+  font-size: 0.65rem;
+  line-height: 1;
+  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
+  transition: transform 0.15s ease;
+}
+
+.draft-quality-chevron--open {
+  transform: rotate(90deg);
+}
+
+.draft-quality-team-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.draft-quality-td--pts {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.draft-quality-td--delta {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+}
+
+/* Beat `.draft-quality-row--team td { color }` so +/- shows green/red */
+.draft-quality-row--team td.draft-quality-td--delta-pos {
+  color: var(--fm-win, #34d399);
+}
+
+.draft-quality-row--team td.draft-quality-td--delta-neg {
+  color: var(--fm-loss, #f87171);
+}
+
+.draft-quality-row--team td.draft-quality-td--delta-zero {
+  color: color-mix(in srgb, var(--fm-text-strong, #fff) 72%, transparent);
+}
+
+.draft-quality-row--detail td {
+  padding: 0;
+  border-bottom: 1px dotted var(--fm-border, #333);
+  background: color-mix(in srgb, var(--fm-bg, #121212) 55%, var(--fm-card, #1e1e1e));
+}
+
+.draft-quality-pick-panel {
+  padding: 8px 12px 14px 16px;
+}
+
+.draft-quality-pick-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.draft-quality-pick-item {
+  display: grid;
+  grid-template-columns: minmax(0, 7.5rem) minmax(0, 1fr) minmax(2.5rem, auto);
+  gap: 10px 12px;
+  align-items: center;
+  padding: 8px 0 8px 1.5rem;
+  border-top: 1px dotted color-mix(in srgb, var(--fm-border, #333) 70%, transparent);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--fm-text);
+}
+
+.draft-quality-pick-item:first-child {
+  border-top: none;
+  padding-top: 4px;
+}
+
+.draft-quality-pick-round {
+  font-size: 0.76rem;
+  color: color-mix(in srgb, var(--fm-text, #fff) 72%, transparent);
+  white-space: nowrap;
+}
+
+.draft-quality-pick-player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.draft-quality__club-badge {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+  display: block;
+}
+
+.draft-quality-pick-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+.draft-quality-pick-pts {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+@media (max-width: 560px) {
+  .draft-quality-pick-item {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding-left: 0.75rem;
+  }
+
+  .draft-quality-pick-round {
+    white-space: normal;
+  }
+
+  .draft-quality-pick-player {
+    flex-wrap: wrap;
+  }
+
+  .draft-quality-pick-pts {
+    text-align: left;
+  }
+}
+
 /* Complete + Future gameweek tiles (Standings view) */
 .dashboard-gw-two {
   display: grid;

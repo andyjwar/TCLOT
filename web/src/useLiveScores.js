@@ -5,44 +5,12 @@ import {
   selectDisplayBonus,
 } from './fplBonusFromBps';
 import { buildEffectiveLineup } from './fplAutosubProjection';
-
-/** Classic host — only used when resolving `fplApiBase()` with no proxy / non-dev. */
-const FPL_DIRECT = 'https://fantasy.premierleague.com/api';
-
-/** Draft API base (picks, bootstrap, live). IDs here ≠ classic FPL for the same number. */
-const DRAFT_DIRECT = 'https://draft.premierleague.com/api';
-
-/**
- * - **Production / preview:** `VITE_FPL_PROXY_URL` = Cloudflare Worker (must support `/draft/*`).
- * - **`npm run dev`:** if that env is **unset or empty**, use same-origin `/__fpl/*` (Vite proxy in vite.config.js).
- */
-function fplApiBase() {
-  const raw = import.meta.env.VITE_FPL_PROXY_URL;
-  const trimmed = raw != null ? String(raw).trim() : '';
-  if (trimmed !== '') {
-    return trimmed.replace(/\/$/, '');
-  }
-  if (import.meta.env.DEV) {
-    return '/__fpl';
-  }
-  return FPL_DIRECT;
-}
-
-/**
- * Resource path under draft.premierleague.com/api — no leading slash.
- * Draft `event/{gw}/live` 404s with a trailing slash; classic does not.
- */
-function draftResourceUrl(path) {
-  const p = String(path).replace(/^\/+/, '');
-  const base = fplApiBase();
-  if (base !== FPL_DIRECT) {
-    return `${base}/draft/${p}`;
-  }
-  if (import.meta.env.DEV) {
-    return `/__fpl/draft/${p}`;
-  }
-  return `${DRAFT_DIRECT}/${p}`;
-}
+import {
+  FPL_DIRECT,
+  draftEntryEventUrl,
+  draftResourceUrl,
+  fplApiBase,
+} from './fplDraftUrl';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
 function classicResourceUrl(pathAndQuery) {
@@ -55,18 +23,6 @@ function classicResourceUrl(pathAndQuery) {
     return `/__fpl/${pq}`;
   }
   return `${FPL_DIRECT}/${pq}`;
-}
-
-/**
- * @param {number} entryId FPL `entry_id` from draft `league_entries` (not `league_entry` id).
- * @param {number} gameweek
- */
-function draftGameweekPicksUrl(entryId, gameweek) {
-  const base = fplApiBase();
-  if (base !== FPL_DIRECT) {
-    return `${base}/draft/entry/${entryId}/event/${gameweek}`;
-  }
-  return `${DRAFT_DIRECT}/entry/${entryId}/event/${gameweek}`;
 }
 
 /** Draft bootstrap nests gameweeks in `events.data`; classic uses `events` array. */
@@ -401,7 +357,7 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
             };
           }
 
-          const url = draftGameweekPicksUrl(t.fplEntryId, gw);
+          const url = draftEntryEventUrl(t.fplEntryId, gw);
           const pr = await fetch(url);
           if (!pr.ok) {
             return {

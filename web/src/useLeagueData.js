@@ -1066,6 +1066,8 @@ function processLeagueData(raw, extras = {}) {
 
   return {
     league: details.league,
+    /** Raw league members (FPL `entry_id`, internal `id`, names, `waiver_pick`). */
+    leagueEntries,
     /** `league_entry` / `entry_id` → 0–11 shirt kit (standings order). */
     defaultKitIndexByLeagueEntry,
     /** Raw H2H schedule (pair with `gameweek` for Live tab fixtures). */
