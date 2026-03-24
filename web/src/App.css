@@ -3357,72 +3357,149 @@ button.live-fixture-banner--toggle {
   text-align: center;
 }
 
-/* Hall — manager career stats (final tables by season) */
-.hall-manager-dash {
+/* Hall — team history (Latest Waivers–style rows: manager, then horizontal season strip) */
+.hall-team-history.hall-of-champions {
   margin-top: 0;
 }
 
-.hall-manager-dash__title {
-  margin: 0 0 12px;
+.hall-team-history .tile-head-row .hall-manager-dash__title {
+  margin: 0;
   color: var(--hall-gold);
-  text-align: center;
+  text-align: left;
+  width: 100%;
 }
 
-.hall-manager-dash__explanation {
-  margin: 0 0 14px;
-  font-size: 0.8rem;
-  line-height: 1.45;
-  text-align: center;
-  max-width: 40rem;
-  margin-left: auto;
-  margin-right: auto;
+.hall-team-history__list {
+  margin-top: 4px;
 }
 
-.table-scroll--hall-manager {
-  margin-top: 0;
-  border-radius: 10px;
-  border: 1px solid var(--hall-rule);
+.hall-of-champions .hall-team-history .latest-waivers__team-block {
+  border-color: var(--hall-rule);
   background: color-mix(in srgb, var(--hall-bg) 94%, #000 6%);
 }
 
-.hall-manager-table {
-  width: 100%;
-  min-width: 34rem;
-  border-collapse: collapse;
-  font-size: 0.8rem;
+.hall-team-history__manager.latest-waivers__team-title {
+  color: var(--hall-gold);
 }
 
-.hall-manager-table th,
-.hall-manager-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--hall-rule);
+.hall-of-champions .hall-team-history .latest-waivers__move {
+  border-left-color: var(--hall-rule);
+  min-width: min(100%, 9.25rem);
+  max-width: 15rem;
+}
+
+.hall-team-history__team-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 0.82rem;
+  min-width: 0;
+}
+
+.hall-team-history__team-name {
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  line-height: 1.25;
+}
+
+.hall-of-champions .hall-team-history .hall-team-history__team-name {
+  color: color-mix(in srgb, #fff 88%, var(--hall-gold) 12%);
+}
+
+.hall-team-history__season {
+  font-size: 0.72rem;
+  line-height: 1.2;
+}
+
+/* Hall — Historic Standings + Champion of Champions (shared shell; tables use standings-table) */
+.hall-standings-sheet.tile--standings > .tile-head-row {
+  align-items: flex-start;
+}
+
+.hall-standings-sheet {
+  margin-top: 14px;
+}
+
+.hall-standings-sheet .hall-standings-sheet__title.tile-title--with-select {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 10px;
+  width: 100%;
+  margin: 0;
+  color: var(--hall-gold);
+  text-align: left;
+}
+
+.hall-standings-sheet .hall-standings-sheet__title:not(.tile-title--with-select) {
+  margin: 0;
+  color: var(--hall-gold);
+  text-align: left;
+  width: 100%;
+}
+
+.hall-standings-sheet__headstack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+}
+
+.hall-standings-sheet__explanation {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  text-align: left;
+  max-width: 40rem;
+}
+
+.hall-standings-sheet .tile-gw-select--inline {
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--hall-bg) 92%, #fff 8%);
+  border-color: var(--hall-rule);
+}
+
+.historic-standings-team {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+
+.historic-standings-team__name {
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--fm-text-strong);
+  max-width: 160px;
+}
+
+.historic-standings-team__mgr {
+  font-size: 0.72rem;
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Hall — Champion of Champions career totals (standings-table + sort headers) */
+.standings-table--hall-career {
+  min-width: 34rem;
+}
+
+.standings-table--hall-career tbody th.hall-career-mgr {
+  font-weight: 700;
   vertical-align: middle;
 }
 
-.hall-manager-table thead th {
-  font-size: 0.62rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--hall-muted);
-  background: color-mix(in srgb, var(--hall-bg) 88%, var(--hall-gold) 6%);
-}
-
-.hall-manager-table tbody tr:last-child th,
-.hall-manager-table tbody tr:last-child td {
-  border-bottom: none;
-}
-
-.hall-manager-table tbody th.hall-manager-table__name {
-  font-weight: 700;
-}
-
-/* Gold / yellow manager names (Hall career table) */
+/* Gold manager names (Hall career table) */
 .hall-manager-name--gold {
   color: var(--hall-gold);
 }
 
-.hall-manager-table .hall-manager-sort-btn {
+.standings-table--hall-career .hall-manager-sort-btn {
   width: 100%;
   font: inherit;
   font-size: 0.72rem;
@@ -3432,69 +3509,56 @@ button.live-fixture-banner--toggle {
   color: inherit;
 }
 
-.hall-manager-table thead th .standings-sort-btn__label {
+.standings-table--hall-career thead th .standings-sort-btn__label {
   text-transform: none;
   letter-spacing: 0.02em;
   font-size: 0.72rem;
-}
-
-.hall-manager-th--name .hall-manager-sort-btn {
-  text-align: left;
-  justify-items: start;
-}
-
-.hall-manager-th--name .standings-sort-btn__label {
-  text-align: left;
 }
 
 .hall-manager-th--num .standings-sort-btn__label {
   text-align: right;
 }
 
-.hall-manager-table td.tabular,
-.hall-manager-table thead th.tabular {
-  text-align: right;
-}
-
-.hall-manager-table thead th.hall-manager-th--name {
+.standings-table--hall-career thead th.col-team {
   text-align: left;
+  vertical-align: middle;
 }
 
 /* Portrait phones: show Manager, Seasons, Titles, For, Total Pts, Algorithm only */
 @media (max-width: 1080px) and (orientation: portrait) {
-  .hall-manager-table {
+  .standings-table--hall-career {
     min-width: 0;
     width: 100%;
     font-size: 0.7rem;
   }
 
-  .hall-manager-table th,
-  .hall-manager-table td {
+  .standings-table--hall-career th,
+  .standings-table--hall-career td {
     padding: 6px 5px;
   }
 
-  .hall-manager-table td.tabular {
+  .standings-table--hall-career td.tabular {
     white-space: nowrap;
   }
 
-  .hall-manager-table .hall-manager-sort-btn {
+  .standings-table--hall-career .hall-manager-sort-btn {
     font-size: 0.62rem;
     gap: 2px;
   }
 
-  .hall-manager-table thead th .standings-sort-btn__label {
+  .standings-table--hall-career thead th .standings-sort-btn__label {
     font-size: 0.62rem;
   }
 
-  .hall-manager-table .standings-sort-arrow {
+  .standings-table--hall-career .standings-sort-arrow {
     font-size: 0.75em;
   }
 
-  .hall-manager-table .hall-manager-col--hide-portrait {
+  .standings-table--hall-career .hall-manager-col--hide-portrait {
     display: none;
   }
 
-  .hall-manager-table tbody th.hall-manager-table__name {
+  .standings-table--hall-career tbody th.hall-career-mgr {
     max-width: 5.5rem;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -4241,6 +4305,11 @@ button.live-fixture-banner--toggle {
 
   .standings-table thead th {
     font-size: 0.68rem;
+  }
+
+  /* Historic hall: no Faced/GD/Form/Nxt — keep W / D / L visible in portrait */
+  .standings-table.standings-table--historic .col-wdl {
+    display: table-cell !important;
   }
 }
 

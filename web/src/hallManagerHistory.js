@@ -205,3 +205,33 @@ export function computeLiveHallManagerCareerRows(tableRows) {
     { season: LIVE_HALL_SEASON_LABEL, rows: liveRows },
   ])
 }
+
+/**
+ * Per manager (display key): teams managed in season order — archived tables plus current
+ * season when `tableRows` is available.
+ * @param {object[] | null | undefined} tableRows
+ * @returns {{ key: string, entries: { season: string, team: string }[] }[]}
+ */
+export function computeHallManagerTeamHistory(tableRows) {
+  const liveRows = buildLiveSeasonHallRows(tableRows)
+  const seasonDefs =
+    liveRows.length > 0
+      ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
+      : HALL_SEASON_FINAL_TABLES
+
+  /** @type {Map<string, { season: string, team: string }[]>} */
+  const byKey = new Map()
+  for (const { season, rows } of seasonDefs) {
+    for (const r of rows) {
+      const key = hallManagerDisplayKey(r.team, r.manager)
+      if (!byKey.has(key)) byKey.set(key, [])
+      const team = String(r.team ?? '').trim() || '—'
+      byKey.get(key).push({ season, team })
+    }
+  }
+
+  const keys = [...byKey.keys()].sort((a, b) =>
+    a.localeCompare(b, undefined, { sensitivity: 'base' }),
+  )
+  return keys.map((key) => ({ key, entries: byKey.get(key) }))
+}

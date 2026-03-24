@@ -22,7 +22,9 @@ import { TeamAvatar } from './TeamAvatar'
 import { LiveScores } from './LiveScores'
 import { PlayOffBracket } from './PlayOffBracket'
 import {
+  HALL_SEASON_FINAL_TABLES,
   computeHallManagerCareerRows,
+  computeHallManagerTeamHistory,
   computeLiveHallManagerCareerRows,
 } from './hallManagerHistory'
 import './App.css'
@@ -190,35 +192,33 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
 
   return (
     <section
-      className="tile hall-of-champions hall-manager-dash"
+      className="tile hall-of-champions tile--standings hall-standings-sheet"
       aria-labelledby={headingId}
     >
-      <h2 id={headingId} className="tile-title tile-title--sm hall-manager-dash__title">
-        {title}
-      </h2>
-      {explanation ? (
-        <p className="hall-manager-dash__explanation muted">{explanation}</p>
-      ) : null}
-      <div className="table-scroll table-scroll--hall-manager">
-        <table className="hall-manager-table">
+      <div className="tile-head-row tile-head-row--tight">
+        <div className="hall-standings-sheet__headstack">
+          <h2 id={headingId} className="tile-title tile-title--sm hall-standings-sheet__title">
+            {title}
+          </h2>
+          {explanation ? (
+            <p className="hall-standings-sheet__explanation muted">{explanation}</p>
+          ) : null}
+        </div>
+      </div>
+      <div className="table-scroll table-scroll--standings-open">
+        <table className="standings-table standings-table--sidebar standings-table--hall-career">
           <thead>
             <tr>
-              <HallManagerSortTh
-                columnKey="key"
-                sortState={sort}
-                onSort={handleSort}
-                label="Manager"
-                title="Manager"
-                className="hall-manager-th--name"
-                stringSort
-              />
+              <th scope="col" className="col-team" title="Manager">
+                Manager
+              </th>
               <HallManagerSortTh
                 columnKey="seasons"
                 sortState={sort}
                 onSort={handleSort}
                 label="Seasons"
                 title="Seasons in TCLOT"
-                className="tabular hall-manager-th--num"
+                className="col-num tabular hall-manager-th--num"
               />
               <HallManagerSortTh
                 columnKey="titles"
@@ -226,7 +226,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="Titles"
                 title="League titles (finished 1st)"
-                className="tabular hall-manager-th--num"
+                className="col-num tabular hall-manager-th--num"
               />
               <HallManagerSortTh
                 columnKey="lastPlaceCount"
@@ -234,7 +234,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="Last"
                 title="Times finished last in the table that season"
-                className="tabular hall-manager-th--num hall-manager-col--hide-portrait"
+                className="col-num tabular hall-manager-th--num hall-manager-col--hide-portrait"
               />
               <HallManagerSortTh
                 columnKey="avgRank"
@@ -242,7 +242,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="Average Rank"
                 title="Mean finishing position (lower is better)"
-                className="tabular hall-manager-th--num hall-manager-col--hide-portrait"
+                className="col-num tabular hall-manager-th--num hall-manager-col--hide-portrait"
               />
               <HallManagerSortTh
                 columnKey="totalPf"
@@ -250,7 +250,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="For"
                 title="Total FPL points scored (sum of For across seasons)"
-                className="tabular hall-manager-th--num"
+                className="col-num tabular hall-manager-th--num"
               />
               <HallManagerSortTh
                 columnKey="totalPts"
@@ -258,7 +258,7 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="Total Pts"
                 title="Total H2H league points"
-                className="tabular hall-manager-th--num"
+                className="col-num tabular hall-manager-th--num col-pts"
               />
               <HallManagerSortTh
                 columnKey="totalPlacementPts"
@@ -266,25 +266,29 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
                 onSort={handleSort}
                 label="Algorithm"
                 title="Placement score: 8 for 1st, 7 for 2nd, … 1 for 8th each season"
-                className="tabular hall-manager-th--num"
+                className="col-num tabular hall-manager-th--num"
               />
             </tr>
           </thead>
           <tbody>
             {sortedRows.map((r) => (
               <tr key={r.key}>
-                <th scope="row" className="hall-manager-table__name hall-manager-name--gold">
+                <th scope="row" className="col-team hall-career-mgr hall-manager-name--gold">
                   {r.key}
                 </th>
-                <td className="tabular">{r.seasons}</td>
-                <td className="tabular">{r.titles}</td>
-                <td className="tabular hall-manager-col--hide-portrait">{r.lastPlaceCount}</td>
-                <td className="tabular hall-manager-col--hide-portrait">{r.avgRank.toFixed(2)}</td>
-                <td className="tabular">{r.totalPf}</td>
-                <td className="tabular">
+                <td className="col-num tabular">{r.seasons}</td>
+                <td className="col-num tabular">{r.titles}</td>
+                <td className="col-num tabular hall-manager-col--hide-portrait">
+                  {r.lastPlaceCount}
+                </td>
+                <td className="col-num tabular hall-manager-col--hide-portrait">
+                  {r.avgRank.toFixed(2)}
+                </td>
+                <td className="col-num tabular">{r.totalPf}</td>
+                <td className="col-num col-pts tabular">
                   <strong>{r.totalPts}</strong>
                 </td>
-                <td className="tabular">
+                <td className="col-num tabular">
                   <strong>{r.totalPlacementPts}</strong>
                 </td>
               </tr>
@@ -292,6 +296,9 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
           </tbody>
         </table>
       </div>
+      <p className="table-foot muted standings-landscape-hint">
+        On mobile, turn your device to landscape for the full table.
+      </p>
     </section>
   )
 }
@@ -313,10 +320,194 @@ function HallManagerCareerDashboard({ tableRows = [] }) {
       <HallManagerCareerTable
         headingId="hall-champions-live-heading"
         title="Live Champions of Champions"
-        explanation="Includes 2025/26 season standings."
+        explanation="Includes current 2025/26 season"
         careerRows={liveRows}
       />
     </>
+  )
+}
+
+/** e.g. "2024-25" → "2024/25" for season labels */
+function formatHallSeasonLabel(seasonKey) {
+  const [y1, y2] = String(seasonKey ?? '').split('-')
+  if (y1 && y2) return `${y1}/${y2}`
+  return seasonKey
+}
+
+function HistoricStandingsSection() {
+  const seasonOptions = useMemo(
+    () => [...HALL_SEASON_FINAL_TABLES].reverse(),
+    [],
+  )
+  const [selectedSeason, setSelectedSeason] = useState(
+    () =>
+      HALL_SEASON_FINAL_TABLES[HALL_SEASON_FINAL_TABLES.length - 1]?.season ?? '',
+  )
+
+  const activeTable = useMemo(
+    () => HALL_SEASON_FINAL_TABLES.find((s) => s.season === selectedSeason),
+    [selectedSeason],
+  )
+  const rows = activeTable?.rows ?? []
+  const nTeams = rows.length
+
+  return (
+    <section
+      className="tile hall-of-champions tile--standings hall-standings-sheet"
+      aria-labelledby="hall-historic-standings-heading"
+    >
+      <div className="tile-head-row tile-head-row--tight">
+        <h2
+          id="hall-historic-standings-heading"
+          className="tile-title tile-title--sm tile-title--with-select hall-standings-sheet__title"
+        >
+          <span className="tile-title__text">Historic Standings</span>
+          {seasonOptions.length > 0 ? (
+            <select
+              className="tile-gw-select tile-gw-select--inline"
+              aria-label="Completed season"
+              value={selectedSeason}
+              onChange={(e) => setSelectedSeason(e.target.value)}
+            >
+              {seasonOptions.map(({ season }) => (
+                <option key={season} value={season}>
+                  Season {formatHallSeasonLabel(season)}
+                </option>
+              ))}
+            </select>
+          ) : null}
+        </h2>
+      </div>
+      <div className="table-scroll table-scroll--standings-open">
+        <table className="standings-table standings-table--sidebar standings-table--historic">
+          <thead>
+            <tr>
+              <th className="col-rank">#</th>
+              <th className="col-team">Team</th>
+              <th className="col-num col-pl">PL</th>
+              <th className="col-num col-wdl">W</th>
+              <th className="col-num col-wdl">D</th>
+              <th className="col-num col-wdl">L</th>
+              <th
+                className="col-num col-for"
+                title="Total FPL points scored across H2H gameweeks that season"
+              >
+                For
+              </th>
+              <th
+                className="col-num col-pts"
+                title="League points (3 / 1 / 0 per H2H)"
+              >
+                PTS
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => {
+              const pl = row.w + row.d + row.l
+              const isLeader = row.rank === 1
+              const isLast = nTeams > 0 && row.rank === nTeams
+              const rowClass = [
+                isLeader ? 'row-highlight' : '',
+                isLeader ? 'standings-row--divider-below' : '',
+                isLast ? 'standings-row--divider-above standings-row--8th' : '',
+              ]
+                .filter(Boolean)
+                .join(' ')
+              return (
+                <tr
+                  key={`${selectedSeason}-${row.team}-${row.rank}`}
+                  className={rowClass || undefined}
+                >
+                  <td className="col-rank">
+                    {isLast ? (
+                      <span
+                        role="img"
+                        className="standings-rank-8"
+                        aria-label={String(nTeams)}
+                      >
+                        🧩
+                      </span>
+                    ) : (
+                      row.rank
+                    )}
+                  </td>
+                  <td className="col-team">
+                    <span className="historic-standings-team">
+                      <span className="historic-standings-team__name">{row.team}</span>
+                      <span className="historic-standings-team__mgr muted tabular">
+                        {row.manager}
+                      </span>
+                    </span>
+                  </td>
+                  <td className="col-num col-pl tabular">{pl}</td>
+                  <td className="col-num col-wdl">{row.w}</td>
+                  <td className="col-num col-wdl">{row.d}</td>
+                  <td className="col-num col-wdl">{row.l}</td>
+                  <td className="col-num col-for tabular" title="Points for, that season">
+                    {row.pf}
+                  </td>
+                  <td className="col-num col-pts tabular">
+                    <strong>{row.pts}</strong>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+      <p className="table-foot muted standings-landscape-hint">
+        On mobile, turn your device to landscape for the full table.
+      </p>
+    </section>
+  )
+}
+
+function HallTeamHistorySection({ tableRows = [] }) {
+  const rows = useMemo(
+    () => computeHallManagerTeamHistory(tableRows),
+    [tableRows],
+  )
+
+  return (
+    <section
+      className="tile hall-of-champions tile--compact hall-team-history"
+      aria-labelledby="hall-team-history-heading"
+    >
+      <div className="tile-head-row tile-head-row--tight">
+        <h2
+          id="hall-team-history-heading"
+          className="tile-title tile-title--sm hall-manager-dash__title"
+        >
+          Team History
+        </h2>
+      </div>
+      <div className="latest-waivers hall-team-history__list">
+        {rows.map(({ key, entries }) => (
+          <div key={key} className="latest-waivers__team-block hall-team-history__block">
+            <h3 className="latest-waivers__team-title hall-team-history__manager">
+              <span>{key}</span>
+            </h3>
+            <ul
+              className="latest-waivers__move-list hall-team-history__teams"
+              aria-label={`Teams managed by ${key}, chronological`}
+            >
+              {entries.map((e) => (
+                <li
+                  key={`${e.season}-${e.team}`}
+                  className="latest-waivers__move hall-team-history__team-cell"
+                >
+                  <div className="hall-team-history__team-stack">
+                    <span className="hall-team-history__team-name">{e.team}</span>
+                    <span className="hall-team-history__season muted tabular">{e.season}</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </section>
   )
 }
 
@@ -386,7 +577,9 @@ function HallOfChampions({ logoMap, kitIndexByEntry = {}, tableRows = [] }) {
           ))}
         </ul>
       </section>
+      <HistoricStandingsSection />
       <HallManagerCareerDashboard tableRows={tableRows} />
+      <HallTeamHistorySection tableRows={tableRows} />
     </>
   )
 }
