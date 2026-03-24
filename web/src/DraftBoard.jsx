@@ -1,9 +1,81 @@
-import { useMemo, useState, Fragment } from 'react'
+import { useMemo, useState, useCallback, Fragment } from 'react'
 import { useDraftBoard } from './useDraftBoard'
 import { TeamAvatar } from './TeamAvatar'
 import { DraftQuality } from './DraftQuality'
 
 const POS_OPTIONS = ['GKP', 'DEF', 'MID', 'FWD']
+
+/** @typedef {{ key: 'overallPick' | 'totalPoints', dir: 'asc' | 'desc' } | null} DraftBoardSortState */
+
+function numericDraftPickPts(p) {
+  const v = p.totalPoints
+  if (v == null) return NaN
+  const n = Number(v)
+  return Number.isFinite(n) ? n : NaN
+}
+
+/**
+ * Sortable Pick / Pts headers — same interaction as standings (StandingsSortTh): null = draft order;
+ * first click on a column = desc; click again toggles asc/desc.
+ */
+function DraftBoardSortHeadCell({ columnKey, sortState, onSort, label, className }) {
+  const isPick = columnKey === 'overallPick'
+  const isPts = columnKey === 'totalPoints'
+  const active = sortState?.key === columnKey
+  const dir = active ? sortState.dir : null
+  /** Draft list default: overall pick low → high */
+  const pickDraftDefault = isPick && sortState === null
+
+  let arrowGlyph = '↕'
+  let arrowClass = 'standings-sort-arrow'
+  if (isPick) {
+    if (pickDraftDefault) {
+      arrowGlyph = '↑'
+      arrowClass += ' standings-sort-arrow--active standings-sort-arrow--asc'
+    } else if (active) {
+      arrowGlyph = dir === 'asc' ? '↑' : '↓'
+      arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
+    }
+  } else if (isPts && active) {
+    arrowGlyph = dir === 'asc' ? '↑' : '↓'
+    arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
+  }
+
+  const ariaSort = pickDraftDefault
+    ? 'ascending'
+    : active
+      ? dir === 'asc'
+        ? 'ascending'
+        : 'descending'
+      : undefined
+
+  const ariaLabel = isPick
+    ? pickDraftDefault
+      ? 'Draft order (early picks first). Click to sort by pick.'
+      : active
+        ? `Pick: sorted ${dir === 'desc' ? 'high to low' : 'low to high'}. Click to reverse.`
+        : 'Sort by pick'
+    : active
+      ? `Pts: sorted ${dir === 'desc' ? 'high to low' : 'low to high'}. Click to reverse.`
+      : 'Sort by points'
+
+  return (
+    <span className={className} role="columnheader">
+      <button
+        type="button"
+        className="standings-sort-btn draft-board-sort-btn"
+        onClick={() => onSort(columnKey)}
+        aria-sort={ariaSort}
+        aria-label={ariaLabel}
+      >
+        <span className="standings-sort-btn__label">{label}</span>
+        <span className={arrowClass} aria-hidden>
+          {arrowGlyph}
+        </span>
+      </button>
+    </span>
+  )
+}
 
 /** League entry id — same as standings `row.league_entry` (team-logos/, kitIndexByEntry). */
 function logoLeagueEntryId(pick, fplToLeagueId) {
@@ -84,6 +156,18 @@ export function DraftBoard({
   const [teamFilter, setTeamFilter] = useState('')
   const [roundFilter, setRoundFilter] = useState('')
   const [posFilter, setPosFilter] = useState('')
+  /** `null` = draft order (overall pick ascending); otherwise sort by column */
+  const [draftBoardSort, setDraftBoardSort] = useState(/** @type {DraftBoardSortState} */ (null))
+
+  const handleDraftBoardSort = useCallback((columnKey) => {
+    if (columnKey !== 'overallPick' && columnKey !== 'totalPoints') return
+    setDraftBoardSort((prev) => {
+      if (prev?.key === columnKey) {
+        return { key: columnKey, dir: prev.dir === 'desc' ? 'asc' : 'desc' }
+      }
+      return { key: columnKey, dir: 'desc' }
+    })
+  }, [])
 
   const fplToLeagueEntryId = useMemo(() => {
     const m = new Map()
@@ -124,6 +208,25 @@ export function DraftBoard({
       return true
     })
   }, [picks, teamFilter, roundFilter, posFilter])
+
+  const displayPicks = useMemo(() => {
+    if (!draftBoardSort) return filteredPicks
+    const { key, dir } = draftBoardSort
+    const out = [...filteredPicks]
+    out.sort((a, b) => {
+      const va =
+        key === 'overallPick' ? Number(a.overallPick) : numericDraftPickPts(a)
+      const vb =
+        key === 'overallPick' ? Number(b.overallPick) : numericDraftPickPts(b)
+      if (!Number.isFinite(va) && !Number.isFinite(vb)) return 0
+      if (!Number.isFinite(va)) return 1
+      if (!Number.isFinite(vb)) return -1
+      const cmp = dir === 'desc' ? vb - va : va - vb
+      if (cmp !== 0) return cmp
+      return Number(a.overallPick) - Number(b.overallPick)
+    })
+    return out
+  }, [filteredPicks, draftBoardSort])
 
   /** 1-based squad slot for this manager (draft order within team). */
   const teamSlotByPickKey = useMemo(() => {
@@ -241,7 +344,13 @@ export function DraftBoard({
             ) : (
               <>
                 <div className="draft-board-head" role="row">
-                  <span className="draft-board-head__cell draft-board-head__cell--pick">Pick</span>
+                  <DraftBoardSortHeadCell
+                    columnKey="overallPick"
+                    sortState={draftBoardSort}
+                    onSort={handleDraftBoardSort}
+                    label="Pick"
+                    className="draft-board-head__cell draft-board-head__cell--pick"
+                  />
                   <span
                     className="draft-board-head__cell draft-board-head__cell--team"
                     aria-label="Team"
@@ -261,12 +370,18 @@ export function DraftBoard({
                   ) : null}
                   <span className="draft-board-head__cell">Player</span>
                   <span className="draft-board-head__cell draft-board-head__cell--pos">Pos</span>
-                  <span className="draft-board-head__cell draft-board-head__cell--pts">Pts</span>
+                  <DraftBoardSortHeadCell
+                    columnKey="totalPoints"
+                    sortState={draftBoardSort}
+                    onSort={handleDraftBoardSort}
+                    label="Pts"
+                    className="draft-board-head__cell draft-board-head__cell--pts"
+                  />
                   <span className="draft-board-head__cell draft-board-head__cell--status">Status</span>
                 </div>
                 <ol className="draft-board-list">
-                  {filteredPicks.map((p, i) => {
-                    const prev = i > 0 ? filteredPicks[i - 1] : null
+                  {displayPicks.map((p, i) => {
+                    const prev = i > 0 ? displayPicks[i - 1] : null
                     const newRound = prev != null && p.round !== prev.round
                     const displayFull = p.playerFullName ?? p.playerName
                     const teamSlot = teamSlotByPickKey.get(`${p.entryId}:${p.overallPick}`)
