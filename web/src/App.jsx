@@ -364,7 +364,7 @@ function HistoricStandingsSection() {
           <span className="tile-title__text">Historic Standings</span>
           {seasonOptions.length > 0 ? (
             <select
-              className="tile-gw-select tile-gw-select--inline"
+              className="hall-historic-season-select"
               aria-label="Completed season"
               value={selectedSeason}
               onChange={(e) => setSelectedSeason(e.target.value)}
