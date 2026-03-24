@@ -61,9 +61,15 @@ function buildTeamRows(picks) {
       }
     }
     row.picks.sort((a, b) => a.overallPick - b.overallPick)
+    const rosterKnown = row.picks.some((p) => p.rosterOnSquad === true || p.rosterOnSquad === false)
+    const draftedPlayersRemaining = rosterKnown
+      ? row.picks.filter((p) => p.rosterOnSquad === true).length
+      : null
     return {
       ...row,
       totalPoints: hasAny ? total : null,
+      draftedPlayersRemaining,
+      draftedPickCount: row.picks.length,
     }
   })
   rows.sort((a, b) => {
@@ -98,8 +104,6 @@ export function DraftQuality({
 
   const teamRows = useMemo(() => buildTeamRows(picks), [picks])
 
-  const detailOpen = openIds.size > 0
-
   const toggle = useCallback((entryId) => {
     setOpenIds((prev) => {
       const next = new Set(prev)
@@ -110,14 +114,7 @@ export function DraftQuality({
   }, [])
 
   return (
-    <section
-      className={
-        detailOpen
-          ? 'tile tile--standings draft-quality-tile draft-quality-tile--expanded'
-          : 'tile tile--standings draft-quality-tile'
-      }
-      aria-labelledby="draft-quality-heading"
-    >
+    <section className="tile tile--standings draft-quality-tile" aria-labelledby="draft-quality-heading">
       <div className="tile-head-row tile-head-row--tight">
         <h2 id="draft-quality-heading" className="tile-title tile-title--sm">
           Draft Quality
@@ -134,20 +131,21 @@ export function DraftQuality({
       ) : !picks.length ? (
         <p className="muted draft-quality-loading">No draft data.</p>
       ) : (
-        <div
-          className={
-            detailOpen
-              ? 'draft-quality-scroll draft-quality-scroll--expanded'
-              : 'draft-quality-scroll'
-          }
-        >
+        <div className="draft-quality-table-wrap">
           <table className="draft-quality-table">
+            <colgroup>
+              <col className="draft-quality-col draft-quality-col--rank" />
+              <col className="draft-quality-col draft-quality-col--team" />
+              <col className="draft-quality-col draft-quality-col--pts" />
+              <col className="draft-quality-col draft-quality-col--delta" />
+              <col className="draft-quality-col draft-quality-col--og" />
+            </colgroup>
             <thead>
               <tr>
                 <th scope="col" className="draft-quality-th draft-quality-th--rank">
                   #
                 </th>
-                <th scope="col" className="draft-quality-th">
+                <th scope="col" className="draft-quality-th draft-quality-th--team">
                   Team
                 </th>
                 <th scope="col" className="draft-quality-th draft-quality-th--pts">
@@ -159,6 +157,13 @@ export function DraftQuality({
                   title="Season points For minus drafted squad total (Points)"
                 >
                   +/-
+                </th>
+                <th
+                  scope="col"
+                  className="draft-quality-th draft-quality-th--og"
+                  title="Originally drafted players still on the current squad"
+                >
+                  OG players
                 </th>
               </tr>
             </thead>
@@ -229,10 +234,20 @@ export function DraftQuality({
                       >
                         {deltaText}
                       </td>
+                      <td
+                        className="draft-quality-td draft-quality-td--og tabular"
+                        title={
+                          team.draftedPlayersRemaining != null
+                            ? `${team.draftedPlayersRemaining} of ${team.draftedPickCount} drafted players still on squad`
+                            : undefined
+                        }
+                      >
+                        {team.draftedPlayersRemaining != null ? team.draftedPlayersRemaining : '—'}
+                      </td>
                     </tr>
                     {open ? (
                       <tr className="draft-quality-row draft-quality-row--detail">
-                        <td className="draft-quality-td draft-quality-td--detail" colSpan={4}>
+                        <td className="draft-quality-td draft-quality-td--detail" colSpan={5}>
                           <div
                             className="draft-quality-pick-panel"
                             id={`draft-quality-picks-${team.entryId}`}
@@ -242,8 +257,13 @@ export function DraftQuality({
                             <ul className="draft-quality-pick-list">
                               {team.picks.map((p) => (
                                 <li key={`${team.entryId}-${p.overallPick}`} className="draft-quality-pick-item">
-                                  <span className="draft-quality-pick-round">
-                                    Round {p.round} pick {p.pickInRound}
+                                  <span className="draft-quality-pick-round draft-round-display">
+                                    <span className="draft-round-display__long">
+                                      Round {p.round} pick {p.pickInRound}
+                                    </span>
+                                    <span className="draft-round-display__short tabular" aria-hidden="true">
+                                      {p.round}.{p.pickInRound}
+                                    </span>
                                   </span>
                                   <span className="draft-quality-pick-player">
                                     <ClubBadge src={p.badgeUrl} />

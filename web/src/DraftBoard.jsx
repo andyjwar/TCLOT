@@ -228,11 +228,13 @@ export function DraftBoard({
             </p>
           ) : null}
           <div
-            className={
-              showTeamSlotCol
-                ? 'draft-board-scroll draft-board-scroll--team-slot'
-                : 'draft-board-scroll'
-            }
+            className={[
+              'draft-board-scroll',
+              showTeamSlotCol ? 'draft-board-scroll--team-slot' : '',
+              showTeamSlotCol ? 'draft-board-scroll--expanded' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
           >
             {filteredPicks.length === 0 ? (
               <p className="muted draft-board-loading">No picks match these filters.</p>
@@ -240,7 +242,12 @@ export function DraftBoard({
               <>
                 <div className="draft-board-head" role="row">
                   <span className="draft-board-head__cell draft-board-head__cell--pick">Pick</span>
-                  <span className="draft-board-head__cell">Team</span>
+                  <span
+                    className="draft-board-head__cell draft-board-head__cell--team"
+                    aria-label="Team"
+                  >
+                    Team
+                  </span>
                   <span className="draft-board-head__cell">Round</span>
                   {showTeamSlotCol ? (
                     <span className="draft-board-head__cell draft-board-head__cell--slot tabular">
@@ -281,8 +288,13 @@ export function DraftBoard({
                           />
                           <span className="draft-board-row__fantasy-team-name">{p.teamName}</span>
                         </span>
-                        <span className="draft-board-row__round">
-                          Round {p.round} pick {p.pickInRound}
+                        <span className="draft-board-row__round draft-round-display">
+                          <span className="draft-round-display__long">
+                            Round {p.round} pick {p.pickInRound}
+                          </span>
+                          <span className="draft-round-display__short tabular" aria-hidden="true">
+                            {p.round}.{p.pickInRound}
+                          </span>
                         </span>
                         {showTeamSlotCol ? (
                           <span

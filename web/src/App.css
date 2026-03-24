@@ -267,6 +267,16 @@
   border-top: 1px solid var(--fm-border);
 }
 
+/* Single-team view: grow with all drafted players (no inner scroll trap) */
+.draft-board-scroll--expanded {
+  max-height: none;
+  overflow: visible;
+}
+
+.draft-board-scroll--expanded .draft-board-head {
+  position: static;
+}
+
 .draft-board-list {
   list-style: none;
   margin: 0;
@@ -420,7 +430,32 @@
   border: 0;
 }
 
+/* Mobile: show e.g. 1.1, 2.3 instead of "Round 1 pick 1" (long text stays for screen readers) */
+.draft-round-display {
+  position: relative;
+}
+
+.draft-round-display__short {
+  display: none;
+}
+
 @media (max-width: 560px) {
+  .draft-round-display__long {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .draft-round-display__short {
+    display: inline;
+  }
+
   .draft-board-head,
   .draft-board-row {
     gap: 8px 10px;
@@ -470,6 +505,23 @@
     display: none !important;
   }
 
+  /* Team column: avatar only (no manager name); keep column width, hide label */
+  .draft-board-head__cell--team {
+    font-size: 0;
+    line-height: 0;
+    overflow: hidden;
+    color: transparent;
+    user-select: none;
+  }
+
+  .draft-board-row__fantasy-team-name {
+    display: none !important;
+  }
+
+  .draft-board-row__fantasy-team {
+    justify-content: center;
+  }
+
   .draft-board-head__cell--status,
   .draft-board-row__status {
     font-size: 0.7rem;
@@ -478,13 +530,13 @@
   .draft-board-head,
   .draft-board-row {
     grid-template-columns:
-      minmax(0, 1.15fr) minmax(0, 0.95fr) minmax(0, 1.25fr) minmax(2rem, 0.72fr) minmax(0, 1.05fr);
+      minmax(2.25rem, 2.75rem) minmax(0, 0.95fr) minmax(0, 1.25fr) minmax(2rem, 0.72fr) minmax(0, 1.05fr);
   }
 
   .draft-board-scroll--team-slot .draft-board-head,
   .draft-board-scroll--team-slot .draft-board-row {
     grid-template-columns:
-      minmax(0, 1.05fr) minmax(0, 0.88fr) minmax(1.5rem, 2rem) minmax(0, 1.15fr) minmax(2rem, 0.68fr)
+      minmax(2.25rem, 2.75rem) minmax(0, 0.88fr) minmax(1.5rem, 2rem) minmax(0, 1.15fr) minmax(2rem, 0.68fr)
       minmax(0, 0.95fr);
   }
 
@@ -518,57 +570,74 @@
   margin: 16px;
 }
 
-.draft-quality-scroll {
-  max-height: min(60vh, 28rem);
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
+.draft-quality-table-wrap {
   border-top: 1px solid var(--fm-border);
-}
-
-/* Grow with content when a team is expanded so ~15 picks stay visible without inner scroll */
-.draft-quality-scroll--expanded {
-  max-height: none;
   overflow: visible;
-}
-
-.draft-quality-scroll--expanded .draft-quality-th {
-  position: static;
 }
 
 .draft-quality-table {
   width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.82rem;
 }
 
+.draft-quality-col--rank {
+  width: 2.75rem;
+}
+
+.draft-quality-col--pts {
+  width: 5.25rem;
+}
+
+.draft-quality-col--delta {
+  width: 4.5rem;
+}
+
+.draft-quality-col--og {
+  width: 5rem;
+}
+
+/* Team column uses remaining width (no col width) */
+
 .draft-quality-th {
   text-align: left;
-  padding: 10px 16px 8px;
-  font-size: 0.72rem;
+  padding: 10px 12px 9px;
+  font-size: 0.68rem;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: color-mix(in srgb, var(--fm-text, #fff) 58%, transparent);
   background: var(--fm-card, #1e1e1e);
-  border-bottom: 1px dotted var(--fm-border, #333);
-  position: sticky;
-  top: 0;
-  z-index: 1;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border, #333) 85%, transparent);
+  vertical-align: bottom;
 }
 
 .draft-quality-th--rank {
-  width: 2.5rem;
   text-align: center;
+  padding-left: 14px;
+  padding-right: 8px;
+}
+
+.draft-quality-th--team {
+  text-align: left;
+  padding-left: 10px;
 }
 
 .draft-quality-th--pts {
   text-align: right;
-  width: 4rem;
+  padding-right: 14px;
 }
 
 .draft-quality-th--delta {
   text-align: right;
-  width: 4.25rem;
+  padding-right: 14px;
+}
+
+.draft-quality-th--og {
+  text-align: right;
+  padding-right: 16px;
+  letter-spacing: 0.04em;
 }
 
 .draft-quality-row--team {
@@ -576,10 +645,30 @@
 }
 
 .draft-quality-row--team td {
-  padding: 10px 16px;
+  padding: 9px 12px;
   vertical-align: middle;
   font-weight: 600;
   color: var(--fm-text-strong);
+}
+
+.draft-quality-row--team .draft-quality-td--rank {
+  padding-left: 14px;
+  padding-right: 8px;
+}
+
+.draft-quality-row--team .draft-quality-td--team {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.draft-quality-row--team .draft-quality-td--pts,
+.draft-quality-row--team .draft-quality-td--delta,
+.draft-quality-row--team .draft-quality-td--og {
+  padding-right: 14px;
+}
+
+.draft-quality-row--team .draft-quality-td--og {
+  padding-right: 16px;
 }
 
 .draft-quality-td--rank {
@@ -640,12 +729,26 @@
 .draft-quality-td--pts {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.draft-quality-td--og {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .draft-quality-td--delta {
   text-align: right;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.draft-quality-th--pts,
+.draft-quality-th--delta,
+.draft-quality-th--og {
+  white-space: nowrap;
 }
 
 /* Beat `.draft-quality-row--team td { color }` so +/- shows green/red */
@@ -732,6 +835,32 @@
 }
 
 @media (max-width: 560px) {
+  .draft-quality-col--pts {
+    width: 4.5rem;
+  }
+
+  .draft-quality-col--delta {
+    width: 3.85rem;
+  }
+
+  .draft-quality-col--og {
+    width: 4.35rem;
+  }
+
+  .draft-quality-th,
+  .draft-quality-row--team td {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .draft-quality-row--team .draft-quality-td--og {
+    padding-right: 10px;
+  }
+
+  .draft-quality-th--og {
+    font-size: 0.62rem;
+  }
+
   .draft-quality-pick-item {
     grid-template-columns: 1fr;
     gap: 4px;
