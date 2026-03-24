@@ -3518,6 +3518,12 @@ button.live-fixture-banner--toggle {
     min-width: 0;
     flex: 1 1 auto;
     max-width: min(220px, 52vw);
+    font-size: 0.76rem;
+    min-height: 38px;
+    padding: 6px 34px 6px 10px;
+    line-height: 1.2;
+    background-size: 16px;
+    background-position: right 10px center;
   }
 }
 
