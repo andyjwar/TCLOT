@@ -248,7 +248,12 @@ export function DraftBoard({
                   >
                     Team
                   </span>
-                  <span className="draft-board-head__cell">Round</span>
+                  <span className="draft-board-head__cell draft-board-head__cell--round">
+                    <span className="draft-board-head-round__long">Round</span>
+                    <span className="draft-board-head-round__short tabular" aria-hidden="true">
+                      R
+                    </span>
+                  </span>
                   {showTeamSlotCol ? (
                     <span className="draft-board-head__cell draft-board-head__cell--slot tabular">
                       #

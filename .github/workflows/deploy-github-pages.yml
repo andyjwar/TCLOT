@@ -61,6 +61,9 @@ jobs:
         working-directory: web
         env:
           VITE_BASE_PATH: "./"
+          # Same league as ingest — build-draft-picks.mjs regenerates draft_picks.json (avoids shipping a forked TCLOT file).
+          FPL_LEAGUE_ID: ${{ secrets.FPL_LEAGUE_ID || vars.FPL_LEAGUE_ID }}
+          LEAGUE_ID: ${{ secrets.FPL_LEAGUE_ID || vars.FPL_LEAGUE_ID }}
           # Repository secret/variable, or add the same name under Settings → Environments → github-pages
           VITE_FPL_PROXY_URL: ${{ secrets.VITE_FPL_PROXY_URL || vars.VITE_FPL_PROXY_URL }}
           # Optional per-repo title tile (omit = TCLOT defaults). ExFOS / EAGalaxy set in Variables.

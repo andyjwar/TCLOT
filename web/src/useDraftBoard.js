@@ -59,6 +59,24 @@ function normalizeStaticPicks(raw, leagueEntries) {
   }))
 }
 
+/**
+ * Committed draft_picks.json from another league (e.g. forked TCLOT) would show wrong teams,
+ * avatars, and trade alignment. Skip static file when it clearly does not match this league.
+ */
+function staticDraftPicksMatchLeague(raw, normalizedPicks, league, leagueEntries) {
+  if (!normalizedPicks?.length) return false
+  const metaId = raw?._meta?.leagueId
+  const currentId = league?.id
+  if (metaId != null && currentId != null && Number(metaId) !== Number(currentId)) {
+    return false
+  }
+  const entryIds = new Set(
+    (leagueEntries || []).map((e) => e.entry_id).filter((x) => x != null),
+  )
+  if (!entryIds.size) return false
+  return normalizedPicks.every((p) => entryIds.has(p.entryId))
+}
+
 function enrichPicksFromBootstrap(boot, picks) {
   if (!boot || !picks?.length) return picks
   const elementById = new Map((boot.elements || []).map((e) => [e.id, e]))
@@ -157,7 +175,13 @@ export function useDraftBoard(league, leagueEntries) {
       setError(null)
       try {
         const staticRaw = await fetchOptionalJson('draft_picks.json')
-        const staticPicks = normalizeStaticPicks(staticRaw, leagueEntries)
+        let staticPicks = normalizeStaticPicks(staticRaw, leagueEntries)
+        if (
+          staticPicks?.length &&
+          !staticDraftPicksMatchLeague(staticRaw, staticPicks, league, leagueEntries)
+        ) {
+          staticPicks = null
+        }
         if (staticPicks?.length) {
           const boot = await fetchOptionalJson('bootstrap_draft.json')
           let enriched = enrichPicksFromBootstrap(boot, staticPicks)
@@ -227,7 +251,7 @@ export function useDraftBoard(league, leagueEntries) {
     return () => {
       cancelled = true
     }
-  }, [entriesKey, startGw, leagueEntries])
+  }, [entriesKey, startGw, league, leagueEntries])
 
   const teamCount = leagueEntries?.length ?? 0
 
