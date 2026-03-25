@@ -2,6 +2,7 @@ import { useMemo, useState, useCallback, Fragment } from 'react'
 import { useDraftBoard } from './useDraftBoard'
 import { TeamAvatar } from './TeamAvatar'
 import { DraftQuality } from './DraftQuality'
+import { compareLeagueEntriesByDraftSlot, minOverallPickByEntryId } from './draftTeamOrder'
 
 const POS_OPTIONS = ['GKP', 'DEF', 'MID', 'FWD']
 
@@ -181,16 +182,13 @@ export function DraftBoard({
 
   const teamOptions = useMemo(() => {
     const rows = [...(leagueEntries || [])]
-    rows.sort((a, b) =>
-      String(a.entry_name ?? '').localeCompare(String(b.entry_name ?? ''), undefined, {
-        sensitivity: 'base',
-      }),
-    )
+    const minBy = minOverallPickByEntryId(picks)
+    rows.sort((a, b) => compareLeagueEntriesByDraftSlot(a, b, minBy))
     return rows.map((e) => ({
       value: String(e.entry_id),
       label: String(e.entry_name ?? '').trim() || `Team ${e.entry_id}`,
     }))
-  }, [leagueEntries])
+  }, [leagueEntries, picks])
 
   const maxRound = useMemo(() => {
     let m = 0

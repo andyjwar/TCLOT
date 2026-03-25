@@ -1,5 +1,6 @@
 import { useMemo, useState, useCallback, Fragment } from 'react'
 import { TeamAvatar } from './TeamAvatar'
+import { minOverallPickByEntryId } from './draftTeamOrder'
 
 const EMPTY_POINTS_FOR_BY_FPL = new Map()
 
@@ -48,6 +49,8 @@ function buildTeamRows(picks) {
     }
     byEntry.get(p.entryId).picks.push(p)
   }
+  const minOverallByEntry = minOverallPickByEntryId(picks)
+
   const rows = [...byEntry.values()].map((row) => {
     let total = 0
     let hasAny = false
@@ -73,21 +76,17 @@ function buildTeamRows(picks) {
     }
   })
   rows.sort((a, b) => {
-    const ta = a.totalPoints
-    const tb = b.totalPoints
-    if (ta != null && tb != null && tb !== ta) return tb - ta
-    if (ta != null && tb == null) return -1
-    if (ta == null && tb != null) return 1
+    const ma = minOverallByEntry.get(Number(a.entryId))
+    const mb = minOverallByEntry.get(Number(b.entryId))
+    if (ma != null && mb != null && ma !== mb) return ma - mb
+    if (ma != null && mb == null) return -1
+    if (ma == null && mb != null) return 1
     return String(a.teamName ?? '').localeCompare(String(b.teamName ?? ''), undefined, {
       sensitivity: 'base',
     })
   })
-  let displayRank = 1
   for (let i = 0; i < rows.length; i++) {
-    if (i > 0 && rows[i].totalPoints !== rows[i - 1].totalPoints) {
-      displayRank = i + 1
-    }
-    rows[i].rank = displayRank
+    rows[i].draftSlot = i + 1
   }
   return rows
 }
@@ -142,8 +141,12 @@ export function DraftQuality({
             </colgroup>
             <thead>
               <tr>
-                <th scope="col" className="draft-quality-th draft-quality-th--rank">
-                  #
+                <th
+                  scope="col"
+                  className="draft-quality-th draft-quality-th--rank"
+                  title="Draft order: 1 = first pick in round 1"
+                >
+                  Draft
                 </th>
                 <th scope="col" className="draft-quality-th draft-quality-th--team">
                   Team
@@ -188,7 +191,7 @@ export function DraftQuality({
                   <Fragment key={team.entryId}>
                     <tr className="draft-quality-row draft-quality-row--team">
                       <td className="draft-quality-td draft-quality-td--rank tabular">
-                        {team.rank}
+                        {team.draftSlot}
                       </td>
                       <td className="draft-quality-td draft-quality-td--team">
                         <button
