@@ -250,7 +250,17 @@ export function useDraftBoard(league, leagueEntries) {
         }
       } catch (e) {
         if (!cancelled) {
-          setError(e?.message || String(e))
+          let msg = e?.message || String(e)
+          const looksLikeNetworkBlock =
+            /Failed to fetch|NetworkError|Load failed|CORS|network/i.test(msg)
+          if (looksLikeNetworkBlock && !import.meta.env.DEV) {
+            const proxy = (import.meta.env.VITE_FPL_PROXY_URL || '').trim()
+            if (!proxy) {
+              msg +=
+                ' Hosted pages cannot call the draft API from the browser without a proxy. Set VITE_FPL_PROXY_URL when building (see DEPLOY.md), and ensure GitHub Actions has FPL_LEAGUE_ID so draft_picks.json is generated for this league.'
+            }
+          }
+          setError(msg)
           setPicks([])
           setSource('')
           setLoading(false)

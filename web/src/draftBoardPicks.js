@@ -1,18 +1,24 @@
 /**
  * Rebuild draft pick order from GW1 squads + snake order.
  *
- * `waiver_pick` on league entries is **current** waiver priority (it moves all season), not the
- * original draft slot. Prefer `round1FplEntryIds` when you have the real round-1 order.
+ * `waiver_pick` on league entries tracks **current** waiver priority and (after the season starts)
+ * aligns with **league standing**, not the original round-1 draft order. Never use it for snake
+ * slot 1. Prefer `round1FplEntryIds` / `draft_round1_order.json` for the real order.
  *
  * Within each team, players are ordered by pre-draft `draft_rank` (lower = earlier off the board).
  * That can mis-order reaches vs steals but is the best signal without a pick log.
  */
 
-/** @param {{ waiver_pick?: number }[]} leagueEntries */
-export function snakeRoundOneOrder(leagueEntries) {
+/**
+ * Last-resort round-1 order when `draft_round1_order.json` is absent.
+ * Sorted by FPL `entry_id` ascending — not the real draft slot order, but avoids mirroring
+ * league position (which `waiver_pick`-based ordering does mid-season).
+ */
+/** @param {{ entry_id: number }[]} leagueEntries */
+export function fallbackRoundOneOrderByEntryId(leagueEntries) {
   const entries = [...(leagueEntries || [])].filter((e) => e?.entry_id != null)
-  entries.sort((a, b) => (a.waiver_pick ?? 0) - (b.waiver_pick ?? 0))
-  return entries.reverse()
+  entries.sort((a, b) => Number(a.entry_id) - Number(b.entry_id))
+  return entries
 }
 
 /**
@@ -46,7 +52,7 @@ export function reconstructDraftPicks(
   if (n === 0) return []
 
   const ids = options.round1FplEntryIds
-  let round1Order = snakeRoundOneOrder(leagueEntries)
+  let round1Order = fallbackRoundOneOrderByEntryId(leagueEntries)
   if (
     Array.isArray(ids) &&
     ids.length === n &&

@@ -325,9 +325,11 @@ export function DraftBoard({
         <>
           {source === 'api' ? (
             <p className="draft-board-hint muted">
-              Order from GW{startGw} squads and snake logic; round-1 slots use{' '}
-              <code>draft_round1_order.json</code> when present (live <code>waiver_pick</code> is
-              not the original draft). Within-team order uses draft rank (approximate for reaches).
+              Order from GW{startGw} squads and snake logic; round-1 slots need{' '}
+              <code>draft_round1_order.json</code> — live <code>waiver_pick</code> follows league
+              standing, not draft position. Without that file the app uses a neutral entry-id
+              fallback (overall pick numbers may not match the real draft). Within-team order uses
+              draft rank (approximate for reaches).
             </p>
           ) : null}
           <div

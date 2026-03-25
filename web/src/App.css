@@ -323,6 +323,8 @@
 }
 
 .draft-board-head {
+  --standings-sort-gutter: 6px;
+  --standings-sort-arrow-slot: calc(1.1em + var(--standings-sort-gutter));
   position: sticky;
   top: 0;
   z-index: 2;
@@ -340,6 +342,19 @@
 }
 
 .draft-board-head__cell--pts {
+  text-align: right;
+}
+
+.draft-board-head .draft-board-sort-btn {
+  min-width: 0;
+}
+
+.draft-board-head__cell--pick .draft-board-sort-btn .standings-sort-btn__label {
+  text-align: left;
+  justify-self: start;
+}
+
+.draft-board-head__cell--pts .draft-board-sort-btn .standings-sort-btn__label {
   text-align: right;
 }
 

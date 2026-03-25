@@ -5,7 +5,7 @@
  * Runs on GitHub Actions when the workflow passes the league ID so Pages builds are not stuck
  * with a forked TCLOT draft_picks.json. Lets the Draft tab work without browser→draft CORS.
  */
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
+import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { reconstructDraftPicks } from '../src/draftBoardPicks.js'
@@ -64,6 +64,10 @@ try {
     } catch {
       /* ignore */
     }
+  } else {
+    console.warn(
+      'build-draft-picks: no draft_round1_order.json — using FPL entry_id fallback for round 1 (not real draft order). Add draft_round1_order.json (FPL entry_id per round-1 slot; see TCLOT web/public/league-data/draft_round1_order.json).',
+    )
   }
 
   const startGw = Number(details.league?.start_event) >= 1 ? Number(details.league.start_event) : 1
@@ -87,7 +91,7 @@ try {
       startGw,
       note: round1FplEntryIds?.length
         ? 'Snake round 1 from draft_round1_order.json; player order within team from draft_rank.'
-        : 'Snake round 1 from waiver_pick (approximate once waivers have moved); within team from draft_rank.',
+        : 'Snake round 1 from fallback FPL entry_id order (add draft_round1_order.json for true draft slots); within team from draft_rank.',
     },
     picks,
   }
@@ -97,5 +101,24 @@ try {
   console.log(`build-draft-picks: wrote ${picks.length} picks → draft_picks.json`)
 } catch (e) {
   console.warn('build-draft-picks: skipped —', e.message)
+  // Avoid shipping another league's draft_picks.json after failed regenerate (Pages CORS fallback).
+  const draftPath = join(webPublic, 'draft_picks.json')
+  const detailsPath = join(webPublic, 'details.json')
+  try {
+    if (existsSync(draftPath) && existsSync(detailsPath)) {
+      const draft = JSON.parse(readFileSync(draftPath, 'utf8'))
+      const details = JSON.parse(readFileSync(detailsPath, 'utf8'))
+      const lid = details?.league?.id
+      const mid = draft?._meta?.leagueId
+      if (lid != null && mid != null && Number(lid) !== Number(mid)) {
+        unlinkSync(draftPath)
+        console.warn(
+          `build-draft-picks: removed stale draft_picks.json (league ${mid} ≠ details ${lid})`,
+        )
+      }
+    }
+  } catch {
+    /* ignore */
+  }
   process.exit(0)
 }
