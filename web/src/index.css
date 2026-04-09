@@ -14,6 +14,14 @@ body {
   color: var(--text);
 }
 
+/* Synced from App colour theme (see ThemeToggle / localStorage tclot-theme) */
+body[data-tclot-theme='light'] {
+  --text: rgba(51, 51, 51, 0.92);
+  --text-h: #1a1a1a;
+  --bg: #f2f2f2;
+  --border: #e2e2e2;
+}
+
 #root {
   min-height: 100vh;
 }

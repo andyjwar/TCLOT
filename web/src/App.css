@@ -35,10 +35,175 @@
   min-height: 100vh;
 }
 
+/* —— Cursor-like light shell (toggle on title tile) —— */
+.fotmob[data-theme='light'] {
+  --fm-bg: #f2f2f2;
+  --fm-card: #ffffff;
+  --fm-border: #e2e2e2;
+  --fm-text: rgba(51, 51, 51, 0.92);
+  --fm-text-strong: #1a1a1a;
+  --fm-muted: rgba(0, 0, 0, 0.48);
+  --fm-surface-2: #f7f7f7;
+  --fm-win: #059669;
+  --fm-draw: #6b7280;
+  --fm-loss: #dc2626;
+  --fm-loss-dot: #b91c1c;
+  --fm-row-hi: #efefef;
+  --fm-pitch: #12a15a;
+  --fm-accent: #12a15a;
+  --fm-title-banner-top: #ffffff;
+  --fm-title-banner-bottom: #ececec;
+  --fm-accent-glow: 0 2px 14px rgba(18, 161, 90, 0.22);
+  --fm-standings-cut: #d4d4d4;
+  --fm-table-head: #f3f4f6;
+  --fm-standings-8th-bg: rgba(239, 68, 68, 0.09);
+  --fm-nav-hover-bg: rgba(18, 161, 90, 0.1);
+  --fm-nav-hover-border: #12a15a;
+  --fm-nav-hover-text: #047857;
+}
+
+.fotmob[data-theme='light'] .tile {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.fotmob[data-theme='light'] .tile.tile--title-banner {
+  color: var(--fm-text-strong);
+  box-shadow:
+    inset 0 calc(-1 * var(--fm-title-banner-band, 44px)) 0 0 var(--fm-title-banner-bottom, #ececec),
+    0 2px 14px rgba(0, 0, 0, 0.07);
+}
+
+.fotmob[data-theme='light'] .tile--title-banner .page-title-sub {
+  color: rgba(51, 51, 51, 0.62);
+}
+
+.fotmob[data-theme='light'] .tile--title-banner .page-title-season {
+  color: rgba(51, 51, 51, 0.72);
+}
+
+.fotmob[data-theme='light'] .tile--title-banner .brand-sub--in-title-tile {
+  color: rgba(51, 51, 51, 0.72);
+}
+
+.fotmob[data-theme='light'] .tile.tile--title-banner.tile--title-with-flank-logos .title-hero-row__logo-wrap:hover {
+  background: rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 0 0 2px rgba(0, 0, 0, 0.08),
+    0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.fotmob[data-theme='light'] .title-hero-row__logo-wrap {
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
+.fotmob[data-theme='light'] .data-banner {
+  color: var(--fm-text-strong);
+}
+
+.fotmob[data-theme='light'] .data-banner code {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--fm-text-strong);
+}
+
+.fotmob[data-theme='light'] .page-footer--script {
+  color: #4a4a4a;
+}
+
+.fotmob[data-theme='light'] .tile.hall-of-champions {
+  --hall-rule: rgba(0, 0, 0, 0.12);
+  --hall-muted: rgba(0, 0, 0, 0.48);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.fotmob[data-theme='light'] .hall-of-champions .hall-team-history .hall-team-history__team-name {
+  color: color-mix(in srgb, var(--fm-text-strong) 78%, var(--hall-gold) 22%);
+}
+
+.fotmob[data-theme='light'] .form-team-picker {
+  background: linear-gradient(165deg, #fafafa 0%, #f4f4f4 55%, #ececec 100%);
+  border: 1px solid var(--fm-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.fotmob[data-theme='light'] .form-team-picker:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.title-banner__toolbar {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  z-index: 3;
+}
+
+@media (max-width: 960px) {
+  .title-banner__toolbar {
+    top: 12px;
+    left: 12px;
+  }
+}
+
+/* Cursor-style pill: thin border, circular active chip */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--fm-border);
+  background: var(--fm-card);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.theme-toggle__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--fm-muted);
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.theme-toggle__btn:hover {
+  color: var(--fm-text-strong);
+}
+
+.theme-toggle__btn:focus-visible {
+  outline: 2px solid var(--fm-accent);
+  outline-offset: 2px;
+}
+
+.theme-toggle__btn--active {
+  background: color-mix(in srgb, var(--fm-text-strong) 9%, var(--fm-card));
+  color: var(--fm-text-strong);
+}
+
+.fotmob[data-theme='light'] .theme-toggle__btn--active {
+  background: #ebebeb;
+  color: #333333;
+}
+
 .fotmob .load-screen {
+  position: relative;
   padding: 48px 24px;
   text-align: center;
   color: var(--fm-text);
+}
+
+.fotmob .load-screen .title-banner__toolbar {
+  position: absolute;
+  top: 16px;
+  left: 16px;
 }
 
 .app.fotmob {
@@ -3980,6 +4145,7 @@ button.live-fixture-banner--toggle {
 
 /* League header: FotMob-style — charcoal strap, solid black lower band, flat white type */
 .tile.tile--title-banner {
+  position: relative;
   background: var(--fm-title-banner-top, #1a1a1a);
   border: none;
   border-radius: 12px;

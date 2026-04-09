@@ -3,6 +3,7 @@ import {
   useMemo,
   useCallback,
   useEffect,
+  useLayoutEffect,
   useSyncExternalStore,
 } from 'react'
 import {
@@ -22,6 +23,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { LiveScores } from './LiveScores'
 import { PlayOffBracket } from './PlayOffBracket'
 import { DraftBoard } from './DraftBoard'
+import { ThemeToggle } from './ThemeToggle'
 import {
   HALL_SEASON_FINAL_TABLES,
   computeHallManagerCareerRows,
@@ -850,6 +852,19 @@ function StandingsSortTh({ columnKey, sortState, onSort, label, title, className
 
 const EMPTY_LEAGUE_ENTRIES = []
 
+const THEME_STORAGE_KEY = 'tclot-theme'
+
+function readStoredTheme() {
+  if (typeof window === 'undefined') return 'dark'
+  try {
+    const s = window.localStorage.getItem(THEME_STORAGE_KEY)
+    if (s === 'light' || s === 'dark') return s
+  } catch {
+    /* ignore */
+  }
+  return 'dark'
+}
+
 function App() {
   const { data, error, loading } = useLeagueData()
   const {
@@ -892,6 +907,19 @@ function App() {
   const [completeGwView, setCompleteGwView] = useState(null)
   const [futureGwView, setFutureGwView] = useState(null)
   const formStripDisplayCount = useFormStripDisplayCount()
+  const [colorTheme, setColorTheme] = useState(() => readStoredTheme())
+
+  useLayoutEffect(() => {
+    document.body.dataset.tclotTheme = colorTheme
+  }, [colorTheme])
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(THEME_STORAGE_KEY, colorTheme)
+    } catch {
+      /* ignore */
+    }
+  }, [colorTheme])
 
   const onBootstrapLiveMeta = useCallback((meta) => {
     setFplLiveLandingGw(meta?.currentGw ?? null)
@@ -1188,17 +1216,25 @@ function App() {
 
   if (loading) {
     return (
-      <div className="app fotmob">
-        <div className="load-screen">Loading league…</div>
+      <div className="app fotmob" data-theme={colorTheme}>
+        <div className="load-screen">
+          <div className="title-banner__toolbar">
+            <ThemeToggle value={colorTheme} onChange={setColorTheme} />
+          </div>
+          Loading league…
+        </div>
       </div>
     )
   }
 
   if (error || !data) {
     return (
-      <div className="app fotmob">
+      <div className="app fotmob" data-theme={colorTheme}>
         <header className="page-header page-header--centered">
           <section className="tile tile--title-banner" aria-label="League">
+            <div className="title-banner__toolbar">
+              <ThemeToggle value={colorTheme} onChange={setColorTheme} />
+            </div>
             <h1 className="page-title-main">
               <span className="page-title-main__abbr">{LEAGUE_TITLE_ABBR}</span>
             </h1>
@@ -1287,7 +1323,7 @@ function App() {
   }
 
   return (
-    <div className="app fotmob">
+    <div className="app fotmob" data-theme={colorTheme}>
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
           <header className="page-header page-header--centered">
@@ -1295,6 +1331,9 @@ function App() {
               className="tile tile--title-banner tile--title-with-flank-logos"
               aria-label="League"
             >
+              <div className="title-banner__toolbar">
+                <ThemeToggle value={colorTheme} onChange={setColorTheme} />
+              </div>
               <div className="title-hero-row">
                 <div className="title-hero-row__logos title-hero-row__logos--left">
                   {heroLogoSides.left.map((t) => (
