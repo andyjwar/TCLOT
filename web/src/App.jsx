@@ -20,6 +20,7 @@ import {
   WIN_MARGIN_BUCKET_KEYS,
 } from './useLeagueData'
 import { TeamAvatar } from './TeamAvatar'
+import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
 import { PlayOffBracket } from './PlayOffBracket'
 import { DraftBoard } from './DraftBoard'
@@ -616,27 +617,6 @@ function FormCircles({ form }) {
         )
       })}
     </div>
-  )
-}
-
-function PlayerKit({ shirtUrl, badgeUrl, teamShort }) {
-  const urls = [shirtUrl, badgeUrl].filter(Boolean)
-  const [u, setU] = useState(0)
-  if (u >= urls.length) {
-    return (
-      <span className="pl-kit-fallback" title={teamShort}>
-        {teamShort?.slice(0, 3) ?? '?'}
-      </span>
-    )
-  }
-  return (
-    <img
-      className={u === 0 ? 'pl-kit-shirt' : 'pl-kit-badge'}
-      src={urls[u]}
-      alt=""
-      loading="lazy"
-      onError={() => setU((x) => x + 1)}
-    />
   )
 }
 

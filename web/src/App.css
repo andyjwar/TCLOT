@@ -2038,6 +2038,26 @@
   background: color-mix(in srgb, var(--fm-accent) 22%, transparent);
 }
 
+.waiver-summary-share__kind-with-kit {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  flex: 0 0 auto;
+}
+
+.waiver-summary-share__kind-with-kit .pl-kit-shirt {
+  width: 17px;
+  height: 22px;
+}
+
+.waiver-summary-share__kind-with-kit .pl-kit-badge,
+.waiver-summary-share__kind-with-kit .pl-kit-fallback {
+  width: 18px;
+  height: 18px;
+  font-size: 0.45rem;
+}
+
 .waiver-summary-share__in {
   font-weight: 600;
   color: var(--fm-text-strong);

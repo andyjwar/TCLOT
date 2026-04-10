@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar.jsx'
+import { PlayerKit } from './PlayerKit.jsx'
 import {
   flattenWaiverGroups,
   sortGroupsByTeamName,
@@ -84,15 +85,22 @@ function CompactMoveLine({
             {r.waiverProcessOrder}.{' '}
           </span>
         ) : null}
-        <span
-          className={
-            r.transactionKind === 'f'
-              ? 'waiver-summary-share__kind waiver-summary-share__kind--fa'
-              : 'waiver-summary-share__kind'
-          }
-        >
-          {r.transactionKind === 'f' ? 'FA' : 'W'}
-        </span>
+        <div className="waiver-summary-share__kind-with-kit">
+          <span
+            className={
+              r.transactionKind === 'f'
+                ? 'waiver-summary-share__kind waiver-summary-share__kind--fa'
+                : 'waiver-summary-share__kind'
+            }
+          >
+            {r.transactionKind === 'f' ? 'FA' : 'W'}
+          </span>
+          <PlayerKit
+            shirtUrl={r.pickedShirtUrl}
+            badgeUrl={r.pickedBadgeUrl}
+            teamShort={r.pickedTeamShort}
+          />
+        </div>
         <span className="waiver-summary-share__compact-pick">
           {r.pickedName ?? '—'}{' '}
           <span className="waiver-summary-share__compact-arrow">←</span>{' '}
