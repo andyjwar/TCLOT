@@ -1794,8 +1794,8 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px 12px;
+  justify-content: flex-start;
+  gap: 8px 10px;
 }
 
 .waiver-summary-share__layout-toggle {
@@ -1836,13 +1836,6 @@
 
 .fotmob[data-theme='light'] .waiver-summary-share__layout-btn--active {
   background: color-mix(in srgb, var(--fm-accent) 18%, var(--fm-card));
-}
-
-.waiver-summary-share__toolbar-hint {
-  margin: 0;
-  font-size: 0.78rem;
-  line-height: 1.35;
-  max-width: 32rem;
 }
 
 .waiver-summary-share__copy {
@@ -1888,6 +1881,10 @@
   gap: 8px 12px;
 }
 
+.waiver-summary-share__shot--compact .waiver-summary-share__shot-head {
+  margin-bottom: 10px;
+}
+
 .waiver-summary-share__shot-abbr {
   font-size: 0.95rem;
   font-weight: 800;
@@ -1899,12 +1896,6 @@
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--fm-accent);
-}
-
-.waiver-summary-share__shot-sub {
-  margin: 4px 0 12px;
-  font-size: 0.72rem;
-  line-height: 1.3;
 }
 
 .waiver-summary-share__shot--compact {
@@ -1933,7 +1924,10 @@
   border-bottom: 1px solid var(--fm-border);
 }
 
-.waiver-summary-share__compact-line:last-child {
+/* League-order list only: no rule under the final row. Nested “by team” lists keep every row
+   border so the closing line matches row dividers (team-section border was full-width / misaligned). */
+.waiver-summary-share__compact-list:not(.waiver-summary-share__compact-list--nested)
+  .waiver-summary-share__compact-line:last-child {
   border-bottom: none;
 }
 
@@ -1995,12 +1989,16 @@
 
 .waiver-summary-share__team-section {
   padding-bottom: 10px;
-  border-bottom: 1px solid var(--fm-border);
 }
 
 .waiver-summary-share__team-section:last-child {
-  border-bottom: none;
   padding-bottom: 0;
+}
+
+.waiver-summary-share__team-section:last-child
+  .waiver-summary-share__compact-list--nested
+  .waiver-summary-share__compact-line:last-child {
+  border-bottom: none;
 }
 
 .waiver-summary-share__team-section-head {
@@ -2174,13 +2172,6 @@
   font-weight: 800;
   font-size: 0.88rem;
   color: var(--fm-text-strong);
-}
-
-.first-waiver-picks-scroll-hint {
-  text-align: center;
-  font-size: 0.68rem;
-  margin: 6px 0 0;
-  letter-spacing: 0.02em;
 }
 
 @media (max-width: 520px) {

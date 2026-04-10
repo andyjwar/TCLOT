@@ -2233,11 +2233,7 @@ function App() {
                     First Waiver Picks
                   </h2>
                 </div>
-                <p className="tile-hint muted tile-hint--tight">
-                  Each week: the team <strong>first in the waiver order</strong> when waivers ran, and
-                  the player they successfully picked up. Newest gameweeks first — about ten cards fit
-                  on a wide screen; scroll sideways for earlier weeks.
-                </p>
+                <p className="tile-hint muted tile-hint--tight">Scroll sideways for earlier weeks.</p>
                 {firstWaiverOrderPicks.length > 0 ? (
                   <div className="first-waiver-picks-wrap">
                     <div
@@ -2281,9 +2277,6 @@ function App() {
                         </article>
                       ))}
                     </div>
-                    <p className="first-waiver-picks-scroll-hint muted" aria-hidden>
-                      ← Scroll for earlier gameweeks →
-                    </p>
                   </div>
                 ) : (
                   <p className="muted muted--tight">

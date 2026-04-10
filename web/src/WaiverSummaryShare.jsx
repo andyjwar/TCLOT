@@ -239,11 +239,6 @@ export function WaiverSummaryShare({
             {copied ? 'Copied' : 'Copy for sharing'}
           </button>
         </div>
-        {layoutMode === 'team' ? (
-          <p className="waiver-summary-share__toolbar-hint muted">
-            By team = A–Z teams, moves waivers then FA within each team.
-          </p>
-        ) : null}
       </div>
 
       <div
@@ -254,7 +249,6 @@ export function WaiverSummaryShare({
           <span className="waiver-summary-share__shot-abbr">{leagueTitleAbbr}</span>
           <span className="waiver-summary-share__shot-gw tabular">GW {gw}</span>
         </div>
-        <p className="waiver-summary-share__shot-sub muted">{leagueTitle}</p>
 
         {layoutMode === 'league' ? (
           <ul className="waiver-summary-share__compact-list">
