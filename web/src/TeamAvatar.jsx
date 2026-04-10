@@ -11,6 +11,12 @@ const RAW_BASE = `${import.meta.env.BASE_URL}team-logos/`
 const WEB_BASE = `${import.meta.env.BASE_URL}team-logos-web/`
 const LOGO_EXTS = ['png', 'PNG', 'jpg', 'JPG', 'jpeg', 'JPEG', 'webp', 'WEBP']
 
+/**
+ * FPL draft `id` (passed as `entryId` to TeamAvatar) — logos that are a small circle on a
+ * square canvas get `team-avatar-frame--logo-zoom`; everyone else stays 1:1 in the clip.
+ */
+const LOGO_ZOOM_ENTRY_IDS = new Set([39219, 26587, 40206, 27370])
+
 const SHIRT_TEXT = {
   sm: { fontSize: 15 },
   md: { fontSize: 20 },
@@ -179,6 +185,11 @@ export function TeamAvatar({
   const [idx, setIdx] = useState(0)
   const [showInitials, setShowInitials] = useState(false)
 
+  const logoZoom = useMemo(() => {
+    const n = Number(entryId)
+    return Number.isFinite(n) && LOGO_ZOOM_ENTRY_IDS.has(n)
+  }, [entryId])
+
   if (entryId == null || showInitials) {
     if (noFallback) return null
     return (
@@ -204,20 +215,23 @@ export function TeamAvatar({
     )
   }
 
-  const px = size === 'sm' ? 28 : size === 'lg' ? 64 : 36
   return (
-    <img
-      className={`team-avatar team-avatar--${size}`}
-      src={src}
-      alt=""
-      width={px}
-      height={px}
-      loading="lazy"
-      decoding="async"
-      onError={() => {
-        if (idx < srcList.length - 1) setIdx((i) => i + 1)
-        else setShowInitials(true)
-      }}
-    />
+    <span
+      className={`team-avatar-frame team-avatar-frame--${size}${
+        logoZoom ? ' team-avatar-frame--logo-zoom' : ''
+      }`}
+    >
+      <img
+        className="team-avatar"
+        src={src}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        onError={() => {
+          if (idx < srcList.length - 1) setIdx((i) => i + 1)
+          else setShowInitials(true)
+        }}
+      />
+    </span>
   )
 }
