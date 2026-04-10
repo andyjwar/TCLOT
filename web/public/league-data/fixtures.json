@@ -1077,8 +1077,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124793
   },
   {
@@ -1422,7 +1422,7 @@
       }
     ],
     "team_h_difficulty": 1,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124796
   },
   {
@@ -1767,7 +1767,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124795
   },
   {
@@ -2465,7 +2465,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124798
   },
   {
@@ -4269,7 +4269,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 5,
     "pulse_id": 124808
   },
@@ -5002,7 +5002,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124803
   },
   {
@@ -7217,7 +7217,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124809
   },
   {
@@ -7582,8 +7582,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 3,
     "pulse_id": 124813
   },
   {
@@ -8359,7 +8359,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124819
   },
   {
@@ -8730,7 +8730,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124818
   },
   {
@@ -9811,7 +9811,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124812
   },
   {
@@ -12962,7 +12962,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124829
   },
   {
@@ -13323,7 +13323,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 2,
     "pulse_id": 124830
   },
@@ -13725,7 +13725,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124823
   },
   {
@@ -15128,8 +15128,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 4,
     "pulse_id": 124833
   },
   {
@@ -17715,7 +17715,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124838
   },
   {
@@ -18478,7 +18478,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124842
   },
   {
@@ -18883,7 +18883,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124843
   },
   {
@@ -20744,7 +20744,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124850
   },
   {
@@ -21132,7 +21132,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 4,
     "pulse_id": 124841
   },
@@ -21506,7 +21506,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124848
   },
   {
@@ -22242,7 +22242,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 3,
     "pulse_id": 124853
   },
@@ -22627,7 +22627,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 3,
     "pulse_id": 124857
   },
@@ -23733,7 +23733,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124855
   },
   {
@@ -24836,7 +24836,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124859
   },
   {
@@ -25567,7 +25567,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124854
   },
   {
@@ -26318,7 +26318,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124861
   },
   {
@@ -27735,7 +27735,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124868
   },
   {
@@ -28433,7 +28433,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124869
   },
   {
@@ -29907,7 +29907,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124875
   },
   {
@@ -30282,8 +30282,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 3,
     "pulse_id": 124879
   },
   {
@@ -31100,7 +31100,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124874
   },
   {
@@ -32888,7 +32888,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 3,
     "pulse_id": 124876
   },
@@ -33230,7 +33230,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124881
   },
   {
@@ -35044,7 +35044,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124889
   },
   {
@@ -36477,7 +36477,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124888
   },
   {
@@ -36869,7 +36869,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124899
   },
   {
@@ -37210,7 +37210,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 3,
     "pulse_id": 124895
   },
@@ -37939,7 +37939,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124898
   },
   {
@@ -38276,7 +38276,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124893
   },
   {
@@ -39061,7 +39061,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124892
   },
   {
@@ -41258,7 +41258,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124903
   },
   {
@@ -42692,7 +42692,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124909
   },
   {
@@ -43445,7 +43445,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 5,
     "pulse_id": 124901
   },
@@ -44162,7 +44162,7 @@
       }
     ],
     "team_h_difficulty": 1,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124912
   },
   {
@@ -44962,7 +44962,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124918
   },
   {
@@ -45699,8 +45699,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124919
   },
   {
@@ -47461,7 +47461,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124913
   },
   {
@@ -48533,8 +48533,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 3,
     "pulse_id": 124929
   },
   {
@@ -49281,7 +49281,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124923
   },
   {
@@ -52864,7 +52864,7 @@
       }
     ],
     "team_h_difficulty": 1,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124938
   },
   {
@@ -53238,7 +53238,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124939
   },
   {
@@ -53988,7 +53988,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124933
   },
   {
@@ -55072,7 +55072,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124944
   },
   {
@@ -55814,7 +55814,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 2,
     "pulse_id": 124943
   },
@@ -56881,7 +56881,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 3,
     "pulse_id": 124948
   },
@@ -57252,7 +57252,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124949
   },
   {
@@ -57969,7 +57969,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124942
   },
   {
@@ -58751,7 +58751,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124958
   },
   {
@@ -59442,7 +59442,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124953
   },
   {
@@ -60541,7 +60541,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124959
   },
   {
@@ -63459,7 +63459,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124962
   },
   {
@@ -64458,7 +64458,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 2,
     "pulse_id": 124970
   },
@@ -64840,7 +64840,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124964
   },
   {
@@ -65164,7 +65164,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124969
   },
   {
@@ -65513,7 +65513,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 3,
     "pulse_id": 124965
   },
@@ -66240,7 +66240,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124974
   },
   {
@@ -68069,7 +68069,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 3,
     "pulse_id": 124975
   },
@@ -68730,8 +68730,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 3,
     "pulse_id": 124972
   },
   {
@@ -69056,7 +69056,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124979
   },
   {
@@ -69778,7 +69778,7 @@
       }
     ],
     "team_h_difficulty": 1,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 124983
   },
   {
@@ -71561,7 +71561,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124988
   },
   {
@@ -71922,7 +71922,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 124989
   },
   {
@@ -73327,7 +73327,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 3,
     "pulse_id": 124992
   },
@@ -73680,7 +73680,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124993
   },
   {
@@ -75881,7 +75881,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 124999
   },
   {
@@ -76920,7 +76920,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125003
   },
   {
@@ -77277,7 +77277,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 3,
     "pulse_id": 125004
   },
@@ -78024,7 +78024,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125009
   },
   {
@@ -78361,7 +78361,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125008
   },
   {
@@ -79712,7 +79712,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125002
   },
   {
@@ -80444,7 +80444,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 2,
     "pulse_id": 125014
   },
@@ -81853,7 +81853,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125013
   },
   {
@@ -82592,7 +82592,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125019
   },
   {
@@ -83673,7 +83673,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125022
   },
   {
@@ -84815,7 +84815,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125023
   },
   {
@@ -85901,7 +85901,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 4,
     "pulse_id": 125026
   },
@@ -86615,7 +86615,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125029
   },
   {
@@ -86985,7 +86985,7 @@
       }
     ],
     "team_h_difficulty": 1,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125028
   },
   {
@@ -87711,7 +87711,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 4,
     "pulse_id": 125038
   },
@@ -89901,7 +89901,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125039
   },
   {
@@ -90247,7 +90247,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125033
   },
   {
@@ -90989,7 +90989,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125043
   },
   {
@@ -91732,7 +91732,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125049
   },
   {
@@ -92836,7 +92836,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 5,
     "pulse_id": 125046
   },
@@ -93868,7 +93868,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125048
   },
   {
@@ -94237,7 +94237,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125042
   },
   {
@@ -95299,7 +95299,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125052
   },
   {
@@ -95669,7 +95669,7 @@
       }
     ],
     "team_h_difficulty": 1,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125053
   },
   {
@@ -97481,8 +97481,8 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 3,
     "pulse_id": 125058
   },
   {
@@ -97846,7 +97846,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125059
   },
   {
@@ -100079,7 +100079,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125069
   },
   {
@@ -100793,7 +100793,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125063
   },
   {
@@ -101180,7 +101180,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 3,
     "pulse_id": 125065
   },
@@ -104128,7 +104128,7 @@
       }
     ],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125073
   },
   {
@@ -105236,7 +105236,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125078
   },
   {
@@ -105614,7 +105614,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125079
   },
   {
@@ -106283,7 +106283,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125089
   },
   {
@@ -106969,7 +106969,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125084
   },
   {
@@ -108363,7 +108363,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 3,
     "pulse_id": 125088
   },
@@ -108718,7 +108718,7 @@
         ]
       }
     ],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 4,
     "pulse_id": 125086
   },
@@ -109092,7 +109092,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125082
   },
   {
@@ -109859,7 +109859,7 @@
       }
     ],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125093
   },
   {
@@ -111303,7 +111303,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125098
   },
   {
@@ -112014,7 +112014,7 @@
       }
     ],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125099
   },
   {
@@ -112071,7 +112071,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125102
   },
   {
@@ -112108,7 +112108,7 @@
     "team_h": 12,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 4,
     "pulse_id": 125106
   },
@@ -112165,8 +112165,8 @@
     "team_h": 17,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 3,
     "pulse_id": 125109
   },
   {
@@ -112185,7 +112185,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 4,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125104
   },
   {
@@ -112222,8 +112222,8 @@
     "team_h": 5,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 3,
     "pulse_id": 125112
   },
   {
@@ -112261,7 +112261,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125118
   },
   {
@@ -112280,7 +112280,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125120
   },
   {
@@ -112299,7 +112299,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125113
   },
   {
@@ -112398,6 +112398,63 @@
     "pulse_id": 125114
   },
   {
+    "code": 2562227,
+    "event": 33,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 333,
+    "kickoff_time": "2026-04-21T19:00:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 7,
+    "team_a_score": null,
+    "team_h": 6,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 4,
+    "pulse_id": 125123
+  },
+  {
+    "code": 2562225,
+    "event": 33,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 332,
+    "kickoff_time": "2026-04-22T19:00:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 11,
+    "team_a_score": null,
+    "team_h": 4,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 3,
+    "pulse_id": 125122
+  },
+  {
+    "code": 2562228,
+    "event": 33,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 334,
+    "kickoff_time": "2026-04-22T19:00:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 13,
+    "team_a_score": null,
+    "team_h": 3,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 4,
+    "team_a_difficulty": 2,
+    "pulse_id": 125124
+  },
+  {
     "code": 2562232,
     "event": 34,
     "finished": false,
@@ -112413,7 +112470,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125128
   },
   {
@@ -112434,25 +112491,6 @@
     "team_h_difficulty": 3,
     "team_a_difficulty": 3,
     "pulse_id": 125125
-  },
-  {
-    "code": 2562225,
-    "event": 34,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 332,
-    "kickoff_time": "2026-04-25T14:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 11,
-    "team_a_score": null,
-    "team_h": 4,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
-    "pulse_id": 125122
   },
   {
     "code": 2562230,
@@ -112507,7 +112545,7 @@
     "team_h": 20,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 2,
     "pulse_id": 125130
   },
@@ -112531,44 +112569,6 @@
     "pulse_id": 125121
   },
   {
-    "code": 2562228,
-    "event": 34,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 334,
-    "kickoff_time": "2026-04-26T13:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 13,
-    "team_a_score": null,
-    "team_h": 3,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 4,
-    "team_a_difficulty": 2,
-    "pulse_id": 125124
-  },
-  {
-    "code": 2562227,
-    "event": 34,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 333,
-    "kickoff_time": "2026-04-26T15:30:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 7,
-    "team_a_score": null,
-    "team_h": 6,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
-    "pulse_id": 125123
-  },
-  {
     "code": 2562231,
     "event": 34,
     "finished": false,
@@ -112588,23 +112588,23 @@
     "pulse_id": 125127
   },
   {
-    "code": 2562236,
+    "code": 2562241,
     "event": 35,
     "finished": false,
     "finished_provisional": false,
-    "id": 341,
-    "kickoff_time": "2026-05-02T14:00:00Z",
+    "id": 347,
+    "kickoff_time": "2026-05-01T19:00:00Z",
     "minutes": 0,
     "provisional_start_time": false,
     "started": false,
-    "team_a": 10,
+    "team_a": 3,
     "team_a_score": null,
-    "team_h": 1,
+    "team_h": 11,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 5,
-    "pulse_id": 125131
+    "team_h_difficulty": 1,
+    "team_a_difficulty": 3,
+    "pulse_id": 125137
   },
   {
     "code": 2562237,
@@ -112612,7 +112612,7 @@
     "finished": false,
     "finished_provisional": false,
     "id": 342,
-    "kickoff_time": "2026-05-02T14:00:00Z",
+    "kickoff_time": "2026-05-02T11:30:00Z",
     "minutes": 0,
     "provisional_start_time": false,
     "started": false,
@@ -112621,7 +112621,7 @@
     "team_h": 2,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 3,
+    "team_h_difficulty": 2,
     "team_a_difficulty": 4,
     "pulse_id": 125132
   },
@@ -112660,84 +112660,8 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125134
-  },
-  {
-    "code": 2562239,
-    "event": 35,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 345,
-    "kickoff_time": "2026-05-02T14:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 16,
-    "team_a_score": null,
-    "team_h": 7,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
-    "pulse_id": 125135
-  },
-  {
-    "code": 2562240,
-    "event": 35,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 346,
-    "kickoff_time": "2026-05-02T14:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 13,
-    "team_a_score": null,
-    "team_h": 9,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 4,
-    "team_a_difficulty": 3,
-    "pulse_id": 125136
-  },
-  {
-    "code": 2562241,
-    "event": 35,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 347,
-    "kickoff_time": "2026-05-02T14:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 3,
-    "team_a_score": null,
-    "team_h": 11,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 1,
-    "team_a_difficulty": 3,
-    "pulse_id": 125137
-  },
-  {
-    "code": 2562242,
-    "event": 35,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 348,
-    "kickoff_time": "2026-05-02T14:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 12,
-    "team_a_score": null,
-    "team_h": 14,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
-    "pulse_id": 125138
   },
   {
     "code": 2562243,
@@ -112755,7 +112679,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125139
   },
   {
@@ -112778,6 +112702,101 @@
     "pulse_id": 125140
   },
   {
+    "code": 2562236,
+    "event": 35,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 341,
+    "kickoff_time": "2026-05-02T16:30:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 10,
+    "team_a_score": null,
+    "team_h": 1,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 5,
+    "pulse_id": 125131
+  },
+  {
+    "code": 2562242,
+    "event": 35,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 348,
+    "kickoff_time": "2026-05-03T14:30:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 12,
+    "team_a_score": null,
+    "team_h": 14,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 4,
+    "pulse_id": 125138
+  },
+  {
+    "code": 2562239,
+    "event": 35,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 345,
+    "kickoff_time": "2026-05-04T14:00:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 16,
+    "team_a_score": null,
+    "team_h": 7,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 3,
+    "pulse_id": 125135
+  },
+  {
+    "code": 2562240,
+    "event": 35,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 346,
+    "kickoff_time": "2026-05-04T19:00:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 13,
+    "team_a_score": null,
+    "team_h": 9,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 4,
+    "team_a_difficulty": 3,
+    "pulse_id": 125136
+  },
+  {
+    "code": 2562249,
+    "event": 36,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 355,
+    "kickoff_time": "2026-05-09T11:30:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 7,
+    "team_a_score": null,
+    "team_h": 12,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 3,
+    "team_a_difficulty": 4,
+    "pulse_id": 125145
+  },
+  {
     "code": 2562245,
     "event": 36,
     "finished": false,
@@ -112793,7 +112812,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125141
   },
   {
@@ -112854,23 +112873,23 @@
     "pulse_id": 125144
   },
   {
-    "code": 2562249,
+    "code": 2562252,
     "event": 36,
     "finished": false,
     "finished_provisional": false,
-    "id": 355,
+    "id": 358,
     "kickoff_time": "2026-05-09T14:00:00Z",
     "minutes": 0,
     "provisional_start_time": false,
     "started": false,
-    "team_a": 7,
+    "team_a": 14,
     "team_a_score": null,
-    "team_h": 12,
+    "team_h": 17,
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
-    "pulse_id": 125145
+    "team_a_difficulty": 3,
+    "pulse_id": 125148
   },
   {
     "code": 2562250,
@@ -112878,7 +112897,7 @@
     "finished": false,
     "finished_provisional": false,
     "id": 356,
-    "kickoff_time": "2026-05-09T14:00:00Z",
+    "kickoff_time": "2026-05-09T16:30:00Z",
     "minutes": 0,
     "provisional_start_time": false,
     "started": false,
@@ -112897,7 +112916,7 @@
     "finished": false,
     "finished_provisional": false,
     "id": 357,
-    "kickoff_time": "2026-05-09T14:00:00Z",
+    "kickoff_time": "2026-05-10T13:00:00Z",
     "minutes": 0,
     "provisional_start_time": false,
     "started": false,
@@ -112911,50 +112930,12 @@
     "pulse_id": 125147
   },
   {
-    "code": 2562253,
-    "event": 36,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 359,
-    "kickoff_time": "2026-05-09T14:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 11,
-    "team_a_score": null,
-    "team_h": 18,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 2,
-    "team_a_difficulty": 3,
-    "pulse_id": 125149
-  },
-  {
-    "code": 2562252,
-    "event": 36,
-    "finished": false,
-    "finished_provisional": false,
-    "id": 358,
-    "kickoff_time": "2026-05-09T14:00:00Z",
-    "minutes": 0,
-    "provisional_start_time": false,
-    "started": false,
-    "team_a": 14,
-    "team_a_score": null,
-    "team_h": 17,
-    "team_h_score": null,
-    "stats": [],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
-    "pulse_id": 125148
-  },
-  {
     "code": 2562254,
     "event": 36,
     "finished": false,
     "finished_provisional": false,
     "id": 360,
-    "kickoff_time": "2026-05-09T14:00:00Z",
+    "kickoff_time": "2026-05-10T15:30:00Z",
     "minutes": 0,
     "provisional_start_time": false,
     "started": false,
@@ -112966,6 +112947,25 @@
     "team_h_difficulty": 4,
     "team_a_difficulty": 2,
     "pulse_id": 125150
+  },
+  {
+    "code": 2562253,
+    "event": 36,
+    "finished": false,
+    "finished_provisional": false,
+    "id": 359,
+    "kickoff_time": "2026-05-11T19:00:00Z",
+    "minutes": 0,
+    "provisional_start_time": false,
+    "started": false,
+    "team_a": 11,
+    "team_a_score": null,
+    "team_h": 18,
+    "team_h_score": null,
+    "stats": [],
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 2,
+    "pulse_id": 125149
   },
   {
     "code": 2562256,
@@ -113040,7 +113040,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125154
   },
   {
@@ -113058,8 +113058,8 @@
     "team_h": 7,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_h_difficulty": 2,
+    "team_a_difficulty": 3,
     "pulse_id": 125155
   },
   {
@@ -113135,7 +113135,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 2,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125159
   },
   {
@@ -113153,7 +113153,7 @@
     "team_h": 20,
     "team_h_score": null,
     "stats": [],
-    "team_h_difficulty": 2,
+    "team_h_difficulty": 3,
     "team_a_difficulty": 2,
     "pulse_id": 125160
   },
@@ -113173,7 +113173,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 4,
     "pulse_id": 125161
   },
   {
@@ -113306,7 +113306,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 3,
+    "team_a_difficulty": 2,
     "pulse_id": 125169
   },
   {
@@ -113325,7 +113325,7 @@
     "team_h_score": null,
     "stats": [],
     "team_h_difficulty": 3,
-    "team_a_difficulty": 4,
+    "team_a_difficulty": 3,
     "pulse_id": 125168
   },
   {

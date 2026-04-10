@@ -11,13 +11,41 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TCLOT — Tri-Continental League of Titans</title>
+    <style>
+      #root-loading-hint {
+        margin: 2rem;
+        font-family: system-ui, sans-serif;
+        max-width: 28rem;
+        line-height: 1.5;
+        color: rgba(26, 26, 26, 0.92);
+      }
+      #root-loading-hint small {
+        color: rgba(51, 51, 51, 0.55);
+      }
+      body[data-tclot-theme='dark'] #root-loading-hint {
+        color: rgba(255, 255, 255, 0.9);
+      }
+      body[data-tclot-theme='dark'] #root-loading-hint small {
+        color: rgba(255, 255, 255, 0.55);
+      }
+    </style>
   </head>
   <body>
+    <script>
+      ;(function () {
+        try {
+          var s = localStorage.getItem('tclot-theme')
+          document.body.dataset.tclotTheme = s === 'light' || s === 'dark' ? s : 'light'
+        } catch (e) {
+          document.body.dataset.tclotTheme = 'light'
+        }
+      })()
+    </script>
     <div id="root">
-      <p style="margin:2rem;font-family:system-ui,sans-serif;color:rgba(255,255,255,0.9);max-width:28rem;line-height:1.5">
+      <p id="root-loading-hint">
         Loading dashboard…
         <br /><br />
-        <small style="color:rgba(255,255,255,0.55)"
+        <small
           >If this never finishes: use the exact GitHub Pages link from
           <strong>Settings → Pages</strong>, and put a <strong>/</strong> at the end (e.g.
           <code>…github.io/your-repo/</code>). Then press F12 → Console for errors.</small

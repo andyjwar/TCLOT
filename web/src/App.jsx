@@ -24,6 +24,11 @@ import { LiveScores } from './LiveScores'
 import { PlayOffBracket } from './PlayOffBracket'
 import { DraftBoard } from './DraftBoard'
 import { ThemeToggle } from './ThemeToggle'
+import { WaiverSummaryShare } from './WaiverSummaryShare'
+import {
+  sortGroupsByFirstWaiverOrder,
+  sortMovesWaiverThenFa,
+} from './waiverMovesSort.js'
 import {
   HALL_SEASON_FINAL_TABLES,
   computeHallManagerCareerRows,
@@ -855,14 +860,14 @@ const EMPTY_LEAGUE_ENTRIES = []
 const THEME_STORAGE_KEY = 'tclot-theme'
 
 function readStoredTheme() {
-  if (typeof window === 'undefined') return 'dark'
+  if (typeof window === 'undefined') return 'light'
   try {
     const s = window.localStorage.getItem(THEME_STORAGE_KEY)
     if (s === 'light' || s === 'dark') return s
   } catch {
     /* ignore */
   }
-  return 'dark'
+  return 'light'
 }
 
 function App() {
@@ -904,6 +909,8 @@ function App() {
   /** Draft bootstrap `events.current` — default Live tab GW when user has not chosen one. */
   const [fplLiveLandingGw, setFplLiveLandingGw] = useState(null)
   const [waiverGwView, setWaiverGwView] = useState(null)
+  /** latest = rich cards; summary = compact share / screenshot layout */
+  const [waiverFeedTab, setWaiverFeedTab] = useState('latest')
   const [completeGwView, setCompleteGwView] = useState(null)
   const [futureGwView, setFutureGwView] = useState(null)
   const formStripDisplayCount = useFormStripDisplayCount()
@@ -944,7 +951,7 @@ function App() {
     showDashboardPlayoff,
   ])
 
-  /** drops-gw-live rows: waivers only (excludes free-agency rows used in Latest Waivers). */
+  /** drops-gw-live rows: waivers only (excludes free-agency rows used in All Waivers). */
   const waiverOutRowsWaiverOnly = useMemo(
     () => (data?.waiverOutGwRows ?? []).filter((r) => r.transactionKind !== 'f'),
     [data?.waiverOutGwRows],
@@ -1177,6 +1184,30 @@ function App() {
     if (!rows.length || !Number.isFinite(gw)) return { gw: null, groups: [] }
     const inGw = rows.filter((r) => Number(r.gameweek) === gw)
     if (!inGw.length) return { gw, groups: [] }
+    /** League waiver run order — same keys as First Waiver Picks: `index` then `id` on cleared waivers. */
+    const txKey = (id) => {
+      const n = Number(id)
+      return Number.isFinite(n) ? n : String(id ?? '')
+    }
+    const waiverRows = inGw.filter((r) => r.transactionKind === 'w')
+    const leagueRunOrder = [...waiverRows].sort((a, b) => {
+      const ia = Number(a.waiverWireIndex)
+      const ib = Number(b.waiverWireIndex)
+      const aHas = Number.isFinite(ia)
+      const bHas = Number.isFinite(ib)
+      if (aHas && bHas && ia !== ib) return ia - ib
+      if (aHas && !bHas) return -1
+      if (!aHas && bHas) return 1
+      if (!aHas && !bHas) {
+        const da = a.added ? Date.parse(a.added) : 0
+        const db = b.added ? Date.parse(b.added) : 0
+        if (da !== db) return da - db
+      }
+      return (Number(a.transactionId) || 0) - (Number(b.transactionId) || 0)
+    })
+    const waiverRunRankByTxId = new Map(
+      leagueRunOrder.map((r, i) => [txKey(r.transactionId), i + 1]),
+    )
     const byEntry = new Map()
     for (const r of inGw) {
       const k = r.entry
@@ -1189,19 +1220,16 @@ function App() {
           moves: [],
         })
       }
-      byEntry.get(k).moves.push(r)
+      const waiverProcessOrder =
+        r.transactionKind === 'w'
+          ? (waiverRunRankByTxId.get(txKey(r.transactionId)) ?? null)
+          : null
+      byEntry.get(k).moves.push({ ...r, waiverProcessOrder })
     }
     for (const g of byEntry.values()) {
-      g.moves.sort((a, b) => {
-        const da = a.added ? Date.parse(a.added) : 0
-        const db = b.added ? Date.parse(b.added) : 0
-        if (db !== da) return db - da
-        return (b.transactionId ?? 0) - (a.transactionId ?? 0)
-      })
+      g.moves.sort(sortMovesWaiverThenFa)
     }
-    const groups = [...byEntry.values()].sort((a, b) =>
-      a.teamName.localeCompare(b.teamName, undefined, { sensitivity: 'base' })
-    )
+    const groups = sortGroupsByFirstWaiverOrder([...byEntry.values()])
     return { gw, groups }
   }, [waiverOutGwRows, teamsForFormSelect, waiverGwEffective])
 
@@ -2068,13 +2096,44 @@ function App() {
 
           {dashboardView === 'waivers' && (
             <div className="dashboard-stack">
-              <section className="tile tile--compact" aria-labelledby="latest-waivers-heading">
+              <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
                 <div className="tile-head-row tile-head-row--tight">
                   <h2
-                    id="latest-waivers-heading"
-                    className="tile-title tile-title--sm tile-title--with-select"
+                    id="all-waivers-heading"
+                    className="tile-title tile-title--sm tile-title--waiver-feed"
                   >
-                    <span className="tile-title__text">Latest Waivers</span>
+                    <span className="waiver-panel-tabs" role="tablist" aria-label="Waivers view">
+                      <button
+                        type="button"
+                        role="tab"
+                        id="tab-waiver-all"
+                        aria-controls="waiver-feed-panel"
+                        aria-selected={waiverFeedTab === 'latest'}
+                        className={
+                          waiverFeedTab === 'latest'
+                            ? 'waiver-panel-tabs__btn waiver-panel-tabs__btn--active'
+                            : 'waiver-panel-tabs__btn'
+                        }
+                        onClick={() => setWaiverFeedTab('latest')}
+                      >
+                        All Waivers
+                      </button>
+                      <button
+                        type="button"
+                        role="tab"
+                        id="tab-waiver-summary"
+                        aria-controls="waiver-feed-panel"
+                        aria-selected={waiverFeedTab === 'summary'}
+                        className={
+                          waiverFeedTab === 'summary'
+                            ? 'waiver-panel-tabs__btn waiver-panel-tabs__btn--active'
+                            : 'waiver-panel-tabs__btn'
+                        }
+                        onClick={() => setWaiverFeedTab('summary')}
+                      >
+                        Waiver summary
+                      </button>
+                    </span>
                     {processedWaiverGws.length > 0 ? (
                       <select
                         className="tile-gw-select tile-gw-select--inline"
@@ -2091,77 +2150,101 @@ function App() {
                     ) : null}
                   </h2>
                 </div>
-                {waiversForSelectedGw.groups.length ? (
-                  <div className="latest-waivers">
-                    {waiversForSelectedGw.groups.map((g) => (
-                      <div key={g.entry} className="latest-waivers__team-block">
-                        <h3 className="latest-waivers__team-title">
-                          <TeamAvatar
-                            entryId={g.leagueEntryId}
-                            name={g.teamName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                          <span>{g.teamName}</span>
-                        </h3>
-                        <ul className="latest-waivers__move-list">
-                          {g.moves.map((r) => (
-                            <li
-                              key={r.transactionId}
-                              className={`latest-waivers__move${r.transactionKind === 'f' ? ' latest-waivers__move--fa' : ''}`}
-                            >
-                              <div className="latest-waivers__move-stack">
-                                <div className="latest-waivers__fa-row">
-                                  {r.transactionKind === 'f' ? (
-                                    <span
-                                      className="latest-waivers__txn-badge"
-                                      title="Free agency pickup"
-                                    >
-                                      FA
-                                    </span>
-                                  ) : null}
-                                </div>
-                                <div className="latest-waivers__swap-line">
-                                  <span className="latest-waivers__io-label muted">In</span>
-                                  <PlayerKit
-                                    shirtUrl={r.pickedShirtUrl}
-                                    badgeUrl={r.pickedBadgeUrl}
-                                    teamShort={r.pickedTeamShort}
-                                  />
-                                  <span className="latest-waivers__player-name">{r.pickedName}</span>
-                                </div>
-                                <div className="latest-waivers__swap-line">
-                                  <span className="latest-waivers__io-label muted">Out</span>
-                                  <PlayerKit
-                                    shirtUrl={r.droppedShirtUrl}
-                                    badgeUrl={r.droppedBadgeUrl}
-                                    teamShort={r.droppedTeamShort}
-                                  />
-                                  <span className="latest-waivers__player-name">{r.droppedName}</span>
-                                </div>
+                <div
+                  id="waiver-feed-panel"
+                  role="tabpanel"
+                  aria-labelledby={
+                    waiverFeedTab === 'latest' ? 'tab-waiver-all' : 'tab-waiver-summary'
+                  }
+                >
+                  {waiverFeedTab === 'summary' ? (
+                    <WaiverSummaryShare
+                      gw={waiversForSelectedGw.gw}
+                      groups={waiversForSelectedGw.groups}
+                      leagueTitleAbbr={LEAGUE_TITLE_ABBR}
+                      leagueTitle={LEAGUE_TITLE}
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  ) : waiversForSelectedGw.groups.length ? (
+                    <div className="latest-waivers">
+                      {waiversForSelectedGw.groups.map((g) => (
+                        <div key={g.entry} className="latest-waivers__team-block">
+                          <h3 className="latest-waivers__team-title">
+                            <TeamAvatar
+                              entryId={g.leagueEntryId}
+                              name={g.teamName}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
+                            <span>{g.teamName}</span>
+                          </h3>
+                          <ul className="latest-waivers__move-list">
+                            {g.moves.map((r) => (
+                              <li
+                                key={r.transactionId}
+                                className={`latest-waivers__move${r.transactionKind === 'f' ? ' latest-waivers__move--fa' : ''}`}
+                              >
+                                <div className="latest-waivers__move-stack">
+                                  <div className="latest-waivers__fa-row">
+                                    {r.transactionKind === 'f' ? (
+                                      <span
+                                        className="latest-waivers__txn-badge"
+                                        title="Free agency pickup"
+                                      >
+                                        FA
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                  <div className="latest-waivers__swap-line">
+                                    <span className="latest-waivers__io-label muted">In</span>
+                                    <PlayerKit
+                                      shirtUrl={r.pickedShirtUrl}
+                                      badgeUrl={r.pickedBadgeUrl}
+                                      teamShort={r.pickedTeamShort}
+                                    />
+                                    <span className="latest-waivers__player-name">{r.pickedName}</span>
+                                    {r.waiverProcessOrder != null ? (
+                                      <span
+                                        className="latest-waivers__move-order muted tabular"
+                                        title="League waiver run order this GW (1 = first): FPL index then transaction id — same rule as First Waiver Picks; cleared waivers only"
+                                      >
+                                        {' '}
+                                        ({r.waiverProcessOrder})
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                  <div className="latest-waivers__swap-line">
+                                    <span className="latest-waivers__io-label muted">Out</span>
+                                    <PlayerKit
+                                      shirtUrl={r.droppedShirtUrl}
+                                      badgeUrl={r.droppedBadgeUrl}
+                                      teamShort={r.droppedTeamShort}
+                                    />
+                                    <span className="latest-waivers__player-name">{r.droppedName}</span>
+                                  </div>
                               </div>
                             </li>
                           ))}
                         </ul>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="muted muted--tight">
-                    {waiverOutGwRows.length ? (
-                      <>
-                        No waiver or free-agency activity in GW {waiverGwEffective}.
-                      </>
-                    ) : (
-                      <>
-                        No waiver / free-agency rows in <code>drops-gw-live.json</code> yet. Run{' '}
-                        <code>npm run dev</code> / <code>npm run build</code> (runs waiver analytics)
-                        after <code>transactions.json</code> is present.
-                      </>
-                    )}
-                  </p>
-                )}
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted muted--tight">
+                      {waiverOutGwRows.length ? (
+                        <>No waiver or free-agency activity in GW {waiverGwEffective}.</>
+                      ) : (
+                        <>
+                          No waiver / free-agency rows in <code>drops-gw-live.json</code> yet. Run{' '}
+                          <code>npm run dev</code> / <code>npm run build</code> (runs waiver analytics)
+                          after <code>transactions.json</code> is present.
+                        </>
+                      )}
+                    </p>
+                  )}
+                </div>
               </section>
 
               <section className="tile tile--compact" aria-labelledby="first-waiver-picks-heading">

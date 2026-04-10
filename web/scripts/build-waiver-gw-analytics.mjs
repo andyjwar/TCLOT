@@ -327,6 +327,16 @@ async function main() {
       element_in: t.element_in,
       element_out: outId,
       added: t.added ?? null,
+      /** FPL draft: position on that team’s waiver list for this GW (1 = top priority claim). */
+      waiverPriority:
+        transactionKind === 'w' && t.priority != null && t.priority !== ''
+          ? Number(t.priority)
+          : null,
+      /** Same field as First Waiver Picks: waiver wire slot when the claim ran (`transactions.index`). */
+      waiverWireIndex:
+        transactionKind === 'w' && t.index != null && t.index !== ''
+          ? Number(t.index)
+          : null,
       droppedPlayerGwPoints: ptsOut,
       pickedUpPlayerGwPoints: ptsIn,
       transactionKind,

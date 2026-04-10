@@ -1,7 +1,345 @@
 {
-  "generated": "2026-03-24T19:51:03.040Z",
+  "generated": "2026-04-10T16:59:14.593Z",
   "note": "Successful waiver (transactionKind w) and free-agency (f) swaps. droppedPlayerGwPoints / pickedUpPlayerGwPoints = FPL pts that GW for element_out / element_in (event/live)",
   "rows": [
+    {
+      "transactionId": 52184933,
+      "entry": 40240,
+      "gameweek": 32,
+      "element_in": 350,
+      "element_out": 664,
+      "added": "2026-04-09T23:59:30.522786Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 52182236,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 342,
+      "element_out": 11,
+      "added": "2026-04-09T22:27:04.382395Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 52175664,
+      "entry": 41410,
+      "gameweek": 32,
+      "element_in": 507,
+      "element_out": 77,
+      "added": "2026-04-09T20:27:22.994912Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 52164598,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 37,
+      "element_out": 568,
+      "added": "2026-04-09T18:06:58.668382Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "f"
+    },
+    {
+      "transactionId": 52160093,
+      "entry": 74425,
+      "gameweek": 32,
+      "element_in": 38,
+      "element_out": 720,
+      "added": "2026-04-09T17:30:01.656720Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 20,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 52160091,
+      "entry": 74425,
+      "gameweek": 32,
+      "element_in": 87,
+      "element_out": 324,
+      "added": "2026-04-09T17:30:01.656680Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 9,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 52160089,
+      "entry": 74425,
+      "gameweek": 32,
+      "element_in": 169,
+      "element_out": 593,
+      "added": "2026-04-09T17:30:01.656607Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51889503,
+      "entry": 41410,
+      "gameweek": 32,
+      "element_in": 256,
+      "element_out": 322,
+      "added": "2026-04-09T16:10:47.735037Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51646519,
+      "entry": 27870,
+      "gameweek": 32,
+      "element_in": 502,
+      "element_out": 565,
+      "added": "2026-04-09T12:56:09.393155Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 18,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51646518,
+      "entry": 27870,
+      "gameweek": 32,
+      "element_in": 157,
+      "element_out": 417,
+      "added": "2026-04-09T12:56:09.393106Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51599804,
+      "entry": 27040,
+      "gameweek": 32,
+      "element_in": 341,
+      "element_out": 673,
+      "added": "2026-04-09T12:10:24.972232Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 25,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51599801,
+      "entry": 27040,
+      "gameweek": 32,
+      "element_in": 100,
+      "element_out": 310,
+      "added": "2026-04-09T12:10:24.972178Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 13,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51599799,
+      "entry": 27040,
+      "gameweek": 32,
+      "element_in": 707,
+      "element_out": 317,
+      "added": "2026-04-09T12:10:24.972111Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51220065,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 367,
+      "element_out": 366,
+      "added": "2026-04-08T19:16:20.955999Z",
+      "waiverPriority": 33,
+      "waiverWireIndex": 68,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51220063,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 613,
+      "element_out": 667,
+      "added": "2026-04-08T19:16:20.955971Z",
+      "waiverPriority": 31,
+      "waiverWireIndex": 65,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51220046,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 26,
+      "element_out": 591,
+      "added": "2026-04-08T19:16:20.955728Z",
+      "waiverPriority": 14,
+      "waiverWireIndex": 44,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51220040,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 17,
+      "element_out": 121,
+      "added": "2026-04-08T19:16:20.955640Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 28,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51220037,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 408,
+      "element_out": 318,
+      "added": "2026-04-08T19:16:20.955594Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 17,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 51220033,
+      "entry": 40385,
+      "gameweek": 32,
+      "element_in": 11,
+      "element_out": 146,
+      "added": "2026-04-08T19:16:20.955496Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 50934895,
+      "entry": 27134,
+      "gameweek": 32,
+      "element_in": 646,
+      "element_out": 384,
+      "added": "2026-04-07T13:20:05.222198Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 48,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 50934891,
+      "entry": 27134,
+      "gameweek": 32,
+      "element_in": 36,
+      "element_out": 7,
+      "added": "2026-04-07T13:20:05.222127Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 37,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 50934889,
+      "entry": 27134,
+      "gameweek": 32,
+      "element_in": 311,
+      "element_out": 97,
+      "added": "2026-04-07T13:20:05.222090Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 22,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 50934888,
+      "entry": 27134,
+      "gameweek": 32,
+      "element_in": 508,
+      "element_out": 316,
+      "added": "2026-04-07T13:20:05.222068Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 50934887,
+      "entry": 27134,
+      "gameweek": 32,
+      "element_in": 416,
+      "element_out": 237,
+      "added": "2026-04-07T13:20:05.222015Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 50448223,
+      "entry": 31812,
+      "gameweek": 32,
+      "element_in": 582,
+      "element_out": 424,
+      "added": "2026-03-30T13:30:57.625620Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
+    {
+      "transactionId": 50448222,
+      "entry": 31812,
+      "gameweek": 32,
+      "element_in": 283,
+      "element_out": 735,
+      "added": "2026-03-30T13:30:57.625549Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
+      "droppedPlayerGwPoints": null,
+      "pickedUpPlayerGwPoints": null,
+      "transactionKind": "w"
+    },
     {
       "transactionId": 49834531,
       "entry": 31812,
@@ -9,6 +347,8 @@
       "element_in": 735,
       "element_out": 100,
       "added": "2026-03-20T12:38:07.841036Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -20,6 +360,8 @@
       "element_in": 443,
       "element_out": 226,
       "added": "2026-03-20T12:33:36.383435Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -31,6 +373,8 @@
       "element_in": 568,
       "element_out": 402,
       "added": "2026-03-19T22:06:13.847454Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -42,6 +386,8 @@
       "element_in": 139,
       "element_out": 502,
       "added": "2026-03-19T19:16:58.031997Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -53,6 +399,8 @@
       "element_in": 106,
       "element_out": 290,
       "added": "2026-03-19T19:09:15.876633Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "f"
@@ -64,6 +412,8 @@
       "element_in": 603,
       "element_out": 531,
       "added": "2026-03-19T19:08:39.357667Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -75,6 +425,8 @@
       "element_in": 593,
       "element_out": 646,
       "added": "2026-03-19T18:52:50.228111Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -86,6 +438,8 @@
       "element_in": 354,
       "element_out": 169,
       "added": "2026-03-19T18:45:38.794441Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "f"
@@ -97,6 +451,8 @@
       "element_in": 681,
       "element_out": 813,
       "added": "2026-03-19T18:27:20.330934Z",
+      "waiverPriority": 12,
+      "waiverWireIndex": 41,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -108,6 +464,8 @@
       "element_in": 792,
       "element_out": 806,
       "added": "2026-03-19T18:27:20.330906Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 39,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -119,6 +477,8 @@
       "element_in": 215,
       "element_out": 283,
       "added": "2026-03-19T18:27:20.330862Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 35,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -130,6 +490,8 @@
       "element_in": 343,
       "element_out": 342,
       "added": "2026-03-19T18:27:20.330832Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 25,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -141,6 +503,8 @@
       "element_in": 646,
       "element_out": 808,
       "added": "2026-03-19T18:27:20.330770Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -152,6 +516,8 @@
       "element_in": 450,
       "element_out": 200,
       "added": "2026-03-19T18:27:20.330711Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -163,6 +529,8 @@
       "element_in": 565,
       "element_out": 469,
       "added": "2026-03-19T15:47:56.283177Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -174,6 +542,8 @@
       "element_in": 224,
       "element_out": 225,
       "added": "2026-03-19T15:47:56.283084Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -185,6 +555,8 @@
       "element_in": 146,
       "element_out": 714,
       "added": "2026-03-17T20:34:45.670230Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 30,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -196,6 +568,8 @@
       "element_in": 148,
       "element_out": 408,
       "added": "2026-03-17T20:34:45.670186Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -207,6 +581,8 @@
       "element_in": 591,
       "element_out": 26,
       "added": "2026-03-17T20:34:45.670155Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -218,6 +594,8 @@
       "element_in": 7,
       "element_out": 36,
       "added": "2026-03-16T07:46:44.833277Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -229,6 +607,8 @@
       "element_in": 476,
       "element_out": 258,
       "added": "2026-03-15T17:12:06.039791Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -240,6 +620,8 @@
       "element_in": 505,
       "element_out": 261,
       "added": "2026-03-15T15:43:31.732129Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -251,6 +633,8 @@
       "element_in": 299,
       "element_out": 547,
       "added": "2026-03-15T15:43:31.732109Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -262,6 +646,8 @@
       "element_in": 673,
       "element_out": 628,
       "added": "2026-03-15T13:11:36.517210Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -273,6 +659,8 @@
       "element_in": 477,
       "element_out": 256,
       "added": "2026-03-15T13:11:36.517168Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -284,6 +672,8 @@
       "element_in": 316,
       "element_out": 109,
       "added": "2026-03-13T14:06:38.138701Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "f"
@@ -295,6 +685,8 @@
       "element_in": 200,
       "element_out": 450,
       "added": "2026-03-13T13:27:28.796955Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 32,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -306,6 +698,8 @@
       "element_in": 813,
       "element_out": 139,
       "added": "2026-03-13T13:27:28.796940Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 28,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -317,6 +711,8 @@
       "element_in": 684,
       "element_out": 40,
       "added": "2026-03-13T13:27:28.796921Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -328,6 +724,8 @@
       "element_in": 283,
       "element_out": 792,
       "added": "2026-03-13T13:27:28.796874Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -339,6 +737,8 @@
       "element_in": 473,
       "element_out": 108,
       "added": "2026-03-13T01:41:29.582583Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -350,6 +750,8 @@
       "element_in": 317,
       "element_out": 293,
       "added": "2026-03-12T22:20:33.863571Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -361,6 +763,8 @@
       "element_in": 169,
       "element_out": 20,
       "added": "2026-03-12T22:20:33.863471Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -372,6 +776,8 @@
       "element_in": 733,
       "element_out": 736,
       "added": "2026-03-12T13:54:34.370059Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -383,6 +789,8 @@
       "element_in": 784,
       "element_out": 413,
       "added": "2026-03-12T13:54:34.369940Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -394,6 +802,8 @@
       "element_in": 121,
       "element_out": 414,
       "added": "2026-03-11T20:22:56.374020Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -405,6 +815,8 @@
       "element_in": 547,
       "element_out": 386,
       "added": "2026-03-05T09:20:48.437815Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -416,6 +828,8 @@
       "element_in": 36,
       "element_out": 343,
       "added": "2026-03-05T07:59:18.151687Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 16,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -427,6 +841,8 @@
       "element_in": 457,
       "element_out": 299,
       "added": "2026-03-05T07:59:18.151585Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -438,6 +854,8 @@
       "element_in": 109,
       "element_out": 292,
       "added": "2026-03-02T20:44:04.366514Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -449,6 +867,8 @@
       "element_in": 667,
       "element_out": 266,
       "added": "2026-03-02T18:33:53.390469Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -460,6 +880,8 @@
       "element_in": 414,
       "element_out": 236,
       "added": "2026-03-02T18:25:27.643278Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -471,6 +893,8 @@
       "element_in": 322,
       "element_out": 36,
       "added": "2026-03-02T18:15:44.081628Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": -1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -482,6 +906,8 @@
       "element_in": 502,
       "element_out": 400,
       "added": "2026-03-02T17:49:53.471033Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 21,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -493,6 +919,8 @@
       "element_in": 531,
       "element_out": 442,
       "added": "2026-03-02T17:49:53.470974Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -504,6 +932,8 @@
       "element_in": 110,
       "element_out": 348,
       "added": "2026-03-02T17:07:39.368107Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 25,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -515,6 +945,8 @@
       "element_in": 413,
       "element_out": 418,
       "added": "2026-03-02T17:07:39.368065Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -526,6 +958,8 @@
       "element_in": 342,
       "element_out": 148,
       "added": "2026-03-02T17:04:15.701670Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -537,6 +971,8 @@
       "element_in": 792,
       "element_out": 735,
       "added": "2026-03-02T17:04:15.701590Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -548,6 +984,8 @@
       "element_in": 324,
       "element_out": 52,
       "added": "2026-03-02T17:04:15.701534Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": -2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -559,6 +997,8 @@
       "element_in": 343,
       "element_out": 146,
       "added": "2026-03-02T15:05:28.459334Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -570,6 +1010,8 @@
       "element_in": 258,
       "element_out": 575,
       "added": "2026-03-02T12:15:28.502396Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": -3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -581,6 +1023,8 @@
       "element_in": 261,
       "element_out": 39,
       "added": "2026-03-01T20:57:45.562800Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -592,6 +1036,8 @@
       "element_in": 386,
       "element_out": 697,
       "added": "2026-03-01T20:57:45.562725Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -603,6 +1049,8 @@
       "element_in": 30,
       "element_out": 250,
       "added": "2026-03-01T20:57:45.562649Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -614,6 +1062,8 @@
       "element_in": 318,
       "element_out": 38,
       "added": "2026-03-01T18:50:36.915213Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 32,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -625,6 +1075,8 @@
       "element_in": 26,
       "element_out": 50,
       "added": "2026-03-01T18:50:36.915194Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -636,6 +1088,8 @@
       "element_in": 266,
       "element_out": 17,
       "added": "2026-03-01T18:50:36.915047Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -647,6 +1101,8 @@
       "element_in": 293,
       "element_out": 7,
       "added": "2026-03-01T17:48:02.324545Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -658,6 +1114,8 @@
       "element_in": 292,
       "element_out": 258,
       "added": "2026-02-26T18:46:24.156374Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -669,6 +1127,8 @@
       "element_in": 148,
       "element_out": 672,
       "added": "2026-02-26T18:24:27.756734Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -680,6 +1140,8 @@
       "element_in": 52,
       "element_out": 708,
       "added": "2026-02-26T18:24:27.756644Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -691,6 +1153,8 @@
       "element_in": 735,
       "element_out": 338,
       "added": "2026-02-26T18:24:27.756572Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -702,6 +1166,8 @@
       "element_in": 348,
       "element_out": 531,
       "added": "2026-02-26T16:54:48.170172Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 26,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -713,6 +1179,8 @@
       "element_in": 84,
       "element_out": 238,
       "added": "2026-02-26T16:54:48.170123Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -724,6 +1192,8 @@
       "element_in": 146,
       "element_out": 684,
       "added": "2026-02-26T13:59:25.480083Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -735,6 +1205,8 @@
       "element_in": 329,
       "element_out": 414,
       "added": "2026-02-26T13:59:25.479989Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 12,
       "transactionKind": "w"
@@ -746,6 +1218,8 @@
       "element_in": 74,
       "element_out": 224,
       "added": "2026-02-25T20:54:15.885656Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -757,6 +1231,8 @@
       "element_in": 374,
       "element_out": 437,
       "added": "2026-02-25T20:54:15.885551Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -768,6 +1244,8 @@
       "element_in": 290,
       "element_out": 694,
       "added": "2026-02-24T12:15:38.544663Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -779,6 +1257,8 @@
       "element_in": 664,
       "element_out": 796,
       "added": "2026-02-24T08:30:00.935825Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 23,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -790,6 +1270,8 @@
       "element_in": 597,
       "element_out": 733,
       "added": "2026-02-24T08:30:00.935777Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -801,6 +1283,8 @@
       "element_in": 151,
       "element_out": 230,
       "added": "2026-02-23T23:53:08.827308Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -812,6 +1296,8 @@
       "element_in": 370,
       "element_out": 261,
       "added": "2026-02-23T20:19:25.865287Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -823,6 +1309,8 @@
       "element_in": 50,
       "element_out": 26,
       "added": "2026-02-23T20:19:25.865223Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -834,6 +1322,8 @@
       "element_in": 40,
       "element_out": 633,
       "added": "2026-02-21T01:56:02.593573Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -845,6 +1335,8 @@
       "element_in": 806,
       "element_out": 365,
       "added": "2026-02-21T01:51:13.284958Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "f"
@@ -856,6 +1348,8 @@
       "element_in": 708,
       "element_out": 664,
       "added": "2026-02-20T15:05:34.788223Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 11,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "f"
@@ -867,6 +1361,8 @@
       "element_in": 424,
       "element_out": 458,
       "added": "2026-02-20T14:02:06.923079Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -878,6 +1374,8 @@
       "element_in": 437,
       "element_out": 293,
       "added": "2026-02-20T13:24:19.968150Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -889,6 +1387,8 @@
       "element_in": 90,
       "element_out": 18,
       "added": "2026-02-20T13:24:19.968132Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -900,6 +1400,8 @@
       "element_in": 387,
       "element_out": 19,
       "added": "2026-02-20T13:24:19.968022Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -911,6 +1413,8 @@
       "element_in": 736,
       "element_out": 30,
       "added": "2026-02-20T11:10:46.578969Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 24,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -922,6 +1426,8 @@
       "element_in": 531,
       "element_out": 374,
       "added": "2026-02-20T11:10:46.578896Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -933,6 +1439,8 @@
       "element_in": 108,
       "element_out": 106,
       "added": "2026-02-20T10:58:51.254209Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -944,6 +1452,8 @@
       "element_in": 684,
       "element_out": 74,
       "added": "2026-02-20T10:58:05.929805Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -955,6 +1465,8 @@
       "element_in": 414,
       "element_out": 457,
       "added": "2026-02-20T10:58:05.929690Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -966,6 +1478,8 @@
       "element_in": 664,
       "element_out": 615,
       "added": "2026-02-20T04:51:24.320942Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 43,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 11,
       "transactionKind": "w"
@@ -977,6 +1491,8 @@
       "element_in": 365,
       "element_out": 817,
       "added": "2026-02-20T04:51:24.320927Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 37,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -988,6 +1504,8 @@
       "element_in": 672,
       "element_out": 508,
       "added": "2026-02-20T04:51:24.320865Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 26,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -999,6 +1517,8 @@
       "element_in": 338,
       "element_out": 804,
       "added": "2026-02-20T04:51:24.320846Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1010,6 +1530,8 @@
       "element_in": 120,
       "element_out": 329,
       "added": "2026-02-20T04:51:24.320798Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1021,6 +1543,8 @@
       "element_in": 714,
       "element_out": 228,
       "added": "2026-02-16T11:35:44.928315Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1032,6 +1556,8 @@
       "element_in": 17,
       "element_out": 646,
       "added": "2026-02-16T11:35:44.928286Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -1043,6 +1569,8 @@
       "element_in": 39,
       "element_out": 507,
       "added": "2026-02-13T10:36:24.048993Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1054,6 +1582,8 @@
       "element_in": 421,
       "element_out": 452,
       "added": "2026-02-13T10:36:24.048928Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1065,6 +1595,8 @@
       "element_in": 697,
       "element_out": 718,
       "added": "2026-02-13T10:36:24.048860Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -1076,6 +1608,8 @@
       "element_in": 817,
       "element_out": 792,
       "added": "2026-02-10T16:43:47.821494Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "f"
@@ -1087,6 +1621,8 @@
       "element_in": 74,
       "element_out": 146,
       "added": "2026-02-09T19:00:21.903206Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "f"
@@ -1098,6 +1634,8 @@
       "element_in": 633,
       "element_out": 406,
       "added": "2026-02-09T18:08:54.224694Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "f"
@@ -1109,6 +1647,8 @@
       "element_in": 508,
       "element_out": 39,
       "added": "2026-02-09T17:50:09.844660Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 26,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -1120,6 +1660,8 @@
       "element_in": 720,
       "element_out": 231,
       "added": "2026-02-09T17:50:09.844604Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 15,
       "transactionKind": "w"
@@ -1131,6 +1673,8 @@
       "element_in": 804,
       "element_out": 135,
       "added": "2026-02-09T17:50:09.844540Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1142,6 +1686,8 @@
       "element_in": 808,
       "element_out": 697,
       "added": "2026-02-09T17:50:09.844469Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 10,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1153,6 +1699,8 @@
       "element_in": 258,
       "element_out": 148,
       "added": "2026-02-09T17:29:21.320014Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1164,6 +1712,8 @@
       "element_in": 400,
       "element_out": 600,
       "added": "2026-02-09T15:47:50.902571Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 37,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -1175,6 +1725,8 @@
       "element_in": 106,
       "element_out": 506,
       "added": "2026-02-09T15:47:50.902476Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 32,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -1186,6 +1738,8 @@
       "element_in": 442,
       "element_out": 473,
       "added": "2026-02-09T15:47:50.902417Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1197,6 +1751,8 @@
       "element_in": 77,
       "element_out": 714,
       "added": "2026-02-09T15:47:50.902383Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -1208,6 +1764,8 @@
       "element_in": 83,
       "element_out": 784,
       "added": "2026-02-09T15:47:50.902302Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1219,6 +1777,8 @@
       "element_in": 679,
       "element_out": 671,
       "added": "2026-02-08T22:18:02.849927Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -1230,6 +1790,8 @@
       "element_in": 733,
       "element_out": 283,
       "added": "2026-02-08T22:18:02.849864Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1241,6 +1803,8 @@
       "element_in": 628,
       "element_out": 33,
       "added": "2026-02-08T21:36:17.149994Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 13,
       "transactionKind": "w"
@@ -1252,6 +1816,8 @@
       "element_in": 293,
       "element_out": 151,
       "added": "2026-02-08T21:36:17.149979Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": -2,
       "transactionKind": "w"
@@ -1263,6 +1829,8 @@
       "element_in": 19,
       "element_out": 50,
       "added": "2026-02-08T21:36:17.149919Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -1274,6 +1842,8 @@
       "element_in": 236,
       "element_out": 17,
       "added": "2026-02-08T21:10:10.814637Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 21,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1285,6 +1855,8 @@
       "element_in": 646,
       "element_out": 350,
       "added": "2026-02-08T21:10:10.814622Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -1296,6 +1868,8 @@
       "element_in": 402,
       "element_out": 505,
       "added": "2026-02-08T21:10:10.814558Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -1307,6 +1881,8 @@
       "element_in": 350,
       "element_out": 236,
       "added": "2026-02-06T15:46:59.439050Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -1318,6 +1894,8 @@
       "element_in": 236,
       "element_out": 487,
       "added": "2026-02-05T18:45:15.992896Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -1329,6 +1907,8 @@
       "element_in": 113,
       "element_out": 531,
       "added": "2026-02-05T17:35:08.830409Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 35,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1340,6 +1920,8 @@
       "element_in": 231,
       "element_out": 437,
       "added": "2026-02-05T17:35:08.830394Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 30,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -1351,6 +1933,8 @@
       "element_in": 792,
       "element_out": 733,
       "added": "2026-02-05T17:35:08.830360Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1362,6 +1946,8 @@
       "element_in": 615,
       "element_out": 166,
       "added": "2026-02-05T17:35:08.830297Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 11,
       "transactionKind": "w"
@@ -1373,6 +1959,8 @@
       "element_in": 600,
       "element_out": 502,
       "added": "2026-02-05T14:44:25.652702Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -1384,6 +1972,8 @@
       "element_in": 784,
       "element_out": 120,
       "added": "2026-02-05T14:44:25.652573Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1395,6 +1985,8 @@
       "element_in": 796,
       "element_out": 664,
       "added": "2026-02-05T09:23:05.370956Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1406,6 +1998,8 @@
       "element_in": 487,
       "element_out": 413,
       "added": "2026-02-04T10:15:41.543383Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 32,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1417,6 +2011,8 @@
       "element_in": 26,
       "element_out": 160,
       "added": "2026-02-04T10:15:41.543346Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -1428,6 +2024,8 @@
       "element_in": 408,
       "element_out": 532,
       "added": "2026-02-04T10:15:41.543230Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1439,6 +2037,8 @@
       "element_in": 452,
       "element_out": 266,
       "added": "2026-02-04T01:39:56.571700Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1450,6 +2050,8 @@
       "element_in": 458,
       "element_out": 414,
       "added": "2026-02-04T01:39:56.571561Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1461,6 +2063,8 @@
       "element_in": 18,
       "element_out": 387,
       "added": "2026-02-03T16:18:21.478780Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1472,6 +2076,8 @@
       "element_in": 148,
       "element_out": 684,
       "added": "2026-02-01T18:27:14.563242Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1483,6 +2089,8 @@
       "element_in": 146,
       "element_out": 508,
       "added": "2026-02-01T18:27:14.563140Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -1494,6 +2102,8 @@
       "element_in": 39,
       "element_out": 74,
       "added": "2026-01-31T03:05:42.677216Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -1505,6 +2115,8 @@
       "element_in": 33,
       "element_out": 565,
       "added": "2026-01-30T17:29:33.021930Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -1516,6 +2128,8 @@
       "element_in": 505,
       "element_out": 41,
       "added": "2026-01-30T14:03:02.652288Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -1527,6 +2141,8 @@
       "element_in": 238,
       "element_out": 158,
       "added": "2026-01-30T12:59:52.637760Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -1538,6 +2154,8 @@
       "element_in": 506,
       "element_out": 106,
       "added": "2026-01-30T12:25:18.349377Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 24,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1549,6 +2167,8 @@
       "element_in": 714,
       "element_out": 568,
       "added": "2026-01-30T12:25:18.349336Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -1560,6 +2180,8 @@
       "element_in": 437,
       "element_out": 574,
       "added": "2026-01-30T10:54:03.453632Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 43,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1571,6 +2193,8 @@
       "element_in": 74,
       "element_out": 720,
       "added": "2026-01-30T10:54:03.453581Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1582,6 +2206,8 @@
       "element_in": 697,
       "element_out": 236,
       "added": "2026-01-30T10:54:03.453520Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -1593,6 +2219,8 @@
       "element_in": 166,
       "element_out": 83,
       "added": "2026-01-30T10:54:03.453446Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1604,6 +2232,8 @@
       "element_in": 654,
       "element_out": 679,
       "added": "2026-01-29T17:34:12.392016Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1615,6 +2245,8 @@
       "element_in": 50,
       "element_out": 48,
       "added": "2026-01-29T17:34:12.391997Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1626,6 +2258,8 @@
       "element_in": 507,
       "element_out": 148,
       "added": "2026-01-29T14:35:33.197498Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1637,6 +2271,8 @@
       "element_in": 266,
       "element_out": 157,
       "added": "2026-01-29T14:35:33.197400Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1648,6 +2284,8 @@
       "element_in": 41,
       "element_out": 370,
       "added": "2026-01-28T20:25:31.796514Z",
+      "waiverPriority": 12,
+      "waiverWireIndex": 37,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1659,6 +2297,8 @@
       "element_in": 38,
       "element_out": 569,
       "added": "2026-01-28T20:25:31.796373Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1670,6 +2310,8 @@
       "element_in": 413,
       "element_out": 667,
       "added": "2026-01-28T20:25:31.796354Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1681,6 +2323,8 @@
       "element_in": 508,
       "element_out": 293,
       "added": "2026-01-27T18:58:12.433200Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": -2,
       "transactionKind": "w"
@@ -1692,6 +2336,8 @@
       "element_in": 440,
       "element_out": 441,
       "added": "2026-01-27T18:58:12.433105Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1703,6 +2349,8 @@
       "element_in": 664,
       "element_out": 419,
       "added": "2026-01-27T08:25:53.999838Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1714,6 +2362,8 @@
       "element_in": 242,
       "element_out": 580,
       "added": "2026-01-23T14:01:02.214709Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -1725,6 +2375,8 @@
       "element_in": 72,
       "element_out": 408,
       "added": "2026-01-23T11:28:56.301047Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -1736,6 +2388,8 @@
       "element_in": 671,
       "element_out": 560,
       "added": "2026-01-23T08:47:44.283342Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1747,6 +2401,8 @@
       "element_in": 733,
       "element_out": 752,
       "added": "2026-01-23T03:36:55.745190Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 25,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -1758,6 +2414,8 @@
       "element_in": 531,
       "element_out": 38,
       "added": "2026-01-23T03:36:55.745173Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1769,6 +2427,8 @@
       "element_in": 574,
       "element_out": 39,
       "added": "2026-01-23T03:36:55.745153Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1780,6 +2440,8 @@
       "element_in": 450,
       "element_out": 487,
       "added": "2026-01-23T03:36:55.745109Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -1791,6 +2453,8 @@
       "element_in": 293,
       "element_out": 573,
       "added": "2026-01-22T15:52:44.911354Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 24,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -1802,6 +2466,8 @@
       "element_in": 457,
       "element_out": 497,
       "added": "2026-01-22T15:52:44.911300Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1813,6 +2479,8 @@
       "element_in": 441,
       "element_out": 37,
       "added": "2026-01-22T15:52:44.911261Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -1824,6 +2492,8 @@
       "element_in": 151,
       "element_out": 475,
       "added": "2026-01-22T13:58:41.520730Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1835,6 +2505,8 @@
       "element_in": 120,
       "element_out": 84,
       "added": "2026-01-20T22:00:41.179101Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1846,6 +2518,8 @@
       "element_in": 667,
       "element_out": 490,
       "added": "2026-01-19T08:56:30.082426Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -1857,6 +2531,8 @@
       "element_in": 729,
       "element_out": 367,
       "added": "2026-01-19T08:56:30.082403Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1868,6 +2544,8 @@
       "element_in": 39,
       "element_out": 437,
       "added": "2026-01-17T02:39:08.151039Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -1879,6 +2557,8 @@
       "element_in": 532,
       "element_out": 478,
       "added": "2026-01-16T12:33:44.667357Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -1890,6 +2570,8 @@
       "element_in": 684,
       "element_out": 72,
       "added": "2026-01-16T11:34:35.938948Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -1901,6 +2583,8 @@
       "element_in": 573,
       "element_out": 293,
       "added": "2026-01-16T11:32:47.070465Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -1912,6 +2596,8 @@
       "element_in": 694,
       "element_out": 292,
       "added": "2026-01-16T09:57:14.096672Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -1923,6 +2609,8 @@
       "element_in": 84,
       "element_out": 667,
       "added": "2026-01-16T09:57:14.096594Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -1934,6 +2622,8 @@
       "element_in": 517,
       "element_out": 120,
       "added": "2026-01-16T09:48:09.043909Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -1945,6 +2635,8 @@
       "element_in": 139,
       "element_out": 729,
       "added": "2026-01-16T04:25:19.324365Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 21,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1956,6 +2648,8 @@
       "element_in": 752,
       "element_out": 733,
       "added": "2026-01-16T04:25:19.324345Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -1967,6 +2661,8 @@
       "element_in": 83,
       "element_out": 450,
       "added": "2026-01-16T04:25:19.324261Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1978,6 +2674,8 @@
       "element_in": 37,
       "element_out": 443,
       "added": "2026-01-15T22:25:52.775941Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -1989,6 +2687,8 @@
       "element_in": 299,
       "element_out": 26,
       "added": "2026-01-15T22:25:52.775923Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2000,6 +2700,8 @@
       "element_in": 387,
       "element_out": 427,
       "added": "2026-01-15T14:30:38.234945Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 25,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2011,6 +2713,8 @@
       "element_in": 475,
       "element_out": 405,
       "added": "2026-01-15T14:30:38.234871Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -2022,6 +2726,8 @@
       "element_in": 371,
       "element_out": 474,
       "added": "2026-01-15T14:30:38.234800Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2033,6 +2739,8 @@
       "element_in": 569,
       "element_out": 440,
       "added": "2026-01-13T20:50:21.230674Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -2044,6 +2752,8 @@
       "element_in": 478,
       "element_out": 477,
       "added": "2026-01-13T20:50:21.230573Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -2055,6 +2765,8 @@
       "element_in": 267,
       "element_out": 693,
       "added": "2026-01-13T20:50:21.230478Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2066,6 +2778,8 @@
       "element_in": 100,
       "element_out": 597,
       "added": "2026-01-12T01:28:30.558195Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2077,6 +2791,8 @@
       "element_in": 261,
       "element_out": 371,
       "added": "2026-01-06T16:33:26.184677Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -2088,6 +2804,8 @@
       "element_in": 72,
       "element_out": 569,
       "added": "2026-01-06T15:49:32.643667Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "f"
@@ -2099,6 +2817,8 @@
       "element_in": 106,
       "element_out": 694,
       "added": "2026-01-06T15:19:20.855091Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 13,
       "transactionKind": "f"
@@ -2110,6 +2830,8 @@
       "element_in": 230,
       "element_out": 403,
       "added": "2026-01-06T14:41:56.148025Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -2121,6 +2843,8 @@
       "element_in": 443,
       "element_out": 505,
       "added": "2026-01-05T21:53:01.842983Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -2132,6 +2856,8 @@
       "element_in": 490,
       "element_out": 299,
       "added": "2026-01-05T21:12:05.497595Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "f"
@@ -2143,6 +2869,8 @@
       "element_in": 405,
       "element_out": 441,
       "added": "2026-01-05T18:27:43.401824Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2154,6 +2882,8 @@
       "element_in": 733,
       "element_out": 31,
       "added": "2026-01-05T15:52:21.206006Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 29,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2165,6 +2895,8 @@
       "element_in": 487,
       "element_out": 350,
       "added": "2026-01-05T15:52:21.205976Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 14,
       "pickedUpPlayerGwPoints": 15,
       "transactionKind": "w"
@@ -2176,6 +2908,8 @@
       "element_in": 437,
       "element_out": 659,
       "added": "2026-01-05T15:52:21.205958Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2187,6 +2921,8 @@
       "element_in": 406,
       "element_out": 107,
       "added": "2026-01-05T15:52:21.205914Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2198,6 +2934,8 @@
       "element_in": 505,
       "element_out": 151,
       "added": "2026-01-05T14:48:31.755077Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2209,6 +2947,8 @@
       "element_in": 497,
       "element_out": 266,
       "added": "2026-01-05T14:48:31.755018Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -2220,6 +2960,8 @@
       "element_in": 26,
       "element_out": 582,
       "added": "2026-01-05T14:48:31.754904Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -2231,6 +2973,8 @@
       "element_in": 693,
       "element_out": 612,
       "added": "2026-01-05T08:22:09.260681Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 23,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2242,6 +2986,8 @@
       "element_in": 440,
       "element_out": 573,
       "added": "2026-01-05T08:22:09.260556Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2253,6 +2999,8 @@
       "element_in": 477,
       "element_out": 146,
       "added": "2026-01-05T08:22:09.260460Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2264,6 +3012,8 @@
       "element_in": 718,
       "element_out": 664,
       "added": "2026-01-05T02:45:59.814933Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -2275,6 +3025,8 @@
       "element_in": 502,
       "element_out": 139,
       "added": "2026-01-05T02:38:02.696192Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2286,6 +3038,8 @@
       "element_in": 314,
       "element_out": 470,
       "added": "2026-01-04T21:24:42.159677Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2297,6 +3051,8 @@
       "element_in": 31,
       "element_out": 678,
       "added": "2026-01-02T20:04:49.221500Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -2308,6 +3064,8 @@
       "element_in": 573,
       "element_out": 477,
       "added": "2026-01-02T18:27:20.723873Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -2319,6 +3077,8 @@
       "element_in": 694,
       "element_out": 316,
       "added": "2026-01-02T14:48:13.520104Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "f"
@@ -2330,6 +3090,8 @@
       "element_in": 596,
       "element_out": 654,
       "added": "2026-01-02T13:56:11.385226Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -2341,6 +3103,8 @@
       "element_in": 36,
       "element_out": 447,
       "added": "2026-01-02T13:15:04.295746Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "f"
@@ -2352,6 +3116,8 @@
       "element_in": 418,
       "element_out": 457,
       "added": "2026-01-02T10:54:39.230746Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2363,6 +3129,8 @@
       "element_in": 569,
       "element_out": 440,
       "added": "2026-01-02T09:00:36.042112Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2374,6 +3142,8 @@
       "element_in": 293,
       "element_out": 717,
       "added": "2026-01-02T09:00:36.041946Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2385,6 +3155,8 @@
       "element_in": 48,
       "element_out": 387,
       "added": "2026-01-02T08:05:14.184363Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -2396,6 +3168,8 @@
       "element_in": 32,
       "element_out": 673,
       "added": "2026-01-02T08:05:14.184307Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2407,6 +3181,8 @@
       "element_in": 292,
       "element_out": 506,
       "added": "2026-01-02T04:13:14.827066Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2418,6 +3194,8 @@
       "element_in": 667,
       "element_out": 693,
       "added": "2026-01-02T04:13:14.826989Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -2429,6 +3207,8 @@
       "element_in": 350,
       "element_out": 169,
       "added": "2026-01-02T02:58:36.674638Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -2440,6 +3220,8 @@
       "element_in": 659,
       "element_out": 443,
       "added": "2026-01-02T02:58:36.674562Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2451,6 +3233,8 @@
       "element_in": 38,
       "element_out": 145,
       "added": "2026-01-02T02:58:36.674510Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2462,6 +3246,8 @@
       "element_in": 257,
       "element_out": 508,
       "added": "2026-01-01T23:27:07.906743Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2473,6 +3259,8 @@
       "element_in": 299,
       "element_out": 516,
       "added": "2026-01-01T18:18:37.940879Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2484,6 +3272,8 @@
       "element_in": 146,
       "element_out": 505,
       "added": "2026-01-01T18:18:37.940797Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -2495,6 +3285,8 @@
       "element_in": 664,
       "element_out": 455,
       "added": "2025-12-31T06:42:11.628662Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -2506,6 +3298,8 @@
       "element_in": 568,
       "element_out": 261,
       "added": "2025-12-30T16:25:24.365320Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "f"
@@ -2517,6 +3311,8 @@
       "element_in": 580,
       "element_out": 487,
       "added": "2025-12-30T15:21:31.357255Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -2528,6 +3324,8 @@
       "element_in": 717,
       "element_out": 293,
       "added": "2025-12-30T09:27:15.879629Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -2539,6 +3337,8 @@
       "element_in": 516,
       "element_out": 299,
       "added": "2025-12-29T20:32:37.343916Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -2550,6 +3350,8 @@
       "element_in": 612,
       "element_out": 517,
       "added": "2025-12-29T18:21:29.604196Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 13,
       "transactionKind": "f"
@@ -2561,6 +3363,8 @@
       "element_in": 678,
       "element_out": 733,
       "added": "2025-12-29T18:19:53.604976Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "f"
@@ -2572,6 +3376,8 @@
       "element_in": 443,
       "element_out": 72,
       "added": "2025-12-29T18:15:01.084558Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -2583,6 +3389,8 @@
       "element_in": 169,
       "element_out": 708,
       "added": "2025-12-29T17:22:00.049052Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2594,6 +3402,8 @@
       "element_in": 457,
       "element_out": 48,
       "added": "2025-12-29T14:49:09.649265Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -2605,6 +3415,8 @@
       "element_in": 526,
       "element_out": 215,
       "added": "2025-12-29T14:49:09.649112Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2616,6 +3428,8 @@
       "element_in": 139,
       "element_out": 314,
       "added": "2025-12-29T14:18:59.724548Z",
+      "waiverPriority": 16,
+      "waiverWireIndex": 49,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2627,6 +3441,8 @@
       "element_in": 506,
       "element_out": 531,
       "added": "2025-12-29T14:18:59.724427Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 42,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2638,6 +3454,8 @@
       "element_in": 447,
       "element_out": 694,
       "added": "2025-12-29T14:18:59.724391Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 40,
       "droppedPlayerGwPoints": 11,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2649,6 +3467,8 @@
       "element_in": 487,
       "element_out": 712,
       "added": "2025-12-29T14:18:59.724336Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2660,6 +3480,8 @@
       "element_in": 693,
       "element_out": 325,
       "added": "2025-12-29T14:18:59.724243Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2671,6 +3493,8 @@
       "element_in": 575,
       "element_out": 476,
       "added": "2025-12-29T13:51:08.910883Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -2682,6 +3506,8 @@
       "element_in": 387,
       "element_out": 84,
       "added": "2025-12-29T13:36:28.365378Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2693,6 +3519,8 @@
       "element_in": 441,
       "element_out": 317,
       "added": "2025-12-29T13:36:28.365270Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2704,6 +3532,8 @@
       "element_in": 505,
       "element_out": 682,
       "added": "2025-12-29T11:57:31.817289Z",
+      "waiverPriority": 11,
+      "waiverWireIndex": 37,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2715,6 +3545,8 @@
       "element_in": 517,
       "element_out": 667,
       "added": "2025-12-29T11:57:31.817228Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 24,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -2726,6 +3558,8 @@
       "element_in": 228,
       "element_out": 684,
       "added": "2025-12-29T11:57:31.817116Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2737,6 +3571,8 @@
       "element_in": 440,
       "element_out": 257,
       "added": "2025-12-29T08:29:49.350788Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2748,6 +3584,8 @@
       "element_in": 148,
       "element_out": 292,
       "added": "2025-12-28T16:03:43.442500Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -2759,6 +3597,8 @@
       "element_in": 310,
       "element_out": 526,
       "added": "2025-12-26T09:33:01.496875Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -2770,6 +3610,8 @@
       "element_in": 325,
       "element_out": 693,
       "added": "2025-12-25T18:52:45.265286Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -2781,6 +3623,8 @@
       "element_in": 733,
       "element_out": 284,
       "added": "2025-12-25T11:20:01.234063Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 30,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2792,6 +3636,8 @@
       "element_in": 708,
       "element_out": 516,
       "added": "2025-12-25T11:20:01.234028Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2803,6 +3649,8 @@
       "element_in": 107,
       "element_out": 113,
       "added": "2025-12-25T11:20:01.233982Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2814,6 +3662,8 @@
       "element_in": 293,
       "element_out": 714,
       "added": "2025-12-25T10:01:02.460143Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -2825,6 +3675,8 @@
       "element_in": 673,
       "element_out": 502,
       "added": "2025-12-24T20:53:21.136278Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2836,6 +3688,8 @@
       "element_in": 474,
       "element_out": 263,
       "added": "2025-12-24T20:53:21.136149Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2847,6 +3701,8 @@
       "element_in": 684,
       "element_out": 505,
       "added": "2025-12-23T22:00:14.918202Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 39,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -2858,6 +3714,8 @@
       "element_in": 303,
       "element_out": 387,
       "added": "2025-12-23T22:00:14.918114Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -2869,6 +3727,8 @@
       "element_in": 370,
       "element_out": 228,
       "added": "2025-12-23T22:00:14.918000Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -2880,6 +3740,8 @@
       "element_in": 694,
       "element_out": 106,
       "added": "2025-12-22T21:26:08.762846Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 34,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -2891,6 +3753,8 @@
       "element_in": 531,
       "element_out": 74,
       "added": "2025-12-22T21:26:08.762791Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2902,6 +3766,8 @@
       "element_in": 473,
       "element_out": 506,
       "added": "2025-12-22T21:26:08.762710Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -2913,6 +3779,8 @@
       "element_in": 292,
       "element_out": 258,
       "added": "2025-12-21T02:10:38.889185Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -2924,6 +3792,8 @@
       "element_in": 714,
       "element_out": 474,
       "added": "2025-12-20T10:51:01.636931Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -2935,6 +3805,8 @@
       "element_in": 158,
       "element_out": 54,
       "added": "2025-12-19T09:13:18.487259Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2946,6 +3818,8 @@
       "element_in": 120,
       "element_out": 83,
       "added": "2025-12-19T09:13:18.487102Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -2957,6 +3831,8 @@
       "element_in": 474,
       "element_out": 473,
       "added": "2025-12-19T08:57:24.021677Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 23,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2968,6 +3844,8 @@
       "element_in": 151,
       "element_out": 11,
       "added": "2025-12-19T08:57:24.021546Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -2979,6 +3857,8 @@
       "element_in": 506,
       "element_out": 36,
       "added": "2025-12-19T03:54:34.786177Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 43,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -2990,6 +3870,8 @@
       "element_in": 693,
       "element_out": 173,
       "added": "2025-12-19T03:54:34.786089Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3001,6 +3883,8 @@
       "element_in": 316,
       "element_out": 10,
       "added": "2025-12-19T03:54:34.786074Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -3012,6 +3896,8 @@
       "element_in": 712,
       "element_out": 517,
       "added": "2025-12-19T03:54:34.786009Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3023,6 +3909,8 @@
       "element_in": 516,
       "element_out": 242,
       "added": "2025-12-19T02:13:00.856883Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3034,6 +3922,8 @@
       "element_in": 502,
       "element_out": 33,
       "added": "2025-12-18T20:20:53.631430Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 33,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -3045,6 +3935,8 @@
       "element_in": 427,
       "element_out": 26,
       "added": "2025-12-18T20:20:53.631412Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -3056,6 +3948,8 @@
       "element_in": 84,
       "element_out": 418,
       "added": "2025-12-18T20:20:53.631364Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3067,6 +3961,8 @@
       "element_in": 515,
       "element_out": 452,
       "added": "2025-12-17T20:00:49.782806Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3078,6 +3974,8 @@
       "element_in": 505,
       "element_out": 108,
       "added": "2025-12-16T19:27:39.987197Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 37,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3089,6 +3987,8 @@
       "element_in": 228,
       "element_out": 322,
       "added": "2025-12-16T19:27:39.987128Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": -1,
       "transactionKind": "w"
@@ -3100,6 +4000,8 @@
       "element_in": 682,
       "element_out": 38,
       "added": "2025-12-16T19:27:39.987018Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3111,6 +4013,8 @@
       "element_in": 157,
       "element_out": 664,
       "added": "2025-12-15T01:36:22.744306Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3122,6 +4026,8 @@
       "element_in": 263,
       "element_out": 37,
       "added": "2025-12-13T11:22:34.862369Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3133,6 +4039,8 @@
       "element_in": 33,
       "element_out": 32,
       "added": "2025-12-13T11:00:02.469394Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3144,6 +4052,8 @@
       "element_in": 37,
       "element_out": 293,
       "added": "2025-12-13T10:59:40.446389Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3155,6 +4065,8 @@
       "element_in": 691,
       "element_out": 365,
       "added": "2025-12-12T14:24:38.389812Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "f"
@@ -3166,6 +4078,8 @@
       "element_in": 48,
       "element_out": 453,
       "added": "2025-12-12T12:55:34.571984Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 37,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -3177,6 +4091,8 @@
       "element_in": 54,
       "element_out": 413,
       "added": "2025-12-12T12:55:34.571892Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3188,6 +4104,8 @@
       "element_in": 225,
       "element_out": 682,
       "added": "2025-12-12T12:55:34.571823Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -3199,6 +4117,8 @@
       "element_in": 664,
       "element_out": 515,
       "added": "2025-12-12T07:22:32.274871Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3210,6 +4130,8 @@
       "element_in": 597,
       "element_out": 100,
       "added": "2025-12-12T07:22:32.274797Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3221,6 +4143,8 @@
       "element_in": 74,
       "element_out": 148,
       "added": "2025-12-12T05:41:36.971294Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -3232,6 +4156,8 @@
       "element_in": 10,
       "element_out": 505,
       "added": "2025-12-12T05:41:36.971208Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3243,6 +4169,8 @@
       "element_in": 101,
       "element_out": 502,
       "added": "2025-12-12T03:51:07.337040Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 41,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -3254,6 +4182,8 @@
       "element_in": 113,
       "element_out": 474,
       "added": "2025-12-12T03:51:07.337004Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 28,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -3265,6 +4195,8 @@
       "element_in": 284,
       "element_out": 671,
       "added": "2025-12-12T03:51:07.336968Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3276,6 +4208,8 @@
       "element_in": 329,
       "element_out": 726,
       "added": "2025-12-12T03:51:07.336890Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 16,
       "transactionKind": "w"
@@ -3287,6 +4221,8 @@
       "element_in": 220,
       "element_out": 673,
       "added": "2025-12-11T17:44:32.809106Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -3298,6 +4234,8 @@
       "element_in": 11,
       "element_out": 146,
       "added": "2025-12-11T17:44:32.809035Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3309,6 +4247,8 @@
       "element_in": 295,
       "element_out": 436,
       "added": "2025-12-09T12:19:35.878470Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3320,6 +4260,8 @@
       "element_in": 108,
       "element_out": 151,
       "added": "2025-12-09T08:58:33.132534Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 26,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3331,6 +4273,8 @@
       "element_in": 667,
       "element_out": 22,
       "added": "2025-12-09T08:58:33.132479Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -3342,6 +4286,8 @@
       "element_in": 455,
       "element_out": 712,
       "added": "2025-12-05T16:34:22.971658Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "f"
@@ -3353,6 +4299,8 @@
       "element_in": 505,
       "element_out": 506,
       "added": "2025-12-05T14:49:15.137016Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -3364,6 +4312,8 @@
       "element_in": 314,
       "element_out": 139,
       "added": "2025-12-05T12:36:48.669932Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -3375,6 +4325,8 @@
       "element_in": 322,
       "element_out": 11,
       "added": "2025-12-05T12:07:16.102965Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -3386,6 +4338,8 @@
       "element_in": 526,
       "element_out": 525,
       "added": "2025-12-05T06:52:17.775974Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3397,6 +4351,8 @@
       "element_in": 293,
       "element_out": 295,
       "added": "2025-12-05T06:52:17.775956Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -3408,6 +4364,8 @@
       "element_in": 317,
       "element_out": 660,
       "added": "2025-12-05T06:52:17.775912Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3419,6 +4377,8 @@
       "element_in": 474,
       "element_out": 228,
       "added": "2025-12-05T03:00:35.727779Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3430,6 +4390,8 @@
       "element_in": 726,
       "element_out": 693,
       "added": "2025-12-05T03:00:35.727718Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3441,6 +4403,8 @@
       "element_in": 671,
       "element_out": 284,
       "added": "2025-12-05T03:00:35.727683Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -3452,6 +4416,8 @@
       "element_in": 450,
       "element_out": 487,
       "added": "2025-12-05T03:00:35.727632Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -3463,6 +4429,8 @@
       "element_in": 11,
       "element_out": 717,
       "added": "2025-12-04T19:55:43.509260Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": -1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3474,6 +4442,8 @@
       "element_in": 106,
       "element_out": 372,
       "added": "2025-12-04T15:01:36.497457Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 16,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -3485,6 +4455,8 @@
       "element_in": 148,
       "element_out": 74,
       "added": "2025-12-04T15:01:36.497399Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3496,6 +4468,8 @@
       "element_in": 173,
       "element_out": 667,
       "added": "2025-12-04T15:01:36.497344Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3507,6 +4481,8 @@
       "element_in": 673,
       "element_out": 220,
       "added": "2025-12-02T07:29:07.266150Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3518,6 +4494,8 @@
       "element_in": 372,
       "element_out": 148,
       "added": "2025-12-01T20:58:04.128771Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -3529,6 +4507,8 @@
       "element_in": 382,
       "element_out": 173,
       "added": "2025-12-01T20:56:10.455054Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "f"
@@ -3540,6 +4520,8 @@
       "element_in": 139,
       "element_out": 101,
       "added": "2025-12-01T20:06:17.676492Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3551,6 +4533,8 @@
       "element_in": 693,
       "element_out": 267,
       "added": "2025-12-01T19:27:40.546960Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "f"
@@ -3562,6 +4546,8 @@
       "element_in": 145,
       "element_out": 110,
       "added": "2025-12-01T19:16:55.805403Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -3573,6 +4559,8 @@
       "element_in": 74,
       "element_out": 106,
       "added": "2025-12-01T18:26:25.925369Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "f"
@@ -3584,6 +4572,8 @@
       "element_in": 146,
       "element_out": 505,
       "added": "2025-12-01T18:10:18.691616Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -3595,6 +4585,8 @@
       "element_in": 148,
       "element_out": 568,
       "added": "2025-12-01T17:13:38.215130Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 23,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3606,6 +4598,8 @@
       "element_in": 173,
       "element_out": 674,
       "added": "2025-12-01T17:13:38.215051Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -3617,6 +4611,8 @@
       "element_in": 667,
       "element_out": 120,
       "added": "2025-12-01T17:13:38.214967Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -3628,6 +4624,8 @@
       "element_in": 228,
       "element_out": 694,
       "added": "2025-12-01T17:06:12.296208Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3639,6 +4637,8 @@
       "element_in": 284,
       "element_out": 671,
       "added": "2025-12-01T17:06:12.296190Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3650,6 +4650,8 @@
       "element_in": 242,
       "element_out": 48,
       "added": "2025-12-01T17:06:12.296148Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -3661,6 +4663,8 @@
       "element_in": 215,
       "element_out": 596,
       "added": "2025-12-01T16:24:10.788596Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3672,6 +4676,8 @@
       "element_in": 452,
       "element_out": 450,
       "added": "2025-12-01T14:58:42.105183Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3683,6 +4689,8 @@
       "element_in": 660,
       "element_out": 317,
       "added": "2025-11-30T21:58:12.479674Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3694,6 +4702,8 @@
       "element_in": 365,
       "element_out": 597,
       "added": "2025-11-30T20:37:07.485119Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 16,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3705,6 +4715,8 @@
       "element_in": 473,
       "element_out": 474,
       "added": "2025-11-30T20:37:07.485075Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -3716,6 +4728,8 @@
       "element_in": 151,
       "element_out": 575,
       "added": "2025-11-30T18:48:38.019120Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 12,
       "transactionKind": "w"
@@ -3727,6 +4741,8 @@
       "element_in": 22,
       "element_out": 84,
       "added": "2025-11-30T18:48:38.019100Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 13,
       "transactionKind": "w"
@@ -3738,6 +4754,8 @@
       "element_in": 568,
       "element_out": 74,
       "added": "2025-11-29T12:35:24.744571Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3749,6 +4767,8 @@
       "element_in": 48,
       "element_out": 452,
       "added": "2025-11-29T04:34:34.615217Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -3760,6 +4780,8 @@
       "element_in": 417,
       "element_out": 157,
       "added": "2025-11-28T13:19:02.628361Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -3771,6 +4793,8 @@
       "element_in": 474,
       "element_out": 443,
       "added": "2025-11-28T13:13:46.825990Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 35,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3782,6 +4806,8 @@
       "element_in": 505,
       "element_out": 569,
       "added": "2025-11-28T13:13:46.825916Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3793,6 +4819,8 @@
       "element_in": 110,
       "element_out": 148,
       "added": "2025-11-28T02:21:28.014281Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3804,6 +4832,8 @@
       "element_in": 487,
       "element_out": 22,
       "added": "2025-11-28T02:21:28.014221Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3815,6 +4845,8 @@
       "element_in": 106,
       "element_out": 531,
       "added": "2025-11-27T22:08:52.121937Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 53,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -3826,6 +4858,8 @@
       "element_in": 506,
       "element_out": 37,
       "added": "2025-11-27T22:08:52.121867Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -3837,6 +4871,8 @@
       "element_in": 517,
       "element_out": 667,
       "added": "2025-11-27T22:08:52.121802Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -3848,6 +4884,8 @@
       "element_in": 317,
       "element_out": 660,
       "added": "2025-11-27T14:38:37.769356Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 41,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -3859,6 +4897,8 @@
       "element_in": 295,
       "element_out": 228,
       "added": "2025-11-27T14:38:37.769237Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3870,6 +4910,8 @@
       "element_in": 712,
       "element_out": 50,
       "added": "2025-11-27T00:26:00.888347Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3881,6 +4923,8 @@
       "element_in": 515,
       "element_out": 457,
       "added": "2025-11-27T00:26:00.888268Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -3892,6 +4936,8 @@
       "element_in": 575,
       "element_out": 402,
       "added": "2025-11-25T21:28:26.256053Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 62,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -3903,6 +4949,8 @@
       "element_in": 717,
       "element_out": 41,
       "added": "2025-11-25T21:28:26.255982Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 44,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3914,6 +4962,8 @@
       "element_in": 337,
       "element_out": 215,
       "added": "2025-11-25T21:28:26.255906Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -3925,6 +4975,8 @@
       "element_in": 569,
       "element_out": 230,
       "added": "2025-11-22T10:49:41.667297Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3936,6 +4988,8 @@
       "element_in": 531,
       "element_out": 506,
       "added": "2025-11-21T21:46:29.477023Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 17,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -3947,6 +5001,8 @@
       "element_in": 41,
       "element_out": 376,
       "added": "2025-11-21T12:34:07.162024Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "f"
@@ -3958,6 +5014,8 @@
       "element_in": 376,
       "element_out": 41,
       "added": "2025-11-21T12:33:44.385631Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -3969,6 +5027,8 @@
       "element_in": 84,
       "element_out": 515,
       "added": "2025-11-21T12:32:36.967297Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "f"
@@ -3980,6 +5040,8 @@
       "element_in": 215,
       "element_out": 338,
       "added": "2025-11-21T12:30:36.260354Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -3991,6 +5053,8 @@
       "element_in": 41,
       "element_out": 372,
       "added": "2025-11-21T12:28:39.527104Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "f"
@@ -4002,6 +5066,8 @@
       "element_in": 372,
       "element_out": 375,
       "added": "2025-11-21T12:27:58.865650Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -4013,6 +5079,8 @@
       "element_in": 674,
       "element_out": 382,
       "added": "2025-11-21T12:02:48.161420Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "f"
@@ -4024,6 +5092,8 @@
       "element_in": 30,
       "element_out": 337,
       "added": "2025-11-21T10:57:47.756595Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 32,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -4035,6 +5105,8 @@
       "element_in": 453,
       "element_out": 200,
       "added": "2025-11-21T10:57:47.756566Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -4046,6 +5118,8 @@
       "element_in": 682,
       "element_out": 474,
       "added": "2025-11-21T10:57:47.756537Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -4057,6 +5131,8 @@
       "element_in": 37,
       "element_out": 575,
       "added": "2025-11-21T10:26:09.684024Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4068,6 +5144,8 @@
       "element_in": 120,
       "element_out": 158,
       "added": "2025-11-21T10:26:09.683971Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4079,6 +5157,8 @@
       "element_in": 694,
       "element_out": 348,
       "added": "2025-11-21T02:44:17.225442Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 40,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -4090,6 +5170,8 @@
       "element_in": 148,
       "element_out": 610,
       "added": "2025-11-21T02:44:17.225390Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 37,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4101,6 +5183,8 @@
       "element_in": 452,
       "element_out": 489,
       "added": "2025-11-21T02:44:17.225353Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4112,6 +5196,8 @@
       "element_in": 671,
       "element_out": 526,
       "added": "2025-11-21T02:44:17.225293Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 12,
       "transactionKind": "w"
@@ -4123,6 +5209,8 @@
       "element_in": 720,
       "element_out": 505,
       "added": "2025-11-21T02:44:17.225244Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4134,6 +5222,8 @@
       "element_in": 32,
       "element_out": 139,
       "added": "2025-11-20T14:07:07.305076Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 21,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4145,6 +5235,8 @@
       "element_in": 660,
       "element_out": 317,
       "added": "2025-11-20T14:07:07.305005Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 10,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4156,6 +5248,8 @@
       "element_in": 50,
       "element_out": 712,
       "added": "2025-11-20T10:19:32.933342Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4167,6 +5261,8 @@
       "element_in": 411,
       "element_out": 717,
       "added": "2025-11-20T10:19:32.933293Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 12,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4178,6 +5274,8 @@
       "element_in": 38,
       "element_out": 568,
       "added": "2025-11-20T07:02:35.169170Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 35,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4189,6 +5287,8 @@
       "element_in": 387,
       "element_out": 612,
       "added": "2025-11-20T07:02:35.169115Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 23,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4200,6 +5300,8 @@
       "element_in": 477,
       "element_out": 225,
       "added": "2025-11-20T07:02:35.169043Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4211,6 +5313,8 @@
       "element_in": 488,
       "element_out": 121,
       "added": "2025-11-19T12:50:36.328184Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 16,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -4222,6 +5326,8 @@
       "element_in": 390,
       "element_out": 664,
       "added": "2025-11-19T12:50:36.328121Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4233,6 +5339,8 @@
       "element_in": 597,
       "element_out": 735,
       "added": "2025-11-13T18:21:09.909483Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -4244,6 +5352,8 @@
       "element_in": 612,
       "element_out": 417,
       "added": "2025-11-07T11:58:42.579300Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "f"
@@ -4255,6 +5365,8 @@
       "element_in": 200,
       "element_out": 238,
       "added": "2025-11-07T10:59:10.760617Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4266,6 +5378,8 @@
       "element_in": 337,
       "element_out": 691,
       "added": "2025-11-07T10:59:10.760557Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4277,6 +5391,8 @@
       "element_in": 36,
       "element_out": 295,
       "added": "2025-11-07T03:16:50.260822Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 39,
       "droppedPlayerGwPoints": 15,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -4288,6 +5404,8 @@
       "element_in": 506,
       "element_out": 660,
       "added": "2025-11-07T03:16:50.260730Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4299,6 +5417,8 @@
       "element_in": 667,
       "element_out": 324,
       "added": "2025-11-07T03:16:50.260634Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4310,6 +5430,8 @@
       "element_in": 610,
       "element_out": 151,
       "added": "2025-11-07T01:46:03.097099Z",
+      "waiverPriority": 13,
+      "waiverWireIndex": 53,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4321,6 +5443,8 @@
       "element_in": 505,
       "element_out": 444,
       "added": "2025-11-07T01:46:03.096987Z",
+      "waiverPriority": 11,
+      "waiverWireIndex": 47,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -4332,6 +5456,8 @@
       "element_in": 526,
       "element_out": 217,
       "added": "2025-11-07T01:46:03.096931Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 28,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4343,6 +5469,8 @@
       "element_in": 489,
       "element_out": 674,
       "added": "2025-11-07T01:46:03.096812Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4354,6 +5482,8 @@
       "element_in": 22,
       "element_out": 488,
       "added": "2025-11-07T01:46:03.096735Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -4365,6 +5495,8 @@
       "element_in": 228,
       "element_out": 694,
       "added": "2025-11-06T21:27:08.120360Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 15,
       "transactionKind": "w"
@@ -4376,6 +5508,8 @@
       "element_in": 407,
       "element_out": 531,
       "added": "2025-11-06T19:04:06.161018Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 10,
       "pickedUpPlayerGwPoints": 13,
       "transactionKind": "w"
@@ -4387,6 +5521,8 @@
       "element_in": 230,
       "element_out": 233,
       "added": "2025-11-06T19:04:06.160940Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -4398,6 +5534,8 @@
       "element_in": 417,
       "element_out": 718,
       "added": "2025-11-05T13:02:03.235067Z",
+      "waiverPriority": 12,
+      "waiverWireIndex": 51,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4409,6 +5547,8 @@
       "element_in": 375,
       "element_out": 475,
       "added": "2025-11-05T13:02:03.234996Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 45,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -4420,6 +5560,8 @@
       "element_in": 338,
       "element_out": 597,
       "added": "2025-11-05T13:02:03.234873Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 21,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4431,6 +5573,8 @@
       "element_in": 17,
       "element_out": 486,
       "added": "2025-11-05T13:02:03.234818Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -4442,6 +5586,8 @@
       "element_in": 717,
       "element_out": 478,
       "added": "2025-11-04T16:17:11.966480Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4453,6 +5599,8 @@
       "element_in": 457,
       "element_out": 427,
       "added": "2025-11-04T16:17:11.966382Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -4464,6 +5612,8 @@
       "element_in": 660,
       "element_out": 36,
       "added": "2025-11-01T11:58:20.641429Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -4475,6 +5625,8 @@
       "element_in": 36,
       "element_out": 318,
       "added": "2025-11-01T11:42:49.509812Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -4486,6 +5638,8 @@
       "element_in": 444,
       "element_out": 411,
       "added": "2025-10-31T13:44:28.197377Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -4497,6 +5651,8 @@
       "element_in": 151,
       "element_out": 375,
       "added": "2025-10-31T13:29:58.430612Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -4508,6 +5664,8 @@
       "element_in": 674,
       "element_out": 667,
       "added": "2025-10-31T13:29:58.430541Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 10,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -4519,6 +5677,8 @@
       "element_in": 488,
       "element_out": 81,
       "added": "2025-10-31T13:29:58.430452Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -4530,6 +5690,8 @@
       "element_in": 318,
       "element_out": 407,
       "added": "2025-10-31T13:27:51.305464Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -4541,6 +5703,8 @@
       "element_in": 575,
       "element_out": 191,
       "added": "2025-10-31T13:27:51.305446Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 28,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4552,6 +5716,8 @@
       "element_in": 158,
       "element_out": 517,
       "added": "2025-10-31T13:27:51.305428Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4563,6 +5729,8 @@
       "element_in": 324,
       "element_out": 721,
       "added": "2025-10-31T13:27:51.305340Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4574,6 +5742,8 @@
       "element_in": 515,
       "element_out": 17,
       "added": "2025-10-31T10:52:53.975829Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -4585,6 +5755,8 @@
       "element_in": 531,
       "element_out": 569,
       "added": "2025-10-31T08:09:39.191786Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -4596,6 +5768,8 @@
       "element_in": 443,
       "element_out": 633,
       "added": "2025-10-31T08:09:39.191683Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4607,6 +5781,8 @@
       "element_in": 26,
       "element_out": 200,
       "added": "2025-10-30T16:31:30.307344Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4618,6 +5794,8 @@
       "element_in": 712,
       "element_out": 120,
       "added": "2025-10-30T11:53:03.347610Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4629,6 +5807,8 @@
       "element_in": 67,
       "element_out": 32,
       "added": "2025-10-27T21:34:34.737188Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4640,6 +5820,8 @@
       "element_in": 217,
       "element_out": 311,
       "added": "2025-10-24T02:29:55.688276Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "f"
@@ -4651,6 +5833,8 @@
       "element_in": 191,
       "element_out": 575,
       "added": "2025-10-23T18:29:37.250647Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 23,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -4662,6 +5846,8 @@
       "element_in": 508,
       "element_out": 370,
       "added": "2025-10-23T17:07:03.660839Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4673,6 +5859,8 @@
       "element_in": 295,
       "element_out": 603,
       "added": "2025-10-23T16:04:01.642547Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 30,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4684,6 +5872,8 @@
       "element_in": 721,
       "element_out": 712,
       "added": "2025-10-23T16:04:01.642496Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4695,6 +5885,8 @@
       "element_in": 517,
       "element_out": 303,
       "added": "2025-10-23T16:04:01.642477Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4706,6 +5898,8 @@
       "element_in": 81,
       "element_out": 669,
       "added": "2025-10-23T15:56:53.167932Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4717,6 +5911,8 @@
       "element_in": 375,
       "element_out": 531,
       "added": "2025-10-23T15:56:53.167916Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 16,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -4728,6 +5924,8 @@
       "element_in": 236,
       "element_out": 53,
       "added": "2025-10-23T15:56:53.167879Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -4739,6 +5937,8 @@
       "element_in": 200,
       "element_out": 26,
       "added": "2025-10-23T13:35:13.828062Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4750,6 +5950,8 @@
       "element_in": 233,
       "element_out": 228,
       "added": "2025-10-23T09:23:03.922984Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4761,6 +5963,8 @@
       "element_in": 371,
       "element_out": 684,
       "added": "2025-10-22T19:56:12.828216Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -4772,6 +5976,8 @@
       "element_in": 120,
       "element_out": 205,
       "added": "2025-10-20T22:44:04.944542Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -4783,6 +5989,8 @@
       "element_in": 100,
       "element_out": 526,
       "added": "2025-10-20T22:44:04.944490Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -4794,6 +6002,8 @@
       "element_in": 729,
       "element_out": 314,
       "added": "2025-10-18T00:28:49.731993Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -4805,6 +6015,8 @@
       "element_in": 205,
       "element_out": 674,
       "added": "2025-10-17T10:48:41.942823Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -4816,6 +6028,8 @@
       "element_in": 311,
       "element_out": 310,
       "added": "2025-10-17T10:31:57.888492Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -4827,6 +6041,8 @@
       "element_in": 238,
       "element_out": 200,
       "added": "2025-10-17T09:52:58.160633Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 52,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4838,6 +6054,8 @@
       "element_in": 83,
       "element_out": 324,
       "added": "2025-10-17T09:52:58.160551Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 27,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4849,6 +6067,8 @@
       "element_in": 691,
       "element_out": 337,
       "added": "2025-10-17T09:52:58.160513Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4860,6 +6080,8 @@
       "element_in": 531,
       "element_out": 40,
       "added": "2025-10-17T02:13:40.624192Z",
+      "waiverPriority": 14,
+      "waiverWireIndex": 64,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -4871,6 +6093,8 @@
       "element_in": 348,
       "element_out": 227,
       "added": "2025-10-17T02:13:40.624135Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 53,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4882,6 +6106,8 @@
       "element_in": 411,
       "element_out": 410,
       "added": "2025-10-17T02:13:40.624121Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 32,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 11,
       "transactionKind": "w"
@@ -4893,6 +6119,8 @@
       "element_in": 53,
       "element_out": 586,
       "added": "2025-10-17T02:13:40.624050Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -4904,6 +6132,8 @@
       "element_in": 712,
       "element_out": 158,
       "added": "2025-10-17T00:51:07.400780Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 34,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4915,6 +6145,8 @@
       "element_in": 728,
       "element_out": 67,
       "added": "2025-10-17T00:51:07.400714Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -4926,6 +6158,8 @@
       "element_in": 633,
       "element_out": 295,
       "added": "2025-10-16T19:41:15.598868Z",
+      "waiverPriority": 10,
+      "waiverWireIndex": 71,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4937,6 +6171,8 @@
       "element_in": 228,
       "element_out": 371,
       "added": "2025-10-16T19:41:15.598815Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 59,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -4948,6 +6184,8 @@
       "element_in": 735,
       "element_out": 217,
       "added": "2025-10-16T19:41:15.598798Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 42,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -4959,6 +6197,8 @@
       "element_in": 384,
       "element_out": 390,
       "added": "2025-10-16T19:41:15.598763Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -4970,6 +6210,8 @@
       "element_in": 694,
       "element_out": 37,
       "added": "2025-10-16T15:39:24.613667Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 49,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 17,
       "transactionKind": "w"
@@ -4981,6 +6223,8 @@
       "element_in": 20,
       "element_out": 50,
       "added": "2025-10-16T15:39:24.613595Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 25,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -4992,6 +6236,8 @@
       "element_in": 679,
       "element_out": 338,
       "added": "2025-10-16T15:39:24.613519Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5003,6 +6249,8 @@
       "element_in": 684,
       "element_out": 508,
       "added": "2025-10-15T20:02:40.015517Z",
+      "waiverPriority": 11,
+      "waiverWireIndex": 58,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -5014,6 +6262,8 @@
       "element_in": 225,
       "element_out": 442,
       "added": "2025-10-15T20:02:40.015463Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 40,
       "droppedPlayerGwPoints": 11,
       "pickedUpPlayerGwPoints": 18,
       "transactionKind": "w"
@@ -5025,6 +6275,8 @@
       "element_in": 718,
       "element_out": 387,
       "added": "2025-10-15T20:02:40.015332Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5036,6 +6288,8 @@
       "element_in": 683,
       "element_out": 36,
       "added": "2025-10-07T21:30:46.189521Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5047,6 +6301,8 @@
       "element_in": 715,
       "element_out": 671,
       "added": "2025-10-07T21:30:46.189409Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -5058,6 +6314,8 @@
       "element_in": 442,
       "element_out": 683,
       "added": "2025-10-03T14:51:04.744917Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5069,6 +6327,8 @@
       "element_in": 683,
       "element_out": 441,
       "added": "2025-10-03T08:36:17.101948Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "f"
@@ -5080,6 +6340,8 @@
       "element_in": 436,
       "element_out": 684,
       "added": "2025-10-02T19:25:30.934413Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "f"
@@ -5091,6 +6353,8 @@
       "element_in": 37,
       "element_out": 694,
       "added": "2025-10-02T17:44:00.312538Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5102,6 +6366,8 @@
       "element_in": 407,
       "element_out": 290,
       "added": "2025-10-02T15:25:13.033407Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -5113,6 +6379,8 @@
       "element_in": 261,
       "element_out": 316,
       "added": "2025-10-02T15:25:13.033262Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -5124,6 +6392,8 @@
       "element_in": 474,
       "element_out": 411,
       "added": "2025-10-02T15:05:22.280737Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5135,6 +6405,8 @@
       "element_in": 387,
       "element_out": 517,
       "added": "2025-10-01T21:48:25.895301Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5146,6 +6418,8 @@
       "element_in": 475,
       "element_out": 477,
       "added": "2025-10-01T21:48:25.895198Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -5157,6 +6431,8 @@
       "element_in": 390,
       "element_out": 515,
       "added": "2025-10-01T21:28:26.207610Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5168,6 +6444,8 @@
       "element_in": 694,
       "element_out": 293,
       "added": "2025-09-30T16:25:11.942254Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -5179,6 +6457,8 @@
       "element_in": 50,
       "element_out": 242,
       "added": "2025-09-30T16:25:11.942213Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5190,6 +6470,8 @@
       "element_in": 250,
       "element_out": 311,
       "added": "2025-09-30T12:14:40.636604Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 23,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5201,6 +6483,8 @@
       "element_in": 258,
       "element_out": 573,
       "added": "2025-09-30T12:14:40.636544Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5212,6 +6496,8 @@
       "element_in": 674,
       "element_out": 384,
       "added": "2025-09-30T12:14:40.636487Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5223,6 +6509,8 @@
       "element_in": 32,
       "element_out": 182,
       "added": "2025-09-29T20:30:46.225611Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5234,6 +6522,8 @@
       "element_in": 684,
       "element_out": 505,
       "added": "2025-09-29T20:30:46.225558Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5245,6 +6535,8 @@
       "element_in": 227,
       "element_out": 682,
       "added": "2025-09-27T16:27:55.485104Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5256,6 +6548,8 @@
       "element_in": 526,
       "element_out": 180,
       "added": "2025-09-27T00:14:50.060519Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5267,6 +6561,8 @@
       "element_in": 67,
       "element_out": 32,
       "added": "2025-09-26T16:10:27.522002Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -5278,6 +6574,8 @@
       "element_in": 441,
       "element_out": 438,
       "added": "2025-09-26T15:38:36.005599Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -5289,6 +6587,8 @@
       "element_in": 410,
       "element_out": 631,
       "added": "2025-09-26T14:02:44.657914Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5300,6 +6600,8 @@
       "element_in": 586,
       "element_out": 19,
       "added": "2025-09-26T14:01:08.096296Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5311,6 +6613,8 @@
       "element_in": 19,
       "element_out": 120,
       "added": "2025-09-26T13:30:25.454636Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5322,6 +6626,8 @@
       "element_in": 682,
       "element_out": 348,
       "added": "2025-09-26T13:21:51.652072Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -5333,6 +6639,8 @@
       "element_in": 310,
       "element_out": 691,
       "added": "2025-09-26T10:51:37.422154Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5344,6 +6652,8 @@
       "element_in": 438,
       "element_out": 442,
       "added": "2025-09-26T10:36:47.371814Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -5355,6 +6665,8 @@
       "element_in": 411,
       "element_out": 474,
       "added": "2025-09-26T09:54:47.075401Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5366,6 +6678,8 @@
       "element_in": 303,
       "element_out": 83,
       "added": "2025-09-26T00:03:23.496439Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -5377,6 +6691,8 @@
       "element_in": 158,
       "element_out": 593,
       "added": "2025-09-26T00:03:23.496312Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5388,6 +6704,8 @@
       "element_in": 667,
       "element_out": 18,
       "added": "2025-09-25T14:11:27.308257Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -5399,6 +6717,8 @@
       "element_in": 664,
       "element_out": 612,
       "added": "2025-09-21T20:44:00.430612Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5410,6 +6730,8 @@
       "element_in": 442,
       "element_out": 258,
       "added": "2025-09-21T19:03:57.238756Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5421,6 +6743,8 @@
       "element_in": 293,
       "element_out": 37,
       "added": "2025-09-21T19:01:36.747595Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 12,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5432,6 +6756,8 @@
       "element_in": 242,
       "element_out": 516,
       "added": "2025-09-21T19:01:36.747429Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5443,6 +6769,8 @@
       "element_in": 295,
       "element_out": 372,
       "added": "2025-09-21T13:31:24.518332Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 11,
       "transactionKind": "w"
@@ -5454,6 +6782,8 @@
       "element_in": 37,
       "element_out": 507,
       "added": "2025-09-19T16:22:27.851662Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5465,6 +6795,8 @@
       "element_in": 631,
       "element_out": 232,
       "added": "2025-09-19T13:25:15.795452Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "f"
@@ -5476,6 +6808,8 @@
       "element_in": 178,
       "element_out": 625,
       "added": "2025-09-19T09:35:41.706248Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5487,6 +6821,8 @@
       "element_in": 200,
       "element_out": 387,
       "added": "2025-09-19T09:35:41.706189Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -5498,6 +6834,8 @@
       "element_in": 348,
       "element_out": 473,
       "added": "2025-09-19T02:19:37.628353Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 38,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5509,6 +6847,8 @@
       "element_in": 40,
       "element_out": 660,
       "added": "2025-09-19T02:19:37.628296Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 21,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -5520,6 +6860,8 @@
       "element_in": 120,
       "element_out": 389,
       "added": "2025-09-19T02:19:37.628249Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5531,6 +6873,8 @@
       "element_in": 217,
       "element_out": 310,
       "added": "2025-09-18T18:57:21.153220Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 23,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -5542,6 +6886,8 @@
       "element_in": 372,
       "element_out": 261,
       "added": "2025-09-18T18:57:21.153155Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5553,6 +6899,8 @@
       "element_in": 26,
       "element_out": 238,
       "added": "2025-09-18T16:26:55.868074Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5564,6 +6912,8 @@
       "element_in": 418,
       "element_out": 421,
       "added": "2025-09-18T16:26:55.868030Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -5575,6 +6925,8 @@
       "element_in": 180,
       "element_out": 561,
       "added": "2025-09-17T23:40:11.621854Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 28,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5586,6 +6938,8 @@
       "element_in": 670,
       "element_out": 2,
       "added": "2025-09-17T23:40:11.621783Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5597,6 +6951,8 @@
       "element_in": 36,
       "element_out": 475,
       "added": "2025-09-17T23:40:11.621670Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 8,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -5608,6 +6964,8 @@
       "element_in": 593,
       "element_out": 580,
       "added": "2025-09-16T10:58:16.563344Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 16,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5619,6 +6977,8 @@
       "element_in": 32,
       "element_out": 67,
       "added": "2025-09-16T10:58:16.563269Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -5630,6 +6990,8 @@
       "element_in": 470,
       "element_out": 399,
       "added": "2025-09-15T11:13:24.887663Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -5641,6 +7003,8 @@
       "element_in": 508,
       "element_out": 228,
       "added": "2025-09-14T18:07:20.794086Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 40,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -5652,6 +7016,8 @@
       "element_in": 517,
       "element_out": 303,
       "added": "2025-09-14T18:07:20.794008Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 24,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -5663,6 +7029,8 @@
       "element_in": 160,
       "element_out": 424,
       "added": "2025-09-14T18:07:20.793950Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -5674,6 +7042,8 @@
       "element_in": 691,
       "element_out": 217,
       "added": "2025-09-12T14:56:53.607997Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "f"
@@ -5685,6 +7055,8 @@
       "element_in": 290,
       "element_out": 508,
       "added": "2025-09-12T11:05:21.613915Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "f"
@@ -5696,6 +7068,8 @@
       "element_in": 671,
       "element_out": 365,
       "added": "2025-09-12T10:58:43.543764Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5707,6 +7081,8 @@
       "element_in": 387,
       "element_out": 517,
       "added": "2025-09-12T09:59:57.526438Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -5718,6 +7094,8 @@
       "element_in": 337,
       "element_out": 500,
       "added": "2025-09-12T09:59:57.526420Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5729,6 +7107,8 @@
       "element_in": 67,
       "element_out": 431,
       "added": "2025-09-12T03:55:51.241540Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 41,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5740,6 +7120,8 @@
       "element_in": 603,
       "element_out": 36,
       "added": "2025-09-12T03:55:51.241501Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5751,6 +7133,8 @@
       "element_in": 74,
       "element_out": 113,
       "added": "2025-09-12T03:55:51.241425Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5762,6 +7146,8 @@
       "element_in": 660,
       "element_out": 444,
       "added": "2025-09-12T01:14:48.835625Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 43,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 7,
       "transactionKind": "w"
@@ -5773,6 +7159,8 @@
       "element_in": 18,
       "element_out": 84,
       "added": "2025-09-12T01:14:48.835589Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 28,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -5784,6 +7172,8 @@
       "element_in": 389,
       "element_out": 487,
       "added": "2025-09-12T01:14:48.835503Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 10,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5795,6 +7185,8 @@
       "element_in": 317,
       "element_out": 436,
       "added": "2025-09-11T14:42:52.396424Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 10,
       "transactionKind": "w"
@@ -5806,6 +7198,8 @@
       "element_in": 303,
       "element_out": 26,
       "added": "2025-09-01T19:18:30.766696Z",
+      "waiverPriority": 15,
+      "waiverWireIndex": 61,
       "droppedPlayerGwPoints": 16,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -5817,6 +7211,8 @@
       "element_in": 424,
       "element_out": 417,
       "added": "2025-09-01T19:18:30.766626Z",
+      "waiverPriority": 11,
+      "waiverWireIndex": 48,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5828,6 +7224,8 @@
       "element_in": 228,
       "element_out": 110,
       "added": "2025-09-01T19:18:30.766538Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 33,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5839,6 +7237,8 @@
       "element_in": 258,
       "element_out": 443,
       "added": "2025-09-01T19:18:30.766404Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -5850,6 +7250,8 @@
       "element_in": 2,
       "element_out": 32,
       "added": "2025-09-01T12:53:53.558881Z",
+      "waiverPriority": 11,
+      "waiverWireIndex": 39,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -5861,6 +7263,8 @@
       "element_in": 475,
       "element_out": 441,
       "added": "2025-09-01T12:53:53.558793Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5872,6 +7276,8 @@
       "element_in": 311,
       "element_out": 250,
       "added": "2025-09-01T12:53:53.558699Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5883,6 +7289,8 @@
       "element_in": 560,
       "element_out": 30,
       "added": "2025-09-01T06:43:50.551189Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 16,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5894,6 +7302,8 @@
       "element_in": 612,
       "element_out": 386,
       "added": "2025-09-01T06:43:50.551145Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -5905,6 +7315,8 @@
       "element_in": 261,
       "element_out": 506,
       "added": "2025-08-31T22:00:09.031050Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -5916,6 +7328,8 @@
       "element_in": 110,
       "element_out": 11,
       "added": "2025-08-29T17:26:16.515240Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5927,6 +7341,8 @@
       "element_in": 324,
       "element_out": 160,
       "added": "2025-08-29T10:55:17.240850Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 4,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -5938,6 +7354,8 @@
       "element_in": 217,
       "element_out": 678,
       "added": "2025-08-29T10:18:04.232873Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "f"
@@ -5949,6 +7367,8 @@
       "element_in": 241,
       "element_out": 164,
       "added": "2025-08-29T08:13:47.339598Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 4,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 4,
       "transactionKind": "w"
@@ -5960,6 +7380,8 @@
       "element_in": 431,
       "element_out": 67,
       "added": "2025-08-29T03:52:09.719887Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 43,
       "droppedPlayerGwPoints": 5,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5971,6 +7393,8 @@
       "element_in": 113,
       "element_out": 74,
       "added": "2025-08-29T03:52:09.719851Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 24,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -5982,6 +7406,8 @@
       "element_in": 316,
       "element_out": 531,
       "added": "2025-08-29T03:52:09.719809Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 14,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -5993,6 +7419,8 @@
       "element_in": 83,
       "element_out": 120,
       "added": "2025-08-29T03:52:09.719742Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6004,6 +7432,8 @@
       "element_in": 314,
       "element_out": 432,
       "added": "2025-08-29T01:58:03.236234Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 31,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6015,6 +7445,8 @@
       "element_in": 232,
       "element_out": 40,
       "added": "2025-08-29T01:58:03.236164Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 17,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 8,
       "transactionKind": "w"
@@ -6026,6 +7458,8 @@
       "element_in": 487,
       "element_out": 236,
       "added": "2025-08-29T01:58:03.236120Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 9,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -6037,6 +7471,8 @@
       "element_in": 436,
       "element_out": 37,
       "added": "2025-08-28T20:38:24.943445Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 41,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -6048,6 +7484,8 @@
       "element_in": 421,
       "element_out": 48,
       "added": "2025-08-28T20:38:24.943390Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6059,6 +7497,8 @@
       "element_in": 516,
       "element_out": 19,
       "added": "2025-08-28T20:38:24.943329Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6070,6 +7510,8 @@
       "element_in": 338,
       "element_out": 337,
       "added": "2025-08-28T20:38:24.943276Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -6081,6 +7523,8 @@
       "element_in": 625,
       "element_out": 251,
       "added": "2025-08-28T16:42:06.474159Z",
+      "waiverPriority": 12,
+      "waiverWireIndex": 38,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6092,6 +7536,8 @@
       "element_in": 517,
       "element_out": 424,
       "added": "2025-08-28T16:42:06.474003Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6103,6 +7549,8 @@
       "element_in": 500,
       "element_out": 311,
       "added": "2025-08-28T16:42:06.473965Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 11,
       "droppedPlayerGwPoints": 7,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6114,6 +7562,8 @@
       "element_in": 8,
       "element_out": 233,
       "added": "2025-08-28T16:42:06.473891Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6125,6 +7575,8 @@
       "element_in": 26,
       "element_out": 158,
       "added": "2025-08-28T10:37:23.647975Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -6136,6 +7588,8 @@
       "element_in": 443,
       "element_out": 225,
       "added": "2025-08-28T10:37:23.647913Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -6147,6 +7601,8 @@
       "element_in": 478,
       "element_out": 145,
       "added": "2025-08-25T23:33:51.432270Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -6158,6 +7614,8 @@
       "element_in": 365,
       "element_out": 625,
       "added": "2025-08-22T11:41:51.903531Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -6169,6 +7627,8 @@
       "element_in": 531,
       "element_out": 232,
       "added": "2025-08-21T18:57:17.454905Z",
+      "waiverPriority": null,
+      "waiverWireIndex": null,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "f"
@@ -6180,6 +7640,8 @@
       "element_in": 40,
       "element_out": 610,
       "added": "2025-08-21T17:00:04.187840Z",
+      "waiverPriority": 8,
+      "waiverWireIndex": 40,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6191,6 +7653,8 @@
       "element_in": 678,
       "element_out": 178,
       "added": "2025-08-21T17:00:04.187823Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 28,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -6202,6 +7666,8 @@
       "element_in": 84,
       "element_out": 668,
       "added": "2025-08-21T17:00:04.187749Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 11,
       "transactionKind": "w"
@@ -6213,6 +7679,8 @@
       "element_in": 233,
       "element_out": 404,
       "added": "2025-08-21T16:18:01.423682Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 19,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -6224,6 +7692,8 @@
       "element_in": 424,
       "element_out": 612,
       "added": "2025-08-21T16:18:01.423660Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 9,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6235,6 +7705,8 @@
       "element_in": 238,
       "element_out": 516,
       "added": "2025-08-21T14:09:28.466347Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 24,
       "droppedPlayerGwPoints": 10,
       "pickedUpPlayerGwPoints": 5,
       "transactionKind": "w"
@@ -6246,6 +7718,8 @@
       "element_in": 7,
       "element_out": 316,
       "added": "2025-08-21T14:09:28.466264Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 13,
       "transactionKind": "w"
@@ -6257,6 +7731,8 @@
       "element_in": 67,
       "element_out": 314,
       "added": "2025-08-21T12:02:42.314771Z",
+      "waiverPriority": 9,
+      "waiverWireIndex": 49,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -6268,6 +7744,8 @@
       "element_in": 232,
       "element_out": 10,
       "added": "2025-08-21T12:02:42.314733Z",
+      "waiverPriority": 7,
+      "waiverWireIndex": 41,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6279,6 +7757,8 @@
       "element_in": 74,
       "element_out": 293,
       "added": "2025-08-21T12:02:42.314714Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 32,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -6290,6 +7770,8 @@
       "element_in": 36,
       "element_out": 603,
       "added": "2025-08-21T12:02:42.314610Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 3,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6301,6 +7783,8 @@
       "element_in": 386,
       "element_out": 415,
       "added": "2025-08-21T08:17:24.710928Z",
+      "waiverPriority": 5,
+      "waiverWireIndex": 22,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -6312,6 +7796,8 @@
       "element_in": 164,
       "element_out": 325,
       "added": "2025-08-21T08:17:24.710866Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 6,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6323,6 +7809,8 @@
       "element_in": 573,
       "element_out": 8,
       "added": "2025-08-19T07:08:52.336147Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 36,
       "droppedPlayerGwPoints": 24,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -6334,6 +7822,8 @@
       "element_in": 561,
       "element_out": 362,
       "added": "2025-08-19T07:08:52.336068Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 18,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6345,6 +7835,8 @@
       "element_in": 427,
       "element_out": 53,
       "added": "2025-08-19T07:08:52.335997Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6356,6 +7848,8 @@
       "element_in": 160,
       "element_out": 452,
       "added": "2025-08-14T17:11:43.910688Z",
+      "waiverPriority": 6,
+      "waiverWireIndex": 13,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 3,
       "transactionKind": "w"
@@ -6367,6 +7861,8 @@
       "element_in": 612,
       "element_out": 301,
       "added": "2025-08-14T17:11:43.910553Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 6,
       "droppedPlayerGwPoints": 1,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6378,6 +7874,8 @@
       "element_in": 293,
       "element_out": 290,
       "added": "2025-08-14T11:48:09.376971Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 3,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6389,6 +7887,8 @@
       "element_in": 516,
       "element_out": 300,
       "added": "2025-08-14T11:39:54.739090Z",
+      "waiverPriority": 2,
+      "waiverWireIndex": 8,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 2,
       "transactionKind": "w"
@@ -6400,6 +7900,8 @@
       "element_in": 19,
       "element_out": 421,
       "added": "2025-08-14T11:39:54.739037Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 1,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -6411,6 +7913,8 @@
       "element_in": 432,
       "element_out": 431,
       "added": "2025-08-14T02:08:23.973935Z",
+      "waiverPriority": 4,
+      "waiverWireIndex": 20,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 0,
       "transactionKind": "w"
@@ -6422,6 +7926,8 @@
       "element_in": 668,
       "element_out": 81,
       "added": "2025-08-14T02:08:23.973915Z",
+      "waiverPriority": 3,
+      "waiverWireIndex": 15,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 1,
       "transactionKind": "w"
@@ -6433,6 +7939,8 @@
       "element_in": 669,
       "element_out": 324,
       "added": "2025-08-14T02:08:23.973845Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 7,
       "droppedPlayerGwPoints": 2,
       "pickedUpPlayerGwPoints": 9,
       "transactionKind": "w"
@@ -6444,6 +7952,8 @@
       "element_in": 260,
       "element_out": 292,
       "added": "2025-08-13T06:21:11.328441Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 2,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
@@ -6455,6 +7965,8 @@
       "element_in": 226,
       "element_out": 227,
       "added": "2025-08-07T22:56:12.877694Z",
+      "waiverPriority": 1,
+      "waiverWireIndex": 5,
       "droppedPlayerGwPoints": 0,
       "pickedUpPlayerGwPoints": 6,
       "transactionKind": "w"
