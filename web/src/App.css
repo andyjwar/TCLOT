@@ -1613,6 +1613,13 @@
   opacity: 0.9;
 }
 
+@media (max-width: 560px) {
+  .gw-fixture-list--tight .gw-fixture-name-text--mobile-hide-first .gw-fixture-name-text__first,
+  .gw-fixture-list--tight .gw-fixture-name-text--mobile-hide-first .gw-fixture-name-text__sep {
+    display: none;
+  }
+}
+
 /* All Waivers tile */
 .latest-waivers__gw {
   font-weight: 600;

@@ -74,6 +74,37 @@ function teamNameLastWord(name) {
   return parts[parts.length - 1]
 }
 
+/** Complete / future GW tiles: split for mobile (hide first token under 560px). */
+function teamNameFirstRest(name) {
+  if (typeof name !== 'string') return { single: true, first: '', rest: '' }
+  const parts = name.trim().split(/\s+/u).filter(Boolean)
+  if (parts.length <= 1) return { single: true, first: parts[0] ?? '', rest: '' }
+  return { single: false, first: parts[0], rest: parts.slice(1).join(' ') }
+}
+
+function GwFixtureTightTeamName({ name }) {
+  const { single, first, rest } = teamNameFirstRest(name)
+  if (single) {
+    return (
+      <span className="gw-fixture-name-text team-name team-name--sidebar" title={name || undefined}>
+        {first || '—'}
+      </span>
+    )
+  }
+  return (
+    <span
+      className="gw-fixture-name-text team-name team-name--sidebar gw-fixture-name-text--mobile-hide-first"
+      title={name || undefined}
+    >
+      <span className="gw-fixture-name-text__first">{first}</span>
+      <span className="gw-fixture-name-text__sep" aria-hidden="true">
+        {' '}
+      </span>
+      <span className="gw-fixture-name-text__rest">{rest}</span>
+    </span>
+  )
+}
+
 /** Matches `.trade-card` portrait rules: narrow view + portrait orientation. */
 function usePortraitTradeTeamAbbrev() {
   const subscribe = useCallback((onChange) => {
@@ -1292,9 +1323,7 @@ function App() {
           <span
             className={`gw-fixture-name-cell gw-fixture-name-cell--home${homeWin ? ' gw-fixture-name--winner' : ''}`}
           >
-            <span className="gw-fixture-name-text team-name team-name--sidebar">
-              {fx.homeName}
-            </span>
+            <GwFixtureTightTeamName name={fx.homeName} />
             {homeRank != null ? (
               <span className="gw-fixture-rank muted"> ({homeRank})</span>
             ) : null}
@@ -1309,9 +1338,7 @@ function App() {
           <span
             className={`gw-fixture-name-cell gw-fixture-name-cell--away${awayWin ? ' gw-fixture-name--winner' : ''}`}
           >
-            <span className="gw-fixture-name-text team-name team-name--sidebar">
-              {fx.awayName}
-            </span>
+            <GwFixtureTightTeamName name={fx.awayName} />
             {awayRank != null ? (
               <span className="gw-fixture-rank muted"> ({awayRank})</span>
             ) : null}
