@@ -158,6 +158,21 @@ function fantasyOwnerMobileInitials(ownerLeagueEntryId, ownerTeamName, ownerLine
   return 'Waiver';
 }
 
+/** Yellow, red, DC, and save rows only if the player is on a league roster (starters or bench). */
+const CONTRIBUTION_KINDS_LEAGUE_ROSTER_ONLY = new Set([
+  'yellow_card',
+  'red_card',
+  'dc_points',
+  'save_points',
+]);
+
+function contributionEventShownForLeague(ev, ownerByElementId) {
+  if (!ev || !CONTRIBUTION_KINDS_LEAGUE_ROSTER_ONLY.has(ev.kind)) return true;
+  const id = Number(ev.elementId);
+  if (!Number.isFinite(id)) return false;
+  return ownerByElementId.has(id);
+}
+
 function mergeUniqueByStableId(preferFirstLists) {
   const m = new Map();
   for (const list of preferFirstLists) {
@@ -321,6 +336,9 @@ export function PlayerContributions({
         });
         if (cancelled) return;
         if (ev.length) {
+          const filteredEv = ev.filter((e) =>
+            contributionEventShownForLeague(e, ownerByEl)
+          );
           setFotmobTimelineActive(true);
           setDisplayed((prev) => {
             const keep = prev.filter(
@@ -329,10 +347,15 @@ export function PlayerContributions({
                 e.kind === 'save_points' ||
                 String(e.stableId || '').startsWith('fotmob:')
             );
-            return mergeUniqueByStableId([ev, keep]);
+            return mergeUniqueByStableId([filteredEv, keep]);
           });
           const bucket = readPlayerContributionBucket(storageKey);
-          mergePersistPlayerContributions(storageKey, bucket?.events ?? [], ev, 2000);
+          mergePersistPlayerContributions(
+            storageKey,
+            bucket?.events ?? [],
+            filteredEv,
+            2000
+          );
         } else {
           setFotmobTimelineActive(false);
         }
@@ -343,7 +366,7 @@ export function PlayerContributions({
     return () => {
       cancelled = true;
     };
-  }, [fotmobFetchKey, gameweek, storageKey, trackedKey]);
+  }, [fotmobFetchKey, gameweek, storageKey, trackedKey, ownerByEl]);
 
   const fplOmitCardGoalKinds = useMemo(() => {
     if (!fotmobTimelineActive) return null;
@@ -378,10 +401,15 @@ export function PlayerContributions({
     });
     prevLiveRef.current = next;
 
-    if (!newEvents.length) return;
+    const newEventsFiltered = newEvents.filter((e) =>
+      contributionEventShownForLeague(e, ownerByEl)
+    );
+    if (!newEventsFiltered.length) return;
 
     setDisplayed((prev) => {
-      const sortedIncoming = [...newEvents].sort(compareContributionEventsDesc);
+      const sortedIncoming = [...newEventsFiltered].sort(
+        compareContributionEventsDesc
+      );
       return mergeUniqueByStableId([sortedIncoming, prev]);
     });
 
@@ -389,7 +417,7 @@ export function PlayerContributions({
     mergePersistPlayerContributions(
       storageKey,
       bucket?.events ?? [],
-      newEvents,
+      newEventsFiltered,
       2000
     );
   }, [
@@ -399,12 +427,15 @@ export function PlayerContributions({
     tracked,
     storageKey,
     fplOmitCardGoalKinds,
+    ownerByEl,
   ]);
 
   /** Newest first (`displayed` sort order). */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
-    return displayed.map((ev) => {
+    return displayed
+      .filter((ev) => contributionEventShownForLeague(ev, ownerByEl))
+      .map((ev) => {
       const el = contributionLiveContext?.elementById?.[ev.elementId];
       const elementTypeId = el?.element_type;
       const tid = el?.team != null ? Number(el.team) : null;
