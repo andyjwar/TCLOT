@@ -3123,20 +3123,53 @@
 
 .player-contrib-section-head {
   display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 10px 14px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
   margin-bottom: 10px;
+}
+
+.player-contrib-head-line {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+  min-width: 0;
+}
+
+.player-contrib-heading {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.player-contrib-heading__mportrait {
+  display: none;
+}
+
+.player-contrib-heading__wide {
+  display: inline;
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .player-contrib-heading__wide {
+    display: none;
+  }
+
+  .player-contrib-heading__mportrait {
+    display: inline;
+  }
 }
 
 .player-contrib-toolbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px 12px;
-  flex: 1 1 12rem;
+  width: 100%;
   min-width: 0;
 }
 
@@ -3291,6 +3324,16 @@
   color: var(--fm-text-strong, #111);
 }
 
+.player-contrib-row__action-text--mportrait {
+  display: none;
+}
+
+.player-contrib-row__action-bracket {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
 .player-contrib-row__action--goal .player-contrib-row__action-text {
   color: #15803d;
 }
@@ -3410,16 +3453,33 @@
 }
 
 @media (max-width: 768px) {
-  .player-contrib-row__action-emoji {
-    display: none;
-  }
-
   .player-contrib-row__action {
     gap: 4px;
   }
 }
 
 @media (max-width: 768px) and (orientation: portrait) {
+  .player-contrib-row__action-emoji {
+    display: none;
+  }
+
+  .player-contrib-row__action-text--wide {
+    display: none !important;
+  }
+
+  .player-contrib-row__action-text--mportrait {
+    display: inline-flex !important;
+    align-items: center;
+    gap: 2px;
+    letter-spacing: normal;
+  }
+
+  .player-contrib-row__action-emoji-inline {
+    font-size: 22px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
   .player-contrib-row__action {
     flex: 0 0 auto;
     max-width: 42%;
@@ -3467,6 +3527,15 @@
 
 .player-contrib-row__owner--mcompact {
   display: none;
+}
+
+/* Short team initials on mobile portrait: never ellipsis. */
+.player-contrib-row__owner.player-contrib-row__owner--mcompact {
+  overflow: visible;
+  text-overflow: clip;
+  flex: 0 0 auto;
+  min-width: 0;
+  letter-spacing: 0.06em;
 }
 
 .player-contrib-row__owner-wrap .team-avatar-frame,

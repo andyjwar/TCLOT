@@ -72,7 +72,7 @@ function pointsBracket(signedTotal) {
  * @param {number} delta — count for goals/assists/cards; fantasy pts for dc_points / save_points
  * @param {number | null | undefined} elementTypeId
  * @param {object | null | undefined} scoring — draft `settings.scoring`
- * @returns {{ emoji: string, text: string }}
+ * @returns {{ emoji: string, text: string, bracket: string }}
  */
 function contributionActionParts(kind, delta, elementTypeId, scoring) {
   const d = Number(delta) || 0;
@@ -83,28 +83,34 @@ function contributionActionParts(kind, delta, elementTypeId, scoring) {
   if (kind === 'goal') {
     const label = d === 1 ? 'GOAL' : `${d} GOALS`;
     const pts = d * pointsPerGoal(scoring, elementTypeId);
-    return { emoji: '⚽', text: `${label}${pointsBracket(pts)}` };
+    const br = pointsBracket(pts);
+    return { emoji: '⚽', text: `${label}${br}`, bracket: br };
   }
   if (kind === 'assist') {
     const label = d === 1 ? 'ASSIST' : `${d} ASSISTS`;
-    return { emoji: '🍑', text: `${label}${pointsBracket(d * assistPts)}` };
+    const br = pointsBracket(d * assistPts);
+    return { emoji: '🍑', text: `${label}${br}`, bracket: br };
   }
   if (kind === 'dc_points') {
-    return { emoji: '🥊', text: `DC${pointsBracket(d)}` };
+    const br = pointsBracket(d);
+    return { emoji: '🥊', text: `DC${br}`, bracket: br };
   }
   if (kind === 'save_points') {
     const label = d === 1 ? 'SAVES' : `SAVES ×${d}`;
-    return { emoji: '🧤', text: `${label}${pointsBracket(d)}` };
+    const br = pointsBracket(d);
+    return { emoji: '🧤', text: `${label}${br}`, bracket: br };
   }
   if (kind === 'yellow_card') {
     const label = d === 1 ? 'YELLOW' : `${d} YELLOWS`;
-    return { emoji: '🟨', text: `${label}${pointsBracket(d * yellowPts)}` };
+    const br = pointsBracket(d * yellowPts);
+    return { emoji: '🟨', text: `${label}${br}`, bracket: br };
   }
   if (kind === 'red_card') {
     const label = d === 1 ? 'RED CARD' : `${d} RED CARDS`;
-    return { emoji: '🟥', text: `${label}${pointsBracket(d * redPts)}` };
+    const br = pointsBracket(d * redPts);
+    return { emoji: '🟥', text: `${label}${br}`, bracket: br };
   }
-  return { emoji: '', text: String(kind).toUpperCase() };
+  return { emoji: '', text: String(kind).toUpperCase(), bracket: '' };
 }
 
 /** FPL kit image; falls back to club badge on error / missing shirt. */
@@ -133,13 +139,21 @@ function ShirtThumb({ shirtUrl: su, badgeUrl: bu, teamShort }) {
   );
 }
 
-/** First word of fantasy team name on rostered players; fixed label for waivers. */
-function fantasyOwnerMobileShort(ownerLeagueEntryId, ownerTeamName, ownerLine) {
+/**
+ * Mobile portrait: initials from each word of the fantasy team name (e.g. Hackney Meat Loaf → HML).
+ * Waivers → "Waiver".
+ */
+function fantasyOwnerMobileInitials(ownerLeagueEntryId, ownerTeamName, ownerLine) {
   if (ownerLeagueEntryId != null) {
     const raw = String(ownerTeamName || ownerLine || '').trim();
     if (!raw) return '—';
-    const first = raw.split(/\s+/)[0];
-    return first || raw;
+    const parts = raw.split(/\s+/).filter(Boolean);
+    let out = '';
+    for (const w of parts) {
+      const m = w.match(/\p{L}/u);
+      if (m) out += m[0].toLocaleUpperCase();
+    }
+    return out || '—';
   }
   return 'Waiver';
 }
@@ -421,7 +435,7 @@ export function PlayerContributions({
         badgeUrl: badgeUrl(tm?.code),
         teamShort: tm?.short_name ?? '—',
         ownerLine,
-        ownerLineMobileShort: fantasyOwnerMobileShort(
+        ownerLineMobileInitials: fantasyOwnerMobileInitials(
           own?.leagueEntryId ?? null,
           own?.teamName ?? null,
           ownerLine
@@ -430,6 +444,7 @@ export function PlayerContributions({
         ownerLeagueEntryId: own?.leagueEntryId ?? null,
         actionEmoji: ap.emoji,
         actionText: ap.text,
+        actionBracket: ap.bracket,
       };
     });
   }, [displayed, contributionLiveContext, ownerByEl, dropByEl]);
@@ -483,9 +498,29 @@ export function PlayerContributions({
 
   const toolbar = (
     <div className="player-contrib-section-head">
-      <h2 id="player-contrib-heading" className="tile-title tile-title--sm">
-        Player contributions
-      </h2>
+      <div className="player-contrib-head-line">
+        <h2
+          id="player-contrib-heading"
+          className="tile-title tile-title--sm player-contrib-heading"
+          aria-label="Player contributions"
+        >
+          <span className="player-contrib-heading__wide">Player contributions</span>
+          <span className="player-contrib-heading__mportrait">Player detail</span>
+        </h2>
+        <select
+          className="player-contrib-team-select"
+          value={fantasyTeamEntryId}
+          onChange={(e) => setFantasyTeamEntryId(e.target.value)}
+          aria-label="Filter by fantasy team"
+        >
+          <option value="">All teams</option>
+          {fantasyTeamOptions.map((t) => (
+            <option key={t.id} value={String(t.id)}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="player-contrib-toolbar">
         <div
           className="player-contrib-kind-filters"
@@ -525,19 +560,6 @@ export function PlayerContributions({
             All
           </button>
         </div>
-        <select
-          className="player-contrib-team-select"
-          value={fantasyTeamEntryId}
-          onChange={(e) => setFantasyTeamEntryId(e.target.value)}
-          aria-label="Filter by fantasy team"
-        >
-          <option value="">All teams</option>
-          {fantasyTeamOptions.map((t) => (
-            <option key={t.id} value={String(t.id)}>
-              {t.name}
-            </option>
-          ))}
-        </select>
       </div>
     </div>
   );
@@ -582,13 +604,31 @@ export function PlayerContributions({
           <div key={r.stableId} className="player-contrib-row" role="listitem">
             <div
               className={`player-contrib-row__action player-contrib-row__action--${(r.kind && String(r.kind).replace(/[^a-z0-9_-]/gi, '')) || 'other'}`}
+              aria-label={r.actionText}
             >
               {r.actionEmoji ? (
                 <span className="player-contrib-row__action-emoji" aria-hidden>
                   {r.actionEmoji}
                 </span>
               ) : null}
-              <span className="player-contrib-row__action-text">{r.actionText}</span>
+              <span className="player-contrib-row__action-text player-contrib-row__action-text--wide">
+                {r.actionText}
+              </span>
+              <span
+                className="player-contrib-row__action-text player-contrib-row__action-text--mportrait"
+                aria-hidden="true"
+              >
+                {r.actionEmoji ? (
+                  <>
+                    <span className="player-contrib-row__action-emoji-inline" aria-hidden>
+                      {r.actionEmoji}
+                    </span>
+                    <span className="player-contrib-row__action-bracket">{r.actionBracket}</span>
+                  </>
+                ) : (
+                  r.actionText
+                )}
+              </span>
             </div>
             <div className="player-contrib-row__mid">
               <div className="player-contrib-row__player-stack">
@@ -629,7 +669,7 @@ export function PlayerContributions({
                 className="player-contrib-row__owner player-contrib-row__owner--mcompact"
                 aria-hidden="true"
               >
-                {r.ownerLineMobileShort}
+                {r.ownerLineMobileInitials}
               </span>
               {r.ownerLeagueEntryId != null ? (
                 <TeamAvatar
