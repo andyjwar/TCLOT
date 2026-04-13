@@ -736,9 +736,6 @@ export function LiveScores({
         className="tile tile--compact player-contrib-tile"
         aria-labelledby="player-contrib-heading"
       >
-        <h2 id="player-contrib-heading" className="tile-title tile-title--sm">
-          Player contributions
-        </h2>
         <PlayerContributions
           leagueId={leagueId}
           gameweek={gameweek}

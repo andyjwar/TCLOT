@@ -3121,6 +3121,100 @@
   margin-top: 0;
 }
 
+.player-contrib-section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 10px 14px;
+  margin-bottom: 10px;
+}
+
+.player-contrib-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.player-contrib-team-select {
+  flex-shrink: 0;
+  min-width: 9.5rem;
+  max-width: min(18rem, 100%);
+  margin-left: auto;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--fm-text-strong, #111);
+  background: var(--fm-card, #fff);
+  border: 1px solid color-mix(in srgb, var(--fm-border) 85%, transparent);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.player-contrib-kind-filters {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.player-contrib-kind-btn {
+  padding: 0.3rem 0.65rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fm-border) 80%, transparent);
+  background: color-mix(in srgb, var(--fm-border) 12%, transparent);
+  color: var(--fm-text-strong, #111);
+  cursor: pointer;
+  line-height: 1.2;
+}
+
+.player-contrib-kind-btn:hover {
+  border-color: color-mix(in srgb, var(--fm-border) 100%, transparent);
+}
+
+.player-contrib-kind-btn[aria-pressed='true'] {
+  border-color: color-mix(in srgb, #000 22%, transparent);
+  background: color-mix(in srgb, #000 8%, transparent);
+}
+
+.player-contrib-kind-btn--goal[aria-pressed='true'] {
+  color: #14532d;
+  border-color: #22c55e;
+  background: color-mix(in srgb, #22c55e 18%, transparent);
+}
+
+.player-contrib-kind-btn--assist[aria-pressed='true'] {
+  color: #1e3a8a;
+  border-color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 18%, transparent);
+}
+
+.player-contrib-kind-btn--dc[aria-pressed='true'] {
+  color: #9a3412;
+  border-color: #ea580c;
+  background: color-mix(in srgb, #fb923c 22%, transparent);
+}
+
+.player-contrib-kind-btn--all[aria-pressed='true'] {
+  color: var(--fm-text-strong, #111);
+  border-color: color-mix(in srgb, #ca8a04 55%, transparent);
+  background: color-mix(in srgb, #facc15 22%, transparent);
+}
+
+.player-contrib-empty--filters {
+  margin: 0;
+  padding: 12px 14px 14px;
+}
+
 .player-contrib-broadcast {
   border-radius: 12px;
   overflow: hidden;
@@ -3273,7 +3367,8 @@
   overflow: hidden;
 }
 
-.player-contrib-row__player-sr {
+.player-contrib-row__player-sr,
+.player-contrib-row__owner-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -3314,7 +3409,48 @@
   }
 }
 
+@media (max-width: 768px) {
+  .player-contrib-row__action-emoji {
+    display: none;
+  }
+
+  .player-contrib-row__action {
+    gap: 4px;
+  }
+}
+
+@media (max-width: 768px) and (orientation: portrait) {
+  .player-contrib-row__action {
+    flex: 0 0 auto;
+    max-width: 42%;
+  }
+
+  .player-contrib-row__mid {
+    flex: 1 1 0;
+    justify-content: center;
+  }
+
+  .player-contrib-row__player {
+    text-align: center;
+  }
+
+  .player-contrib-row__owner-wrap {
+    flex: 0 0 auto;
+    max-width: 32%;
+    min-width: 0;
+  }
+
+  .player-contrib-row__owner--full {
+    display: none;
+  }
+
+  .player-contrib-row__owner--mcompact {
+    display: block;
+  }
+}
+
 .player-contrib-row__owner-wrap {
+  position: relative;
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -3323,6 +3459,14 @@
   gap: 8px;
   flex: 1 1 0;
   min-width: 0;
+}
+
+.player-contrib-row__owner--full {
+  display: block;
+}
+
+.player-contrib-row__owner--mcompact {
+  display: none;
 }
 
 .player-contrib-row__owner-wrap .team-avatar-frame,
@@ -3392,6 +3536,47 @@ body[data-tclot-theme='dark'] .player-contrib-row__owner {
 
 body[data-tclot-theme='dark'] .player-contrib-row__owner-logo-fallback {
   color: var(--fm-muted, #9ca3af);
+}
+
+body[data-tclot-theme='dark'] .player-contrib-team-select {
+  color: var(--fm-text, #f4f4f5);
+  background: color-mix(in srgb, var(--fm-card, #18181b) 92%, #fff);
+  border-color: color-mix(in srgb, var(--fm-border) 70%, transparent);
+}
+
+body[data-tclot-theme='dark'] .player-contrib-kind-btn {
+  color: var(--fm-text, #f4f4f5);
+  background: color-mix(in srgb, #fff 6%, transparent);
+  border-color: color-mix(in srgb, var(--fm-border) 75%, transparent);
+}
+
+body[data-tclot-theme='dark'] .player-contrib-kind-btn[aria-pressed='true'] {
+  border-color: color-mix(in srgb, #fff 28%, transparent);
+  background: color-mix(in srgb, #fff 12%, transparent);
+}
+
+body[data-tclot-theme='dark'] .player-contrib-kind-btn--goal[aria-pressed='true'] {
+  color: #bbf7d0;
+  border-color: #22c55e;
+  background: color-mix(in srgb, #22c55e 22%, transparent);
+}
+
+body[data-tclot-theme='dark'] .player-contrib-kind-btn--assist[aria-pressed='true'] {
+  color: #bfdbfe;
+  border-color: #3b82f6;
+  background: color-mix(in srgb, #3b82f6 22%, transparent);
+}
+
+body[data-tclot-theme='dark'] .player-contrib-kind-btn--dc[aria-pressed='true'] {
+  color: #ffedd5;
+  border-color: #fb923c;
+  background: color-mix(in srgb, #fb923c 24%, transparent);
+}
+
+body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true'] {
+  color: #fef9c3;
+  border-color: #eab308;
+  background: color-mix(in srgb, #eab308 22%, transparent);
 }
 
 .player-contrib-empty {

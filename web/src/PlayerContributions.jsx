@@ -133,6 +133,17 @@ function ShirtThumb({ shirtUrl: su, badgeUrl: bu, teamShort }) {
   );
 }
 
+/** First word of fantasy team name on rostered players; fixed label for waivers. */
+function fantasyOwnerMobileShort(ownerLeagueEntryId, ownerTeamName, ownerLine) {
+  if (ownerLeagueEntryId != null) {
+    const raw = String(ownerTeamName || ownerLine || '').trim();
+    if (!raw) return '—';
+    const first = raw.split(/\s+/)[0];
+    return first || raw;
+  }
+  return 'Waiver';
+}
+
 function mergeUniqueByStableId(preferFirstLists) {
   const m = new Map();
   for (const list of preferFirstLists) {
@@ -185,6 +196,12 @@ export function PlayerContributions({
   const [displayed, setDisplayed] = useState([]);
   /** When true, goals / assists / cards come from FotMob timeline (ordered); FPL diff skips those kinds. */
   const [fotmobTimelineActive, setFotmobTimelineActive] = useState(false);
+  /** '' = all fantasy teams; otherwise `leagueEntryId` of owning squad. */
+  const [fantasyTeamEntryId, setFantasyTeamEntryId] = useState('');
+  /** When both false, every contribution kind is shown. When either true, only those kinds (union). */
+  const [filterGoal, setFilterGoal] = useState(false);
+  const [filterAssist, setFilterAssist] = useState(false);
+  const [filterDc, setFilterDc] = useState(false);
   const prevLiveRef = useRef(null);
   const hydratedKeyRef = useRef('');
   const listScrollRef = useRef(null);
@@ -233,7 +250,24 @@ export function PlayerContributions({
     prevLiveRef.current = null;
     prevDisplayedLenRef.current = 0;
     setFotmobTimelineActive(false);
+    setFantasyTeamEntryId('');
+    setFilterGoal(false);
+    setFilterAssist(false);
+    setFilterDc(false);
   }, [gameweek, leagueId]);
+
+  const fantasyTeamOptions = useMemo(() => {
+    const out = [];
+    for (const q of squads || []) {
+      if (q?.error) continue;
+      const id = q.leagueEntryId;
+      if (id == null || !Number.isFinite(Number(id))) continue;
+      const name = String(q.teamName ?? '').trim() || `Team ${id}`;
+      out.push({ id: Number(id), name });
+    }
+    out.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
+    return out;
+  }, [squads]);
 
   const fotmobFetchKey = useMemo(() => {
     const fx = contributionLiveContext?.gwFixtures || [];
@@ -387,6 +421,11 @@ export function PlayerContributions({
         badgeUrl: badgeUrl(tm?.code),
         teamShort: tm?.short_name ?? '—',
         ownerLine,
+        ownerLineMobileShort: fantasyOwnerMobileShort(
+          own?.leagueEntryId ?? null,
+          own?.teamName ?? null,
+          ownerLine
+        ),
         ownerTeamName: own?.teamName ?? null,
         ownerLeagueEntryId: own?.leagueEntryId ?? null,
         actionEmoji: ap.emoji,
@@ -395,32 +434,143 @@ export function PlayerContributions({
     });
   }, [displayed, contributionLiveContext, ownerByEl, dropByEl]);
 
+  const filteredRows = useMemo(() => {
+    let out = rows;
+    if (fantasyTeamEntryId !== '') {
+      const want = Number(fantasyTeamEntryId);
+      out = out.filter((r) => Number(r.ownerLeagueEntryId) === want);
+    }
+    const restrictKinds = filterGoal || filterAssist || filterDc;
+    if (restrictKinds) {
+      out = out.filter((r) => {
+        if (filterGoal && r.kind === 'goal') return true;
+        if (filterAssist && r.kind === 'assist') return true;
+        if (filterDc && r.kind === 'dc_points') return true;
+        return false;
+      });
+    }
+    return out;
+  }, [rows, fantasyTeamEntryId, filterGoal, filterAssist, filterDc]);
+
+  const kindFiltersAll = !filterGoal && !filterAssist && !filterDc;
+
+  const clearKindFilters = useCallback(() => {
+    setFilterGoal(false);
+    setFilterAssist(false);
+    setFilterDc(false);
+  }, []);
+
+  const toggleFilterGoal = useCallback(() => {
+    setFilterGoal((g) => !g);
+  }, []);
+
+  const toggleFilterAssist = useCallback(() => {
+    setFilterAssist((a) => !a);
+  }, []);
+
+  const toggleFilterDc = useCallback(() => {
+    setFilterDc((d) => !d);
+  }, []);
+
   useLayoutEffect(() => {
     const el = listScrollRef.current;
-    if (!el || !rows.length) return;
-    if (rows.length > prevDisplayedLenRef.current) {
+    if (!el || !filteredRows.length) return;
+    if (filteredRows.length > prevDisplayedLenRef.current) {
       el.scrollTop = 0;
     }
-    prevDisplayedLenRef.current = rows.length;
-  }, [rows]);
+    prevDisplayedLenRef.current = filteredRows.length;
+  }, [filteredRows]);
+
+  const toolbar = (
+    <div className="player-contrib-section-head">
+      <h2 id="player-contrib-heading" className="tile-title tile-title--sm">
+        Player contributions
+      </h2>
+      <div className="player-contrib-toolbar">
+        <div
+          className="player-contrib-kind-filters"
+          role="group"
+          aria-label="Filter by event type"
+        >
+          <button
+            type="button"
+            className="player-contrib-kind-btn player-contrib-kind-btn--goal"
+            aria-pressed={filterGoal}
+            onClick={toggleFilterGoal}
+          >
+            Goal
+          </button>
+          <button
+            type="button"
+            className="player-contrib-kind-btn player-contrib-kind-btn--assist"
+            aria-pressed={filterAssist}
+            onClick={toggleFilterAssist}
+          >
+            Assist
+          </button>
+          <button
+            type="button"
+            className="player-contrib-kind-btn player-contrib-kind-btn--dc"
+            aria-pressed={filterDc}
+            onClick={toggleFilterDc}
+          >
+            DC
+          </button>
+          <button
+            type="button"
+            className="player-contrib-kind-btn player-contrib-kind-btn--all"
+            aria-pressed={kindFiltersAll}
+            onClick={clearKindFilters}
+          >
+            All
+          </button>
+        </div>
+        <select
+          className="player-contrib-team-select"
+          value={fantasyTeamEntryId}
+          onChange={(e) => setFantasyTeamEntryId(e.target.value)}
+          aria-label="Filter by fantasy team"
+        >
+          <option value="">All teams</option>
+          {fantasyTeamOptions.map((t) => (
+            <option key={t.id} value={String(t.id)}>
+              {t.name}
+            </option>
+          ))}
+        </select>
+      </div>
+    </div>
+  );
 
   if (!rows.length) {
     return (
-      <p className="muted muted--tight player-contrib-empty">
-        Contribution events appear here during the live gameweek when goals, assists,
-        defensive-contribution points, save points, or yellow or red cards change after each
-        refresh (auto every 90s for the current GW). Goals, assists, and cards are ordered from
-        FotMob match timelines when available (same proxy as FPL); defensive-contribution and save
-        points still come from FPL live. Events include every player whose club has a PL fixture
-        this GW, not only fantasy rosters. Open this tab during matches to build history in this
-        browser; optional{' '}
-        <span className="player-contrib-code">player-contributions-gw.json</span> merges shared
-        snapshots.
-      </p>
+      <>
+        {toolbar}
+        <p className="muted muted--tight player-contrib-empty">
+          Contribution events appear here during the live gameweek when goals, assists,
+          defensive-contribution points, save points, or yellow or red cards change after each
+          refresh (auto every 90s for the current GW). Goals, assists, and cards are ordered from
+          FotMob match timelines when available (same proxy as FPL); defensive-contribution and save
+          points still come from FPL live. Events include every player whose club has a PL fixture
+          this GW, not only fantasy rosters. Open this tab during matches to build history in this
+          browser; optional{' '}
+          <span className="player-contrib-code">player-contributions-gw.json</span> merges shared
+          snapshots.
+        </p>
+      </>
     );
   }
 
   return (
+    <>
+      {toolbar}
+      {!filteredRows.length ? (
+        <div className="player-contrib-broadcast">
+          <p className="muted muted--tight player-contrib-empty player-contrib-empty--filters">
+            No contributions match these filters. Try another team or turn on more event types.
+          </p>
+        </div>
+      ) : (
     <div className="player-contrib-broadcast">
       <div
         ref={listScrollRef}
@@ -428,7 +578,7 @@ export function PlayerContributions({
         role="list"
         aria-label="Player fantasy scoring contributions"
       >
-        {rows.map((r) => (
+        {filteredRows.map((r) => (
           <div key={r.stableId} className="player-contrib-row" role="listitem">
             <div
               className={`player-contrib-row__action player-contrib-row__action--${(r.kind && String(r.kind).replace(/[^a-z0-9_-]/gi, '')) || 'other'}`}
@@ -468,7 +618,19 @@ export function PlayerContributions({
               </div>
             </div>
             <div className="player-contrib-row__owner-wrap" title={r.ownerLine}>
-              <span className="player-contrib-row__owner">{r.ownerLine}</span>
+              <span className="player-contrib-row__owner-sr">{r.ownerLine}</span>
+              <span
+                className="player-contrib-row__owner player-contrib-row__owner--full"
+                aria-hidden="true"
+              >
+                {r.ownerLine}
+              </span>
+              <span
+                className="player-contrib-row__owner player-contrib-row__owner--mcompact"
+                aria-hidden="true"
+              >
+                {r.ownerLineMobileShort}
+              </span>
               {r.ownerLeagueEntryId != null ? (
                 <TeamAvatar
                   entryId={r.ownerLeagueEntryId}
@@ -487,5 +649,7 @@ export function PlayerContributions({
         ))}
       </div>
     </div>
+      )}
+    </>
   );
 }
