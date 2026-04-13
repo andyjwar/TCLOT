@@ -4,6 +4,7 @@ The **Live** tab calls FPL from the browser. Many hosts (e.g. GitHub Pages) hit 
 
 - **`/*`** → `https://fantasy.premierleague.com/api/*` (bootstrap-static, event live, etc.)
 - **`/draft/*`** → `https://draft.premierleague.com/api/*` (draft GW lineups — **not** classic `/entry/.../picks/`)
+- **`/fotmob/*`** → `https://www.fotmob.com/api/*` (unofficial read-only JSON used for Live **Player contributions** ordering — not affiliated with FotMob; respect their terms and rate limits)
 
 Draft leagues must use the draft host for picks; classic picks would show the wrong XI for each manager.
 
@@ -11,7 +12,7 @@ Draft leagues must use the draft host for picks; classic picks would show the wr
 
 Older deployments forwarded **every** path to `fantasy.premierleague.com`, so `/draft/...` returned **404**. Run **`npx wrangler deploy`** again from `web/workers/fpl-proxy/`.
 
-**Local dev without redeploying:** in `web/.env.local`, **remove or comment out** `VITE_FPL_PROXY_URL` and use `npm run dev` — Vite proxies `/__fpl/*` automatically (see `web/vite.config.js`).
+**Local dev without redeploying:** in `web/.env.local`, **remove or comment out** `VITE_FPL_PROXY_URL` and use `npm run dev` — Vite proxies `/__fpl/*` and `/__fotmob/*` automatically (see `web/vite.config.js`).
 
 ## One-time setup
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
 
 const DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
@@ -92,10 +93,7 @@ function buildMostWaivered(transactionsPayload, fplMini) {
         teamCode: tm?.code,
         teamId,
         claims: claimCount,
-        shirtUrl:
-          teamId != null
-            ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${teamId}-1.png`
-            : null,
+        shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
         badgeUrl:
           tm?.code != null
             ? `https://resources.premierleague.com/premierleague/badges/50/t${tm.code}.png`
@@ -147,7 +145,6 @@ function buildFirstWaiverOrderPicks(
         : null;
     const pickEl = elementIn != null ? elemById[elementIn] : null;
     const pickTm = pickEl ? teamById[pickEl.team] : null;
-    const pickTeamId = pickEl?.team;
     const dropRow = waiverOutByTxId.get(pick.id);
 
     out.push({
@@ -162,10 +159,7 @@ function buildFirstWaiverOrderPicks(
         pickEl?.web_name ??
         (elementIn != null ? `Player #${elementIn}` : '—'),
       pickedTeamShort: pickTm?.short_name ?? '—',
-      pickedShirtUrl:
-        pickTeamId != null
-          ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${pickTeamId}-1.png`
-          : null,
+      pickedShirtUrl: fplShirtImageUrl(pickTm?.code, pickEl?.element_type),
       pickedBadgeUrl:
         pickTm?.code != null
           ? `https://resources.premierleague.com/premierleague/badges/50/t${pickTm.code}.png`
@@ -190,10 +184,8 @@ function enrichTradePlayer(elementId, elemById, teamById) {
     web_name: e?.web_name ?? `Player #${elementId}`,
     teamShort: tm?.short_name ?? '—',
     teamId,
-    shirtUrl:
-      teamId != null
-        ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${teamId}-1.png`
-        : null,
+    elementTypeId: e?.element_type,
+    shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
     badgeUrl:
       tm?.code != null
         ? `https://resources.premierleague.com/premierleague/badges/50/t${tm.code}.png`
@@ -228,10 +220,7 @@ function applyTradeDisplayFix(player, fix, teamById) {
     web_name: fix.web_name,
     teamId: fix.teamId,
     teamShort: tm?.short_name ?? player.teamShort,
-    shirtUrl:
-      fix.teamId != null
-        ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${fix.teamId}-1.png`
-        : player.shirtUrl,
+    shirtUrl: fplShirtImageUrl(tm?.code, player.elementTypeId),
     badgeUrl:
       tm?.code != null
         ? `https://resources.premierleague.com/premierleague/badges/50/t${tm.code}.png`
@@ -907,8 +896,6 @@ function processLeagueData(raw, extras = {}) {
     const pickEl = elemById[row.element_in];
     const dropTm = dropEl ? teamById[dropEl.team] : null;
     const pickTm = pickEl ? teamById[pickEl.team] : null;
-    const dropTeamId = dropEl?.team;
-    const pickTeamId = pickEl?.team;
     return {
       ...row,
       teamName: teams[row.entry]?.entry_name ?? `Team ${row.entry}`,
@@ -917,18 +904,12 @@ function processLeagueData(raw, extras = {}) {
       pickedName: pickEl?.web_name ?? `Player #${row.element_in}`,
       droppedTeamShort: dropTm?.short_name ?? '—',
       pickedTeamShort: pickTm?.short_name ?? '—',
-      droppedShirtUrl:
-        dropTeamId != null
-          ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${dropTeamId}-1.png`
-          : null,
+      droppedShirtUrl: fplShirtImageUrl(dropTm?.code, dropEl?.element_type),
       droppedBadgeUrl:
         dropTm?.code != null
           ? `https://resources.premierleague.com/premierleague/badges/50/t${dropTm.code}.png`
           : null,
-      pickedShirtUrl:
-        pickTeamId != null
-          ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${pickTeamId}-1.png`
-          : null,
+      pickedShirtUrl: fplShirtImageUrl(pickTm?.code, pickEl?.element_type),
       pickedBadgeUrl:
         pickTm?.code != null
           ? `https://resources.premierleague.com/premierleague/badges/50/t${pickTm.code}.png`
@@ -957,10 +938,7 @@ function processLeagueData(raw, extras = {}) {
         playerName: e?.web_name ?? `Player #${r.elementId}`,
         teamShort: tm?.short_name ?? '—',
         teamId: e?.team,
-        shirtUrl:
-          e?.team != null
-            ? `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${e.team}-1.png`
-            : null,
+        shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
         badgeUrl:
           tm?.code != null
             ? `https://resources.premierleague.com/premierleague/badges/50/t${tm.code}.png`

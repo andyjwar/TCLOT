@@ -21,6 +21,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/__fpl/, '/api'),
       },
+      '^/__fotmob/': {
+        target: 'https://www.fotmob.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/__fotmob/, '/api'),
+      },
     },
   },
 })

@@ -11,6 +11,7 @@ import {
   draftResourceUrl,
   fplApiBase,
 } from './fplDraftUrl';
+import { fplShirtImageUrl } from './fplShirtUrl';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
 function classicResourceUrl(pathAndQuery) {
@@ -75,11 +76,6 @@ function liveFullByElementId(liveJson) {
     }
   }
   return out;
-}
-
-function shirtUrl(teamId) {
-  if (teamId == null) return null;
-  return `https://fantasy.premierleague.com/dist/img/shirts/standard/shirt_${teamId}-1.png`;
 }
 
 function badgeUrl(teamCode) {
@@ -200,7 +196,7 @@ function mapPickRows(
       teamName: tm?.name ?? null,
       opponentShortLabel,
       posSingular: typ?.singular_name_short ?? '—',
-      shirtUrl: shirtUrl(el?.team),
+      shirtUrl: fplShirtImageUrl(tm?.code, el?.element_type),
       badgeUrl: badgeUrl(tm?.code),
       minutes: mins,
       goalsScored,
@@ -239,15 +235,23 @@ function applyBonusColumn(rows, provisionalByElement) {
 /**
  * Live GW data from **draft** FPL APIs (browser fetch).
  * Uses draft bootstrap + draft event/live so element IDs match draft picks (classic uses a different id→player map).
- * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, gameweek: number | null, enabled: boolean, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void }} opts
+ * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, gameweek: number | null, enabled: boolean, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, pollIntervalMs?: number | null }} opts
  */
-export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta }) {
+export function useLiveScores({
+  teams,
+  gameweek,
+  enabled,
+  onBootstrapLiveMeta,
+  pollIntervalMs = null,
+}) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [events, setEvents] = useState([]);
   const [eventSnapshot, setEventSnapshot] = useState(null);
   const [squads, setSquads] = useState([]);
+  /** For player-contribution deltas: full live rows + bootstrap maps */
+  const [contributionLiveContext, setContributionLiveContext] = useState(null);
 
   /** Parent passes a new `teams` array each render; ref avoids infinite load loops. */
   const teamsRef = useRef(teams);
@@ -317,6 +321,11 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
       const liveJson = await liveRes.json();
       const liveByElementId = liveStatsByElementId(liveJson);
       const liveFull = liveFullByElementId(liveJson);
+      const liveFullNumeric = {};
+      for (const [k, v] of Object.entries(liveFull)) {
+        const id = Number(k);
+        if (Number.isFinite(id)) liveFullNumeric[id] = v;
+      }
 
       const fxUrl = classicResourceUrl(`fixtures?event=${gw}`);
       const fxRes = await fetch(fxUrl);
@@ -330,7 +339,7 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
 
       const provisionalByElement = computeProvisionalGwBonusByElementId(
         boot.elements || [],
-        liveFull,
+        liveFullNumeric,
         gwFixtures
       );
 
@@ -381,7 +390,7 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
           const rows = mapPickRows(
             picks,
             liveByElementId,
-            liveFull,
+            liveFullNumeric,
             elementById,
             teamById,
             typeById,
@@ -431,11 +440,31 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
 
       if (loadGen !== loadGenerationRef.current) return;
       setSquads(squadList);
+      const gwTeamIdSet = new Set();
+      for (const f of gwFixtures) {
+        const th = Number(f.team_h);
+        const ta = Number(f.team_a);
+        if (Number.isFinite(th)) gwTeamIdSet.add(th);
+        if (Number.isFinite(ta)) gwTeamIdSet.add(ta);
+      }
+      setContributionLiveContext({
+        liveFullByElementId: liveFullNumeric,
+        elementById,
+        typeById,
+        teamById,
+        /** Classic GW fixtures (kickoff + live `minutes`) for contribution ordering. */
+        gwFixtures,
+        /** PL teams with a fixture this GW — used to include all players in contribution deltas. */
+        gwTeamIds: [...gwTeamIdSet],
+        /** Draft `settings.scoring` — points per goal/assist/cards etc. */
+        draftScoring: boot?.settings?.scoring ?? null,
+      });
       setLastUpdated(new Date().toISOString());
     } catch (e) {
       if (loadGen === loadGenerationRef.current) {
         setError(e?.message || String(e));
         setSquads([]);
+        setContributionLiveContext(null);
       }
     } finally {
       if (loadGen === loadGenerationRef.current) {
@@ -455,6 +484,27 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
     }
   }, [enabled, gameweek, load, teamCount]);
 
+  const canPollLiveGw = (() => {
+    if (pollIntervalMs == null || !(Number(pollIntervalMs) > 0)) return false;
+    const gw = Number(gameweek);
+    if (!Number.isFinite(gw)) return false;
+    const curEv = events.find((e) => e.is_current);
+    const cur = curEv?.id;
+    if (cur == null || Number(cur) !== gw) return false;
+    if (eventSnapshot?.finished) return false;
+    return true;
+  })();
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (!enabled || !canPollLiveGw) return undefined;
+    const ms = Number(pollIntervalMs);
+    const id = window.setInterval(() => {
+      void load();
+    }, ms);
+    return () => window.clearInterval(id);
+  }, [enabled, canPollLiveGw, pollIntervalMs, load]);
+
   return {
     loading,
     error,
@@ -463,5 +513,6 @@ export function useLiveScores({ teams, gameweek, enabled, onBootstrapLiveMeta })
     events,
     eventSnapshot,
     squads,
+    contributionLiveContext,
   };
 }

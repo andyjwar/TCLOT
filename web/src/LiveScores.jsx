@@ -5,6 +5,7 @@ import {
   useSyncExternalStore,
 } from 'react';
 import { TeamAvatar } from './TeamAvatar';
+import { PlayerContributions } from './PlayerContributions';
 import { useLiveScores } from './useLiveScores';
 
 /**
@@ -447,7 +448,7 @@ function isLikelyLocalDev() {
 }
 
 /**
- * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object }}
+ * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object, leagueId?: number | null, waiverOutGwRows?: object[] }}
  */
 export function LiveScores({
   teams,
@@ -458,13 +459,17 @@ export function LiveScores({
   onBootstrapLiveMeta,
   teamLogoMap,
   kitIndexByEntry,
+  leagueId = null,
+  waiverOutGwRows = [],
 }) {
-  const { loading, error, refresh, events, eventSnapshot, squads } =
+  const { loading, error, refresh, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
       teams,
       gameweek,
       enabled: true,
       onBootstrapLiveMeta,
+      /** Hook only applies the interval when GW is current and not finished. */
+      pollIntervalMs: 90_000,
     });
 
   /** Fixture keys in the set are expanded; default empty = all collapsed. */
@@ -727,8 +732,33 @@ export function LiveScores({
         ) : null}
       </section>
 
-      {useFixtureLayout
-        ? gwMatches.map((m) => {
+      <section
+        className="tile tile--compact player-contrib-tile"
+        aria-labelledby="player-contrib-heading"
+      >
+        <h2 id="player-contrib-heading" className="tile-title tile-title--sm">
+          Player contributions
+        </h2>
+        <PlayerContributions
+          leagueId={leagueId}
+          gameweek={gameweek}
+          squads={squads}
+          contributionLiveContext={contributionLiveContext}
+          waiverOutGwRows={waiverOutGwRows}
+          lastUpdated={lastUpdated}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      </section>
+
+      {useFixtureLayout ? (
+        <div
+          className="live-fixtures-scroller"
+          role="region"
+          aria-label={`Gameweek ${gameweek} head-to-head fixtures`}
+        >
+          <div className="live-fixtures-scroller__track">
+            {gwMatches.map((m) => {
             const homeId = Number(m.league_entry_1);
             const awayId = Number(m.league_entry_2);
             const homeName = teamNameForEntry(teams, homeId);
@@ -922,8 +952,11 @@ export function LiveScores({
                 ) : null}
               </section>
             );
-          })
-        : squads.map((squad) => (
+            })}
+          </div>
+        </div>
+      ) : (
+        squads.map((squad) => (
             <section
               key={squad.leagueEntryId}
               className="tile tile--compact live-squad-tile"
@@ -964,7 +997,8 @@ export function LiveScores({
               </div>
               <SquadLineupPanel squad={squad} />
             </section>
-          ))}
+        ))
+      )}
 
       {useFixtureLayout && orphanSquads.length > 0
         ? orphanSquads.map((squad) => (

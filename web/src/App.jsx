@@ -2714,6 +2714,8 @@ function App() {
               onBootstrapLiveMeta={onBootstrapLiveMeta}
               teamLogoMap={teamLogoMap}
               kitIndexByEntry={kitIndexByEntry}
+              leagueId={data?.league?.id ?? null}
+              waiverOutGwRows={waiverOutGwRows}
             />
           )}
 

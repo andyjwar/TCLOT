@@ -2,11 +2,13 @@
  * CORS proxy for read-only FPL API calls:
  * - fantasy.premierleague.com/api/* (bootstrap-static, event/{gw}/live, …)
  * - draft/* → draft.premierleague.com/api/* (bootstrap-static, event/{gw}/live, entry picks — draft ID space)
+ * - fotmob/* → www.fotmob.com/api/* (unofficial read-only match timelines for Live tab ordering)
  * Avoid * + / in this block comment — it would end the comment early.
  * Deploy: cd web/workers/fpl-proxy && npm run deploy
  */
 const FANTASY_API = 'https://fantasy.premierleague.com/api';
 const DRAFT_API = 'https://draft.premierleague.com/api';
+const FOTMOB_API = 'https://www.fotmob.com/api';
 
 function corsHeaders(env, request) {
   const origin = request.headers.get('Origin');
@@ -42,14 +44,21 @@ export default {
     if (path.startsWith('draft/')) {
       path = path.slice('draft/'.length);
       upstreamBase = DRAFT_API;
+    } else if (path.startsWith('fotmob/')) {
+      path = path.slice('fotmob/'.length);
+      upstreamBase = FOTMOB_API;
     }
     const target = `${upstreamBase}/${path}${url.search}`;
+    const headers = {
+      Accept: 'application/json',
+      'User-Agent': 'TCLOT-fpl-proxy/1.0',
+    };
+    if (upstreamBase === FOTMOB_API) {
+      headers.Referer = 'https://www.fotmob.com/';
+    }
     const upstream = await fetch(target, {
       method: request.method,
-      headers: {
-        Accept: 'application/json',
-        'User-Agent': 'TCLOT-fpl-proxy/1.0',
-      },
+      headers,
     });
 
     const outHeaders = new Headers(upstream.headers);
