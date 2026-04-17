@@ -285,14 +285,16 @@ async function main() {
     /* ok */
   }
 
-  let lastGw = lastFinishedGwFromDetails(details)
+  const finishedGw = lastFinishedGwFromDetails(details)
   const eventCandidates = [
     ...transactions.map((t) => Number(t.event) || 0),
     ...executedTrades.map((t) => Number(t.event) || 0),
   ]
-  if (lastGw < 1) {
-    lastGw = Math.max(1, ...eventCandidates)
-  }
+  const maxEventGw =
+    eventCandidates.length > 0 ? Math.max(...eventCandidates) : 0
+  /* Transactions use the target GW before every league match in that GW is
+   * `finished` in details — waivers for GW N+1 can exist while last finished is N. */
+  let lastGw = Math.max(finishedGw >= 1 ? finishedGw : 0, maxEventGw, 1)
   lastGw = Math.min(lastGw, 38)
 
   console.log(
