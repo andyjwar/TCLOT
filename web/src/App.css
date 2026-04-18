@@ -3868,41 +3868,12 @@ body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true']
   font-weight: 600;
 }
 
-/* H2H fixtures: horizontal swipe on narrow viewports */
+/* H2H fixtures: full-width cards in a vertical stack (mobile + desktop) */
 .live-fixtures-scroller__track {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
-}
-
-@media (max-width: 720px) {
-  .live-fixtures-scroller {
-    overflow-x: auto;
-    overflow-y: visible;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 12px;
-    -webkit-overflow-scrolling: touch;
-    margin-inline: -8px;
-    padding-inline: 10px;
-    padding-bottom: 10px;
-  }
-
-  .live-fixtures-scroller__track {
-    flex-direction: row;
-    align-items: stretch;
-    gap: 12px;
-    width: max-content;
-    min-width: 100%;
-  }
-
-  .live-fixtures-scroller .live-fixture-tile {
-    flex: 0 0 min(calc(100vw - 2.75rem), 22.5rem);
-    width: min(calc(100vw - 2.75rem), 22.5rem);
-    max-width: min(calc(100vw - 2.75rem), 22.5rem);
-    scroll-snap-align: center;
-    scroll-snap-stop: always;
-  }
 }
 
 /* H2H fixture: two squads side by side */
