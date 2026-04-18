@@ -311,6 +311,36 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
+/** Matches App.css: no marquee when viewport ≤768px or user prefers reduced motion. */
+function subscribeTickerManualMode(callback) {
+  const mqNarrow = window.matchMedia('(max-width: 768px)');
+  const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+  const on = () => callback();
+  mqNarrow.addEventListener('change', on);
+  mqReduce.addEventListener('change', on);
+  return () => {
+    mqNarrow.removeEventListener('change', on);
+    mqReduce.removeEventListener('change', on);
+  };
+}
+
+function getTickerManualModeSnapshot() {
+  if (typeof window === 'undefined') return false;
+  return (
+    window.matchMedia('(max-width: 768px)').matches ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  );
+}
+
+function getTickerManualModeServerSnapshot() {
+  return false;
+}
+
+/** Ramist line visible on iterations 1,4,7… (every 3rd starting after first loop). */
+function ramistVisibleForIteration(n) {
+  return n >= 1 && n % 3 === 1;
+}
+
 /**
  * Horizontal marquee of this GW’s H2H live totals (above Player contributions).
  */
@@ -354,6 +384,12 @@ function LiveScoreFixtureTicker({
   /* Shorter duration = faster scroll; scales with fixture count (one loop = half the duplicated track). */
   const durSec = Math.min(62, Math.max(12, items.length * 9));
 
+  const tickerManualMode = useSyncExternalStore(
+    subscribeTickerManualMode,
+    getTickerManualModeSnapshot,
+    getTickerManualModeServerSnapshot
+  );
+
   const [ramistCycle, setRamistCycle] = useState(false);
   const tickerIterRef = useRef(0);
   const trackRef = useRef(null);
@@ -361,18 +397,34 @@ function LiveScoreFixtureTicker({
   useEffect(() => {
     tickerIterRef.current = 0;
     setRamistCycle(false);
-  }, [items, durSec]);
+  }, [items, durSec, tickerManualMode]);
 
+  const bumpRamist = useCallback(() => {
+    tickerIterRef.current += 1;
+    setRamistCycle(ramistVisibleForIteration(tickerIterRef.current));
+  }, []);
+
+  /* Desktop marquee: one “loop” per animation iteration (same duration as durSec). */
   useEffect(() => {
+    if (tickerManualMode) return undefined;
     const el = trackRef.current;
     if (!el) return undefined;
     const onIteration = () => {
-      tickerIterRef.current += 1;
-      setRamistCycle(tickerIterRef.current % 3 === 0);
+      bumpRamist();
     };
     el.addEventListener('animationiteration', onIteration);
     return () => el.removeEventListener('animationiteration', onIteration);
-  }, [durSec]);
+  }, [durSec, tickerManualMode, bumpRamist]);
+
+  /* Mobile / reduced-motion: CSS disables animation — no animationiteration; mirror loop timing with interval. */
+  useEffect(() => {
+    if (!tickerManualMode) return undefined;
+    const ms = Math.max(1000, durSec * 1000);
+    const id = window.setInterval(() => {
+      bumpRamist();
+    }, ms);
+    return () => window.clearInterval(id);
+  }, [durSec, tickerManualMode, bumpRamist]);
 
   const chunk = (keySuffix) =>
     items.map((it) => (
