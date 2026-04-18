@@ -429,7 +429,7 @@ function LiveScoreFixtureTicker({
   const ramistSpan = (key) =>
     ramistCycle ? (
       <span key={key} className="live-score-ticker__ramist" aria-hidden="true">
-        Tery is a Ramist
+        Tery is a Racist
       </span>
     ) : null;
 
