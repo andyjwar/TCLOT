@@ -311,25 +311,19 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
-/** Matches App.css: no marquee when viewport ≤768px or user prefers reduced motion. */
+/** Matches App.css: scroll fallback only when `prefers-reduced-motion` (marquee runs on mobile otherwise). */
 function subscribeTickerManualMode(callback) {
-  const mqNarrow = window.matchMedia('(max-width: 768px)');
   const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
   const on = () => callback();
-  mqNarrow.addEventListener('change', on);
   mqReduce.addEventListener('change', on);
   return () => {
-    mqNarrow.removeEventListener('change', on);
     mqReduce.removeEventListener('change', on);
   };
 }
 
 function getTickerManualModeSnapshot() {
   if (typeof window === 'undefined') return false;
-  return (
-    window.matchMedia('(max-width: 768px)').matches ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  );
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
 function getTickerManualModeServerSnapshot() {
@@ -408,7 +402,7 @@ function LiveScoreFixtureTicker({
   }, []);
 
   /*
-   * Desktop: one `animationiteration` = one full loop. The track is two duplicate chunks;
+   * Marquee mode: one `animationiteration` = one full loop. The track is two duplicate chunks;
    * CSS `@keyframes live-score-ticker-marquee` goes from translateX(0) to -50%, i.e. one chunk width
    * — one complete pass over the fixture list (the second chunk is only for seamless wrap).
    */
@@ -423,7 +417,7 @@ function LiveScoreFixtureTicker({
     return () => el.removeEventListener('animationiteration', onIteration);
   }, [durSec, tickerManualMode, bumpRamist]);
 
-  /* Mobile / reduced-motion: no animation — fire once per durSec (same seconds as one marquee loop). */
+  /* Reduced motion: CSS disables animation — mirror one loop with interval for ramist timing. */
   useEffect(() => {
     if (!tickerManualMode) return undefined;
     const ms = Math.max(1000, durSec * 1000);
