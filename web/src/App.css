@@ -3166,11 +3166,22 @@
   animation: live-score-ticker-marquee var(--live-ticker-duration, 28s) linear infinite;
 }
 
-/* Phones: WebKit often masks the whole strip to empty when mask + transform animate */
+/* Phones: WebKit often masks the whole strip to empty when mask + transform animate.
+   No marquee here — user can swipe/drag horizontally to read fixtures (touch + scrollbar). */
 @media (max-width: 768px) {
   .live-score-ticker__viewport {
     mask-image: none;
     -webkit-mask-image: none;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    touch-action: pan-x;
+  }
+
+  .live-score-ticker__track {
+    animation: none;
+    transform: none;
   }
 }
 
