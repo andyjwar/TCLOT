@@ -266,13 +266,22 @@ export function PlayerContributions({
   const hydrate = useCallback(async () => {
     const k = `${leagueId ?? 'x'}:${gameweek}`;
     hydratedKeyRef.current = k;
+    const gwNum = Number(gameweek);
     const [arch, bucket] = await Promise.all([
       fetchArchiveEventsForGw(gameweek),
       Promise.resolve(readPlayerContributionBucket(storageKey)),
     ]);
     const local = bucket?.events ?? [];
-    const merged = mergeUniqueByStableId([local, arch]);
-    if (hydratedKeyRef.current === k) setDisplayed(merged);
+    setDisplayed((prev) => {
+      if (hydratedKeyRef.current !== k) return prev;
+      const fotmobFromUi = (prev || []).filter(
+        (e) =>
+          Number.isFinite(gwNum) &&
+          Number(e?.gameweek) === gwNum &&
+          String(e?.stableId || '').startsWith('fotmob:')
+      );
+      return mergeUniqueByStableId([fotmobFromUi, local, arch]);
+    });
   }, [leagueId, gameweek, storageKey]);
 
   useEffect(() => {
