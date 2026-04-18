@@ -312,7 +312,14 @@ function teamNameForEntry(teams, leagueEntryId) {
 /**
  * Horizontal marquee of this GW’s H2H live totals (above Player contributions).
  */
-function LiveScoreFixtureTicker({ gwMatches, teams, squadByLeagueEntry, gameweek }) {
+function LiveScoreFixtureTicker({
+  gwMatches,
+  teams,
+  squadByLeagueEntry,
+  gameweek,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
   const items = useMemo(() => {
     if (!Array.isArray(gwMatches) || gwMatches.length === 0) return [];
     return gwMatches.map((m) => {
@@ -328,6 +335,8 @@ function LiveScoreFixtureTicker({ gwMatches, teams, squadByLeagueEntry, gameweek
         homeLive != null && awayLive != null && awayLive > homeLive;
       return {
         key: `${homeId}-${awayId}-${Number(gameweek)}`,
+        homeId,
+        awayId,
         homeName,
         awayName,
         homeLive,
@@ -343,19 +352,25 @@ function LiveScoreFixtureTicker({ gwMatches, teams, squadByLeagueEntry, gameweek
   const durSec = Math.min(72, Math.max(14, items.length * 11));
 
   const chunk = (keySuffix) =>
-    items.map((it, i) => (
+    items.map((it) => (
       <span key={`${it.key}${keySuffix}`} className="live-score-ticker__fixture-block">
-        {i > 0 ? (
-          <span className="live-score-ticker__sep" aria-hidden="true">
-            {' · '}
-          </span>
-        ) : null}
         <span className="live-score-ticker__fixture">
-          <span
-            className={`live-score-ticker__team ${it.homeLead ? 'live-score-ticker__team--lead' : ''}`}
-          >
-            {it.homeName}
-          </span>{' '}
+          <span className="live-score-ticker__name-with-badge">
+            <span
+              className={`live-score-ticker__team ${it.homeLead ? 'live-score-ticker__team--lead' : ''}`}
+            >
+              {it.homeName}
+            </span>
+            <span className="live-score-ticker__badge">
+              <TeamAvatar
+                entryId={it.homeId}
+                name={it.homeName}
+                size="sm"
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </span>
+          </span>
           <span
             className={`live-score-ticker__pts tabular ${it.homeLead ? 'live-score-ticker__pts--lead' : ''}`}
           >
@@ -368,11 +383,22 @@ function LiveScoreFixtureTicker({ gwMatches, teams, squadByLeagueEntry, gameweek
             className={`live-score-ticker__pts tabular ${it.awayLead ? 'live-score-ticker__pts--lead' : ''}`}
           >
             {it.awayLive ?? '—'}
-          </span>{' '}
-          <span
-            className={`live-score-ticker__team ${it.awayLead ? 'live-score-ticker__team--lead' : ''}`}
-          >
-            {it.awayName}
+          </span>
+          <span className="live-score-ticker__name-with-badge">
+            <span
+              className={`live-score-ticker__team ${it.awayLead ? 'live-score-ticker__team--lead' : ''}`}
+            >
+              {it.awayName}
+            </span>
+            <span className="live-score-ticker__badge">
+              <TeamAvatar
+                entryId={it.awayId}
+                name={it.awayName}
+                size="sm"
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </span>
           </span>
         </span>
       </span>
@@ -828,6 +854,8 @@ export function LiveScores({
             teams={teams}
             squadByLeagueEntry={squadByLeagueEntry}
             gameweek={gameweek}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
           />
         ) : null}
         <PlayerContributions
