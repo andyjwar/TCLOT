@@ -3,7 +3,6 @@ import {
   useState,
   useCallback,
   useSyncExternalStore,
-  useRef,
   useEffect,
 } from 'react';
 import { TeamAvatar } from './TeamAvatar';
@@ -311,42 +310,40 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
-/** Matches App.css: scroll fallback only when `prefers-reduced-motion` (marquee runs on mobile otherwise). */
-function subscribeTickerManualMode(callback) {
-  const mqReduce = window.matchMedia('(prefers-reduced-motion: reduce)');
-  const on = () => callback();
-  mqReduce.addEventListener('change', on);
-  return () => {
-    mqReduce.removeEventListener('change', on);
-  };
-}
-
-function getTickerManualModeSnapshot() {
-  if (typeof window === 'undefined') return false;
-  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-}
-
-function getTickerManualModeServerSnapshot() {
-  return false;
-}
-
-/**
- * Ramist insert: show on every completed ticker loop (n = 1, 2, 3…).
- * Loop count `n` is incremented once per full pass — see bumpRamist / animationiteration or interval.
- */
-function ramistVisibleForIteration(n) {
-  return n >= 1;
-}
-
-/** Which ramist insert: 0 = script line, 1–3 = sticker PNGs — cycles every 4 loops. */
-function ramistSlotForVisibleIteration(n) {
-  return (n - 1) % 4;
-}
+/** Insert script + stickers after this many team names (each H2H row has 2 names). */
+const TICKER_NAMES_PER_INSERT = 6;
 
 const LIVE_TICKER_STICKER_SRCS = [1, 2, 3].map((i) => {
   const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
   return `${base}live-ticker-stickers/sticker-${i}.png`;
 });
+
+/** Slot 0 = script line, 1–3 = sticker PNGs — cycles every 4 inserts along the strip. */
+function ramistSlotForInsertIndex(insertIndex) {
+  return insertIndex % 4;
+}
+
+function ramistNodeForSlot(slot, key) {
+  if (slot === 0) {
+    return (
+      <span key={key} className="live-score-ticker__ramist" aria-hidden="true">
+        Tery is a Racist
+      </span>
+    );
+  }
+  const src = LIVE_TICKER_STICKER_SRCS[slot - 1];
+  return (
+    <img
+      key={key}
+      className="live-score-ticker__sticker"
+      src={src}
+      alt=""
+      aria-hidden="true"
+      decoding="async"
+      loading="lazy"
+    />
+  );
+}
 
 /**
  * Horizontal marquee of this GW’s H2H live totals (above Player contributions).
@@ -391,134 +388,72 @@ function LiveScoreFixtureTicker({
   /* Shorter duration = faster scroll; scales with fixture count (one loop = half the duplicated track). */
   const durSec = Math.min(62, Math.max(12, items.length * 9));
 
-  const tickerManualMode = useSyncExternalStore(
-    subscribeTickerManualMode,
-    getTickerManualModeSnapshot,
-    getTickerManualModeServerSnapshot
-  );
-
-  const [ramistCycle, setRamistCycle] = useState(false);
-  const [ramistIteration, setRamistIteration] = useState(0);
-  const tickerIterRef = useRef(0);
-  const trackRef = useRef(null);
-
-  useEffect(() => {
-    tickerIterRef.current = 0;
-    setRamistCycle(false);
-    setRamistIteration(0);
-  }, [items, durSec, tickerManualMode]);
-
-  const bumpRamist = useCallback(() => {
-    tickerIterRef.current += 1;
-    const n = tickerIterRef.current;
-    const visible = ramistVisibleForIteration(n);
-    setRamistCycle(visible);
-    if (visible) {
-      setRamistIteration(n);
-    }
-  }, []);
-
-  /*
-   * Marquee mode: one `animationiteration` = one full loop. The track is two duplicate chunks;
-   * CSS `@keyframes live-score-ticker-marquee` goes from translateX(0) to -50%, i.e. one chunk width
-   * — one complete pass over the fixture list (the second chunk is only for seamless wrap).
-   */
-  useEffect(() => {
-    if (tickerManualMode) return undefined;
-    const el = trackRef.current;
-    if (!el) return undefined;
-    const onIteration = () => {
-      bumpRamist();
-    };
-    el.addEventListener('animationiteration', onIteration);
-    return () => el.removeEventListener('animationiteration', onIteration);
-  }, [durSec, tickerManualMode, bumpRamist]);
-
-  /* Reduced motion: CSS disables animation — mirror one loop with interval for ramist timing. */
-  useEffect(() => {
-    if (!tickerManualMode) return undefined;
-    const ms = Math.max(1000, durSec * 1000);
-    const id = window.setInterval(() => {
-      bumpRamist();
-    }, ms);
-    return () => window.clearInterval(id);
-  }, [durSec, tickerManualMode, bumpRamist]);
-
-  const chunk = (keySuffix) =>
-    items.map((it) => (
-      <span key={`${it.key}${keySuffix}`} className="live-score-ticker__fixture-block">
-        <span className="live-score-ticker__fixture">
-          <span className="live-score-ticker__name-with-badge">
-            <span className="live-score-ticker__badge">
-              <TeamAvatar
-                entryId={it.homeId}
-                name={it.homeName}
-                size="sm"
-                logoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
+  const buildChunk = (keySuffix) => {
+    const nodes = [];
+    let namesSeen = 0;
+    let insertIndex = 0;
+    for (const it of items) {
+      nodes.push(
+        <span key={`${it.key}${keySuffix}`} className="live-score-ticker__fixture-block">
+          <span className="live-score-ticker__fixture">
+            <span className="live-score-ticker__name-with-badge">
+              <span className="live-score-ticker__badge">
+                <TeamAvatar
+                  entryId={it.homeId}
+                  name={it.homeName}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              </span>
+              <span
+                className={`live-score-ticker__team ${it.homeLead ? 'live-score-ticker__team--lead' : ''}`}
+              >
+                {it.homeName}
+              </span>
             </span>
             <span
-              className={`live-score-ticker__team ${it.homeLead ? 'live-score-ticker__team--lead' : ''}`}
+              className={`live-score-ticker__pts tabular ${it.homeLead ? 'live-score-ticker__pts--lead' : ''}`}
             >
-              {it.homeName}
+              {it.homeLive ?? '—'}
             </span>
-          </span>
-          <span
-            className={`live-score-ticker__pts tabular ${it.homeLead ? 'live-score-ticker__pts--lead' : ''}`}
-          >
-            {it.homeLive ?? '—'}
-          </span>
-          <span className="live-score-ticker__dash" aria-hidden="true">
-            –
-          </span>
-          <span
-            className={`live-score-ticker__pts tabular ${it.awayLead ? 'live-score-ticker__pts--lead' : ''}`}
-          >
-            {it.awayLive ?? '—'}
-          </span>
-          <span className="live-score-ticker__name-with-badge">
+            <span className="live-score-ticker__dash" aria-hidden="true">
+              –
+            </span>
             <span
-              className={`live-score-ticker__team ${it.awayLead ? 'live-score-ticker__team--lead' : ''}`}
+              className={`live-score-ticker__pts tabular ${it.awayLead ? 'live-score-ticker__pts--lead' : ''}`}
             >
-              {it.awayName}
+              {it.awayLive ?? '—'}
             </span>
-            <span className="live-score-ticker__badge">
-              <TeamAvatar
-                entryId={it.awayId}
-                name={it.awayName}
-                size="sm"
-                logoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
+            <span className="live-score-ticker__name-with-badge">
+              <span
+                className={`live-score-ticker__team ${it.awayLead ? 'live-score-ticker__team--lead' : ''}`}
+              >
+                {it.awayName}
+              </span>
+              <span className="live-score-ticker__badge">
+                <TeamAvatar
+                  entryId={it.awayId}
+                  name={it.awayName}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              </span>
             </span>
           </span>
-        </span>
-      </span>
-    ));
-
-  const ramistInsert = (key) => {
-    if (!ramistCycle) return null;
-    const slot = ramistSlotForVisibleIteration(ramistIteration);
-    if (slot === 0) {
-      return (
-        <span key={key} className="live-score-ticker__ramist" aria-hidden="true">
-          Tery is a Racist
         </span>
       );
+      namesSeen += 2;
+      if (namesSeen % TICKER_NAMES_PER_INSERT === 0 && namesSeen > 0) {
+        const slot = ramistSlotForInsertIndex(insertIndex);
+        insertIndex += 1;
+        nodes.push(
+          ramistNodeForSlot(slot, `ramist-${keySuffix}-${insertIndex}-${namesSeen}`)
+        );
+      }
     }
-    const src = LIVE_TICKER_STICKER_SRCS[slot - 1];
-    return (
-      <img
-        key={key}
-        className="live-score-ticker__sticker"
-        src={src}
-        alt=""
-        aria-hidden="true"
-        decoding="async"
-        loading="lazy"
-      />
-    );
+    return nodes;
   };
 
   return (
@@ -529,15 +464,9 @@ function LiveScoreFixtureTicker({
       style={{ '--live-ticker-duration': `${durSec}s` }}
     >
       <div className="live-score-ticker__viewport" aria-hidden="true">
-        <div ref={trackRef} className="live-score-ticker__track">
-          <div className="live-score-ticker__chunk">
-            {chunk('')}
-            {ramistInsert('ticker-ramist-a')}
-          </div>
-          <div className="live-score-ticker__chunk">
-            {chunk('-dup')}
-            {ramistInsert('ticker-ramist-b')}
-          </div>
+        <div className="live-score-ticker__track">
+          <div className="live-score-ticker__chunk">{buildChunk('')}</div>
+          <div className="live-score-ticker__chunk">{buildChunk('-dup')}</div>
         </div>
       </div>
     </div>
