@@ -3628,12 +3628,41 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
 }
 
 @media (min-width: 769px) {
+  /* Center shirt + player name in the tile: equal side tracks, fixed-width center column. */
+  .player-contrib-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+    gap: 12px;
+    align-items: center;
+  }
+
+  .player-contrib-row__action {
+    flex: unset;
+    justify-self: start;
+    min-width: 0;
+  }
+
   .player-contrib-row__shirt-cell {
     order: -1;
   }
 
   .player-contrib-row__mid {
+    flex: unset;
     gap: 6px;
+    justify-content: center;
+    justify-self: center;
+    min-width: 0;
+  }
+
+  .player-contrib-row__player-stack {
+    flex: unset;
+    min-width: 0;
+  }
+
+  .player-contrib-row__owner-wrap {
+    flex: unset;
+    justify-self: end;
+    min-width: 0;
   }
 
   .player-contrib-row__player--desktop-full {
