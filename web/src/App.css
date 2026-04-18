@@ -3226,6 +3226,19 @@
   white-space: nowrap;
 }
 
+/* Pacifico (same family as .page-footer--script), ticker line height/size */
+.live-score-ticker__ramist {
+  font-family: 'Pacifico', cursive;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--fm-text-strong, #111);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  flex-shrink: 0;
+  align-self: center;
+  padding-inline-start: 0.25rem;
+}
+
 .live-score-ticker__name-with-badge {
   display: inline-flex;
   flex-direction: row;
@@ -3276,6 +3289,10 @@ body[data-tclot-theme='dark'] .live-score-ticker {
 }
 
 body[data-tclot-theme='dark'] .live-score-ticker__fixture {
+  color: var(--fm-text-strong, #fafafa);
+}
+
+body[data-tclot-theme='dark'] .live-score-ticker__ramist {
   color: var(--fm-text-strong, #fafafa);
 }
 

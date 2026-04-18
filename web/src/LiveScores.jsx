@@ -3,6 +3,8 @@ import {
   useState,
   useCallback,
   useSyncExternalStore,
+  useRef,
+  useEffect,
 } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { PlayerContributions } from './PlayerContributions';
@@ -351,6 +353,26 @@ function LiveScoreFixtureTicker({
 
   const durSec = Math.min(72, Math.max(14, items.length * 11));
 
+  const [ramistCycle, setRamistCycle] = useState(false);
+  const tickerIterRef = useRef(0);
+  const trackRef = useRef(null);
+
+  useEffect(() => {
+    tickerIterRef.current = 0;
+    setRamistCycle(false);
+  }, [items, durSec]);
+
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return undefined;
+    const onIteration = () => {
+      tickerIterRef.current += 1;
+      setRamistCycle(tickerIterRef.current % 5 === 0);
+    };
+    el.addEventListener('animationiteration', onIteration);
+    return () => el.removeEventListener('animationiteration', onIteration);
+  }, [durSec]);
+
   const chunk = (keySuffix) =>
     items.map((it) => (
       <span key={`${it.key}${keySuffix}`} className="live-score-ticker__fixture-block">
@@ -404,6 +426,13 @@ function LiveScoreFixtureTicker({
       </span>
     ));
 
+  const ramistSpan = (key) =>
+    ramistCycle ? (
+      <span key={key} className="live-score-ticker__ramist" aria-hidden="true">
+        Tery is a Ramist
+      </span>
+    ) : null;
+
   return (
     <div
       className="live-score-ticker"
@@ -412,9 +441,15 @@ function LiveScoreFixtureTicker({
       style={{ '--live-ticker-duration': `${durSec}s` }}
     >
       <div className="live-score-ticker__viewport" aria-hidden="true">
-        <div className="live-score-ticker__track">
-          <div className="live-score-ticker__chunk">{chunk('')}</div>
-          <div className="live-score-ticker__chunk">{chunk('-dup')}</div>
+        <div ref={trackRef} className="live-score-ticker__track">
+          <div className="live-score-ticker__chunk">
+            {chunk('')}
+            {ramistSpan('tery-ramist-a')}
+          </div>
+          <div className="live-score-ticker__chunk">
+            {chunk('-dup')}
+            {ramistSpan('tery-ramist-b')}
+          </div>
         </div>
       </div>
     </div>
