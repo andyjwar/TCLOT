@@ -3248,6 +3248,19 @@
   padding-inline-start: 0.25rem;
 }
 
+.live-score-ticker__sticker {
+  height: 2.1rem;
+  width: auto;
+  max-height: 2.1rem;
+  object-fit: contain;
+  flex-shrink: 0;
+  align-self: center;
+  display: block;
+  margin-inline-start: 0.25rem;
+  pointer-events: none;
+  user-select: none;
+}
+
 .live-score-ticker__name-with-badge {
   display: inline-flex;
   flex-direction: row;
@@ -3304,6 +3317,10 @@ body[data-tclot-theme='dark'] .live-score-ticker__fixture {
 
 body[data-tclot-theme='dark'] .live-score-ticker__ramist {
   color: var(--fm-text-strong, #fafafa);
+}
+
+body[data-tclot-theme='dark'] .live-score-ticker__sticker {
+  opacity: 0.98;
 }
 
 body[data-tclot-theme='dark'] .live-score-ticker__dash {

@@ -331,12 +331,22 @@ function getTickerManualModeServerSnapshot() {
 }
 
 /**
- * Ramist line: show every 2nd completed loop (after 2 passes of the fixture strip, then every other loop).
+ * Ramist insert: show on every completed ticker loop (n = 1, 2, 3…).
  * Loop count `n` is incremented once per full pass — see bumpRamist / animationiteration or interval.
  */
 function ramistVisibleForIteration(n) {
-  return n >= 2 && n % 2 === 0;
+  return n >= 1;
 }
+
+/** Which ramist insert: 0 = script line, 1–3 = sticker PNGs — cycles every 4 loops. */
+function ramistSlotForVisibleIteration(n) {
+  return (n - 1) % 4;
+}
+
+const LIVE_TICKER_STICKER_SRCS = [1, 2, 3].map((i) => {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+  return `${base}live-ticker-stickers/sticker-${i}.png`;
+});
 
 /**
  * Horizontal marquee of this GW’s H2H live totals (above Player contributions).
@@ -388,17 +398,24 @@ function LiveScoreFixtureTicker({
   );
 
   const [ramistCycle, setRamistCycle] = useState(false);
+  const [ramistIteration, setRamistIteration] = useState(0);
   const tickerIterRef = useRef(0);
   const trackRef = useRef(null);
 
   useEffect(() => {
     tickerIterRef.current = 0;
     setRamistCycle(false);
+    setRamistIteration(0);
   }, [items, durSec, tickerManualMode]);
 
   const bumpRamist = useCallback(() => {
     tickerIterRef.current += 1;
-    setRamistCycle(ramistVisibleForIteration(tickerIterRef.current));
+    const n = tickerIterRef.current;
+    const visible = ramistVisibleForIteration(n);
+    setRamistCycle(visible);
+    if (visible) {
+      setRamistIteration(n);
+    }
   }, []);
 
   /*
@@ -480,12 +497,29 @@ function LiveScoreFixtureTicker({
       </span>
     ));
 
-  const ramistSpan = (key) =>
-    ramistCycle ? (
-      <span key={key} className="live-score-ticker__ramist" aria-hidden="true">
-        Tery is a Racist
-      </span>
-    ) : null;
+  const ramistInsert = (key) => {
+    if (!ramistCycle) return null;
+    const slot = ramistSlotForVisibleIteration(ramistIteration);
+    if (slot === 0) {
+      return (
+        <span key={key} className="live-score-ticker__ramist" aria-hidden="true">
+          Tery is a Racist
+        </span>
+      );
+    }
+    const src = LIVE_TICKER_STICKER_SRCS[slot - 1];
+    return (
+      <img
+        key={key}
+        className="live-score-ticker__sticker"
+        src={src}
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        loading="lazy"
+      />
+    );
+  };
 
   return (
     <div
@@ -498,11 +532,11 @@ function LiveScoreFixtureTicker({
         <div ref={trackRef} className="live-score-ticker__track">
           <div className="live-score-ticker__chunk">
             {chunk('')}
-            {ramistSpan('tery-ramist-a')}
+            {ramistInsert('ticker-ramist-a')}
           </div>
           <div className="live-score-ticker__chunk">
             {chunk('-dup')}
-            {ramistSpan('tery-ramist-b')}
+            {ramistInsert('ticker-ramist-b')}
           </div>
         </div>
       </div>
