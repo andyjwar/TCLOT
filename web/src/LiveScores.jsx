@@ -367,7 +367,7 @@ function LiveScoreFixtureTicker({
     if (!el) return undefined;
     const onIteration = () => {
       tickerIterRef.current += 1;
-      setRamistCycle(tickerIterRef.current % 5 === 0);
+      setRamistCycle(tickerIterRef.current % 3 === 0);
     };
     el.addEventListener('animationiteration', onIteration);
     return () => el.removeEventListener('animationiteration', onIteration);
