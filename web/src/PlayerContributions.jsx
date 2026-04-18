@@ -665,7 +665,13 @@ export function PlayerContributions({
               <div className="player-contrib-row__player-stack">
                 <span className="player-contrib-row__player-sr">{r.playerLabelFull}</span>
                 <span
-                  className="player-contrib-row__player"
+                  className="player-contrib-row__player player-contrib-row__player--desktop-full"
+                  aria-hidden="true"
+                >
+                  {r.playerLabelFull}
+                </span>
+                <span
+                  className="player-contrib-row__player player-contrib-row__player--mobile-short"
                   aria-hidden="true"
                   title={
                     r.playerLabelFull !== r.playerLabel ? r.playerLabelFull : undefined

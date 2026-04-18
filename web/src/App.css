@@ -3591,6 +3591,33 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   white-space: nowrap;
 }
 
+/* Desktop: full catalogue name, kit immediately to the left (see order below). Mobile ≤768px unchanged. */
+.player-contrib-row__player--desktop-full {
+  display: none;
+}
+
+.player-contrib-row__player--mobile-short {
+  display: block;
+}
+
+@media (min-width: 769px) {
+  .player-contrib-row__shirt-cell {
+    order: -1;
+  }
+
+  .player-contrib-row__mid {
+    gap: 6px;
+  }
+
+  .player-contrib-row__player--desktop-full {
+    display: block;
+  }
+
+  .player-contrib-row__player--mobile-short {
+    display: none;
+  }
+}
+
 @media (max-width: 768px) {
   .player-contrib-row__action {
     gap: 4px;
