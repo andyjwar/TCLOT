@@ -351,7 +351,8 @@ function LiveScoreFixtureTicker({
 
   if (!items.length) return null;
 
-  const durSec = Math.min(72, Math.max(14, items.length * 11));
+  /* Shorter duration = faster scroll; scales with fixture count (one loop = half the duplicated track). */
+  const durSec = Math.min(62, Math.max(12, items.length * 9));
 
   const [ramistCycle, setRamistCycle] = useState(false);
   const tickerIterRef = useRef(0);

@@ -3126,7 +3126,7 @@
 
 /* Live tab: scrolling H2H score ticker (above Player contributions) */
 .live-score-ticker {
-  --live-ticker-duration: 32s;
+  --live-ticker-duration: 28s;
   overflow: hidden;
   margin: 0;
   border-radius: 10px;
@@ -3163,7 +3163,7 @@
   flex-direction: row;
   flex-wrap: nowrap;
   width: max-content;
-  animation: live-score-ticker-marquee var(--live-ticker-duration, 32s) linear infinite;
+  animation: live-score-ticker-marquee var(--live-ticker-duration, 28s) linear infinite;
 }
 
 /* Phones: WebKit often masks the whole strip to empty when mask + transform animate */
