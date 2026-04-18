@@ -467,9 +467,9 @@ export function PlayerContributions({
       const shortName = displayPlayerNameShort(el, ev.elementId);
       return {
         ...ev,
-        /** Short label (`web_name` when present) — shown on narrow viewports. */
+        /** Short label (`web_name` when present) — shown in the feed (matches FPL pick names). */
         playerLabel: shortName,
-        /** `displayPlayerName` — shown on wider viewports. */
+        /** `displayPlayerName` — screen-reader + title when it differs from `playerLabel`. */
         playerLabelFull: fullName,
         shirtUrl: fplShirtImageUrl(tm?.code, elementTypeId),
         badgeUrl: badgeUrl(tm?.code),
@@ -544,8 +544,7 @@ export function PlayerContributions({
           className="tile-title tile-title--sm player-contrib-heading"
           aria-label="Player contributions"
         >
-          <span className="player-contrib-heading__wide">Player contributions</span>
-          <span className="player-contrib-heading__mportrait">Player detail</span>
+          Player contributions
         </h2>
         <select
           className="player-contrib-team-select"
@@ -666,13 +665,7 @@ export function PlayerContributions({
               <div className="player-contrib-row__player-stack">
                 <span className="player-contrib-row__player-sr">{r.playerLabelFull}</span>
                 <span
-                  className="player-contrib-row__player player-contrib-row__player--desktop"
-                  aria-hidden="true"
-                >
-                  {r.playerLabelFull}
-                </span>
-                <span
-                  className="player-contrib-row__player player-contrib-row__player--mobile"
+                  className="player-contrib-row__player"
                   aria-hidden="true"
                   title={
                     r.playerLabelFull !== r.playerLabel ? r.playerLabelFull : undefined

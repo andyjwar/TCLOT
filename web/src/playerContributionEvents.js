@@ -262,22 +262,20 @@ export function diffContributionEvents({
 }) {
   /** @type {ReturnType<typeof diffContributionEvents> extends (infer U)[] ? U : never} */
   const out = [];
-  if (
-    !nextLiveByElementId ||
-    !trackedElementIds ||
-    trackedElementIds.size === 0 ||
-    prevLiveByElementId == null
-  ) {
+  if (!nextLiveByElementId || !trackedElementIds || trackedElementIds.size === 0) {
     return out;
   }
 
   const gw = Number(gameweek);
   if (!Number.isFinite(gw)) return out;
 
+  /** First live tick after mount: emit save/dc totals vs implicit zero only (goals/cards need a prior snapshot or FotMob). */
+  const bootstrap = prevLiveByElementId == null;
+
   const ids = [...trackedElementIds].filter((n) => Number.isFinite(Number(n))).sort((a, b) => a - b);
 
   for (const elid of ids) {
-    const prevRow = prevLiveByElementId[elid];
+    const prevRow = bootstrap ? null : prevLiveByElementId[elid];
     const nextRow = nextLiveByElementId[elid];
     if (!nextRow) continue;
     const el = elementById?.[elid];
@@ -288,7 +286,7 @@ export function diffContributionEvents({
 
     const g0 = Number(ps.goals_scored) || 0;
     const g1 = Number(ns.goals_scored) || 0;
-    if (!omitKinds?.has('goal') && g1 > g0) {
+    if (!bootstrap && !omitKinds?.has('goal') && g1 > g0) {
       const d = g1 - g0;
       out.push({
         stableId: `${gw}:${elid}:goal:tot${g1}`,
@@ -304,7 +302,7 @@ export function diffContributionEvents({
 
     const a0 = Number(ps.assists) || 0;
     const a1 = Number(ns.assists) || 0;
-    if (!omitKinds?.has('assist') && a1 > a0) {
+    if (!bootstrap && !omitKinds?.has('assist') && a1 > a0) {
       out.push({
         stableId: `${gw}:${elid}:assist:tot${a1}`,
         kind: 'assist',
@@ -349,7 +347,7 @@ export function diffContributionEvents({
 
     const y0 = Number(ps.yellow_cards) || 0;
     const y1 = Number(ns.yellow_cards) || 0;
-    if (!omitKinds?.has('yellow_card') && y1 > y0) {
+    if (!bootstrap && !omitKinds?.has('yellow_card') && y1 > y0) {
       out.push({
         stableId: `${gw}:${elid}:yellow_card:tot${y1}`,
         kind: 'yellow_card',
@@ -364,7 +362,7 @@ export function diffContributionEvents({
 
     const rc0 = Number(ps.red_cards) || 0;
     const rc1 = Number(ns.red_cards) || 0;
-    if (!omitKinds?.has('red_card') && rc1 > rc0) {
+    if (!bootstrap && !omitKinds?.has('red_card') && rc1 > rc0) {
       out.push({
         stableId: `${gw}:${elid}:red_card:tot${rc1}`,
         kind: 'red_card',

@@ -3329,24 +3329,6 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   min-width: 0;
 }
 
-.player-contrib-heading__mportrait {
-  display: none;
-}
-
-.player-contrib-heading__wide {
-  display: inline;
-}
-
-@media (max-width: 768px) and (orientation: portrait) {
-  .player-contrib-heading__wide {
-    display: none;
-  }
-
-  .player-contrib-heading__mportrait {
-    display: inline;
-  }
-}
-
 .player-contrib-toolbar {
   display: flex;
   flex-wrap: wrap;
@@ -3476,7 +3458,8 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  flex: 1 1 0;
+  /* Size to label (GOAL, SAVES, …); let mid + owner absorb remaining width so player names stay visible */
+  flex: 0 1 auto;
   min-width: 0;
   font-weight: 800;
   font-size: 0.68rem;
@@ -3537,7 +3520,8 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  flex: 1 1 0;
+  /* Extra share vs owner so player names (web_name) keep width on desktop */
+  flex: 3 1 0;
   min-width: 0;
 }
 
@@ -3572,12 +3556,13 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   flex-shrink: 0;
 }
 
-/* Player name: `web_name` on narrow screens, full catalogue name from `displayPlayerName` on wider.
+/* Player name: FPL `web_name`-style short label in the feed; full catalogue name in SR + title when different.
    Flex keeps the kit beside the name; slack stays to the right (before owner column). */
 .player-contrib-row__player-stack {
   position: relative;
-  flex: 0 1 auto;
-  min-width: 0;
+  /* Grow across mid minus shirt; min-width stops flex:…0 collapsing the name to zero */
+  flex: 1 1 auto;
+  min-width: 3.25rem;
   max-width: 100%;
   overflow: hidden;
 }
@@ -3604,24 +3589,6 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.player-contrib-row__player--desktop {
-  display: none;
-}
-
-.player-contrib-row__player--mobile {
-  display: block;
-}
-
-@media (min-width: 768px) {
-  .player-contrib-row__player--desktop {
-    display: block;
-  }
-
-  .player-contrib-row__player--mobile {
-    display: none;
-  }
 }
 
 @media (max-width: 768px) {
@@ -3689,7 +3656,7 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
-  flex: 1 1 0;
+  flex: 2 1 0;
   min-width: 0;
 }
 

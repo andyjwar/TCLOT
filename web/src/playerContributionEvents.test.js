@@ -102,22 +102,43 @@ test('buildLatestDropByElementOut — highest GW wins', () => {
   assert.equal(m.get(7).teamName, 'NewerGW');
 });
 
-test('diffContributionEvents — no prev snapshot → no events', () => {
+test('diffContributionEvents — bootstrap (no prev): goals/cards suppressed, saves/dc allowed', () => {
   const next = {
     12: {
-      stats: { goals_scored: 2, assists: 0, saves: 0, minutes: 90 },
+      stats: {
+        goals_scored: 2,
+        assists: 1,
+        saves: 0,
+        yellow_cards: 1,
+        red_cards: 0,
+        minutes: 90,
+      },
+      explain: [],
+    },
+    99: {
+      stats: { goals_scored: 0, assists: 0, saves: 6, minutes: 90 },
       explain: [],
     },
   };
   const out = diffContributionEvents({
     prevLiveByElementId: null,
     nextLiveByElementId: next,
-    elementById: { 12: { element_type: 3 } },
-    trackedElementIds: new Set([12]),
+    elementById: {
+      12: { element_type: 3 },
+      99: { element_type: 1 },
+    },
+    trackedElementIds: new Set([12, 99]),
     gameweek: 5,
     nowIso: '2026-01-01T12:00:00.000Z',
   });
-  assert.equal(out.length, 0);
+  const kinds = new Set(out.map((e) => e.kind));
+  assert.ok(!kinds.has('goal'));
+  assert.ok(!kinds.has('assist'));
+  assert.ok(!kinds.has('yellow_card'));
+  assert.ok(kinds.has('save_points'));
+  const saveEv = out.find((e) => e.kind === 'save_points');
+  assert.equal(saveEv?.elementId, 99);
+  assert.equal(saveEv?.delta, 2);
 });
 
 test('diffContributionEvents — yellow and red card deltas', () => {

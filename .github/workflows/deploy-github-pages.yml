@@ -11,10 +11,6 @@ on:
   schedule:
     - cron: '30 5 * * *'
 
-# Quiets Node 20 deprecation on actions (see GitHub changelog 2025-09-19)
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 permissions:
   contents: read
   pages: write
@@ -106,7 +102,7 @@ jobs:
               echo "::warning::pickups-tenure has no team totals but transactions exist — check waiver analytics build logs"
             fi
           fi
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: web/dist
 
@@ -118,4 +114,4 @@ jobs:
     needs: build
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
