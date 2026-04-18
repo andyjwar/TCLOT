@@ -506,7 +506,7 @@ function formatPlayerLtpSegment(r) {
 }
 
 const LEFT_TO_PLAY_TITLE =
-  'Starting XI players on 0 minutes whose club still has a Premier League fixture to finish this gameweek';
+  'Games left to play from starting XI players on 0 minutes (double gameweeks count as two games)';
 
 /** Bracketed count after the team name (both sides — keeps layout symmetrical). */
 function LeftToPlayOutsideAfter({ count, leadingSpace = true }) {
@@ -783,11 +783,15 @@ export function LiveScores({
       const live = liveGwDisplayTotal(squad);
       const xi = startersForEffectiveXi(squad);
       const allowed = pickElementIdSet(squad);
-      const segments = xi
+      const ltpRows = xi
         .filter((r) => allowed.has(r.element))
-        .filter((r) => r.stillYetToPlayPl)
-        .map(formatPlayerLtpSegment);
-      return { leagueEntryId, name, live, segments };
+        .filter((r) => r.stillYetToPlayPl);
+      const segments = ltpRows.map(formatPlayerLtpSegment);
+      const ltpGamesCount = ltpRows.reduce((sum, r) => {
+        const n = Number(r.leftToPlayFixtureCount);
+        return sum + (Number.isFinite(n) && n > 0 ? n : 1);
+      }, 0);
+      return { leagueEntryId, name, live, segments, ltpGamesCount };
     };
     return gwMatches.map((m) => {
       const homeId = Number(m.league_entry_1);
@@ -1273,7 +1277,7 @@ export function LiveScores({
                         </span>
                         <span className="live-ltp-summary-players">
                           <span className="live-ltp-summary-players-count muted tabular">
-                            ({row.segments.length})
+                            ({row.ltpGamesCount})
                           </span>
                           {row.segments.length ? (
                             <> {row.segments.join(', ')}</>

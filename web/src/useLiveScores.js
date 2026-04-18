@@ -158,6 +158,23 @@ function computeStillYetToPlayPl(minutes, teamId, gwFixtures) {
   );
 }
 
+/**
+ * Unfinished PL fixtures this GW for this club (e.g. 2 in a double gameweek before either kicks off).
+ * When the schedule is unknown (`gwFixtures` empty), returns 1 so counts stay player-shaped.
+ * @param {number | null} teamId
+ * @param {object[]} gwFixtures
+ */
+function countUnfinishedGwFixturesForTeam(teamId, gwFixtures) {
+  if (teamId == null || !Number.isFinite(teamId)) return 0;
+  if (!Array.isArray(gwFixtures) || !gwFixtures.length) return 1;
+  const n = gwFixtures.filter(
+    (f) =>
+      (Number(f.team_h) === teamId || Number(f.team_a) === teamId) &&
+      f.finished_provisional !== true
+  ).length;
+  return n;
+}
+
 function mapPickRows(
   picks,
   liveByElementId,
@@ -185,6 +202,7 @@ function mapPickRows(
     const opponentShortLabel = opponentShortLabelForTeam(tid, gwFixtures, teamById);
     const stillYetToPlayPl = computeStillYetToPlayPl(mins, tid, gwFixtures);
     const leftToPlayStarter = p.position <= 11 && stillYetToPlayPl;
+    const leftToPlayFixtureCount = countUnfinishedGwFixturesForTeam(tid, gwFixtures);
     return {
       element: pid,
       web_name: webName,
@@ -210,6 +228,8 @@ function mapPickRows(
       clubGwFixturesFinished: teamAllGwFixturesFinished(tid, gwFixtures),
       stillYetToPlayPl,
       leftToPlayStarter,
+      /** Games left for this player’s club this GW (DGW ⇒ 2 when both fixtures unfinished). */
+      leftToPlayFixtureCount,
     };
   });
   rows.sort((a, b) => a.pickPosition - b.pickPosition);
@@ -217,9 +237,15 @@ function mapPickRows(
 }
 
 /** @param {object[]} starters */
-function countStartersLeftToPlay(starters) {
+function countStartersLeftToPlayGames(starters) {
   if (!Array.isArray(starters) || !starters.length) return 0;
-  return starters.filter((r) => r.leftToPlayStarter).length;
+  let total = 0;
+  for (const r of starters) {
+    if (!r.leftToPlayStarter) continue;
+    const n = Number(r.leftToPlayFixtureCount);
+    total += Number.isFinite(n) && n > 0 ? n : 1;
+  }
+  return total;
 }
 
 function applyBonusColumn(rows, provisionalByElement) {
@@ -417,7 +443,7 @@ export function useLiveScores({
             projectedAutoSubs,
           } = buildEffectiveLineup({ starters, bench, autoSubs });
 
-          const leftToPlayCount = countStartersLeftToPlay(starters);
+          const leftToPlayCount = countStartersLeftToPlayGames(starters);
 
           return {
             leagueEntryId: t.id,
