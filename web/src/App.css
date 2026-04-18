@@ -3116,6 +3116,133 @@
   gap: 12px;
 }
 
+/* Live tab: scrolling H2H score ticker (above Player contributions) */
+.live-score-ticker {
+  --live-ticker-duration: 32s;
+  overflow: hidden;
+  margin: 0 0 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+  background: color-mix(in srgb, var(--fm-surface-2, #f4f4f5) 94%, transparent);
+}
+
+.live-score-ticker__viewport {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10px,
+    black calc(100% - 10px),
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 10px,
+    black calc(100% - 10px),
+    transparent
+  );
+}
+
+.live-score-ticker__track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  width: max-content;
+  animation: live-score-ticker-marquee var(--live-ticker-duration, 32s) linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .live-score-ticker__viewport {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
+
+  .live-score-ticker__track {
+    animation: none;
+  }
+}
+
+@keyframes live-score-ticker-marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.live-score-ticker__chunk {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0;
+  padding: 0.4rem 0.65rem;
+  flex-shrink: 0;
+}
+
+.live-score-ticker__fixture-block {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  flex-shrink: 0;
+}
+
+.live-score-ticker__fixture {
+  display: inline-flex;
+  flex-wrap: nowrap;
+  align-items: baseline;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--fm-text-strong, #111);
+  white-space: nowrap;
+}
+
+.live-score-ticker__sep,
+.live-score-ticker__dash {
+  color: var(--fm-text-muted, #71717a);
+  font-weight: 500;
+  user-select: none;
+}
+
+.live-score-ticker__team {
+  max-width: min(40vw, 9rem);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.live-score-ticker__team--lead {
+  color: var(--fm-accent, #12a15a);
+}
+
+.live-score-ticker__pts {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.live-score-ticker__pts--lead {
+  color: var(--fm-accent, #12a15a);
+}
+
+body[data-tclot-theme='dark'] .live-score-ticker {
+  background: color-mix(in srgb, var(--fm-surface-2, #18181b) 88%, transparent);
+}
+
+body[data-tclot-theme='dark'] .live-score-ticker__fixture {
+  color: var(--fm-text-strong, #fafafa);
+}
+
+body[data-tclot-theme='dark'] .live-score-ticker__sep,
+body[data-tclot-theme='dark'] .live-score-ticker__dash {
+  color: var(--fm-text-muted, #a1a1aa);
+}
+
 /* Player contributions — broadcast-inspired strip (live tab) */
 .player-contrib-tile {
   margin-top: 0;

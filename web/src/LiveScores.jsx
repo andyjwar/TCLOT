@@ -309,6 +309,92 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
+/**
+ * Horizontal marquee of this GW’s H2H live totals (above Player contributions).
+ */
+function LiveScoreFixtureTicker({ gwMatches, teams, squadByLeagueEntry, gameweek }) {
+  const items = useMemo(() => {
+    if (!Array.isArray(gwMatches) || gwMatches.length === 0) return [];
+    return gwMatches.map((m) => {
+      const homeId = Number(m.league_entry_1);
+      const awayId = Number(m.league_entry_2);
+      const homeName = teamNameForEntry(teams, homeId);
+      const awayName = teamNameForEntry(teams, awayId);
+      const homeLive = liveGwDisplayTotal(squadByLeagueEntry.get(homeId));
+      const awayLive = liveGwDisplayTotal(squadByLeagueEntry.get(awayId));
+      const homeLead =
+        homeLive != null && awayLive != null && homeLive > awayLive;
+      const awayLead =
+        homeLive != null && awayLive != null && awayLive > homeLive;
+      return {
+        key: `${homeId}-${awayId}-${Number(gameweek)}`,
+        homeName,
+        awayName,
+        homeLive,
+        awayLive,
+        homeLead,
+        awayLead,
+      };
+    });
+  }, [gwMatches, teams, squadByLeagueEntry, gameweek]);
+
+  if (!items.length) return null;
+
+  const durSec = Math.min(72, Math.max(14, items.length * 11));
+
+  const chunk = (keySuffix) =>
+    items.map((it, i) => (
+      <span key={`${it.key}${keySuffix}`} className="live-score-ticker__fixture-block">
+        {i > 0 ? (
+          <span className="live-score-ticker__sep" aria-hidden="true">
+            {' · '}
+          </span>
+        ) : null}
+        <span className="live-score-ticker__fixture">
+          <span
+            className={`live-score-ticker__team ${it.homeLead ? 'live-score-ticker__team--lead' : ''}`}
+          >
+            {it.homeName}
+          </span>{' '}
+          <span
+            className={`live-score-ticker__pts tabular ${it.homeLead ? 'live-score-ticker__pts--lead' : ''}`}
+          >
+            {it.homeLive ?? '—'}
+          </span>
+          <span className="live-score-ticker__dash" aria-hidden="true">
+            –
+          </span>
+          <span
+            className={`live-score-ticker__pts tabular ${it.awayLead ? 'live-score-ticker__pts--lead' : ''}`}
+          >
+            {it.awayLive ?? '—'}
+          </span>{' '}
+          <span
+            className={`live-score-ticker__team ${it.awayLead ? 'live-score-ticker__team--lead' : ''}`}
+          >
+            {it.awayName}
+          </span>
+        </span>
+      </span>
+    ));
+
+  return (
+    <div
+      className="live-score-ticker"
+      role="region"
+      aria-label={`Gameweek ${Number(gameweek)} live head-to-head scores`}
+      style={{ '--live-ticker-duration': `${durSec}s` }}
+    >
+      <div className="live-score-ticker__viewport" aria-hidden="true">
+        <div className="live-score-ticker__track">
+          <div className="live-score-ticker__chunk">{chunk('')}</div>
+          <div className="live-score-ticker__chunk">{chunk('-dup')}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Effective XI rows (post-autosub when available). */
 function startersForEffectiveXi(squad) {
   if (!squad || squad.error) return [];
@@ -736,6 +822,14 @@ export function LiveScores({
         className="tile tile--compact player-contrib-tile"
         aria-labelledby="player-contrib-heading"
       >
+        {useFixtureLayout ? (
+          <LiveScoreFixtureTicker
+            gwMatches={gwMatches}
+            teams={teams}
+            squadByLeagueEntry={squadByLeagueEntry}
+            gameweek={gameweek}
+          />
+        ) : null}
         <PlayerContributions
           leagueId={leagueId}
           gameweek={gameweek}
