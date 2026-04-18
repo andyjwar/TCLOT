@@ -346,7 +346,7 @@ function ramistNodeForSlot(slot, key) {
 }
 
 /**
- * Horizontal marquee of this GW’s H2H live totals (above Player contributions).
+ * Horizontal marquee of this GW’s H2H live totals (above Player Points).
  */
 function LiveScoreFixtureTicker({
   gwMatches,

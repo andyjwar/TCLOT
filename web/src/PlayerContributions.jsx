@@ -542,9 +542,9 @@ export function PlayerContributions({
         <h2
           id="player-contrib-heading"
           className="tile-title tile-title--sm player-contrib-heading"
-          aria-label="Player contributions"
+          aria-label="Player Points"
         >
-          Player contributions
+          Player Points
         </h2>
         <select
           className="player-contrib-team-select"
@@ -620,7 +620,7 @@ export function PlayerContributions({
       {!filteredRows.length ? (
         <div className="player-contrib-broadcast">
           <p className="muted muted--tight player-contrib-empty player-contrib-empty--filters">
-            No contributions match these filters. Try another team or turn on more event types.
+            No events match these filters. Try another team or turn on more event types.
           </p>
         </div>
       ) : (
@@ -629,7 +629,7 @@ export function PlayerContributions({
         ref={listScrollRef}
         className="player-contrib-feed"
         role="list"
-        aria-label="Player fantasy scoring contributions"
+        aria-label="Player Points — live scoring events"
       >
         {filteredRows.map((r) => (
           <div key={r.stableId} className="player-contrib-row" role="listitem">

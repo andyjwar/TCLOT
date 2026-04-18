@@ -12,7 +12,7 @@ const out = join(__dirname, '../public/league-data/player-contributions-gw.json'
 
 const template = {
   generated: new Date().toISOString(),
-  note: 'Optional archive for Player contributions (Live tab). Keys under byGw are gameweek numbers. Events match playerContributionEvents stableId shape.',
+  note: 'Optional archive for Player Points (Live tab). Keys under byGw are gameweek numbers. Events match playerContributionEvents stableId shape.',
   byGw: {},
 };
 

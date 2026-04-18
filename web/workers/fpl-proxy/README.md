@@ -4,7 +4,7 @@ The **Live** tab calls FPL from the browser. Many hosts (e.g. GitHub Pages) hit 
 
 - **`/*`** → `https://fantasy.premierleague.com/api/*` (bootstrap-static, event live, etc.)
 - **`/draft/*`** → `https://draft.premierleague.com/api/*` (draft GW lineups — **not** classic `/entry/.../picks/`)
-- **`/fotmob/*`** → `https://www.fotmob.com/api/*` (unofficial read-only JSON used for Live **Player contributions** ordering — not affiliated with FotMob; respect their terms and rate limits)
+- **`/fotmob/*`** → `https://www.fotmob.com/api/*` (unofficial read-only JSON used for Live **Player Points** ordering — not affiliated with FotMob; respect their terms and rate limits)
 
 Draft leagues must use the draft host for picks; classic picks would show the wrong XI for each manager.
 
