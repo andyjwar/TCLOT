@@ -600,15 +600,7 @@ export function PlayerContributions({
       <>
         {toolbar}
         <p className="muted muted--tight player-contrib-empty">
-          Contribution events appear here during the live gameweek when goals, assists,
-          defensive-contribution points, save points, or yellow or red cards change after each
-          refresh (auto every 90s for the current GW). Goals, assists, and cards are ordered from
-          FotMob match timelines when available (same proxy as FPL); defensive-contribution and save
-          points still come from FPL live. Events include every player whose club has a PL fixture
-          this GW, not only fantasy rosters. Open this tab during matches to build history in this
-          browser; optional{' '}
-          <span className="player-contrib-code">player-contributions-gw.json</span> merges shared
-          snapshots.
+          Goals, Assists, Def Cons, Saves, Red/Yellow cards for owned players in league appear here.
         </p>
       </>
     );
