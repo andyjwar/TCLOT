@@ -3116,18 +3116,32 @@
   gap: 12px;
 }
 
+/* Live tab: ticker sits between Live scores card and Player contributions (full width in stack) */
+.live-score-ticker-slot {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
 /* Live tab: scrolling H2H score ticker (above Player contributions) */
 .live-score-ticker {
   --live-ticker-duration: 32s;
   overflow: hidden;
-  margin: 0 0 10px;
+  margin: 0;
   border-radius: 10px;
   border: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
   background: color-mix(in srgb, var(--fm-surface-2, #f4f4f5) 94%, transparent);
+  min-height: 2.75rem;
+  flex-shrink: 0;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .live-score-ticker__viewport {
   overflow: hidden;
+  min-height: 2.75rem;
   mask-image: linear-gradient(
     to right,
     transparent,
@@ -3150,6 +3164,14 @@
   flex-wrap: nowrap;
   width: max-content;
   animation: live-score-ticker-marquee var(--live-ticker-duration, 32s) linear infinite;
+}
+
+/* Phones: WebKit often masks the whole strip to empty when mask + transform animate */
+@media (max-width: 768px) {
+  .live-score-ticker__viewport {
+    mask-image: none;
+    -webkit-mask-image: none;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

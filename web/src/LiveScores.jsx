@@ -844,11 +844,8 @@ export function LiveScores({
         ) : null}
       </section>
 
-      <section
-        className="tile tile--compact player-contrib-tile"
-        aria-labelledby="player-contrib-heading"
-      >
-        {useFixtureLayout ? (
+      {useFixtureLayout ? (
+        <div className="live-score-ticker-slot">
           <LiveScoreFixtureTicker
             gwMatches={gwMatches}
             teams={teams}
@@ -857,7 +854,13 @@ export function LiveScores({
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
           />
-        ) : null}
+        </div>
+      ) : null}
+
+      <section
+        className="tile tile--compact player-contrib-tile"
+        aria-labelledby="player-contrib-heading"
+      >
         <PlayerContributions
           leagueId={leagueId}
           gameweek={gameweek}
