@@ -356,11 +356,6 @@ function LiveScoreFixtureTicker({
       <span key={`${it.key}${keySuffix}`} className="live-score-ticker__fixture-block">
         <span className="live-score-ticker__fixture">
           <span className="live-score-ticker__name-with-badge">
-            <span
-              className={`live-score-ticker__team ${it.homeLead ? 'live-score-ticker__team--lead' : ''}`}
-            >
-              {it.homeName}
-            </span>
             <span className="live-score-ticker__badge">
               <TeamAvatar
                 entryId={it.homeId}
@@ -369,6 +364,11 @@ function LiveScoreFixtureTicker({
                 logoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
+            </span>
+            <span
+              className={`live-score-ticker__team ${it.homeLead ? 'live-score-ticker__team--lead' : ''}`}
+            >
+              {it.homeName}
             </span>
           </span>
           <span
