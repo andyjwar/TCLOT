@@ -336,9 +336,12 @@ function getTickerManualModeServerSnapshot() {
   return false;
 }
 
-/** Ramist line visible on iterations 1,4,7… (every 3rd starting after first loop). */
+/**
+ * Ramist line: show every 2nd completed loop (after 2 passes of the fixture strip, then every other loop).
+ * Loop count `n` is incremented once per full pass — see bumpRamist / animationiteration or interval.
+ */
 function ramistVisibleForIteration(n) {
-  return n >= 1 && n % 3 === 1;
+  return n >= 2 && n % 2 === 0;
 }
 
 /**
@@ -404,7 +407,11 @@ function LiveScoreFixtureTicker({
     setRamistCycle(ramistVisibleForIteration(tickerIterRef.current));
   }, []);
 
-  /* Desktop marquee: one “loop” per animation iteration (same duration as durSec). */
+  /*
+   * Desktop: one `animationiteration` = one full loop. The track is two duplicate chunks;
+   * CSS `@keyframes live-score-ticker-marquee` goes from translateX(0) to -50%, i.e. one chunk width
+   * — one complete pass over the fixture list (the second chunk is only for seamless wrap).
+   */
   useEffect(() => {
     if (tickerManualMode) return undefined;
     const el = trackRef.current;
@@ -416,7 +423,7 @@ function LiveScoreFixtureTicker({
     return () => el.removeEventListener('animationiteration', onIteration);
   }, [durSec, tickerManualMode, bumpRamist]);
 
-  /* Mobile / reduced-motion: CSS disables animation — no animationiteration; mirror loop timing with interval. */
+  /* Mobile / reduced-motion: no animation — fire once per durSec (same seconds as one marquee loop). */
   useEffect(() => {
     if (!tickerManualMode) return undefined;
     const ms = Math.max(1000, durSec * 1000);

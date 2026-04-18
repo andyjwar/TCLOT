@@ -3140,6 +3140,8 @@
 }
 
 .live-score-ticker__viewport {
+  display: flex;
+  align-items: center;
   overflow: hidden;
   min-height: 2.75rem;
   mask-image: linear-gradient(
