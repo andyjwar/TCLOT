@@ -212,7 +212,7 @@ test('contributionApproxTimelineSortKey — later emit sequence nudges key (same
   };
   const k0 = contributionApproxTimelineSortKey(row, el, 'goal', gwFixtures, 5, 0);
   const k1 = contributionApproxTimelineSortKey(row, el, 'goal', gwFixtures, 5, 1);
-  assert.ok(k1 > k0);
+  assert.equal(k1 - k0, 4, 'emit sequence nudge stays within one match minute');
 });
 
 test('contributionApproxTimelineSortKey — later kickoff sorts higher', () => {

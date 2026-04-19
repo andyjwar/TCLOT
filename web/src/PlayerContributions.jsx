@@ -1,7 +1,6 @@
 import {
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -248,7 +247,6 @@ export function PlayerContributions({
   const prevLiveRef = useRef(null);
   const hydratedKeyRef = useRef('');
   const listScrollRef = useRef(null);
-  const prevDisplayedLenRef = useRef(0);
 
   const storageKey = useMemo(
     () => playerContributionStorageKey(leagueId, gameweek),
@@ -334,7 +332,6 @@ export function PlayerContributions({
 
   useEffect(() => {
     prevLiveRef.current = null;
-    prevDisplayedLenRef.current = 0;
     setFotmobTimelineActive(false);
     setFantasyTeamEntryId('');
     setFilterGoal(false);
@@ -494,7 +491,7 @@ export function PlayerContributions({
     ownerByEl,
   ]);
 
-  /** Chronological: earliest real-world event first (top), read down; keys from current live + fixtures when available. */
+  /** Chronological: earliest first (top), read down. No auto-scroll — user controls scroll position. */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
     return [...displayed]
@@ -582,15 +579,6 @@ export function PlayerContributions({
   const toggleFilterDc = useCallback(() => {
     setFilterDc((d) => !d);
   }, []);
-
-  useLayoutEffect(() => {
-    const el = listScrollRef.current;
-    if (!el || !filteredRows.length) return;
-    if (filteredRows.length > prevDisplayedLenRef.current) {
-      el.scrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
-    }
-    prevDisplayedLenRef.current = filteredRows.length;
-  }, [filteredRows]);
 
   const toolbar = (
     <div className="player-contrib-section-head">

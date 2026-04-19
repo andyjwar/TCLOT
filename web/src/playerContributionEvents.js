@@ -108,8 +108,8 @@ const KIND_BIAS_MS = {
 };
 
 /**
- * Per-batch emission order (ms) — must be a whole ms so it survives float precision at ~1e12
- * (`+ 1e-5` was rounding away). Keep total nudge below kind steps and within one clock minute.
+ * Per-batch emission order — keep total nudge (seq×4 + element id) well below 60_000 ms
+ * so ordering never crosses real match-clock minutes.
  */
 const EMIT_SEQUENCE_WEIGHT_MS = 4;
 
@@ -117,7 +117,7 @@ const EMIT_SEQUENCE_WEIGHT_MS = 4;
  * Approximate real-world ordering: kickoff + clock proxy minutes + kind tie-break + element id + emit sequence.
  * Uses per-fixture `explain` minutes when available; otherwise `stats.minutes`.
  * @param {number | null | undefined} [elementId] — breaks ties when two players score same minute
- * @param {number} [sequenceIndex] — monotonic index within one diff batch; later ticks sort later (newest first in desc feed)
+ * @param {number} [sequenceIndex] — monotonic index within one diff batch (ties within same clock minute)
  * @returns {number} 0 → unknown; caller should fall back to `recordedAt`.
  */
 export function contributionApproxTimelineSortKey(
@@ -140,9 +140,10 @@ export function contributionApproxTimelineSortKey(
     elementId != null && Number.isFinite(Number(elementId))
       ? Number(elementId)
       : Number(element?.id);
-  const tie = Number.isFinite(el) ? (el % 50_000) * 1e-4 : 0;
   const seq = Number(sequenceIndex) || 0;
-  return base + kb + tie + seq * EMIT_SEQUENCE_WEIGHT_MS;
+  const elSlot = Number.isFinite(el) ? el : 0;
+  // Integer-safe: base ~1e12 + small offsets; avoid sub-ms fractions that double precision erases.
+  return base + kb + seq * EMIT_SEQUENCE_WEIGHT_MS + elSlot;
 }
 
 /** Latest in-fixture event first (top of feed); then `recordedAt`; then `stableId`. */
@@ -214,15 +215,34 @@ export function effectiveContributionSortKey(ev, sortCtx) {
  *
  * @param {{ liveFullByElementId?: Record<number, object>, elementById?: Record<number, object>, gwFixtures?: object[] }} sortCtx
  */
+function comparePrimaryKeys(ka, kb) {
+  if (ka === kb) return 0;
+  return ka < kb ? -1 : 1;
+}
+
+/** Tie-break when primary keys collide (e.g. float edge) or recompute dropped emit slot. */
+function compareStoredSortKeys(a, b) {
+  const sa = Number(a?.sortKey) || 0;
+  const sb = Number(b?.sortKey) || 0;
+  if (sa === sb) return 0;
+  return sa < sb ? -1 : 1;
+}
+
 export function compareContributionEventsDescWithContext(sortCtx) {
   return (a, b) => {
-    const ka = Math.round(effectiveContributionSortKey(a, sortCtx));
-    const kb = Math.round(effectiveContributionSortKey(b, sortCtx));
+    const ka = effectiveContributionSortKey(a, sortCtx);
+    const kb = effectiveContributionSortKey(b, sortCtx);
     const aOk = Number.isFinite(ka) && ka > 0;
     const bOk = Number.isFinite(kb) && kb > 0;
-    if (aOk && bOk && ka !== kb) return kb - ka;
-    if (aOk && !bOk) return -1;
-    if (!aOk && bOk) return 1;
+    if (aOk && bOk) {
+      const pk = comparePrimaryKeys(kb, ka);
+      if (pk !== 0) return pk;
+      const sk = compareStoredSortKeys(b, a);
+      if (sk !== 0) return sk;
+    } else {
+      if (aOk && !bOk) return -1;
+      if (!aOk && bOk) return 1;
+    }
     const t = String(b?.recordedAt || '').localeCompare(String(a?.recordedAt || ''));
     if (t !== 0) return t;
     return String(b?.stableId || '').localeCompare(String(a?.stableId || ''));
@@ -237,13 +257,19 @@ export function compareContributionEventsDescWithContext(sortCtx) {
  */
 export function compareContributionEventsAscWithContext(sortCtx) {
   return (a, b) => {
-    const ka = Math.round(effectiveContributionSortKey(a, sortCtx));
-    const kb = Math.round(effectiveContributionSortKey(b, sortCtx));
+    const ka = effectiveContributionSortKey(a, sortCtx);
+    const kb = effectiveContributionSortKey(b, sortCtx);
     const aOk = Number.isFinite(ka) && ka > 0;
     const bOk = Number.isFinite(kb) && kb > 0;
-    if (aOk && bOk && ka !== kb) return ka - kb;
-    if (aOk && !bOk) return -1;
-    if (!aOk && bOk) return 1;
+    if (aOk && bOk) {
+      const pk = comparePrimaryKeys(ka, kb);
+      if (pk !== 0) return pk;
+      const sk = compareStoredSortKeys(a, b);
+      if (sk !== 0) return sk;
+    } else {
+      if (aOk && !bOk) return -1;
+      if (!aOk && bOk) return 1;
+    }
     const t = String(a?.recordedAt || '').localeCompare(String(b?.recordedAt || ''));
     if (t !== 0) return t;
     return String(a?.stableId || '').localeCompare(String(b?.stableId || ''));
