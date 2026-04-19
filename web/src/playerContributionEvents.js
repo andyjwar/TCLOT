@@ -230,6 +230,27 @@ export function compareContributionEventsDescWithContext(sortCtx) {
 }
 
 /**
+ * Ascending compare using {@link effectiveContributionSortKey} — earliest real-world event first
+ * (top of feed, read down chronologically).
+ *
+ * @param {{ liveFullByElementId?: Record<number, object>, elementById?: Record<number, object>, gwFixtures?: object[] }} sortCtx
+ */
+export function compareContributionEventsAscWithContext(sortCtx) {
+  return (a, b) => {
+    const ka = Math.round(effectiveContributionSortKey(a, sortCtx));
+    const kb = Math.round(effectiveContributionSortKey(b, sortCtx));
+    const aOk = Number.isFinite(ka) && ka > 0;
+    const bOk = Number.isFinite(kb) && kb > 0;
+    if (aOk && bOk && ka !== kb) return ka - kb;
+    if (aOk && !bOk) return -1;
+    if (!aOk && bOk) return 1;
+    const t = String(a?.recordedAt || '').localeCompare(String(b?.recordedAt || ''));
+    if (t !== 0) return t;
+    return String(a?.stableId || '').localeCompare(String(b?.stableId || ''));
+  };
+}
+
+/**
  * Element ids on all squads (starters ∪ bench).
  * @param {object[]} squads
  * @returns {Set<number>}

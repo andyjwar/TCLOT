@@ -8,6 +8,7 @@ import {
   compareContributionEventsAsc,
   compareContributionEventsDesc,
   contributionApproxTimelineSortKey,
+  compareContributionEventsAscWithContext,
   effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
@@ -286,6 +287,18 @@ test('effectiveContributionSortKey — recomputes FPL rows from live + fixtures;
     sortKey: 1.717e12,
   };
   assert.equal(effectiveContributionSortKey(fm, sortCtx), 1.717e12);
+});
+
+test('compareContributionEventsAscWithContext — earlier effective key sorts first (chronological top)', () => {
+  const sortCtx = {
+    liveFullByElementId: {},
+    elementById: {},
+    gwFixtures: [],
+  };
+  const cmp = compareContributionEventsAscWithContext(sortCtx);
+  const early = { sortKey: 100, recordedAt: '2026-01-01T12:00:00.000Z', stableId: 'a' };
+  const late = { sortKey: 200, recordedAt: '2026-01-01T12:00:00.000Z', stableId: 'b' };
+  assert.ok(cmp(early, late) < 0, 'lower key first');
 });
 
 test('compareContributionEventsDesc — later sortKey sorts first (newest at top of feed)', () => {

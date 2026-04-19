@@ -12,7 +12,7 @@ import {
   buildOwnerByElementId,
   buildTrackedElementIdSetWithFixtures,
   compareContributionEventsDesc,
-  compareContributionEventsDescWithContext,
+  compareContributionEventsAscWithContext,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -285,7 +285,7 @@ export function PlayerContributions({
     const ctx = contribCtxRef.current;
     return mergeUniqueByStableId(
       preferFirstLists,
-      compareContributionEventsDescWithContext({
+      compareContributionEventsAscWithContext({
         liveFullByElementId: ctx?.liveFullByElementId,
         elementById: ctx?.elementById,
         gwFixtures: ctx?.gwFixtures ?? [],
@@ -307,7 +307,7 @@ export function PlayerContributions({
   );
 
   const compareRowsFn = useMemo(
-    () => compareContributionEventsDescWithContext(contributionSortCtx),
+    () => compareContributionEventsAscWithContext(contributionSortCtx),
     [contributionSortCtx]
   );
 
@@ -468,7 +468,7 @@ export function PlayerContributions({
     if (!newEventsFiltered.length) return;
 
     setDisplayed((prev) => {
-      const sortFn = compareContributionEventsDescWithContext({
+      const sortFn = compareContributionEventsAscWithContext({
         liveFullByElementId: ctx.liveFullByElementId,
         elementById: ctx.elementById,
         gwFixtures: ctx.gwFixtures || [],
@@ -494,7 +494,7 @@ export function PlayerContributions({
     ownerByEl,
   ]);
 
-  /** Match timeline: latest real-world event first (top); keys from current live + fixtures when available. */
+  /** Chronological: earliest real-world event first (top), read down; keys from current live + fixtures when available. */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
     return [...displayed]
@@ -587,7 +587,7 @@ export function PlayerContributions({
     const el = listScrollRef.current;
     if (!el || !filteredRows.length) return;
     if (filteredRows.length > prevDisplayedLenRef.current) {
-      el.scrollTop = 0;
+      el.scrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
     }
     prevDisplayedLenRef.current = filteredRows.length;
   }, [filteredRows]);
