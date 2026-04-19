@@ -415,7 +415,8 @@ export function buildLatestDropByElementOut(waiverOutGwRows) {
  *   gameweek: number,
  *   nowIso: string,
  *   gwFixtures?: object[],
- *   omitKinds?: Set<string> | null — when FotMob supplies ordered goal/card/assist rows, skip these kinds from FPL diffs
+ *   omitKinds?: Set<string> | null — skip these kinds from FPL diffs globally (e.g. FotMob owns all yellow/red ordering)
+ *   omitByElementKind?: Map<number, Set<string>> | null — per-player opt-out; FotMob matched this (elementId, kind) so don't double-emit FPL approximation
  * }} p
  * @returns {object[]}
  */
@@ -428,7 +429,16 @@ export function diffContributionEvents({
   nowIso,
   gwFixtures = [],
   omitKinds = null,
+  omitByElementKind = null,
 }) {
+  const isOmitted = (elid, kind) => {
+    if (omitKinds && omitKinds.has(kind)) return true;
+    if (omitByElementKind) {
+      const s = omitByElementKind.get(Number(elid));
+      if (s && s.has(kind)) return true;
+    }
+    return false;
+  };
   /** @type {ReturnType<typeof diffContributionEvents> extends (infer U)[] ? U : never} */
   const out = [];
   if (!nextLiveByElementId || !trackedElementIds || trackedElementIds.size === 0) {
@@ -458,7 +468,7 @@ export function diffContributionEvents({
 
     const g0 = Number(ps.goals_scored) || 0;
     const g1 = Number(ns.goals_scored) || 0;
-    if (!omitKinds?.has('goal') && g1 > g0) {
+    if (!isOmitted(elid, 'goal') && g1 > g0) {
       const d = g1 - g0;
       out.push({
         stableId: `${gw}:${elid}:goal:tot${g1}`,
@@ -481,7 +491,7 @@ export function diffContributionEvents({
 
     const a0 = Number(ps.assists) || 0;
     const a1 = Number(ns.assists) || 0;
-    if (!omitKinds?.has('assist') && a1 > a0) {
+    if (!isOmitted(elid, 'assist') && a1 > a0) {
       out.push({
         stableId: `${gw}:${elid}:assist:tot${a1}`,
         kind: 'assist',
@@ -547,7 +557,7 @@ export function diffContributionEvents({
 
     const y0 = Number(ps.yellow_cards) || 0;
     const y1 = Number(ns.yellow_cards) || 0;
-    if (!bootstrap && !omitKinds?.has('yellow_card') && y1 > y0) {
+    if (!bootstrap && !isOmitted(elid, 'yellow_card') && y1 > y0) {
       out.push({
         stableId: `${gw}:${elid}:yellow_card:tot${y1}`,
         kind: 'yellow_card',
@@ -569,7 +579,7 @@ export function diffContributionEvents({
 
     const rc0 = Number(ps.red_cards) || 0;
     const rc1 = Number(ns.red_cards) || 0;
-    if (!bootstrap && !omitKinds?.has('red_card') && rc1 > rc0) {
+    if (!bootstrap && !isOmitted(elid, 'red_card') && rc1 > rc0) {
       out.push({
         stableId: `${gw}:${elid}:red_card:tot${rc1}`,
         kind: 'red_card',

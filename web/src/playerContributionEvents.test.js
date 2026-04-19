@@ -307,6 +307,40 @@ test('compareContributionEventsDesc — later sortKey sorts first (newest at top
   assert.ok(compareContributionEventsDesc(b, a) < 0, 'later timeline key (b) before earlier (a) in feed');
 });
 
+test('diffContributionEvents — omitByElementKind skips covered (element, kind) only for that player', () => {
+  const prev = {
+    12: {
+      stats: { goals_scored: 0, assists: 0, saves: 0, minutes: 45 },
+      explain: [],
+    },
+    15: {
+      stats: { goals_scored: 0, assists: 0, saves: 0, minutes: 45 },
+      explain: [],
+    },
+  };
+  const next = {
+    12: {
+      stats: { goals_scored: 1, assists: 0, saves: 0, minutes: 90 },
+      explain: [],
+    },
+    15: {
+      stats: { goals_scored: 1, assists: 1, saves: 0, minutes: 90 },
+      explain: [],
+    },
+  };
+  const out = diffContributionEvents({
+    prevLiveByElementId: prev,
+    nextLiveByElementId: next,
+    elementById: { 12: { element_type: 3 }, 15: { element_type: 3 } },
+    trackedElementIds: new Set([12, 15]),
+    gameweek: 8,
+    nowIso: '2026-01-01T12:00:00.000Z',
+    omitByElementKind: new Map([[12, new Set(['goal'])]]),
+  });
+  const byKey = out.map((e) => `${e.elementId}:${e.kind}`).sort();
+  assert.deepEqual(byKey, ['15:assist', '15:goal']);
+});
+
 test('diffContributionEvents — omitKinds skips goal', () => {
   const prev = {
     12: {

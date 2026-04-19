@@ -11,7 +11,7 @@ import {
   buildOwnerByElementId,
   buildTrackedElementIdSetWithFixtures,
   compareContributionEventsDesc,
-  compareContributionEventsAscWithContext,
+  compareContributionEventsDescWithContext,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -22,17 +22,39 @@ import {
 import { fetchFotmobContributionTimeline } from './fotmobPremTimeline';
 import { fplShirtImageUrl } from './fplShirtUrl';
 
-/** FotMob is only used for card ordering; goals/assists come from FPL (FotMob name match misses many players). */
-const FOTMOB_CARD_KINDS = new Set(['yellow_card', 'red_card']);
+/**
+ * FotMob supplies real broadcast-clock ordering for these. We prefer its ordering when it matches
+ * the player; FPL approximates the rest (save_points / dc_points — FotMob doesn't cover — always FPL).
+ */
+const FOTMOB_KINDS = new Set(['goal', 'assist', 'yellow_card', 'red_card']);
 
-function stripStaleFotmobGoalAssist(events) {
+/** Drop any previously-stored FotMob rows (goal/assist/card) — used when a fetch returns empty so stale data doesn't stick. */
+function stripStaleFotmobRows(events) {
   return (events || []).filter(
-    (e) =>
-      !(
-        String(e?.stableId || '').startsWith('fotmob:') &&
-        (e.kind === 'goal' || e.kind === 'assist')
-      )
+    (e) => !String(e?.stableId || '').startsWith('fotmob:')
   );
+}
+
+/**
+ * Build (elementId → Set of kinds) covered by FotMob. Used to:
+ *  - tell the FPL diff: don't emit these kinds for these players (avoids duplicates + stale order)
+ *  - de-duplicate in render when FPL already wrote to storage before FotMob matched
+ * @param {Array<{ elementId?: number, kind?: string }>} fotmobEvents
+ */
+function buildFotmobCoverage(fotmobEvents) {
+  const m = new Map();
+  for (const e of fotmobEvents || []) {
+    const elid = Number(e?.elementId);
+    const kind = e?.kind;
+    if (!Number.isFinite(elid) || !kind) continue;
+    let s = m.get(elid);
+    if (!s) {
+      s = new Set();
+      m.set(elid, s);
+    }
+    s.add(kind);
+  }
+  return m;
 }
 
 function badgeUrl(teamCode) {
@@ -236,8 +258,14 @@ export function PlayerContributions({
   kitIndexByEntry = {},
 }) {
   const [displayed, setDisplayed] = useState([]);
-  /** When true, goals / assists / cards come from FotMob timeline (ordered); FPL diff skips those kinds. */
-  const [fotmobTimelineActive, setFotmobTimelineActive] = useState(false);
+  /**
+   * (elementId → Set<kind>) of goal/assist/card rows the latest FotMob fetch provided.
+   * When a (player, kind) is covered we prefer FotMob's broadcast-clock ordering and suppress
+   * the FPL approximation for that specific slot. Unmatched players still fall back to FPL.
+   */
+  const [fotmobCoverage, setFotmobCoverage] = useState(
+    /** @type {Map<number, Set<string>>} */ (new Map())
+  );
   /** '' = all fantasy teams; otherwise `leagueEntryId` of owning squad. */
   const [fantasyTeamEntryId, setFantasyTeamEntryId] = useState('');
   /** When both false, every contribution kind is shown. When either true, only those kinds (union). */
@@ -278,12 +306,12 @@ export function PlayerContributions({
   const contribCtxRef = useRef(contributionLiveContext);
   contribCtxRef.current = contributionLiveContext;
 
-  /** Fresh live + fixtures on each merge so ordering follows real-world fixture chronology. */
+  /** Fresh live + fixtures on each merge so ordering follows real-world fixture chronology (latest first). */
   const mergeContributionLists = useCallback((preferFirstLists) => {
     const ctx = contribCtxRef.current;
     return mergeUniqueByStableId(
       preferFirstLists,
-      compareContributionEventsAscWithContext({
+      compareContributionEventsDescWithContext({
         liveFullByElementId: ctx?.liveFullByElementId,
         elementById: ctx?.elementById,
         gwFixtures: ctx?.gwFixtures ?? [],
@@ -305,7 +333,7 @@ export function PlayerContributions({
   );
 
   const compareRowsFn = useMemo(
-    () => compareContributionEventsAscWithContext(contributionSortCtx),
+    () => compareContributionEventsDescWithContext(contributionSortCtx),
     [contributionSortCtx]
   );
 
@@ -332,7 +360,7 @@ export function PlayerContributions({
 
   useEffect(() => {
     prevLiveRef.current = null;
-    setFotmobTimelineActive(false);
+    setFotmobCoverage(new Map());
     setFantasyTeamEntryId('');
     setFilterGoal(false);
     setFilterAssist(false);
@@ -386,20 +414,21 @@ export function PlayerContributions({
           trackedElementIds: tracked,
         });
         if (cancelled) return;
-        const cardEvents = (ev || []).filter((e) => FOTMOB_CARD_KINDS.has(e.kind));
-        if (cardEvents.length) {
-          const filteredEv = cardEvents.filter((e) =>
+        const fotmobEvents = (ev || []).filter((e) => FOTMOB_KINDS.has(e.kind));
+        if (fotmobEvents.length) {
+          const filteredEv = fotmobEvents.filter((e) =>
             contributionEventShownForLeague(e, ownerByEl)
           );
-          setFotmobTimelineActive(true);
+          const coverage = buildFotmobCoverage(filteredEv);
+          setFotmobCoverage(coverage);
           setDisplayed((prev) => {
-            const keep = prev.filter(
-              (e) =>
-                e.kind === 'dc_points' ||
-                e.kind === 'save_points' ||
-                (String(e.stableId || '').startsWith('fotmob:') &&
-                  FOTMOB_CARD_KINDS.has(e.kind))
-            );
+            const keep = (prev || []).filter((e) => {
+              const isFotmob = String(e?.stableId || '').startsWith('fotmob:');
+              if (isFotmob) return false;
+              const covered = coverage.get(Number(e?.elementId));
+              if (covered && covered.has(e.kind)) return false;
+              return true;
+            });
             return mergeContributionLists([filteredEv, keep]);
           });
           const bucket = readPlayerContributionBucket(storageKey);
@@ -410,13 +439,13 @@ export function PlayerContributions({
             2000
           );
         } else {
-          setFotmobTimelineActive(false);
-          setDisplayed((prev) => stripStaleFotmobGoalAssist(prev));
+          setFotmobCoverage(new Map());
+          setDisplayed((prev) => stripStaleFotmobRows(prev));
         }
       } catch {
         if (!cancelled) {
-          setFotmobTimelineActive(false);
-          setDisplayed((prev) => stripStaleFotmobGoalAssist(prev));
+          setFotmobCoverage(new Map());
+          setDisplayed((prev) => stripStaleFotmobRows(prev));
         }
       }
     })();
@@ -425,11 +454,11 @@ export function PlayerContributions({
     };
   }, [fotmobFetchKey, gameweek, storageKey, trackedKey, ownerByEl]);
 
-  /** When FotMob supplies cards, skip FPL card diffs (ordering from FotMob). Goals/assists always from FPL. */
-  const fplOmitCardGoalKinds = useMemo(() => {
-    if (!fotmobTimelineActive) return null;
-    return new Set(['yellow_card', 'red_card']);
-  }, [fotmobTimelineActive]);
+  /**
+   * Per-player FotMob coverage → FPL diff skips the (player, kind) slots FotMob already ordered.
+   * Players FotMob didn't match still get FPL approximation (better than nothing).
+   */
+  const fplOmitByElementKind = useMemo(() => fotmobCoverage, [fotmobCoverage]);
 
   useEffect(() => {
     let cancelled = false;
@@ -455,7 +484,7 @@ export function PlayerContributions({
       gameweek,
       nowIso,
       gwFixtures: ctx.gwFixtures || [],
-      omitKinds: fplOmitCardGoalKinds,
+      omitByElementKind: fplOmitByElementKind,
     });
     prevLiveRef.current = next;
 
@@ -465,7 +494,7 @@ export function PlayerContributions({
     if (!newEventsFiltered.length) return;
 
     setDisplayed((prev) => {
-      const sortFn = compareContributionEventsAscWithContext({
+      const sortFn = compareContributionEventsDescWithContext({
         liveFullByElementId: ctx.liveFullByElementId,
         elementById: ctx.elementById,
         gwFixtures: ctx.gwFixtures || [],
@@ -487,16 +516,30 @@ export function PlayerContributions({
     gameweek,
     tracked,
     storageKey,
-    fplOmitCardGoalKinds,
+    fplOmitByElementKind,
     ownerByEl,
   ]);
 
-  /** Chronological: earliest first (top), read down. No auto-scroll — user controls scroll position. */
+  /**
+   * Latest first (top), reading down goes back in time. No auto-scroll — user controls position.
+   * Dedupe: when FotMob covers (elementId, kind) we drop the FPL approximation for that slot
+   * (handles the case where FPL wrote to localStorage before FotMob matched the player).
+   */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
+    const liveCoverage = buildFotmobCoverage(
+      (displayed || []).filter((e) => String(e?.stableId || '').startsWith('fotmob:'))
+    );
     return [...displayed]
       .sort(compareRowsFn)
-      .filter((ev) => contributionEventShownForLeague(ev, ownerByEl))
+      .filter((ev) => {
+        if (!contributionEventShownForLeague(ev, ownerByEl)) return false;
+        const isFotmob = String(ev?.stableId || '').startsWith('fotmob:');
+        if (isFotmob) return true;
+        const covered = liveCoverage.get(Number(ev?.elementId));
+        if (covered && covered.has(ev.kind)) return false;
+        return true;
+      })
       .map((ev) => {
       const el = contributionLiveContext?.elementById?.[ev.elementId];
       const elementTypeId = el?.element_type;
