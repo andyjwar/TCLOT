@@ -1,4 +1,7 @@
-import { defensiveContributionPointsFromLiveRow } from './fplBonusFromBps.js';
+import {
+  defensiveContributionPointsFromLiveRow,
+  explainBlocksFromLiveElement,
+} from './fplBonusFromBps.js';
 
 /** FPL element_type id for goalkeepers */
 const ELEMENT_TYPE_GKP = 1;
@@ -16,6 +19,29 @@ export function saveFantasyPointsFromSaves(saves, elementTypeId) {
 
 function statsOf(liveRow) {
   return liveRow?.stats || {};
+}
+
+/**
+ * Clock proxy for this appearance: `explain` minutes for `fixtureId`, else GW `stats.minutes`.
+ * `stats.minutes` alone is a poor timeline key after FT (often 90 for everyone) and can
+ * double-count oddly on DGW without per-fixture explain.
+ */
+function minutesOnFixtureForTimeline(nextRow, fixtureId) {
+  const agg = Number(statsOf(nextRow).minutes) || 0;
+  if (
+    nextRow &&
+    fixtureId != null &&
+    Number.isFinite(Number(fixtureId))
+  ) {
+    const fid = Number(fixtureId);
+    const blocks = explainBlocksFromLiveElement(nextRow);
+    for (const b of blocks) {
+      if (Number(b.fixtureId) === fid && Number(b.minutes) > 0) {
+        return Number(b.minutes);
+      }
+    }
+  }
+  return agg;
 }
 
 /**
@@ -79,9 +105,16 @@ const KIND_BIAS_MS = {
 };
 
 /**
- * Approximate real-world ordering: kickoff + player match minutes (best FPL proxy) + kind tie-break + element id.
- * FPL does not expose exact clock for each goal; `stats.minutes` is used as the timeline anchor.
+ * Per-batch emission order (ms) — must be a whole ms so it survives float precision at ~1e12
+ * (`+ 1e-5` was rounding away). Keep total nudge below kind steps and within one clock minute.
+ */
+const EMIT_SEQUENCE_WEIGHT_MS = 4;
+
+/**
+ * Approximate real-world ordering: kickoff + clock proxy minutes + kind tie-break + element id + emit sequence.
+ * Uses per-fixture `explain` minutes when available; otherwise `stats.minutes`.
  * @param {number | null | undefined} [elementId] — breaks ties when two players score same minute
+ * @param {number} [sequenceIndex] — monotonic index within one diff batch; later ticks sort later (newest first in desc feed)
  * @returns {number} 0 → unknown; caller should fall back to `recordedAt`.
  */
 export function contributionApproxTimelineSortKey(
@@ -89,12 +122,15 @@ export function contributionApproxTimelineSortKey(
   element,
   kind,
   gwFixtures,
-  elementId
+  elementId,
+  sequenceIndex = 0
 ) {
   const fx = primaryFixtureForContribution(nextRow, element?.team, gwFixtures);
   const kickMs = fx?.kickoff_time ? Date.parse(String(fx.kickoff_time)) : NaN;
   if (!Number.isFinite(kickMs) || kickMs <= 0) return 0;
-  const playerMin = Number(statsOf(nextRow).minutes) || 0;
+  const fid = fx?.id != null ? Number(fx.id) : NaN;
+  let playerMin = minutesOnFixtureForTimeline(nextRow, fid);
+  playerMin = Math.min(Math.max(0, playerMin), 130);
   const base = kickMs + playerMin * 60_000;
   const kb = KIND_BIAS_MS[kind] ?? 20;
   const el =
@@ -102,7 +138,8 @@ export function contributionApproxTimelineSortKey(
       ? Number(elementId)
       : Number(element?.id);
   const tie = Number.isFinite(el) ? (el % 50_000) * 1e-4 : 0;
-  return base + kb + tie;
+  const seq = Number(sequenceIndex) || 0;
+  return base + kb + tie + seq * EMIT_SEQUENCE_WEIGHT_MS;
 }
 
 /** Latest in-fixture event first (top of feed); then `recordedAt`; then `stableId`. */
@@ -302,6 +339,9 @@ export function diffContributionEvents({
 
   const ids = [...trackedElementIds].filter((n) => Number.isFinite(Number(n))).sort((a, b) => a - b);
 
+  /** Disambiguate same-tick events (identical `recordedAt` and same-minute keys). Later index → newer in batch. */
+  let emitSeq = 0;
+
   for (const elid of ids) {
     const prevRow = bootstrap ? null : prevLiveByElementId[elid];
     const nextRow = nextLiveByElementId[elid];
@@ -328,7 +368,8 @@ export function diffContributionEvents({
           el,
           'goal',
           gwFixtures,
-          elid
+          elid,
+          emitSeq++
         ),
         source: 'fpl',
       });
@@ -349,7 +390,8 @@ export function diffContributionEvents({
           el,
           'assist',
           gwFixtures,
-          elid
+          elid,
+          emitSeq++
         ),
         source: 'fpl',
       });
@@ -370,7 +412,8 @@ export function diffContributionEvents({
           el,
           'dc_points',
           gwFixtures,
-          elid
+          elid,
+          emitSeq++
         ),
         source: 'fpl',
       });
@@ -391,7 +434,8 @@ export function diffContributionEvents({
           el,
           'save_points',
           gwFixtures,
-          elid
+          elid,
+          emitSeq++
         ),
         source: 'fpl',
       });
@@ -412,7 +456,8 @@ export function diffContributionEvents({
           el,
           'yellow_card',
           gwFixtures,
-          elid
+          elid,
+          emitSeq++
         ),
         source: 'fpl',
       });
@@ -433,7 +478,8 @@ export function diffContributionEvents({
           el,
           'red_card',
           gwFixtures,
-          elid
+          elid,
+          emitSeq++
         ),
         source: 'fpl',
       });

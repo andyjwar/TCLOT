@@ -168,6 +168,51 @@ test('diffContributionEvents — yellow and red card deltas', () => {
   assert.ok(kinds.has('red_card'));
 });
 
+test('contributionApproxTimelineSortKey — explain fixture minutes trump blind stats.minutes', () => {
+  const gwFixtures = [
+    {
+      id: 100,
+      team_h: 1,
+      team_a: 2,
+      kickoff_time: '2026-04-12T14:00:00Z',
+    },
+  ];
+  const el = { id: 5, team: 1 };
+  const withExplain = {
+    stats: { goals_scored: 1, minutes: 90 },
+    explain: [[[{ stat: 'minutes', value: 34 }], 100]],
+  };
+  const statsOnly = {
+    stats: { goals_scored: 1, minutes: 90 },
+    explain: [],
+  };
+  const kExpl = contributionApproxTimelineSortKey(withExplain, el, 'goal', gwFixtures, 5);
+  const kAgg = contributionApproxTimelineSortKey(statsOnly, el, 'goal', gwFixtures, 5);
+  assert.ok(
+    kExpl < kAgg,
+    'per-fixture explain minutes align with clock; aggregate 90 would mis-order vs real 34′'
+  );
+});
+
+test('contributionApproxTimelineSortKey — later emit sequence nudges key (same-minute ties)', () => {
+  const gwFixtures = [
+    {
+      id: 100,
+      team_h: 1,
+      team_a: 2,
+      kickoff_time: '2026-04-12T14:00:00Z',
+    },
+  ];
+  const el = { id: 5, team: 1 };
+  const row = {
+    stats: { goals_scored: 1, minutes: 60 },
+    explain: [],
+  };
+  const k0 = contributionApproxTimelineSortKey(row, el, 'goal', gwFixtures, 5, 0);
+  const k1 = contributionApproxTimelineSortKey(row, el, 'goal', gwFixtures, 5, 1);
+  assert.ok(k1 > k0);
+});
+
 test('contributionApproxTimelineSortKey — later kickoff sorts higher', () => {
   const gwFixtures = [
     {
