@@ -5,6 +5,7 @@ import {
   extractLeagueTeams,
   mapFplTeamsToFotmob,
   matchFplElementId,
+  parseFotmobEventMinute,
 } from './fotmobPremTimeline.js';
 
 test('collectDayMatches finds nested fixtures', () => {
@@ -45,6 +46,58 @@ test('matchFplElementId resolves web_name on team', () => {
   };
   assert.equal(matchFplElementId(1, 'Saka', elementById), 10);
   assert.equal(matchFplElementId(1, 'Unknown', elementById), null);
+});
+
+test('parseFotmobEventMinute — numeric `time` + overloadTime', () => {
+  assert.deepEqual(parseFotmobEventMinute({ time: 45, overloadTime: 2 }), {
+    minute: 45,
+    stoppage: 2,
+  });
+  assert.deepEqual(parseFotmobEventMinute({ time: 89 }), {
+    minute: 89,
+    stoppage: 0,
+  });
+});
+
+test('parseFotmobEventMinute — stoppage-time string like "90+3\'"', () => {
+  assert.deepEqual(parseFotmobEventMinute({ timeStr: "90+3'" }), {
+    minute: 90,
+    stoppage: 3,
+  });
+  assert.deepEqual(parseFotmobEventMinute({ timeStr: "45+2'" }), {
+    minute: 45,
+    stoppage: 2,
+  });
+  assert.deepEqual(parseFotmobEventMinute({ timeStr: "23'" }), {
+    minute: 23,
+    stoppage: 0,
+  });
+});
+
+test('parseFotmobEventMinute — string in `time` field ("90+3")', () => {
+  assert.deepEqual(parseFotmobEventMinute({ time: '90+3' }), {
+    minute: 90,
+    stoppage: 3,
+  });
+});
+
+test('parseFotmobEventMinute — minute/matchMinute fallbacks', () => {
+  assert.deepEqual(parseFotmobEventMinute({ minute: 67 }), {
+    minute: 67,
+    stoppage: 0,
+  });
+  assert.deepEqual(parseFotmobEventMinute({ matchMinute: 12 }), {
+    minute: 12,
+    stoppage: 0,
+  });
+});
+
+test('parseFotmobEventMinute — unparseable returns null minute (not sorted to kickoff)', () => {
+  assert.deepEqual(parseFotmobEventMinute({}), { minute: null, stoppage: 0 });
+  assert.deepEqual(parseFotmobEventMinute({ time: null }), {
+    minute: null,
+    stoppage: 0,
+  });
 });
 
 test('extractLeagueTeams picks table rows', () => {

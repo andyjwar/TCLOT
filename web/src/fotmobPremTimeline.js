@@ -234,6 +234,51 @@ function assistPlayerFromSwap(ev) {
 }
 
 /**
+ * FotMob encodes event minutes in varying shapes across responses. Try:
+ *   1. `ev.time` as number (most common)
+ *   2. `ev.timeStr` / `ev.time` as string — e.g. `"23'"`, `"45+2'"`, `"90+3"`
+ *   3. fallback fields `minute`, `matchMinute`
+ * Stoppage (`+N`) becomes a separate `stoppage` value so it can act as a sub-minute tiebreak.
+ * Returns `{ minute: number | null, stoppage: number }`.
+ */
+export function parseFotmobEventMinute(ev) {
+  const directTime = ev?.time;
+  if (typeof directTime === 'number' && Number.isFinite(directTime)) {
+    const overloadNum = Number(ev?.overloadTime);
+    return {
+      minute: directTime,
+      stoppage: Number.isFinite(overloadNum) ? overloadNum : 0,
+    };
+  }
+  const strSources = [ev?.timeStr, directTime, ev?.minute, ev?.matchMinute];
+  for (const src of strSources) {
+    if (src == null) continue;
+    const s = String(src);
+    const m = s.match(/(\d+)(?:\s*\+\s*(\d+))?/);
+    if (m) {
+      const overloadNum = Number(ev?.overloadTime);
+      return {
+        minute: Number(m[1]),
+        stoppage: m[2] != null
+          ? Number(m[2])
+          : Number.isFinite(overloadNum)
+            ? overloadNum
+            : 0,
+      };
+    }
+  }
+  const altNum = Number(ev?.minute ?? ev?.matchMinute);
+  if (Number.isFinite(altNum)) {
+    const overloadNum = Number(ev?.overloadTime);
+    return {
+      minute: altNum,
+      stoppage: Number.isFinite(overloadNum) ? overloadNum : 0,
+    };
+  }
+  return { minute: null, stoppage: 0 };
+}
+
+/**
  * @param {{
  *   gameweek: number,
  *   gwFixtures: object[],
@@ -308,17 +353,44 @@ export async function fetchFotmobContributionTimeline({
       continue;
     }
 
-    const events = extractEventsList(matchJson);
+    const rawEvents = extractEventsList(matchJson);
+    /**
+     * Normalize then sort chronologically. Different FotMob endpoints return events in different
+     * orders (sometimes grouped by half, sometimes descending). Sorting here guarantees the slot
+     * tie-break reflects real match order.
+     */
+    const normalized = [];
+    for (let i = 0; i < rawEvents.length; i++) {
+      const ev = rawEvents[i];
+      const kind = classifyFotmobEvent(ev);
+      if (!kind) continue;
+      const { minute, stoppage } = parseFotmobEventMinute(ev);
+      const eid = Number(ev?.eventId);
+      normalized.push({
+        ev,
+        kind,
+        minute,
+        stoppage,
+        idx: i,
+        eid: Number.isFinite(eid) ? eid : i,
+      });
+    }
+    normalized.sort((a, b) => {
+      const am = Number.isFinite(a.minute) ? a.minute : Number.POSITIVE_INFINITY;
+      const bm = Number.isFinite(b.minute) ? b.minute : Number.POSITIVE_INFINITY;
+      if (am !== bm) return am - bm;
+      if (a.stoppage !== b.stoppage) return a.stoppage - b.stoppage;
+      if (a.eid !== b.eid) return a.eid - b.eid;
+      return a.idx - b.idx;
+    });
+
     let slot = 0;
     let lastMk = '';
 
-    for (let i = 0; i < events.length; i++) {
-      const ev = events[i];
-      const kind = classifyFotmobEvent(ev);
-      if (!kind) continue;
-
-      const tmin = Number(ev.time);
-      const ot = Number(ev.overloadTime) || 0;
+    for (let i = 0; i < normalized.length; i++) {
+      const { ev, kind, minute, stoppage } = normalized[i];
+      const tmin = Number.isFinite(minute) ? minute : 0;
+      const ot = Number.isFinite(stoppage) ? stoppage : 0;
       const mk = `${tmin}_${ot}`;
       if (mk !== lastMk) {
         slot = 0;
@@ -326,11 +398,7 @@ export async function fetchFotmobContributionTimeline({
       } else {
         slot += 1;
       }
-      const sortKey =
-        kickMs +
-        (Number.isFinite(tmin) ? tmin : 0) * 60_000 +
-        ot * 1000 +
-        slot;
+      const sortKey = kickMs + tmin * 60_000 + ot * 1000 + slot;
 
       const pushOne = (k, playerObj, delta = 1) => {
         if (!playerObj?.name) return;
