@@ -96,6 +96,14 @@ function displayPlayerName(el, elementId) {
  * True when this PL team has at least one GW fixture and all are finished (provisional).
  * Used to style 0 minutes as DNP after the club’s match(es).
  */
+/** Match is over for LTP purposes (FPL may set `finished` and/or `finished_provisional`). */
+function isFixtureFullyDone(f) {
+  if (f == null) return true;
+  if (f.finished_provisional === true) return true;
+  if (f.finished === true) return true;
+  return false;
+}
+
 function teamAllGwFixturesFinished(teamId, gwFixtures) {
   if (teamId == null || !Number.isFinite(teamId)) return false;
   if (!Array.isArray(gwFixtures) || !gwFixtures.length) return false;
@@ -103,7 +111,7 @@ function teamAllGwFixturesFinished(teamId, gwFixtures) {
     (f) => Number(f.team_h) === teamId || Number(f.team_a) === teamId
   );
   if (!mine.length) return false;
-  return mine.every((f) => f.finished_provisional === true);
+  return mine.every((f) => isFixtureFullyDone(f));
 }
 
 /**
@@ -154,7 +162,7 @@ function computeStillYetToPlayPl(minutes, teamId, gwFixtures) {
   return gwFixtures.some(
     (f) =>
       (Number(f.team_h) === teamId || Number(f.team_a) === teamId) &&
-      f.finished_provisional !== true
+      !isFixtureFullyDone(f)
   );
 }
 
@@ -170,7 +178,7 @@ function countUnfinishedGwFixturesForTeam(teamId, gwFixtures) {
   const n = gwFixtures.filter(
     (f) =>
       (Number(f.team_h) === teamId || Number(f.team_a) === teamId) &&
-      f.finished_provisional !== true
+      !isFixtureFullyDone(f)
   ).length;
   return n;
 }
@@ -236,16 +244,34 @@ function mapPickRows(
   return rows;
 }
 
-/** @param {object[]} starters */
-function countStartersLeftToPlayGames(starters) {
-  if (!Array.isArray(starters) || !starters.length) return 0;
+/**
+ * Sum unfinished games for the **effective** starting XI (post-autosub when available).
+ * Uses `stillYetToPlayPl` only — not `leftToPlayStarter`, so promoted bench players count.
+ * @param {object[]} xiRows — 11 rows from submitted starters or `displayStarters`
+ */
+function countEffectiveXiLeftToPlayGames(xiRows) {
+  if (!Array.isArray(xiRows) || !xiRows.length) return 0;
   let total = 0;
-  for (const r of starters) {
-    if (!r.leftToPlayStarter) continue;
+  for (const r of xiRows) {
+    if (!r.stillYetToPlayPl) continue;
     const n = Number(r.leftToPlayFixtureCount);
     total += Number.isFinite(n) && n > 0 ? n : 1;
   }
   return total;
+}
+
+/** Same rule as `startersForEffectiveXi` in LiveScores — full bench length match. */
+function xiRowsForLeftToPlayCount(starters, bench, displayStarters, displayBench) {
+  const nBench = bench?.length ?? 0;
+  if (
+    Array.isArray(displayStarters) &&
+    displayStarters.length === 11 &&
+    Array.isArray(displayBench) &&
+    displayBench.length === nBench
+  ) {
+    return displayStarters;
+  }
+  return starters;
 }
 
 function applyBonusColumn(rows, provisionalByElement) {
@@ -443,7 +469,13 @@ export function useLiveScores({
             projectedAutoSubs,
           } = buildEffectiveLineup({ starters, bench, autoSubs });
 
-          const leftToPlayCount = countStartersLeftToPlayGames(starters);
+          const xiForLtp = xiRowsForLeftToPlayCount(
+            starters,
+            bench,
+            displayStarters,
+            displayBench
+          );
+          const leftToPlayCount = countEffectiveXiLeftToPlayGames(xiForLtp);
 
           return {
             leagueEntryId: t.id,
