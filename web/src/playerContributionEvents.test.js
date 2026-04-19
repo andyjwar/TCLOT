@@ -102,7 +102,7 @@ test('buildLatestDropByElementOut — highest GW wins', () => {
   assert.equal(m.get(7).teamName, 'NewerGW');
 });
 
-test('diffContributionEvents — bootstrap (no prev): goals/cards suppressed, saves/dc allowed', () => {
+test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc vs zero; cards need delta tick', () => {
   const next = {
     12: {
       stats: {
@@ -132,8 +132,8 @@ test('diffContributionEvents — bootstrap (no prev): goals/cards suppressed, sa
     nowIso: '2026-01-01T12:00:00.000Z',
   });
   const kinds = new Set(out.map((e) => e.kind));
-  assert.ok(!kinds.has('goal'));
-  assert.ok(!kinds.has('assist'));
+  assert.ok(kinds.has('goal'));
+  assert.ok(kinds.has('assist'));
   assert.ok(!kinds.has('yellow_card'));
   assert.ok(kinds.has('save_points'));
   const saveEv = out.find((e) => e.kind === 'save_points');

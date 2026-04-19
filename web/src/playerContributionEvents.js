@@ -269,7 +269,7 @@ export function diffContributionEvents({
   const gw = Number(gameweek);
   if (!Number.isFinite(gw)) return out;
 
-  /** First live tick after mount: emit save/dc totals vs implicit zero only (goals/cards need a prior snapshot or FotMob). */
+  /** First live tick after mount: treat missing prev as zero baseline for totals (goals/assists/saves/dc). Cards still need a delta vs prior tick to avoid double-counting with FotMob. */
   const bootstrap = prevLiveByElementId == null;
 
   const ids = [...trackedElementIds].filter((n) => Number.isFinite(Number(n))).sort((a, b) => a - b);
@@ -286,7 +286,7 @@ export function diffContributionEvents({
 
     const g0 = Number(ps.goals_scored) || 0;
     const g1 = Number(ns.goals_scored) || 0;
-    if (!bootstrap && !omitKinds?.has('goal') && g1 > g0) {
+    if (!omitKinds?.has('goal') && g1 > g0) {
       const d = g1 - g0;
       out.push({
         stableId: `${gw}:${elid}:goal:tot${g1}`,
@@ -302,7 +302,7 @@ export function diffContributionEvents({
 
     const a0 = Number(ps.assists) || 0;
     const a1 = Number(ns.assists) || 0;
-    if (!bootstrap && !omitKinds?.has('assist') && a1 > a0) {
+    if (!omitKinds?.has('assist') && a1 > a0) {
       out.push({
         stableId: `${gw}:${elid}:assist:tot${a1}`,
         kind: 'assist',

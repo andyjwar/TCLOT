@@ -22,6 +22,19 @@ import {
 import { fetchFotmobContributionTimeline } from './fotmobPremTimeline';
 import { fplShirtImageUrl } from './fplShirtUrl';
 
+/** FotMob is only used for card ordering; goals/assists come from FPL (FotMob name match misses many players). */
+const FOTMOB_CARD_KINDS = new Set(['yellow_card', 'red_card']);
+
+function stripStaleFotmobGoalAssist(events) {
+  return (events || []).filter(
+    (e) =>
+      !(
+        String(e?.stableId || '').startsWith('fotmob:') &&
+        (e.kind === 'goal' || e.kind === 'assist')
+      )
+  );
+}
+
 function badgeUrl(teamCode) {
   if (teamCode == null) return null;
   return `https://resources.premierleague.com/premierleague/badges/50/t${teamCode}.png`;
@@ -344,8 +357,9 @@ export function PlayerContributions({
           trackedElementIds: tracked,
         });
         if (cancelled) return;
-        if (ev.length) {
-          const filteredEv = ev.filter((e) =>
+        const cardEvents = (ev || []).filter((e) => FOTMOB_CARD_KINDS.has(e.kind));
+        if (cardEvents.length) {
+          const filteredEv = cardEvents.filter((e) =>
             contributionEventShownForLeague(e, ownerByEl)
           );
           setFotmobTimelineActive(true);
@@ -354,7 +368,8 @@ export function PlayerContributions({
               (e) =>
                 e.kind === 'dc_points' ||
                 e.kind === 'save_points' ||
-                String(e.stableId || '').startsWith('fotmob:')
+                (String(e.stableId || '').startsWith('fotmob:') &&
+                  FOTMOB_CARD_KINDS.has(e.kind))
             );
             return mergeUniqueByStableId([filteredEv, keep]);
           });
@@ -367,9 +382,13 @@ export function PlayerContributions({
           );
         } else {
           setFotmobTimelineActive(false);
+          setDisplayed((prev) => stripStaleFotmobGoalAssist(prev));
         }
       } catch {
-        if (!cancelled) setFotmobTimelineActive(false);
+        if (!cancelled) {
+          setFotmobTimelineActive(false);
+          setDisplayed((prev) => stripStaleFotmobGoalAssist(prev));
+        }
       }
     })();
     return () => {
@@ -377,9 +396,10 @@ export function PlayerContributions({
     };
   }, [fotmobFetchKey, gameweek, storageKey, trackedKey, ownerByEl]);
 
+  /** When FotMob supplies cards, skip FPL card diffs (ordering from FotMob). Goals/assists always from FPL. */
   const fplOmitCardGoalKinds = useMemo(() => {
     if (!fotmobTimelineActive) return null;
-    return new Set(['goal', 'assist', 'yellow_card', 'red_card']);
+    return new Set(['yellow_card', 'red_card']);
   }, [fotmobTimelineActive]);
 
   useEffect(() => {
