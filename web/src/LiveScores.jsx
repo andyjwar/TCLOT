@@ -3,7 +3,6 @@ import {
   useState,
   useCallback,
   useSyncExternalStore,
-  useEffect,
 } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { PlayerContributions } from './PlayerContributions';
@@ -506,7 +505,7 @@ function formatPlayerLtpSegment(r) {
 }
 
 const LEFT_TO_PLAY_TITLE =
-  'Games left to play from starting XI players on 0 minutes (double gameweeks count as two games)';
+  'Total fixtures left for the effective starting XI: each starter adds their own remaining club fixtures they can still score from (double gameweeks: up to two per player).';
 
 /** Bracketed count after the team name (both sides — keeps layout symmetrical). */
 function LeftToPlayOutsideAfter({ count, leadingSpace = true }) {
@@ -647,7 +646,7 @@ export function LiveScores({
     });
   }, []);
 
-  /** Single “Players left to play” panel for all H2H fixtures — collapsed by default. */
+  /** Single “fixtures left” panel for all H2H fixtures — collapsed by default. */
   const [ltpPanelExpanded, setLtpPanelExpanded] = useState(false);
 
   const proxyHost = proxyHostLabel();
@@ -773,7 +772,7 @@ export function LiveScores({
     });
   }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry, gwStandingsFrozen]);
 
-  /** One object per H2H fixture with both sides’ “left to play” lines. */
+  /** One object per H2H fixture with both sides’ fixture totals and player lines. */
   const leftToPlayByFixture = useMemo(() => {
     if (!gwMatches.length) return [];
     const buildSide = (leagueEntryId) => {
@@ -785,11 +784,11 @@ export function LiveScores({
       const allowed = pickElementIdSet(squad);
       const ltpRows = xi
         .filter((r) => allowed.has(r.element))
-        .filter((r) => r.stillYetToPlayPl);
+        .filter((r) => Number(r.playerGamesLeftToPlay) > 0);
       const segments = ltpRows.map(formatPlayerLtpSegment);
       const ltpGamesCount = ltpRows.reduce((sum, r) => {
-        const n = Number(r.leftToPlayFixtureCount);
-        return sum + (Number.isFinite(n) && n > 0 ? n : 1);
+        const n = Number(r.playerGamesLeftToPlay);
+        return sum + (Number.isFinite(n) && n > 0 ? n : 0);
       }, 0);
       return { leagueEntryId, name, live, segments, ltpGamesCount };
     };
@@ -963,7 +962,7 @@ export function LiveScores({
                 className="tile tile--compact live-fixture-tile"
                 aria-label={
                   typeof homeLtp === 'number' && typeof awayLtp === 'number'
-                    ? `${homeName}, ${homeLtp} left to play, vs ${awayName}, ${awayLtp} left to play`
+                    ? `${homeName}, ${homeLtp} fixtures left, vs ${awayName}, ${awayLtp} fixtures left`
                     : `${homeName} vs ${awayName}`
                 }
               >
@@ -1226,7 +1225,7 @@ export function LiveScores({
       {leftToPlayByFixture.length > 0 ? (
         <section
           className="tile tile--compact live-ltp-panel-tile"
-          aria-label="Players left to play in H2H fixtures"
+          aria-label="Total fixtures left to play in H2H matchups"
         >
           <button
             type="button"
@@ -1240,7 +1239,7 @@ export function LiveScores({
             </span>
             <span className="live-ltp-fixture-banner__text">
               <span className="live-ltp-fixture-banner__title live-ltp-fixture-banner__title--only">
-                Players left to play
+                Fixtures left to play
               </span>
             </span>
             <span className="live-fixture-banner__expand-foot" aria-hidden>
@@ -1276,7 +1275,10 @@ export function LiveScores({
                           </strong>
                         </span>
                         <span className="live-ltp-summary-players">
-                          <span className="live-ltp-summary-players-count muted tabular">
+                          <span
+                            className="live-ltp-summary-players-count muted tabular"
+                            title="Total fixtures left (sum over effective starting XI)"
+                          >
                             ({row.ltpGamesCount})
                           </span>
                           {row.segments.length ? (

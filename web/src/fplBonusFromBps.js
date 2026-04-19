@@ -220,6 +220,75 @@ export function fixturesForTeamInGw(gwFixtures, teamId) {
   );
 }
 
+/** Match is over for live / LTP purposes (`finished` and/or `finished_provisional`). */
+export function isFixtureFullyDone(f) {
+  if (f == null) return true;
+  if (f.finished_provisional === true) return true;
+  if (f.finished === true) return true;
+  return false;
+}
+
+/**
+ * Fixtures this GW this player could still score from (one per single gameweek; two before a DGW is done).
+ * Uses live `explain` per-fixture minutes when present; otherwise heuristics for common DGW/SGW cases.
+ *
+ * @param {object | null | undefined} el — bootstrap element
+ * @param {object | null | undefined} liveRow — full draft/classic live row
+ * @param {object[]} gwFixtures — fixtures for this event only
+ * @param {number | null} teamId
+ * @param {number} aggregateMinutes — `stats.minutes` (GW total)
+ * @returns {number}
+ */
+export function countElementGamesLeftToPlay(
+  el,
+  liveRow,
+  gwFixtures,
+  teamId,
+  aggregateMinutes
+) {
+  if (teamId == null || !Number.isFinite(teamId)) return 0;
+  const mins = Number(aggregateMinutes) || 0;
+
+  if (!Array.isArray(gwFixtures) || !gwFixtures.length) {
+    return mins === 0 ? 1 : 0;
+  }
+
+  const mine = fixturesForTeamInGw(gwFixtures, teamId);
+  const unfinished = mine.filter((f) => !isFixtureFullyDone(f));
+  if (!unfinished.length) return 0;
+
+  if (mins === 0) {
+    return unfinished.length;
+  }
+
+  const playedIds = new Set(
+    participatingFixtureIdsForElement(el, liveRow, gwFixtures)
+      .map((id) => Number(id))
+      .filter((id) => Number.isFinite(id))
+  );
+
+  if (playedIds.size > 0) {
+    let c = 0;
+    for (const f of unfinished) {
+      const fid = Number(f.id);
+      if (!Number.isFinite(fid)) continue;
+      if (!playedIds.has(fid)) c++;
+    }
+    return c;
+  }
+
+  const finished = mine.filter((f) => isFixtureFullyDone(f));
+
+  if (unfinished.length === 1) {
+    if (finished.length === 0) {
+      return 0;
+    }
+    return 1;
+  }
+
+  return Math.max(0, unfinished.length - 1);
+}
+
 /**
  * When explain is empty but minutes > 0, attribute to the only GW fixture for this team.
  *

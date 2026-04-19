@@ -4207,7 +4207,7 @@ button.live-fixture-banner--toggle {
   display: inline;
 }
 
-/* Name + (left to play) share one baseline; edge aligns toward the score */
+/* Name + (fixtures left count) share one baseline; edge aligns toward the score */
 .live-fixture-banner__team-text--home {
   align-items: flex-end;
   text-align: right;

@@ -7,7 +7,7 @@
     "dev:exfos": "VITE_LEAGUE_TITLE_ABBR=exFOS VITE_LEAGUE_TITLE='2025-26 season' VITE_SHOW_DASHBOARD_PLAYOFF=true npm run dev",
     "dev": "node scripts/build-team-logos-webp.mjs && node scripts/fetch-league-if-needed.mjs && node scripts/copy-data.js && node scripts/prune-stale-draft-picks.mjs && node scripts/build-waiver-gw-analytics.mjs && node scripts/build-player-contributions-archive.mjs && node scripts/build-draft-picks.mjs && vite",
     "build": "node scripts/build-team-logos-webp.mjs && node scripts/fetch-league-if-needed.mjs && node scripts/copy-data.js && node scripts/prune-stale-draft-picks.mjs && node scripts/build-waiver-gw-analytics.mjs && node scripts/build-player-contributions-archive.mjs && node scripts/build-draft-picks.mjs && vite build && node scripts/write-deploy-check.mjs && node scripts/postbuild-gh-pages.mjs",
-    "test": "node --test src/playerContributionEvents.test.js src/fotmobPremTimeline.test.js",
+    "test": "node --test src/playerContributionEvents.test.js src/fotmobPremTimeline.test.js src/useLiveScoresGamesLeft.test.js",
     "deploy": "npm run build && npx gh-pages -d dist",
     "publish-real-league": "node scripts/publish-real-league.mjs",
     "hall-banner:toronto-wiggum": "node scripts/generate-toronto-wiggum-banner.mjs",

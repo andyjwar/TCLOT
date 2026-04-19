@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
   computeProvisionalGwBonusByElementId,
+  countElementGamesLeftToPlay,
   defensiveContributionCountFromLiveRow,
+  isFixtureFullyDone,
   selectDisplayBonus,
 } from './fplBonusFromBps';
 import { buildEffectiveLineup } from './fplAutosubProjection';
@@ -96,14 +98,6 @@ function displayPlayerName(el, elementId) {
  * True when this PL team has at least one GW fixture and all are finished (provisional).
  * Used to style 0 minutes as DNP after the club’s match(es).
  */
-/** Match is over for LTP purposes (FPL may set `finished` and/or `finished_provisional`). */
-function isFixtureFullyDone(f) {
-  if (f == null) return true;
-  if (f.finished_provisional === true) return true;
-  if (f.finished === true) return true;
-  return false;
-}
-
 function teamAllGwFixturesFinished(teamId, gwFixtures) {
   if (teamId == null || !Number.isFinite(teamId)) return false;
   if (!Array.isArray(gwFixtures) || !gwFixtures.length) return false;
@@ -211,6 +205,13 @@ function mapPickRows(
     const stillYetToPlayPl = computeStillYetToPlayPl(mins, tid, gwFixtures);
     const leftToPlayStarter = p.position <= 11 && stillYetToPlayPl;
     const leftToPlayFixtureCount = countUnfinishedGwFixturesForTeam(tid, gwFixtures);
+    const playerGamesLeftToPlay = countElementGamesLeftToPlay(
+      el,
+      liveRow,
+      gwFixtures,
+      tid,
+      mins
+    );
     return {
       element: pid,
       web_name: webName,
@@ -238,6 +239,8 @@ function mapPickRows(
       leftToPlayStarter,
       /** Games left for this player’s club this GW (DGW ⇒ 2 when both fixtures unfinished). */
       leftToPlayFixtureCount,
+      /** Per-player fixture count still to score from (DGW after first match uses explain / heuristics). */
+      playerGamesLeftToPlay,
     };
   });
   rows.sort((a, b) => a.pickPosition - b.pickPosition);
@@ -245,17 +248,16 @@ function mapPickRows(
 }
 
 /**
- * Sum unfinished games for the **effective** starting XI (post-autosub when available).
- * Uses `stillYetToPlayPl` only — not `leftToPlayStarter`, so promoted bench players count.
+ * Total **fixtures** still to play for the **effective** starting XI (post-autosub when available):
+ * sum of each starter’s `playerGamesLeftToPlay` (DGW can contribute 2 per player).
  * @param {object[]} xiRows — 11 rows from submitted starters or `displayStarters`
  */
 function countEffectiveXiLeftToPlayGames(xiRows) {
   if (!Array.isArray(xiRows) || !xiRows.length) return 0;
   let total = 0;
   for (const r of xiRows) {
-    if (!r.stillYetToPlayPl) continue;
-    const n = Number(r.leftToPlayFixtureCount);
-    total += Number.isFinite(n) && n > 0 ? n : 1;
+    const n = Number(r.playerGamesLeftToPlay);
+    if (Number.isFinite(n) && n > 0) total += n;
   }
   return total;
 }
