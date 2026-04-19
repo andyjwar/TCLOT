@@ -5,7 +5,7 @@ import {
   buildOwnerByElementId,
   buildTrackedElementIdSet,
   buildTrackedElementIdSetWithFixtures,
-  compareContributionEventsDesc,
+  compareContributionEventsAsc,
   contributionApproxTimelineSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
@@ -199,10 +199,10 @@ test('contributionApproxTimelineSortKey — later kickoff sorts higher', () => {
   assert.ok(kLate > kEarly, 'later TV window should sort after earlier kickoff + clock');
 });
 
-test('compareContributionEventsDesc — prefers sortKey over recordedAt', () => {
+test('compareContributionEventsAsc — earlier sortKey sorts first (match order)', () => {
   const a = { sortKey: 100, recordedAt: '2026-01-02T00:00:00.000Z', stableId: 'a' };
   const b = { sortKey: 200, recordedAt: '2026-01-01T00:00:00.000Z', stableId: 'b' };
-  assert.ok(compareContributionEventsDesc(a, b) > 0, 'b should come before a (higher sortKey first in desc list sort)');
+  assert.ok(compareContributionEventsAsc(a, b) < 0, 'earlier timeline key (a) before later (b)');
 });
 
 test('diffContributionEvents — omitKinds skips goal', () => {

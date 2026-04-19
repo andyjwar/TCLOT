@@ -65,32 +65,44 @@ export function primaryFixtureForContribution(nextRow, teamId, gwFixtures) {
   return null;
 }
 
-/** Tie-break when clock is identical (not a real timeline, just stable ordering). */
-const KIND_ORDER = {
-  goal: 50,
-  assist: 49,
-  dc_points: 35,
-  save_points: 34,
-  yellow_card: 10,
-  red_card: 9,
+/**
+ * Sub-minute ordering when FPL only gives whole minutes (goal before assist on same clock).
+ * Small ms offsets — keep below one in-game minute (60_000 ms).
+ */
+const KIND_BIAS_MS = {
+  goal: 0,
+  assist: 3,
+  dc_points: 6,
+  save_points: 9,
+  yellow_card: 12,
+  red_card: 15,
 };
 
 /**
- * Approximate real-world ordering: kickoff + official fixture clock + player minutes.
- * FPL does not expose exact goal minutes in `event/live`; this uses the same fixtures feed as Live.
+ * Approximate real-world ordering: kickoff + player match minutes (best FPL proxy) + kind tie-break + element id.
+ * FPL does not expose exact clock for each goal; `stats.minutes` is used as the timeline anchor.
+ * @param {number | null | undefined} [elementId] — breaks ties when two players score same minute
  * @returns {number} 0 → unknown; caller should fall back to `recordedAt`.
  */
-export function contributionApproxTimelineSortKey(nextRow, element, kind, gwFixtures) {
+export function contributionApproxTimelineSortKey(
+  nextRow,
+  element,
+  kind,
+  gwFixtures,
+  elementId
+) {
   const fx = primaryFixtureForContribution(nextRow, element?.team, gwFixtures);
   const kickMs = fx?.kickoff_time ? Date.parse(String(fx.kickoff_time)) : NaN;
   if (!Number.isFinite(kickMs) || kickMs <= 0) return 0;
-  const fixtureClock =
-    Number.isFinite(Number(fx?.minutes)) && Number(fx.minutes) >= 0
-      ? Number(fx.minutes)
-      : Number(statsOf(nextRow).minutes) || 0;
   const playerMin = Number(statsOf(nextRow).minutes) || 0;
-  const ko = KIND_ORDER[kind] ?? 0;
-  return kickMs + fixtureClock * 60_000 + playerMin * 100 + ko;
+  const base = kickMs + playerMin * 60_000;
+  const kb = KIND_BIAS_MS[kind] ?? 20;
+  const el =
+    elementId != null && Number.isFinite(Number(elementId))
+      ? Number(elementId)
+      : Number(element?.id);
+  const tie = Number.isFinite(el) ? (el % 50_000) * 1e-4 : 0;
+  return base + kb + tie;
 }
 
 /** Latest real-world approx first; then detection time; then stable id. */
@@ -105,6 +117,22 @@ export function compareContributionEventsDesc(a, b) {
   const t = String(b?.recordedAt || '').localeCompare(String(a?.recordedAt || ''));
   if (t !== 0) return t;
   return String(b?.stableId || '').localeCompare(String(a?.stableId || ''));
+}
+
+/**
+ * Match timeline order: earlier events first (top of feed). Unknown `sortKey` (0) sorts last.
+ */
+export function compareContributionEventsAsc(a, b) {
+  const ka = Number(a?.sortKey);
+  const kb = Number(b?.sortKey);
+  const aOk = Number.isFinite(ka) && ka > 0;
+  const bOk = Number.isFinite(kb) && kb > 0;
+  if (aOk && bOk && ka !== kb) return ka - kb;
+  if (aOk && !bOk) return -1;
+  if (!aOk && bOk) return 1;
+  const t = String(a?.recordedAt || '').localeCompare(String(b?.recordedAt || ''));
+  if (t !== 0) return t;
+  return String(a?.stableId || '').localeCompare(String(b?.stableId || ''));
 }
 
 /**
@@ -295,7 +323,13 @@ export function diffContributionEvents({
         gameweek: gw,
         delta: d,
         recordedAt: nowIso,
-        sortKey: contributionApproxTimelineSortKey(nextRow, el, 'goal', gwFixtures),
+        sortKey: contributionApproxTimelineSortKey(
+          nextRow,
+          el,
+          'goal',
+          gwFixtures,
+          elid
+        ),
         source: 'fpl',
       });
     }
@@ -310,7 +344,13 @@ export function diffContributionEvents({
         gameweek: gw,
         delta: a1 - a0,
         recordedAt: nowIso,
-        sortKey: contributionApproxTimelineSortKey(nextRow, el, 'assist', gwFixtures),
+        sortKey: contributionApproxTimelineSortKey(
+          nextRow,
+          el,
+          'assist',
+          gwFixtures,
+          elid
+        ),
         source: 'fpl',
       });
     }
@@ -325,7 +365,13 @@ export function diffContributionEvents({
         gameweek: gw,
         delta: dc1 - dc0,
         recordedAt: nowIso,
-        sortKey: contributionApproxTimelineSortKey(nextRow, el, 'dc_points', gwFixtures),
+        sortKey: contributionApproxTimelineSortKey(
+          nextRow,
+          el,
+          'dc_points',
+          gwFixtures,
+          elid
+        ),
         source: 'fpl',
       });
     }
@@ -340,7 +386,13 @@ export function diffContributionEvents({
         gameweek: gw,
         delta: s1 - s0,
         recordedAt: nowIso,
-        sortKey: contributionApproxTimelineSortKey(nextRow, el, 'save_points', gwFixtures),
+        sortKey: contributionApproxTimelineSortKey(
+          nextRow,
+          el,
+          'save_points',
+          gwFixtures,
+          elid
+        ),
         source: 'fpl',
       });
     }
@@ -355,7 +407,13 @@ export function diffContributionEvents({
         gameweek: gw,
         delta: y1 - y0,
         recordedAt: nowIso,
-        sortKey: contributionApproxTimelineSortKey(nextRow, el, 'yellow_card', gwFixtures),
+        sortKey: contributionApproxTimelineSortKey(
+          nextRow,
+          el,
+          'yellow_card',
+          gwFixtures,
+          elid
+        ),
         source: 'fpl',
       });
     }
@@ -370,7 +428,13 @@ export function diffContributionEvents({
         gameweek: gw,
         delta: rc1 - rc0,
         recordedAt: nowIso,
-        sortKey: contributionApproxTimelineSortKey(nextRow, el, 'red_card', gwFixtures),
+        sortKey: contributionApproxTimelineSortKey(
+          nextRow,
+          el,
+          'red_card',
+          gwFixtures,
+          elid
+        ),
         source: 'fpl',
       });
     }
