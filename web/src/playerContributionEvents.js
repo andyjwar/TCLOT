@@ -105,7 +105,7 @@ export function contributionApproxTimelineSortKey(
   return base + kb + tie;
 }
 
-/** Latest real-world approx first; then detection time; then stable id. */
+/** Latest in-fixture event first (top of feed); then `recordedAt`; then `stableId`. */
 export function compareContributionEventsDesc(a, b) {
   const ka = Number(a?.sortKey);
   const kb = Number(b?.sortKey);
@@ -120,7 +120,7 @@ export function compareContributionEventsDesc(a, b) {
 }
 
 /**
- * Match timeline order: earlier events first (top of feed). Unknown `sortKey` (0) sorts last.
+ * Match timeline order: earlier events first (bottom of feed if latest is top). Unknown `sortKey` (0) sorts last among keyed rows.
  */
 export function compareContributionEventsAsc(a, b) {
   const ka = Number(a?.sortKey);

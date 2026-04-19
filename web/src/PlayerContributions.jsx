@@ -11,7 +11,7 @@ import {
   buildLatestDropByElementOut,
   buildOwnerByElementId,
   buildTrackedElementIdSetWithFixtures,
-  compareContributionEventsAsc,
+  compareContributionEventsDesc,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -195,7 +195,7 @@ function mergeUniqueByStableId(preferFirstLists) {
       m.set(sid, ev);
     }
   }
-  return [...m.values()].sort(compareContributionEventsAsc);
+  return [...m.values()].sort(compareContributionEventsDesc);
 }
 
 async function fetchArchiveEventsForGw(gameweek) {
@@ -437,7 +437,7 @@ export function PlayerContributions({
 
     setDisplayed((prev) => {
       const sortedIncoming = [...newEventsFiltered].sort(
-        compareContributionEventsAsc
+        compareContributionEventsDesc
       );
       return mergeUniqueByStableId([sortedIncoming, prev]);
     });
@@ -459,11 +459,11 @@ export function PlayerContributions({
     ownerByEl,
   ]);
 
-  /** Match timeline order (earlier events first; `mergeUniqueByStableId` sorts `displayed`). */
+  /** Match timeline: latest in-fixture events first (top); same keys as merge, descending. */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
     return [...displayed]
-      .sort(compareContributionEventsAsc)
+      .sort(compareContributionEventsDesc)
       .filter((ev) => contributionEventShownForLeague(ev, ownerByEl))
       .map((ev) => {
       const el = contributionLiveContext?.elementById?.[ev.elementId];
@@ -552,7 +552,7 @@ export function PlayerContributions({
     const el = listScrollRef.current;
     if (!el || !filteredRows.length) return;
     if (filteredRows.length > prevDisplayedLenRef.current) {
-      el.scrollTop = Math.max(0, el.scrollHeight - el.clientHeight);
+      el.scrollTop = 0;
     }
     prevDisplayedLenRef.current = filteredRows.length;
   }, [filteredRows]);

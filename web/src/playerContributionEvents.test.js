@@ -6,6 +6,7 @@ import {
   buildTrackedElementIdSet,
   buildTrackedElementIdSetWithFixtures,
   compareContributionEventsAsc,
+  compareContributionEventsDesc,
   contributionApproxTimelineSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
@@ -203,6 +204,12 @@ test('compareContributionEventsAsc — earlier sortKey sorts first (match order)
   const a = { sortKey: 100, recordedAt: '2026-01-02T00:00:00.000Z', stableId: 'a' };
   const b = { sortKey: 200, recordedAt: '2026-01-01T00:00:00.000Z', stableId: 'b' };
   assert.ok(compareContributionEventsAsc(a, b) < 0, 'earlier timeline key (a) before later (b)');
+});
+
+test('compareContributionEventsDesc — later sortKey sorts first (newest at top of feed)', () => {
+  const a = { sortKey: 100, recordedAt: '2026-01-02T00:00:00.000Z', stableId: 'a' };
+  const b = { sortKey: 200, recordedAt: '2026-01-01T00:00:00.000Z', stableId: 'b' };
+  assert.ok(compareContributionEventsDesc(b, a) < 0, 'later timeline key (b) before earlier (a) in feed');
 });
 
 test('diffContributionEvents — omitKinds skips goal', () => {
