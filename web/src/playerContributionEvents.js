@@ -84,9 +84,12 @@ export function primaryFixtureForContribution(nextRow, teamId, gwFixtures) {
   const mine = list.filter((f) => teamPlaysFixture(t, f));
   if (mine.length === 1) return mine[0];
   if (mine.length > 1) {
-    return [...mine].sort((a, b) =>
-      String(a.kickoff_time || '').localeCompare(String(b.kickoff_time || ''))
-    )[0];
+    return [...mine].sort((a, b) => {
+      const ta = Date.parse(String(a.kickoff_time || ''));
+      const tb = Date.parse(String(b.kickoff_time || ''));
+      if (Number.isFinite(ta) && Number.isFinite(tb) && ta !== tb) return ta - tb;
+      return String(a.kickoff_time || '').localeCompare(String(b.kickoff_time || ''));
+    })[0];
   }
   return null;
 }
@@ -170,6 +173,60 @@ export function compareContributionEventsAsc(a, b) {
   const t = String(a?.recordedAt || '').localeCompare(String(b?.recordedAt || ''));
   if (t !== 0) return t;
   return String(a?.stableId || '').localeCompare(String(b?.stableId || ''));
+}
+
+/**
+ * Sort key for merged feed: recompute from current FPL live row + GW fixtures when possible so
+ * order tracks **real-world** fixture time (kickoff + in-match clock), not stale `sortKey` from
+ * storage or an older live tick.
+ * FotMob-sourced rows keep `ev.sortKey` (already built from broadcast clock).
+ *
+ * @param {{ liveFullByElementId?: Record<number, object>, elementById?: Record<number, object>, gwFixtures?: object[] }} sortCtx
+ */
+export function effectiveContributionSortKey(ev, sortCtx) {
+  if (!ev || !sortCtx) return Number(ev?.sortKey) || 0;
+  if (String(ev?.stableId || '').startsWith('fotmob:')) {
+    return Number(ev.sortKey) || 0;
+  }
+  const elid = Number(ev.elementId);
+  const kind = ev.kind;
+  if (!Number.isFinite(elid) || !kind) return Number(ev.sortKey) || 0;
+  const liveRow = sortCtx.liveFullByElementId?.[elid];
+  const el = sortCtx.elementById?.[elid];
+  const gwf = sortCtx.gwFixtures || [];
+  if (liveRow && el && gwf.length) {
+    const k = contributionApproxTimelineSortKey(
+      liveRow,
+      el,
+      kind,
+      gwf,
+      elid,
+      0
+    );
+    if (Number.isFinite(k) && k > 0) return k;
+  }
+  return Number(ev.sortKey) || 0;
+}
+
+/**
+ * Descending compare using {@link effectiveContributionSortKey} — use for render + merge when
+ * `liveFullByElementId` / `gwFixtures` are available.
+ *
+ * @param {{ liveFullByElementId?: Record<number, object>, elementById?: Record<number, object>, gwFixtures?: object[] }} sortCtx
+ */
+export function compareContributionEventsDescWithContext(sortCtx) {
+  return (a, b) => {
+    const ka = Math.round(effectiveContributionSortKey(a, sortCtx));
+    const kb = Math.round(effectiveContributionSortKey(b, sortCtx));
+    const aOk = Number.isFinite(ka) && ka > 0;
+    const bOk = Number.isFinite(kb) && kb > 0;
+    if (aOk && bOk && ka !== kb) return kb - ka;
+    if (aOk && !bOk) return -1;
+    if (!aOk && bOk) return 1;
+    const t = String(b?.recordedAt || '').localeCompare(String(a?.recordedAt || ''));
+    if (t !== 0) return t;
+    return String(b?.stableId || '').localeCompare(String(a?.stableId || ''));
+  };
 }
 
 /**

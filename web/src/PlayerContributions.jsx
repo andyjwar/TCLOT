@@ -12,6 +12,7 @@ import {
   buildOwnerByElementId,
   buildTrackedElementIdSetWithFixtures,
   compareContributionEventsDesc,
+  compareContributionEventsDescWithContext,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -186,7 +187,7 @@ function contributionEventShownForLeague(ev, ownerByElementId) {
   return ownerByElementId.has(id);
 }
 
-function mergeUniqueByStableId(preferFirstLists) {
+function mergeUniqueByStableId(preferFirstLists, compareFn = compareContributionEventsDesc) {
   const m = new Map();
   for (const list of preferFirstLists) {
     for (const ev of list || []) {
@@ -195,7 +196,7 @@ function mergeUniqueByStableId(preferFirstLists) {
       m.set(sid, ev);
     }
   }
-  return [...m.values()].sort(compareContributionEventsDesc);
+  return [...m.values()].sort(compareFn);
 }
 
 async function fetchArchiveEventsForGw(gameweek) {
@@ -276,6 +277,40 @@ export function PlayerContributions({
     ]
   );
 
+  const contribCtxRef = useRef(contributionLiveContext);
+  contribCtxRef.current = contributionLiveContext;
+
+  /** Fresh live + fixtures on each merge so ordering follows real-world fixture chronology. */
+  const mergeContributionLists = useCallback((preferFirstLists) => {
+    const ctx = contribCtxRef.current;
+    return mergeUniqueByStableId(
+      preferFirstLists,
+      compareContributionEventsDescWithContext({
+        liveFullByElementId: ctx?.liveFullByElementId,
+        elementById: ctx?.elementById,
+        gwFixtures: ctx?.gwFixtures ?? [],
+      })
+    );
+  }, []);
+
+  const contributionSortCtx = useMemo(
+    () => ({
+      liveFullByElementId: contributionLiveContext?.liveFullByElementId,
+      elementById: contributionLiveContext?.elementById,
+      gwFixtures: contributionLiveContext?.gwFixtures ?? [],
+    }),
+    [
+      contributionLiveContext?.liveFullByElementId,
+      contributionLiveContext?.elementById,
+      contributionLiveContext?.gwFixtures,
+    ]
+  );
+
+  const compareRowsFn = useMemo(
+    () => compareContributionEventsDescWithContext(contributionSortCtx),
+    [contributionSortCtx]
+  );
+
   const hydrate = useCallback(async () => {
     const k = `${leagueId ?? 'x'}:${gameweek}`;
     hydratedKeyRef.current = k;
@@ -293,9 +328,9 @@ export function PlayerContributions({
           Number(e?.gameweek) === gwNum &&
           String(e?.stableId || '').startsWith('fotmob:')
       );
-      return mergeUniqueByStableId([fotmobFromUi, local, arch]);
+      return mergeContributionLists([fotmobFromUi, local, arch]);
     });
-  }, [leagueId, gameweek, storageKey]);
+  }, [leagueId, gameweek, storageKey, mergeContributionLists]);
 
   useEffect(() => {
     prevLiveRef.current = null;
@@ -338,9 +373,6 @@ export function PlayerContributions({
     [tracked]
   );
 
-  const contribCtxRef = useRef(contributionLiveContext);
-  contribCtxRef.current = contributionLiveContext;
-
   useEffect(() => {
     const ctx = contribCtxRef.current;
     if (!ctx?.gwFixtures?.length || !ctx?.elementById || !ctx?.teamById) return;
@@ -371,7 +403,7 @@ export function PlayerContributions({
                 (String(e.stableId || '').startsWith('fotmob:') &&
                   FOTMOB_CARD_KINDS.has(e.kind))
             );
-            return mergeUniqueByStableId([filteredEv, keep]);
+            return mergeContributionLists([filteredEv, keep]);
           });
           const bucket = readPlayerContributionBucket(storageKey);
           mergePersistPlayerContributions(
@@ -436,10 +468,13 @@ export function PlayerContributions({
     if (!newEventsFiltered.length) return;
 
     setDisplayed((prev) => {
-      const sortedIncoming = [...newEventsFiltered].sort(
-        compareContributionEventsDesc
-      );
-      return mergeUniqueByStableId([sortedIncoming, prev]);
+      const sortFn = compareContributionEventsDescWithContext({
+        liveFullByElementId: ctx.liveFullByElementId,
+        elementById: ctx.elementById,
+        gwFixtures: ctx.gwFixtures || [],
+      });
+      const sortedIncoming = [...newEventsFiltered].sort(sortFn);
+      return mergeContributionLists([sortedIncoming, prev]);
     });
 
     const bucket = readPlayerContributionBucket(storageKey);
@@ -459,11 +494,11 @@ export function PlayerContributions({
     ownerByEl,
   ]);
 
-  /** Match timeline: latest in-fixture events first (top); same keys as merge, descending. */
+  /** Match timeline: latest real-world event first (top); keys from current live + fixtures when available. */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
     return [...displayed]
-      .sort(compareContributionEventsDesc)
+      .sort(compareRowsFn)
       .filter((ev) => contributionEventShownForLeague(ev, ownerByEl))
       .map((ev) => {
       const el = contributionLiveContext?.elementById?.[ev.elementId];
@@ -508,7 +543,7 @@ export function PlayerContributions({
         actionBracket: ap.bracket,
       };
     });
-  }, [displayed, contributionLiveContext, ownerByEl, dropByEl]);
+  }, [displayed, contributionLiveContext, ownerByEl, dropByEl, compareRowsFn]);
 
   const filteredRows = useMemo(() => {
     let out = rows;

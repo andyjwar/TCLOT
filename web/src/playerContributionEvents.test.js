@@ -8,6 +8,7 @@ import {
   compareContributionEventsAsc,
   compareContributionEventsDesc,
   contributionApproxTimelineSortKey,
+  effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
   saveFantasyPointsFromSaves,
@@ -249,6 +250,42 @@ test('compareContributionEventsAsc — earlier sortKey sorts first (match order)
   const a = { sortKey: 100, recordedAt: '2026-01-02T00:00:00.000Z', stableId: 'a' };
   const b = { sortKey: 200, recordedAt: '2026-01-01T00:00:00.000Z', stableId: 'b' };
   assert.ok(compareContributionEventsAsc(a, b) < 0, 'earlier timeline key (a) before later (b)');
+});
+
+test('effectiveContributionSortKey — recomputes FPL rows from live + fixtures; preserves FotMob', () => {
+  const gwFixtures = [
+    {
+      id: 100,
+      team_h: 1,
+      team_a: 2,
+      kickoff_time: '2026-04-12T14:00:00Z',
+    },
+  ];
+  const elementById = {
+    5: { id: 5, team: 1 },
+  };
+  const liveFullByElementId = {
+    5: {
+      stats: { goals_scored: 1, minutes: 90 },
+      explain: [[[{ stat: 'minutes', value: 45 }], 100]],
+    },
+  };
+  const sortCtx = { liveFullByElementId, elementById, gwFixtures };
+  const fplEv = {
+    stableId: '8:5:goal:tot1',
+    kind: 'goal',
+    elementId: 5,
+    sortKey: 1,
+  };
+  const kFpl = effectiveContributionSortKey(fplEv, sortCtx);
+  assert.ok(kFpl > 1e12, 'recomputed from kickoff + explain minute');
+  const fm = {
+    stableId: 'fotmob:9:yellow_card:5:x:1',
+    kind: 'yellow_card',
+    elementId: 5,
+    sortKey: 1.717e12,
+  };
+  assert.equal(effectiveContributionSortKey(fm, sortCtx), 1.717e12);
 });
 
 test('compareContributionEventsDesc — later sortKey sorts first (newest at top of feed)', () => {
