@@ -44,6 +44,20 @@ function buildSrcList(entryId, logoMap, customLogoOnly) {
   return [...rawList, `${WEB_BASE}${entryId}.png`]
 }
 
+/**
+ * Same URL list as {@link TeamAvatar} (for favicon / preload).
+ * @param {number | string | null | undefined} entryId
+ * @param {Record<string, string>} logoMap
+ * @param {boolean} [customLogoOnly]
+ * @returns {string[]}
+ */
+export function teamLogoSrcList(entryId, logoMap, customLogoOnly = false) {
+  if (entryId == null || entryId === '') return []
+  const n = Number(entryId)
+  if (!Number.isFinite(n)) return []
+  return buildSrcList(n, logoMap || {}, customLogoOnly)
+}
+
 function fnv1a32(str) {
   let h = 0x811c9dc5
   for (let i = 0; i < str.length; i++) {

@@ -20,6 +20,7 @@ import {
   WIN_MARGIN_BUCKET_KEYS,
 } from './useLeagueData'
 import { TeamAvatar } from './TeamAvatar'
+import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
 import { PlayOffBracket } from './PlayOffBracket'
@@ -867,6 +868,7 @@ function StandingsSortTh({ columnKey, sortState, onSort, label, title, className
 }
 
 const EMPTY_LEAGUE_ENTRIES = []
+const EMPTY_TEAM_LOGO_MAP = {}
 
 const THEME_STORAGE_KEY = 'tclot-theme'
 
@@ -1031,6 +1033,28 @@ function App() {
     }
     return m
   }, [data?.tableRows])
+
+  /** `league_entries.id` for the best current rank (usually 1 — league leader). */
+  const leagueLeaderEntryId = useMemo(() => {
+    const rows = data?.tableRows
+    if (!Array.isArray(rows) || rows.length === 0) return null
+    let bestEntry = null
+    let bestRank = Infinity
+    for (const r of rows) {
+      const rank = Number(r.rank)
+      if (!Number.isFinite(rank)) continue
+      if (rank < bestRank) {
+        bestRank = rank
+        bestEntry = Number(r.league_entry)
+      }
+    }
+    return bestEntry != null && Number.isFinite(bestEntry) ? bestEntry : null
+  }, [data?.tableRows])
+
+  useLeagueLeaderFavicon(
+    leagueLeaderEntryId,
+    data?.teamLogoMap ?? EMPTY_TEAM_LOGO_MAP
+  )
 
   /** First 4 teams left of title, next/last 4 right (no overlap; >8 teams → first + last 4). */
   const heroLogoSides = useMemo(() => {
