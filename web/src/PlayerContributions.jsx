@@ -19,31 +19,35 @@ import {
   playerContributionStorageKey,
   readPlayerContributionBucket,
 } from './playerContributionStorage';
-import { fetchFotmobContributionTimeline } from './fotmobPremTimeline';
+import { fetchEspnContributionTimeline } from './espnPremTimeline';
 import { fplShirtImageUrl } from './fplShirtUrl';
 
 /**
- * FotMob supplies real broadcast-clock ordering for these. We prefer its ordering when it matches
- * the player; FPL approximates the rest (save_points / dc_points — FotMob doesn't cover — always FPL).
+ * ESPN supplies real wallclock (epoch-ms) ordering for these. We prefer its ordering when it matches
+ * the player; FPL approximates the rest (save_points / dc_points — ESPN doesn't cover — always FPL).
  */
-const FOTMOB_KINDS = new Set(['goal', 'assist', 'yellow_card', 'red_card']);
+const ESPN_KINDS = new Set(['goal', 'assist', 'yellow_card', 'red_card']);
 
-/** Drop any previously-stored FotMob rows (goal/assist/card) — used when a fetch returns empty so stale data doesn't stick. */
-function stripStaleFotmobRows(events) {
-  return (events || []).filter(
-    (e) => !String(e?.stableId || '').startsWith('fotmob:')
-  );
+/**
+ * Drop previously-stored ESPN rows — used when a fetch returns empty so stale data doesn't stick.
+ * Also strips legacy `fotmob:` rows from storage so upgrading users don't see orphan events.
+ */
+function stripStaleTimelineRows(events) {
+  return (events || []).filter((e) => {
+    const id = String(e?.stableId || '');
+    return !id.startsWith('espn:') && !id.startsWith('fotmob:');
+  });
 }
 
 /**
- * Build (elementId → Set of kinds) covered by FotMob. Used to:
+ * Build (elementId → Set of kinds) covered by ESPN. Used to:
  *  - tell the FPL diff: don't emit these kinds for these players (avoids duplicates + stale order)
- *  - de-duplicate in render when FPL already wrote to storage before FotMob matched
- * @param {Array<{ elementId?: number, kind?: string }>} fotmobEvents
+ *  - de-duplicate in render when FPL already wrote to storage before ESPN matched
+ * @param {Array<{ elementId?: number, kind?: string }>} timelineEvents
  */
-function buildFotmobCoverage(fotmobEvents) {
+function buildTimelineCoverage(timelineEvents) {
   const m = new Map();
-  for (const e of fotmobEvents || []) {
+  for (const e of timelineEvents || []) {
     const elid = Number(e?.elementId);
     const kind = e?.kind;
     if (!Number.isFinite(elid) || !kind) continue;
@@ -259,11 +263,11 @@ export function PlayerContributions({
 }) {
   const [displayed, setDisplayed] = useState([]);
   /**
-   * (elementId → Set<kind>) of goal/assist/card rows the latest FotMob fetch provided.
-   * When a (player, kind) is covered we prefer FotMob's broadcast-clock ordering and suppress
+   * (elementId → Set<kind>) of goal/assist/card rows the latest ESPN fetch provided.
+   * When a (player, kind) is covered we prefer ESPN's wallclock ordering and suppress
    * the FPL approximation for that specific slot. Unmatched players still fall back to FPL.
    */
-  const [fotmobCoverage, setFotmobCoverage] = useState(
+  const [timelineCoverage, setTimelineCoverage] = useState(
     /** @type {Map<number, Set<string>>} */ (new Map())
   );
   /** '' = all fantasy teams; otherwise `leagueEntryId` of owning squad. */
@@ -348,19 +352,20 @@ export function PlayerContributions({
     const local = bucket?.events ?? [];
     setDisplayed((prev) => {
       if (hydratedKeyRef.current !== k) return prev;
-      const fotmobFromUi = (prev || []).filter(
+      const espnFromUi = (prev || []).filter(
         (e) =>
           Number.isFinite(gwNum) &&
           Number(e?.gameweek) === gwNum &&
-          String(e?.stableId || '').startsWith('fotmob:')
+          (String(e?.stableId || '').startsWith('espn:') ||
+            String(e?.stableId || '').startsWith('fotmob:'))
       );
-      return mergeContributionLists([fotmobFromUi, local, arch]);
+      return mergeContributionLists([espnFromUi, local, arch]);
     });
   }, [leagueId, gameweek, storageKey, mergeContributionLists]);
 
   useEffect(() => {
     prevLiveRef.current = null;
-    setFotmobCoverage(new Map());
+    setTimelineCoverage(new Map());
     setFantasyTeamEntryId('');
     setFilterGoal(false);
     setFilterAssist(false);
@@ -380,7 +385,7 @@ export function PlayerContributions({
     return out;
   }, [squads]);
 
-  const fotmobFetchKey = useMemo(() => {
+  const espnFetchKey = useMemo(() => {
     const fx = contributionLiveContext?.gwFixtures || [];
     const ids = fx
       .map((f) => Number(f.id))
@@ -406,7 +411,7 @@ export function PlayerContributions({
       try {
         const liveCtx = contribCtxRef.current;
         if (!liveCtx?.gwFixtures?.length) return;
-        const ev = await fetchFotmobContributionTimeline({
+        const ev = await fetchEspnContributionTimeline({
           gameweek,
           gwFixtures: liveCtx.gwFixtures,
           elementById: liveCtx.elementById,
@@ -414,17 +419,17 @@ export function PlayerContributions({
           trackedElementIds: tracked,
         });
         if (cancelled) return;
-        const fotmobEvents = (ev || []).filter((e) => FOTMOB_KINDS.has(e.kind));
-        if (fotmobEvents.length) {
-          const filteredEv = fotmobEvents.filter((e) =>
+        const timelineEvents = (ev || []).filter((e) => ESPN_KINDS.has(e.kind));
+        if (timelineEvents.length) {
+          const filteredEv = timelineEvents.filter((e) =>
             contributionEventShownForLeague(e, ownerByEl)
           );
-          const coverage = buildFotmobCoverage(filteredEv);
-          setFotmobCoverage(coverage);
+          const coverage = buildTimelineCoverage(filteredEv);
+          setTimelineCoverage(coverage);
           setDisplayed((prev) => {
             const keep = (prev || []).filter((e) => {
-              const isFotmob = String(e?.stableId || '').startsWith('fotmob:');
-              if (isFotmob) return false;
+              const sid = String(e?.stableId || '');
+              if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return false;
               const covered = coverage.get(Number(e?.elementId));
               if (covered && covered.has(e.kind)) return false;
               return true;
@@ -439,26 +444,29 @@ export function PlayerContributions({
             2000
           );
         } else {
-          setFotmobCoverage(new Map());
-          setDisplayed((prev) => stripStaleFotmobRows(prev));
+          setTimelineCoverage(new Map());
+          setDisplayed((prev) => stripStaleTimelineRows(prev));
         }
       } catch {
         if (!cancelled) {
-          setFotmobCoverage(new Map());
-          setDisplayed((prev) => stripStaleFotmobRows(prev));
+          setTimelineCoverage(new Map());
+          setDisplayed((prev) => stripStaleTimelineRows(prev));
         }
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [fotmobFetchKey, gameweek, storageKey, trackedKey, ownerByEl]);
+  }, [espnFetchKey, gameweek, storageKey, trackedKey, ownerByEl]);
 
   /**
-   * Per-player FotMob coverage → FPL diff skips the (player, kind) slots FotMob already ordered.
-   * Players FotMob didn't match still get FPL approximation (better than nothing).
+   * Per-player ESPN coverage → FPL diff skips the (player, kind) slots ESPN already ordered.
+   * Players ESPN didn't match still get FPL approximation (better than nothing).
    */
-  const fplOmitByElementKind = useMemo(() => fotmobCoverage, [fotmobCoverage]);
+  const fplOmitByElementKind = useMemo(
+    () => timelineCoverage,
+    [timelineCoverage]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -522,20 +530,23 @@ export function PlayerContributions({
 
   /**
    * Latest first (top), reading down goes back in time. No auto-scroll — user controls position.
-   * Dedupe: when FotMob covers (elementId, kind) we drop the FPL approximation for that slot
-   * (handles the case where FPL wrote to localStorage before FotMob matched the player).
+   * Dedupe: when ESPN covers (elementId, kind) we drop the FPL approximation for that slot
+   * (handles the case where FPL wrote to localStorage before ESPN matched the player).
    */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
-    const liveCoverage = buildFotmobCoverage(
-      (displayed || []).filter((e) => String(e?.stableId || '').startsWith('fotmob:'))
+    const liveCoverage = buildTimelineCoverage(
+      (displayed || []).filter((e) => {
+        const id = String(e?.stableId || '');
+        return id.startsWith('espn:') || id.startsWith('fotmob:');
+      })
     );
     return [...displayed]
       .sort(compareRowsFn)
       .filter((ev) => {
         if (!contributionEventShownForLeague(ev, ownerByEl)) return false;
-        const isFotmob = String(ev?.stableId || '').startsWith('fotmob:');
-        if (isFotmob) return true;
+        const sid = String(ev?.stableId || '');
+        if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return true;
         const covered = liveCoverage.get(Number(ev?.elementId));
         if (covered && covered.has(ev.kind)) return false;
         return true;

@@ -3,12 +3,14 @@
  * - fantasy.premierleague.com/api/* (bootstrap-static, event/{gw}/live, …)
  * - draft/* → draft.premierleague.com/api/* (bootstrap-static, event/{gw}/live, entry picks — draft ID space)
  * - fotmob/* → www.fotmob.com/api/* (unofficial read-only match timelines for Live tab ordering)
+ * - espn/* → site.api.espn.com/apis/site/v2/sports/soccer/eng.1/* (open scoreboard + summary feed)
  * Avoid * + / in this block comment — it would end the comment early.
  * Deploy: cd web/workers/fpl-proxy && npm run deploy
  */
 const FANTASY_API = 'https://fantasy.premierleague.com/api';
 const DRAFT_API = 'https://draft.premierleague.com/api';
 const FOTMOB_API = 'https://www.fotmob.com/api';
+const ESPN_API = 'https://site.api.espn.com/apis/site/v2/sports/soccer/eng.1';
 
 function corsHeaders(env, request) {
   const origin = request.headers.get('Origin');
@@ -47,6 +49,9 @@ export default {
     } else if (path.startsWith('fotmob/')) {
       path = path.slice('fotmob/'.length);
       upstreamBase = FOTMOB_API;
+    } else if (path.startsWith('espn/')) {
+      path = path.slice('espn/'.length);
+      upstreamBase = ESPN_API;
     }
     const target = `${upstreamBase}/${path}${url.search}`;
     const headers = {

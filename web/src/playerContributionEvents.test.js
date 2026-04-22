@@ -253,7 +253,7 @@ test('compareContributionEventsAsc — earlier sortKey sorts first (match order)
   assert.ok(compareContributionEventsAsc(a, b) < 0, 'earlier timeline key (a) before later (b)');
 });
 
-test('effectiveContributionSortKey — recomputes FPL rows from live + fixtures; preserves FotMob', () => {
+test('effectiveContributionSortKey — recomputes FPL rows from live + fixtures; preserves FotMob/ESPN wall keys', () => {
   const gwFixtures = [
     {
       id: 100,
@@ -287,6 +287,13 @@ test('effectiveContributionSortKey — recomputes FPL rows from live + fixtures;
     sortKey: 1.717e12,
   };
   assert.equal(effectiveContributionSortKey(fm, sortCtx), 1.717e12);
+  const es = {
+    stableId: 'espn:740928:x:goal:1:5',
+    kind: 'goal',
+    elementId: 5,
+    sortKey: 1.8e12,
+  };
+  assert.equal(effectiveContributionSortKey(es, sortCtx), 1.8e12);
 });
 
 test('compareContributionEventsAscWithContext — earlier effective key sorts first (chronological top)', () => {

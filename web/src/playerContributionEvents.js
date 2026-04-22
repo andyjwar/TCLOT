@@ -180,13 +180,14 @@ export function compareContributionEventsAsc(a, b) {
  * Sort key for merged feed: recompute from current FPL live row + GW fixtures when possible so
  * order tracks **real-world** fixture time (kickoff + in-match clock), not stale `sortKey` from
  * storage or an older live tick.
- * FotMob-sourced rows keep `ev.sortKey` (already built from broadcast clock).
+ * FotMob- and ESPN-sourced rows keep `ev.sortKey` (real wall time / `wallclock`).
  *
  * @param {{ liveFullByElementId?: Record<number, object>, elementById?: Record<number, object>, gwFixtures?: object[] }} sortCtx
  */
 export function effectiveContributionSortKey(ev, sortCtx) {
   if (!ev || !sortCtx) return Number(ev?.sortKey) || 0;
-  if (String(ev?.stableId || '').startsWith('fotmob:')) {
+  const sid = String(ev?.stableId || '');
+  if (sid.startsWith('fotmob:') || sid.startsWith('espn:')) {
     return Number(ev.sortKey) || 0;
   }
   const elid = Number(ev.elementId);

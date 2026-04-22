@@ -350,6 +350,340 @@
   gap: 12px;
 }
 
+/* —— Premier League window (ESPN tab) —— */
+.prem-window-root {
+  min-width: 0;
+}
+
+.prem-fixtures {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.prem-fixture {
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+}
+
+.fotmob[data-theme='light'] .prem-fixture {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+.prem-fixture__header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'home score away chev'
+    'status status status status';
+  align-items: center;
+  gap: 6px 10px;
+  width: 100%;
+  padding: 12px 14px;
+  margin: 0;
+  border: none;
+  background: var(--fm-surface-2);
+  color: var(--fm-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.prem-fixture__header:hover {
+  filter: brightness(1.04);
+}
+
+.prem-fixture__side {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.prem-fixture__side--home {
+  grid-area: home;
+  justify-self: start;
+}
+
+.prem-fixture__side--away {
+  grid-area: away;
+  justify-self: end;
+  flex-direction: row-reverse;
+}
+
+.prem-fixture__team-name {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.prem-fixture__badge {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.prem-fixture__score {
+  grid-area: score;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+  justify-self: center;
+}
+
+.prem-fixture__score-sep {
+  opacity: 0.55;
+  font-weight: 600;
+}
+
+.prem-fixture__vs {
+  font-size: 0.85rem;
+  color: var(--fm-muted);
+  font-weight: 600;
+}
+
+.prem-fixture__status {
+  grid-area: status;
+  font-size: 0.78rem;
+  color: var(--fm-muted);
+  text-align: center;
+}
+
+.prem-fixture__chevron {
+  grid-area: chev;
+  font-size: 0.85rem;
+  color: var(--fm-muted);
+  justify-self: end;
+}
+
+.prem-fixture__body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.prem-events__title,
+.prem-lineups__title {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+}
+
+.prem-events__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.prem-ev-row {
+  display: grid;
+  grid-template-columns: 3.5rem 1.75rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 10px;
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: var(--fm-surface-2);
+  border: 1px solid var(--fm-border);
+  font-size: 0.82rem;
+}
+
+.prem-ev-minute {
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-muted);
+  font-size: 0.78rem;
+}
+
+.prem-ev-icon {
+  text-align: center;
+  font-size: 1rem;
+}
+
+.prem-ev-player {
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 8px;
+}
+
+.prem-ev-name {
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+.prem-ev-tag {
+  font-size: 0.72rem;
+  color: var(--fm-muted);
+}
+
+.prem-lineups__cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px 16px;
+}
+
+@media (max-width: 720px) {
+  .prem-lineups__cols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.prem-lineup-col__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin-bottom: 10px;
+}
+
+.prem-lineup-col__title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--fm-text-strong);
+}
+
+.prem-lineup-col__formation {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--fm-muted);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--fm-border);
+  background: var(--fm-card);
+}
+
+.prem-lineup-col__badge {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+
+.prem-lineup-col__badge--confirmed {
+  background: rgba(18, 161, 90, 0.2);
+  color: #6ee7b7;
+  border: 1px solid rgba(18, 161, 90, 0.45);
+}
+
+.fotmob[data-theme='light'] .prem-lineup-col__badge--confirmed {
+  color: #047857;
+  background: rgba(18, 161, 90, 0.12);
+}
+
+.prem-lineup-col__badge--predicted {
+  background: rgba(156, 163, 175, 0.2);
+  color: var(--fm-muted);
+  border: 1px solid var(--fm-border);
+}
+
+.prem-lineup-col__bench-head {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--fm-muted);
+  margin: 10px 0 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.prem-lineup-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.prem-lineup-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--fm-border);
+  font-size: 0.82rem;
+}
+
+.prem-lineup-list .prem-lineup-row:last-child {
+  border-bottom: none;
+}
+
+.prem-lineup-shirt {
+  min-width: 1.75rem;
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.78rem;
+  color: var(--fm-muted);
+}
+
+.prem-lineup-core {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 6px 10px;
+}
+
+.prem-lineup-name {
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  word-break: break-word;
+}
+
+.prem-lineup-pos {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--fm-muted);
+  text-transform: uppercase;
+}
+
+.prem-lineup-owner {
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+.prem-lineup-col__coach {
+  margin-top: 8px;
+  font-size: 0.75rem;
+}
+
+.prem-owner-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.prem-owner-tag__name {
+  font-size: 0.75rem;
+  color: var(--fm-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
 /* Draft board (full snake + filters) */
 .draft-board-tile__head.tile-head-row {
   flex-wrap: wrap;

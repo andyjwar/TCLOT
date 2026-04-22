@@ -23,6 +23,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
+import { PremWindow } from './PremWindow'
 import { PlayOffBracket } from './PlayOffBracket'
 import { DraftBoard } from './DraftBoard'
 import { ThemeToggle } from './ThemeToggle'
@@ -915,7 +916,7 @@ function App() {
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
   const [waiverOutGwFilter, setWaiverOutGwFilter] = useState('all')
   const [waiverGwTableMode, setWaiverGwTableMode] = useState('out')
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | waivers | trades | draft | live | hall
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | waivers | trades | draft | hall | prem | live
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
   const [liveGw, setLiveGw] = useState(null)
@@ -1546,6 +1547,20 @@ function App() {
               <span className="dashboard-nav__label">Hall of Champions</span>
             </button>
           ) : null}
+          <button
+            type="button"
+            className={
+              'dashboard-nav__btn' +
+              (dashboardView === 'prem' ? ' dashboard-nav__btn--active' : '')
+            }
+            onClick={() => setDashboardView('prem')}
+            aria-current={dashboardView === 'prem' ? 'page' : undefined}
+          >
+            <span className="dashboard-nav__emoji" aria-hidden="true">
+              🏟️
+            </span>
+            <span className="dashboard-nav__label">Premier League</span>
+          </button>
           <button
             type="button"
             className={
@@ -2728,6 +2743,16 @@ function App() {
             </div>
           ) : null}
 
+          {dashboardView === 'prem' && (
+            <PremWindow
+              teams={teamsForFormSelect}
+              gameweek={liveGameweek}
+              onGameweekChange={setLiveGw}
+              onBootstrapLiveMeta={onBootstrapLiveMeta}
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+          )}
           {dashboardView === 'live' && (
             <LiveScores
               teams={teamsForFormSelect}
