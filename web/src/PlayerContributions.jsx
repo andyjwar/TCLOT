@@ -697,16 +697,24 @@ export function PlayerContributions({
             className="player-contrib-kind-btn player-contrib-kind-btn--dc"
             aria-pressed={filterDc}
             onClick={toggleFilterDc}
+            aria-label="Filter by defensive contribution points"
           >
-            DC
+            <span className="player-contrib-kind-btn__m-wide">DC</span>
+            <span className="player-contrib-kind-btn__m-ico" aria-hidden>
+              🪖
+            </span>
           </button>
           <button
             type="button"
             className="player-contrib-kind-btn player-contrib-kind-btn--cards"
             aria-pressed={filterCards}
             onClick={toggleFilterCards}
+            aria-label="Filter by yellow or red card"
           >
-            Cards
+            <span className="player-contrib-kind-btn__m-wide">Cards</span>
+            <span className="player-contrib-kind-btn__m-ico" aria-hidden>
+              🟨
+            </span>
           </button>
           <button
             type="button"

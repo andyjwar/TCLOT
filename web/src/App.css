@@ -4327,7 +4327,7 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   transform: translateY(-0.08em);
 }
 
-/* Mobile: club badge → name (left, flexible) → minute → FPL first name → fantasy badge — hide pts + event icon */
+/* Mobile: show event emoji (incl. 🪖/🧤/🟨/🟥) — DC/Cards filter chips are 🪖/🟨 — owner block flush right */
 @media (max-width: 600px) {
   .player-contrib-feed--pp-rich {
     --player-contrib-row-h: 2.7rem;
@@ -4351,7 +4351,11 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   }
 
   .player-contrib-pp-row--goal .pp-ev-emoji,
-  .player-contrib-pp-row--assist .pp-ev-emoji {
+  .player-contrib-pp-row--assist .pp-ev-emoji,
+  .player-contrib-pp-row--dc_points .pp-ev-emoji,
+  .player-contrib-pp-row--save_points .pp-ev-emoji,
+  .player-contrib-pp-row--yellow_card .pp-ev-emoji,
+  .player-contrib-pp-row--red_card .pp-ev-emoji {
     display: inline;
     flex: 0 0 auto;
   }
@@ -4382,14 +4386,20 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
     flex: 0 0 auto;
   }
 
-  .pp-ev-owner:not(.pp-ev-owner--waiver-drop) {
-    display: contents;
+  .pp-ev-owner {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-left: auto;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 9.5rem;
   }
 
   .pp-ev-owner--waiver-drop {
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: none;
+    max-width: 10.5rem;
     justify-content: flex-end;
   }
 
@@ -4403,19 +4413,25 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   }
 
   .player-contrib-kind-btn--goal .player-contrib-kind-btn__m-wide,
-  .player-contrib-kind-btn--assist .player-contrib-kind-btn__m-wide {
+  .player-contrib-kind-btn--assist .player-contrib-kind-btn__m-wide,
+  .player-contrib-kind-btn--dc .player-contrib-kind-btn__m-wide,
+  .player-contrib-kind-btn--cards .player-contrib-kind-btn__m-wide {
     display: none;
   }
 
   .player-contrib-kind-btn--goal .player-contrib-kind-btn__m-ico,
-  .player-contrib-kind-btn--assist .player-contrib-kind-btn__m-ico {
+  .player-contrib-kind-btn--assist .player-contrib-kind-btn__m-ico,
+  .player-contrib-kind-btn--dc .player-contrib-kind-btn__m-ico,
+  .player-contrib-kind-btn--cards .player-contrib-kind-btn__m-ico {
     display: inline;
     font-size: 1.05rem;
     line-height: 1;
   }
 
   .player-contrib-kind-btn--goal,
-  .player-contrib-kind-btn--assist {
+  .player-contrib-kind-btn--assist,
+  .player-contrib-kind-btn--dc,
+  .player-contrib-kind-btn--cards {
     min-width: 2.1rem;
     padding-left: 0.35rem;
     padding-right: 0.35rem;
