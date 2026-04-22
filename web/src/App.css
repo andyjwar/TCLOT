@@ -4248,9 +4248,10 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   min-width: 0;
 }
 
+/* Don’t grow the name across the full mid column — keeps the minute next to the player name */
 .pp-ev-namecell {
   min-width: 0;
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   text-align: left;
 }
 
@@ -4368,7 +4369,7 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   }
 
   .pp-ev-namecell {
-    flex: 1 1 0;
+    flex: 0 1 auto;
     min-width: 0;
     text-align: left;
   }
