@@ -3,7 +3,8 @@
  * Set in GitHub: Settings → Secrets and variables → Actions → Variables
  * (or Environment variables on `github-pages`), same as VITE_FPL_PROXY_URL.
  *
- * Title tile (omit vars for TCLOT defaults):
+ * Title tile (omit vars for TCLOT defaults). TCLOT image header only when abbr is TCLOT (or
+ * VITE_USE_TCLOT_HEADER_BRAND=true); other abbrs use text + pill in the title tile.
  * - ExFOS: VITE_LEAGUE_TITLE_ABBR=exFOS, VITE_LEAGUE_TITLE=2025-26 season
  * - EAGalaxy: VITE_LEAGUE_TITLE_ABBR=EA Galaxy, VITE_LEAGUE_TITLE=2025-26 season
  *
@@ -36,6 +37,21 @@ export const LEAGUE_TITLE = readStringEnv(
   import.meta.env.VITE_LEAGUE_TITLE,
   DEFAULT_LEAGUE_TITLE,
 )
+
+/**
+ * `public/tclot-header-brand.png` is TCLOT-only. Other leagues (set `VITE_LEAGUE_TITLE_ABBR`) get the
+ * text + abbr pill header. Optional override: `VITE_USE_TCLOT_HEADER_BRAND` = true | false.
+ */
+export const showTclotHeaderBrand = (() => {
+  const v = import.meta.env.VITE_USE_TCLOT_HEADER_BRAND
+  if (v === '1' || v === 'true' || v === 'on') return true
+  if (v === '0' || v === 'false' || v === 'off') return false
+  const abbr = readStringEnv(
+    import.meta.env.VITE_LEAGUE_TITLE_ABBR,
+    DEFAULT_LEAGUE_TITLE_ABBR,
+  )
+  return abbr.trim().toUpperCase() === 'TCLOT'
+})()
 
 export const showDashboardTrades = readBoolEnv(
   import.meta.env.VITE_SHOW_DASHBOARD_TRADES,

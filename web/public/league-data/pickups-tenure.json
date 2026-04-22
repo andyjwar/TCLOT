@@ -1,16 +1,16 @@
 {
-  "generated": "2026-04-17T15:05:57.042Z",
+  "generated": "2026-04-22T23:06:04.201Z",
   "note": "Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed.",
-  "lastGwUsed": 32,
+  "lastGwUsed": 33,
   "rows": [
     {
       "rank": 1,
       "entry": 27134,
       "elementId": 260,
-      "totalPointsForTeam": 150,
+      "totalPointsForTeam": 158,
       "waiverStints": 1,
       "firstGw": 1,
-      "lastGw": 32
+      "lastGw": 33
     },
     {
       "rank": 2,
@@ -28,119 +28,119 @@
       "totalPointsForTeam": 125,
       "waiverStints": 1,
       "firstGw": 3,
-      "lastGw": 32
+      "lastGw": 33
     },
     {
       "rank": 4,
-      "entry": 27870,
-      "elementId": 178,
-      "totalPointsForTeam": 103,
+      "entry": 27134,
+      "elementId": 407,
+      "totalPointsForTeam": 113,
       "waiverStints": 1,
-      "firstGw": 5,
-      "lastGw": 32
+      "firstGw": 11,
+      "lastGw": 33
     },
     {
       "rank": 5,
-      "entry": 27134,
-      "elementId": 407,
-      "totalPointsForTeam": 102,
+      "entry": 27870,
+      "elementId": 178,
+      "totalPointsForTeam": 111,
       "waiverStints": 1,
-      "firstGw": 11,
-      "lastGw": 32
+      "firstGw": 5,
+      "lastGw": 33
     },
     {
       "rank": 6,
-      "entry": 31812,
-      "elementId": 683,
-      "totalPointsForTeam": 97,
+      "entry": 41410,
+      "elementId": 728,
+      "totalPointsForTeam": 104,
       "waiverStints": 1,
       "firstGw": 8,
-      "lastGw": 32
+      "lastGw": 33
     },
     {
       "rank": 7,
-      "entry": 41410,
-      "elementId": 728,
-      "totalPointsForTeam": 96,
+      "entry": 31812,
+      "elementId": 411,
+      "totalPointsForTeam": 101,
       "waiverStints": 1,
-      "firstGw": 8,
-      "lastGw": 32
+      "firstGw": 12,
+      "lastGw": 33
     },
     {
       "rank": 8,
       "entry": 31812,
-      "elementId": 670,
-      "totalPointsForTeam": 94,
+      "elementId": 683,
+      "totalPointsForTeam": 98,
       "waiverStints": 1,
-      "firstGw": 5,
-      "lastGw": 32
+      "firstGw": 8,
+      "lastGw": 33
     },
     {
       "rank": 9,
-      "entry": 31812,
-      "elementId": 411,
-      "totalPointsForTeam": 88,
+      "entry": 40240,
+      "elementId": 515,
+      "totalPointsForTeam": 97,
       "waiverStints": 1,
-      "firstGw": 12,
-      "lastGw": 32
+      "firstGw": 17,
+      "lastGw": 33
     },
     {
       "rank": 10,
-      "entry": 27040,
-      "elementId": 20,
-      "totalPointsForTeam": 87,
+      "entry": 31812,
+      "elementId": 670,
+      "totalPointsForTeam": 95,
       "waiverStints": 1,
-      "firstGw": 8,
-      "lastGw": 29
+      "firstGw": 5,
+      "lastGw": 33
     }
   ],
   "teamWaiverInTotals": [
     {
-      "entry": 31812,
-      "totalWaiverInPoints": 917,
-      "distinctPlayers": 46,
-      "leagueEntry": 31076
-    },
-    {
       "entry": 74425,
-      "totalWaiverInPoints": 917,
-      "distinctPlayers": 85,
+      "totalWaiverInPoints": 989,
+      "distinctPlayers": 88,
       "leagueEntry": 72086
     },
     {
-      "entry": 40385,
-      "totalWaiverInPoints": 819,
-      "distinctPlayers": 58,
-      "leagueEntry": 39219
+      "entry": 31812,
+      "totalWaiverInPoints": 984,
+      "distinctPlayers": 48,
+      "leagueEntry": 31076
     },
     {
       "entry": 27040,
-      "totalWaiverInPoints": 794,
-      "distinctPlayers": 46,
+      "totalWaiverInPoints": 867,
+      "distinctPlayers": 47,
       "leagueEntry": 26587
     },
     {
+      "entry": 40385,
+      "totalWaiverInPoints": 866,
+      "distinctPlayers": 59,
+      "leagueEntry": 39219
+    },
+    {
       "entry": 40240,
-      "totalWaiverInPoints": 784,
-      "distinctPlayers": 26,
+      "totalWaiverInPoints": 845,
+      "distinctPlayers": 28,
       "leagueEntry": 39078
     },
     {
       "entry": 27870,
-      "totalWaiverInPoints": 768,
-      "distinctPlayers": 42,
+      "totalWaiverInPoints": 836,
+      "distinctPlayers": 45,
       "leagueEntry": 27370
     },
     {
       "entry": 27134,
-      "totalWaiverInPoints": 657,
-      "distinctPlayers": 45,
+      "totalWaiverInPoints": 727,
+      "distinctPlayers": 47,
       "leagueEntry": 26675
     },
     {
       "entry": 41410,
-      "totalWaiverInPoints": 627,
-      "distinctPlayers": 51,
+      "totalWaiverInPoints": 662,
+      "distinctPlayers": 52,
       "leagueEntry": 40206
     }
   ]

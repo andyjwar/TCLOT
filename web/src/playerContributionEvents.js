@@ -382,7 +382,7 @@ export function buildOwnerByElementId(squads) {
 /**
  * Latest drop (by GW desc, then transactionId desc) per element_out.
  * @param {object[]} waiverOutGwRows
- * @returns {Map<number, { teamName: string, gameweek: number }>}
+ * @returns {Map<number, { teamName: string, gameweek: number, leagueEntryId: number }>}
  */
 export function buildLatestDropByElementOut(waiverOutGwRows) {
   const rows = [...(waiverOutGwRows || [])].filter(
@@ -400,6 +400,7 @@ export function buildLatestDropByElementOut(waiverOutGwRows) {
     m.set(el, {
       teamName: String(r.teamName ?? `Team ${r.entry}`).trim(),
       gameweek: Number(r.gameweek) || 0,
+      leagueEntryId: Number(r.entry),
     });
   }
   return m;

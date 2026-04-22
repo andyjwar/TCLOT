@@ -147,6 +147,7 @@ test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Ch
               type: { type: 'goal' },
               team: { id: '331' },
               wallclock: '2026-04-21T19:03:34Z',
+              clock: { displayValue: "19'", value: 19 * 60 },
               participants: [
                 { athlete: { id: '238318', displayName: 'Ferdi Kadioglu' } },
               ],
@@ -210,6 +211,10 @@ test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Ch
     assert.equal(events.length, 4);
     const kinds = events.map((e) => e.kind).sort();
     assert.deepEqual(kinds, ['assist', 'goal', 'goal', 'yellow_card']);
+
+    const kadiogluGoal = events.find((e) => e.elementId === 321 && e.kind === 'goal');
+    assert.ok(kadiogluGoal);
+    assert.equal(kadiogluGoal.minuteLabel, "19'");
 
     const welbeckish = events.find((e) => e.elementId === 322);
     assert.ok(welbeckish);

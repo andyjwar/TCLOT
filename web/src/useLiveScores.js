@@ -14,6 +14,7 @@ import {
   fplApiBase,
 } from './fplDraftUrl';
 import { fplShirtImageUrl } from './fplShirtUrl';
+import { gameWeekSelectLabel } from './gwLabel.js';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
 function classicResourceUrl(pathAndQuery) {
@@ -355,7 +356,7 @@ export function useLiveScores({
       if (loadGen !== loadGenerationRef.current) return;
       setEvents(evs);
       const ev = evs.find((e) => e.id === gw);
-      setEventSnapshot(ev ?? { id: gw, name: `Gameweek ${gw}` });
+      setEventSnapshot(ev ?? { id: gw, name: gameWeekSelectLabel(gw) });
 
       const elementById = Object.fromEntries(
         (boot.elements || []).map((e) => [Number(e.id), e])

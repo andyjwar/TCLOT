@@ -99,6 +99,28 @@ export function classifyEspnEvent(ev) {
 }
 
 /**
+ * Same clock logic as `espnPremWindow` — for Player Points’ match-minute column.
+ * @param {object} ev — ESPN `keyEvents[]` entry
+ * @returns {{ label: string }}
+ */
+function espnClockToMinute(ev) {
+  const c = ev?.clock;
+  const display =
+    (typeof c?.displayValue === 'string' && c.displayValue.trim()
+      ? c.displayValue
+      : null) || '—';
+  if (c && Number.isFinite(Number(c.value)) && Number(c.value) > 0) {
+    const total = Number(c.value);
+    const baseMin = Math.floor(total / 60);
+    const sec = total % 60;
+    if (sec === 0) {
+      return { label: display };
+    }
+  }
+  return { label: display };
+}
+
+/**
  * Resolve ESPN athlete display name to FPL element id on `teamFplId`.
  * ESPN ships full first + last names, e.g. "Jack Hinshelwood", "Ferdi Kadioglu".
  * FPL has separate `first_name` / `second_name` plus a short `web_name`; we try several
@@ -298,6 +320,7 @@ export async function fetchEspnContributionTimeline({
         elementById
       );
 
+      const mm = espnClockToMinute(ev);
       const pushOne = (k, elid, extraMs = 0) => {
         if (elid == null || !tracked.has(elid)) return;
         const key = wallclock + extraMs;
@@ -310,6 +333,7 @@ export async function fetchEspnContributionTimeline({
           recordedAt: new Date(key).toISOString(),
           sortKey: key,
           source: 'espn',
+          minuteLabel: mm.label,
         });
       };
 

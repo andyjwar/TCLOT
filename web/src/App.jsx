@@ -9,10 +9,15 @@ import {
 import {
   LEAGUE_TITLE,
   LEAGUE_TITLE_ABBR,
+  showTclotHeaderBrand,
   showDashboardHall,
   showDashboardPlayoff,
   showDashboardTrades,
 } from './siteFeatures'
+import { gameWeekSelectLabel } from './gwLabel.js'
+
+/** Full-width league lockup (lion + TCLOT + name) from `public/tclot-header-brand.png` */
+const TCL_HEADER_BRAND_SRC = `${import.meta.env.BASE_URL}tclot-header-brand.png`
 import {
   useLeagueData,
   FORM_LAST_N,
@@ -1057,7 +1062,7 @@ function App() {
     data?.teamLogoMap ?? EMPTY_TEAM_LOGO_MAP
   )
 
-  /** First 4 teams left of title, next/last 4 right (no overlap; >8 teams → first + last 4). */
+  /** First 4 teams left of title, next/last 4 right — shown as 2×2 grids (no overlap; >8 teams → first + last 4). */
   const heroLogoSides = useMemo(() => {
     const teams = data?.teamsForFormSelect ?? []
     const left = teams.slice(0, 4)
@@ -1299,10 +1304,23 @@ function App() {
             <div className="title-banner__toolbar">
               <ThemeToggle value={colorTheme} onChange={setColorTheme} />
             </div>
-            <h1 className="page-title-main">
-              <span className="page-title-main__abbr">{LEAGUE_TITLE_ABBR}</span>
-            </h1>
-            <p className="page-title-sub">{LEAGUE_TITLE}</p>
+            {showTclotHeaderBrand ? (
+              <div className="title-banner__brand">
+                <img
+                  className="title-hero-brand-img"
+                  src={TCL_HEADER_BRAND_SRC}
+                  alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
+                  decoding="async"
+                />
+              </div>
+            ) : (
+              <>
+                <h1 className="page-title-main">
+                  <span className="page-title-main__abbr">{LEAGUE_TITLE_ABBR}</span>
+                </h1>
+                <p className="page-title-sub">{LEAGUE_TITLE}</p>
+              </>
+            )}
             <p className="brand-sub brand-sub--in-title-tile">FPL Draft · Head-to-head</p>
           </section>
         </header>
@@ -1412,11 +1430,27 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <div className="title-hero-row__title">
-                  <h1 className="page-title-main">
-                    <span className="page-title-main__abbr">{LEAGUE_TITLE_ABBR}</span>
-                  </h1>
-                  <p className="page-title-sub">{LEAGUE_TITLE}</p>
+                <div
+                  className={
+                    'title-hero-row__title' +
+                    (showTclotHeaderBrand ? ' title-hero-row__title--brand' : '')
+                  }
+                >
+                  {showTclotHeaderBrand ? (
+                    <img
+                      className="title-hero-brand-img"
+                      src={TCL_HEADER_BRAND_SRC}
+                      alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
+                      decoding="async"
+                    />
+                  ) : (
+                    <>
+                      <h1 className="page-title-main">
+                        <span className="page-title-main__abbr">{LEAGUE_TITLE_ABBR}</span>
+                      </h1>
+                      <p className="page-title-sub">{LEAGUE_TITLE}</p>
+                    </>
+                  )}
                 </div>
                 <div className="title-hero-row__logos title-hero-row__logos--right">
                   {heroLogoSides.right.map((t) => (
@@ -1556,10 +1590,15 @@ function App() {
             onClick={() => setDashboardView('prem')}
             aria-current={dashboardView === 'prem' ? 'page' : undefined}
           >
-            <span className="dashboard-nav__emoji" aria-hidden="true">
-              🏟️
-            </span>
-            <span className="dashboard-nav__label">Live Teams</span>
+            <img
+              className="dashboard-nav__pl-logo"
+              src={`${import.meta.env.BASE_URL}premier-league-logo.svg`}
+              alt=""
+              loading="eager"
+              decoding="async"
+              aria-hidden
+            />
+            <span className="dashboard-nav__label">Squads &amp; Results</span>
           </button>
           <button
             type="button"
@@ -1573,7 +1612,7 @@ function App() {
             <span className="dashboard-nav__emoji" aria-hidden="true">
               ⚽
             </span>
-            <span className="dashboard-nav__label">Live Scoring</span>
+            <span className="dashboard-nav__label">FPL Live Scores</span>
           </button>
         </nav>
         <div className="dashboard-content">
@@ -1722,13 +1761,13 @@ function App() {
                         {processedCompleteGws.length > 0 ? (
                           <select
                             className="tile-gw-select tile-gw-select--inline"
-                            aria-label="Complete gameweek"
+                            aria-label="Complete game week"
                             value={completeGwEffective}
                             onChange={(e) => setCompleteGwView(Number(e.target.value))}
                           >
                             {processedCompleteGws.map((gw) => (
                               <option key={gw} value={gw}>
-                                GW {gw}
+                                {gameWeekSelectLabel(gw)}
                               </option>
                             ))}
                           </select>
@@ -1751,13 +1790,13 @@ function App() {
                         {processedFutureGws.length > 0 ? (
                           <select
                             className="tile-gw-select tile-gw-select--inline"
-                            aria-label="Future gameweek"
+                            aria-label="Future game week"
                             value={futureGwEffective}
                             onChange={(e) => setFutureGwView(Number(e.target.value))}
                           >
                             {processedFutureGws.map((gw) => (
                               <option key={gw} value={gw}>
-                                GW {gw}
+                                {gameWeekSelectLabel(gw)}
                               </option>
                             ))}
                           </select>
@@ -2183,13 +2222,13 @@ function App() {
                     {processedWaiverGws.length > 0 ? (
                       <select
                         className="tile-gw-select tile-gw-select--inline"
-                        aria-label="Waivers gameweek"
+                        aria-label="Waivers game week"
                         value={waiverGwEffective}
                         onChange={(e) => setWaiverGwView(Number(e.target.value))}
                       >
                         {processedWaiverGws.map((gw) => (
                           <option key={gw} value={gw}>
-                            GW {gw}
+                            {gameWeekSelectLabel(gw)}
                           </option>
                         ))}
                       </select>

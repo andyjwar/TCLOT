@@ -20,7 +20,6 @@ import {
   readPlayerContributionBucket,
 } from './playerContributionStorage';
 import { fetchEspnContributionTimeline } from './espnPremTimeline';
-import { fplShirtImageUrl } from './fplShirtUrl';
 
 /**
  * ESPN supplies real wallclock (epoch-ms) ordering for these. We prefer its ordering when it matches
@@ -128,11 +127,11 @@ function contributionActionParts(kind, delta, elementTypeId, scoring) {
   if (kind === 'assist') {
     const label = d === 1 ? 'ASSIST' : `${d} ASSISTS`;
     const br = pointsBracket(d * assistPts);
-    return { emoji: '🍑', text: `${label}${br}`, bracket: br };
+    return { emoji: '🅰', text: `${label}${br}`, bracket: br };
   }
   if (kind === 'dc_points') {
     const br = pointsBracket(d);
-    return { emoji: '🥊', text: `DC${br}`, bracket: br };
+    return { emoji: '🪖', text: `DEF CON${br}`, bracket: br };
   }
   if (kind === 'save_points') {
     const label = d === 1 ? 'SAVES' : `SAVES ×${d}`;
@@ -152,49 +151,28 @@ function contributionActionParts(kind, delta, elementTypeId, scoring) {
   return { emoji: '', text: String(kind).toUpperCase(), bracket: '' };
 }
 
-/** FPL kit image; falls back to club badge on error / missing shirt. */
-function ShirtThumb({ shirtUrl: su, badgeUrl: bu, teamShort }) {
-  const src = su || bu;
-  if (!src) {
-    return (
-      <span className="player-contrib-row__shirt-fallback" title={teamShort}>
-        {teamShort?.slice(0, 3) ?? '?'}
-      </span>
-    );
-  }
-  return (
-    <img
-      className="player-contrib-row__shirt-img"
-      src={src}
-      alt=""
-      loading="lazy"
-      onError={(e) => {
-        const img = e.currentTarget;
-        if (su && bu && img.src.includes(String(su))) {
-          img.src = bu;
-        }
-      }}
-    />
-  );
+/** Mins from live `stats` (GW snapshot — not the exact event clock). */
+function liveStatMinutesLabel(liveFull, elementId) {
+  const st = liveFull?.[Number(elementId)]?.stats;
+  const m = st != null ? Number(st.minutes) : null;
+  if (!Number.isFinite(m) || m < 0) return '—';
+  return `${Math.min(120, Math.floor(m))}'`;
 }
 
-/**
- * Mobile portrait: initials from each word of the fantasy team name (e.g. Hackney Meat Loaf → HML).
- * Waivers → "Waiver".
- */
-function fantasyOwnerMobileInitials(ownerLeagueEntryId, ownerTeamName, ownerLine) {
-  if (ownerLeagueEntryId != null) {
-    const raw = String(ownerTeamName || ownerLine || '').trim();
-    if (!raw) return '—';
-    const parts = raw.split(/\s+/).filter(Boolean);
-    let out = '';
-    for (const w of parts) {
-      const m = w.match(/\p{L}/u);
-      if (m) out += m[0].toLocaleUpperCase();
-    }
-    return out || '—';
+/** First word of fantasy / waiver label — e.g. “Toronto Oizo” → “Toronto”. */
+function fantasyTeamFirstLabel(ownerLeagueEntryId, ownerTeamName, ownerLine) {
+  if (ownerLeagueEntryId == null) {
+    return 'Waiver';
   }
-  return 'Waiver';
+  const t = String(ownerTeamName ?? ownerLine ?? '').trim();
+  if (!t) return '—';
+  return t.split(/\s+/)[0] || t;
+}
+
+function firstWordOnly(s) {
+  const t = String(s ?? '').trim();
+  if (!t) return '';
+  return t.split(/\s+/)[0] || t;
 }
 
 /** Yellow, red, DC, and save rows only if the player is on a league roster (starters or bench). */
@@ -272,10 +250,11 @@ export function PlayerContributions({
   );
   /** '' = all fantasy teams; otherwise `leagueEntryId` of owning squad. */
   const [fantasyTeamEntryId, setFantasyTeamEntryId] = useState('');
-  /** When both false, every contribution kind is shown. When either true, only those kinds (union). */
+  /** When all false, every contribution kind is shown. When any true, only those kinds (union). */
   const [filterGoal, setFilterGoal] = useState(false);
   const [filterAssist, setFilterAssist] = useState(false);
   const [filterDc, setFilterDc] = useState(false);
+  const [filterCards, setFilterCards] = useState(false);
   const prevLiveRef = useRef(null);
   const hydratedKeyRef = useRef('');
   const listScrollRef = useRef(null);
@@ -535,6 +514,7 @@ export function PlayerContributions({
    */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
+    const liveFull = contributionLiveContext?.liveFullByElementId;
     const liveCoverage = buildTimelineCoverage(
       (displayed || []).filter((e) => {
         const id = String(e?.stableId || '');
@@ -561,7 +541,7 @@ export function PlayerContributions({
       let ownerLine = own?.teamName ?? null;
       if (!ownerLine) {
         ownerLine = drop
-          ? `Waivers · dropped by ${drop.teamName} (GW ${drop.gameweek})`
+          ? `Last dropped, GW${drop.gameweek}, ${drop.teamName}.`
           : 'Waivers / free agents';
       }
       const ap = contributionActionParts(
@@ -572,26 +552,52 @@ export function PlayerContributions({
       );
       const fullName = displayPlayerName(el, ev.elementId);
       const shortName = displayPlayerNameShort(el, ev.elementId);
+      const minFromLive = liveStatMinutesLabel(liveFull, ev.elementId);
+      const rawEventMin = ev.minuteLabel;
+      const minLbl =
+        typeof rawEventMin === 'string' &&
+        rawEventMin.trim() &&
+        rawEventMin.trim() !== '—'
+          ? rawEventMin.trim()
+          : minFromLive;
+      const firstWord = own
+        ? fantasyTeamFirstLabel(
+            own.leagueEntryId,
+            own.teamName,
+            ownerLine
+          )
+        : drop
+          ? firstWordOnly(drop.teamName) || '—'
+          : fantasyTeamFirstLabel(
+              null,
+              null,
+              ownerLine
+            );
+      const waiverDrop =
+        !own && drop
+          ? {
+              gw: drop.gameweek,
+              dropperTeamName: drop.teamName,
+              dropperFirstWord: firstWordOnly(drop.teamName) || '—',
+            }
+          : null;
       return {
         ...ev,
         /** Short label (`web_name` when present) — shown in the feed (matches FPL pick names). */
         playerLabel: shortName,
         /** `displayPlayerName` — screen-reader + title when it differs from `playerLabel`. */
         playerLabelFull: fullName,
-        shirtUrl: fplShirtImageUrl(tm?.code, elementTypeId),
         badgeUrl: badgeUrl(tm?.code),
         teamShort: tm?.short_name ?? '—',
         ownerLine,
-        ownerLineMobileInitials: fantasyOwnerMobileInitials(
-          own?.leagueEntryId ?? null,
-          own?.teamName ?? null,
-          ownerLine
-        ),
         ownerTeamName: own?.teamName ?? null,
         ownerLeagueEntryId: own?.leagueEntryId ?? null,
         actionEmoji: ap.emoji,
         actionText: ap.text,
         actionBracket: ap.bracket,
+        minuteLabel: minLbl,
+        ownerFirstWord: firstWord,
+        waiverDrop,
       };
     });
   }, [displayed, contributionLiveContext, ownerByEl, dropByEl, compareRowsFn]);
@@ -602,24 +608,40 @@ export function PlayerContributions({
       const want = Number(fantasyTeamEntryId);
       out = out.filter((r) => Number(r.ownerLeagueEntryId) === want);
     }
-    const restrictKinds = filterGoal || filterAssist || filterDc;
+    const restrictKinds =
+      filterGoal || filterAssist || filterDc || filterCards;
     if (restrictKinds) {
       out = out.filter((r) => {
         if (filterGoal && r.kind === 'goal') return true;
         if (filterAssist && r.kind === 'assist') return true;
         if (filterDc && r.kind === 'dc_points') return true;
+        if (
+          filterCards &&
+          (r.kind === 'yellow_card' || r.kind === 'red_card')
+        ) {
+          return true;
+        }
         return false;
       });
     }
     return out;
-  }, [rows, fantasyTeamEntryId, filterGoal, filterAssist, filterDc]);
+  }, [
+    rows,
+    fantasyTeamEntryId,
+    filterGoal,
+    filterAssist,
+    filterDc,
+    filterCards,
+  ]);
 
-  const kindFiltersAll = !filterGoal && !filterAssist && !filterDc;
+  const kindFiltersAll =
+    !filterGoal && !filterAssist && !filterDc && !filterCards;
 
   const clearKindFilters = useCallback(() => {
     setFilterGoal(false);
     setFilterAssist(false);
     setFilterDc(false);
+    setFilterCards(false);
   }, []);
 
   const toggleFilterGoal = useCallback(() => {
@@ -634,30 +656,12 @@ export function PlayerContributions({
     setFilterDc((d) => !d);
   }, []);
 
+  const toggleFilterCards = useCallback(() => {
+    setFilterCards((c) => !c);
+  }, []);
+
   const toolbar = (
     <div className="player-contrib-section-head">
-      <div className="player-contrib-head-line">
-        <h2
-          id="player-contrib-heading"
-          className="tile-title tile-title--sm player-contrib-heading"
-          aria-label="Player Points"
-        >
-          Player Points
-        </h2>
-        <select
-          className="player-contrib-team-select"
-          value={fantasyTeamEntryId}
-          onChange={(e) => setFantasyTeamEntryId(e.target.value)}
-          aria-label="Filter by fantasy team"
-        >
-          <option value="">All teams</option>
-          {fantasyTeamOptions.map((t) => (
-            <option key={t.id} value={String(t.id)}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-      </div>
       <div className="player-contrib-toolbar">
         <div
           className="player-contrib-kind-filters"
@@ -690,6 +694,14 @@ export function PlayerContributions({
           </button>
           <button
             type="button"
+            className="player-contrib-kind-btn player-contrib-kind-btn--cards"
+            aria-pressed={filterCards}
+            onClick={toggleFilterCards}
+          >
+            Cards
+          </button>
+          <button
+            type="button"
             className="player-contrib-kind-btn player-contrib-kind-btn--all"
             aria-pressed={kindFiltersAll}
             onClick={clearKindFilters}
@@ -697,6 +709,19 @@ export function PlayerContributions({
             All
           </button>
         </div>
+        <select
+          className="player-contrib-team-select"
+          value={fantasyTeamEntryId}
+          onChange={(e) => setFantasyTeamEntryId(e.target.value)}
+          aria-label="Filter by fantasy team"
+        >
+          <option value="">All teams</option>
+          {fantasyTeamOptions.map((t) => (
+            <option key={t.id} value={String(t.id)}>
+              {t.name}
+            </option>
+          ))}
+        </select>
       </div>
     </div>
   );
@@ -725,97 +750,124 @@ export function PlayerContributions({
     <div className="player-contrib-broadcast">
       <div
         ref={listScrollRef}
-        className="player-contrib-feed"
+        className="player-contrib-feed player-contrib-feed--pp-rich"
         role="list"
-        aria-label="Player Points — live scoring events"
+        aria-label="FPL live scoring events"
       >
-        {filteredRows.map((r) => (
-          <div key={r.stableId} className="player-contrib-row" role="listitem">
+        {filteredRows.map((r) => {
+          const hasEvPts = Boolean(r.actionBracket && r.actionBracket.trim());
+          const showMinute = r.kind !== 'dc_points';
+          const ptsLine = hasEvPts
+            ? r.actionBracket.trim()
+            : '—';
+          const ptsAria = hasEvPts
+            ? `Fantasy points for this event${r.actionBracket}`
+            : 'No point change for this event';
+          const minPhrase = showMinute ? ` (${r.minuteLabel})` : '';
+          const arLabel = `${r.actionText}. ${r.playerLabelFull}${minPhrase}. ${r.ownerLine}. ${ptsLine}`;
+          return (
             <div
-              className={`player-contrib-row__action player-contrib-row__action--${(r.kind && String(r.kind).replace(/[^a-z0-9_-]/gi, '')) || 'other'}`}
-              aria-label={r.actionText}
+              key={r.stableId}
+              className="player-contrib-pp-row"
+              role="listitem"
+              aria-label={arLabel}
             >
-              {r.actionEmoji ? (
-                <span className="player-contrib-row__action-emoji" aria-hidden>
-                  {r.actionEmoji}
-                </span>
-              ) : null}
-              <span className="player-contrib-row__action-text player-contrib-row__action-text--wide">
-                {r.actionText}
+              <span className="player-contrib-pp-row__sr player-contrib-row__player-sr">
+                {r.actionText}. {r.playerLabelFull}
+                {minPhrase}. {r.ownerLine}
               </span>
               <span
-                className="player-contrib-row__action-text player-contrib-row__action-text--mportrait"
-                aria-hidden="true"
+                className="pp-ev-emoji"
+                aria-hidden
+                title={r.actionText}
               >
-                {r.actionEmoji ? (
-                  <>
-                    <span className="player-contrib-row__action-emoji-inline" aria-hidden>
-                      {r.actionEmoji}
-                    </span>
-                    <span className="player-contrib-row__action-bracket">{r.actionBracket}</span>
-                  </>
+                {r.actionEmoji || ''}
+              </span>
+              <span
+                className="pp-ev-pts"
+                aria-label={ptsAria}
+              >
+                {hasEvPts ? (
+                  <span className="pp-ev-pts-bracket">{r.actionBracket}</span>
                 ) : (
-                  r.actionText
+                  <span className="pp-ev-pts--empty">—</span>
                 )}
               </span>
-            </div>
-            <div className="player-contrib-row__mid">
-              <div className="player-contrib-row__player-stack">
-                <span className="player-contrib-row__player-sr">{r.playerLabelFull}</span>
-                <span
-                  className="player-contrib-row__player player-contrib-row__player--desktop-full"
-                  aria-hidden="true"
-                >
-                  {r.playerLabelFull}
-                </span>
-                <span
-                  className="player-contrib-row__player player-contrib-row__player--mobile-short"
-                  aria-hidden="true"
-                  title={
-                    r.playerLabelFull !== r.playerLabel ? r.playerLabelFull : undefined
-                  }
-                >
+              <div className="pp-ev-club" title={r.teamShort}>
+                {r.badgeUrl ? (
+                  <img
+                    className="pp-ev-club__badge"
+                    src={r.badgeUrl}
+                    alt=""
+                    loading="lazy"
+                  />
+                ) : (
+                  <span className="pp-ev-club__badge-fallback" aria-hidden>
+                    {r.teamShort?.slice(0, 3) ?? '—'}
+                  </span>
+                )}
+                <span className="pp-ev-club__short">{r.teamShort}</span>
+              </div>
+              <div
+                className="pp-ev-midname"
+                title={
+                  r.playerLabelFull !== r.playerLabel
+                    ? r.playerLabelFull
+                    : undefined
+                }
+              >
+                <span className="pp-ev-name">
                   {r.playerLabel}
                 </span>
+                {showMinute ? (
+                  <span className="pp-ev-mins" aria-hidden>
+                    {r.minuteLabel}
+                  </span>
+                ) : null}
               </div>
-              <div className="player-contrib-row__shirt-cell">
-                <ShirtThumb
-                  shirtUrl={r.shirtUrl}
-                  badgeUrl={r.badgeUrl}
-                  teamShort={r.teamShort}
-                />
+              <div
+                className={
+                  r.waiverDrop
+                    ? 'pp-ev-owner pp-ev-owner--waiver-drop'
+                    : 'pp-ev-owner'
+                }
+                title={
+                  r.waiverDrop
+                    ? `${r.waiverDrop.dropperTeamName} (GW ${r.waiverDrop.gw})`
+                    : r.ownerLine
+                }
+              >
+                {r.ownerLeagueEntryId != null ? (
+                  <>
+                    <span className="pp-ev-owner__word">{r.ownerFirstWord}</span>
+                    <TeamAvatar
+                      entryId={r.ownerLeagueEntryId}
+                      name={r.ownerTeamName ?? r.ownerLine}
+                      size="sm"
+                      logoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                      badgeFallback
+                    />
+                  </>
+                ) : r.waiverDrop ? (
+                  <span className="pp-ev-owner__waiver-drop-line">
+                    <span className="pp-ev-owner__waiver-bin" role="img" aria-hidden>
+                      🗑️
+                    </span>
+                    <span className="pp-ev-owner__waiver-gw tabular" aria-hidden>
+                      GW{r.waiverDrop.gw} -{' '}
+                    </span>
+                    <span className="pp-ev-owner__waiver-first">
+                      {r.waiverDrop.dropperFirstWord}
+                    </span>
+                  </span>
+                ) : (
+                  <span className="pp-ev-owner__word">{r.ownerFirstWord}</span>
+                )}
               </div>
             </div>
-            <div className="player-contrib-row__owner-wrap" title={r.ownerLine}>
-              <span className="player-contrib-row__owner-sr">{r.ownerLine}</span>
-              <span
-                className="player-contrib-row__owner player-contrib-row__owner--full"
-                aria-hidden="true"
-              >
-                {r.ownerLine}
-              </span>
-              <span
-                className="player-contrib-row__owner player-contrib-row__owner--mcompact"
-                aria-hidden="true"
-              >
-                {r.ownerLineMobileInitials}
-              </span>
-              {r.ownerLeagueEntryId != null ? (
-                <TeamAvatar
-                  entryId={r.ownerLeagueEntryId}
-                  name={r.ownerTeamName ?? r.ownerLine}
-                  size="sm"
-                  logoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-              ) : (
-                <span className="player-contrib-row__owner-logo-fallback" aria-hidden>
-                  —
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
       )}

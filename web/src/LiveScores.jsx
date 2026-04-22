@@ -7,6 +7,9 @@ import {
 import { TeamAvatar } from './TeamAvatar';
 import { PlayerContributions } from './PlayerContributions';
 import { useLiveScores } from './useLiveScores';
+import { eventNameToGameWeekLabel, gameWeekSelectLabel } from './gwLabel.js';
+import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
+import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
 
 /**
  * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
@@ -659,12 +662,17 @@ export function LiveScores({
       .filter((e) => e && e.id >= 1 && e.id <= 38)
       .map((e) => ({
         id: e.id,
-        label: e.name || `GW ${e.id}`,
+        label: eventNameToGameWeekLabel(e.name, e.id),
         finished: e.finished,
         is_current: e.is_current,
         is_next: e.is_next,
       }));
   }, [events]);
+
+  const selectedGwOption = useMemo(
+    () => gwOptions.find((o) => Number(o.id) === Number(gameweek)),
+    [gwOptions, gameweek],
+  );
 
   const gwMatches = useMemo(() => {
     if (!Array.isArray(matches) || matches.length === 0) return [];
@@ -823,7 +831,7 @@ export function LiveScores({
     <div className="dashboard-stack live-scores-root">
       <section className="tile tile--compact" aria-labelledby="live-heading">
         <h2 id="live-heading" className="tile-title tile-title--sm">
-          Live scores
+          FPL Live Scores
         </h2>
 
         {!proxyHost ? (
@@ -859,33 +867,39 @@ export function LiveScores({
         ) : null}
 
         <div className="live-toolbar">
-          <label className="live-gw-label">
-            <select
-              className="live-gw-select"
-              aria-label="Gameweek"
-              value={gameweek}
-              onChange={(e) => onGameweekChange(Number(e.target.value))}
-            >
-              {gwOptions.length ? (
-                gwOptions.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                    {o.finished ? ' ✓' : ''}
-                  </option>
-                ))
-              ) : (
-                <option value={gameweek}>GW {gameweek}</option>
-              )}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="live-refresh-btn"
+          <div className="live-gw-field">
+            <div className="live-gw-input-row">
+              <label className="live-gw-label">
+                <select
+                  className="live-gw-select"
+                  aria-label="Game week"
+                  value={gameweek}
+                  onChange={(e) => onGameweekChange(Number(e.target.value))}
+                >
+                  {gwOptions.length ? (
+                    <GameWeekSelectOptgroups options={gwOptions} />
+                  ) : (
+                    <option value={gameweek}>{gameWeekSelectLabel(gameweek)}</option>
+                  )}
+                </select>
+              </label>
+              {selectedGwOption?.finished ? (
+                <span
+                  className="live-gw-pill"
+                  title="This game week is complete (all fixtures finished)"
+                  aria-label="This game week is complete"
+                >
+                  FT
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <LiveRefreshIconButton
+            title="Refresh from FPL"
+            loading={Boolean(loading)}
+            disabled={Boolean(loading)}
             onClick={() => void refresh()}
-            disabled={loading}
-          >
-            {loading ? 'Loading…' : 'Refresh from FPL'}
-          </button>
+          />
         </div>
 
         {error ? (
@@ -914,7 +928,7 @@ export function LiveScores({
 
       <section
         className="tile tile--compact player-contrib-tile"
-        aria-labelledby="player-contrib-heading"
+        aria-label="FPL live scores"
       >
         <PlayerContributions
           leagueId={leagueId}

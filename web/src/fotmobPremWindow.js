@@ -614,6 +614,16 @@ export async function buildFplToFotmobFixtureMap({ gwFixtures, teamById }) {
  *   elementById: Record<number, object>,
  * }} args
  */
+/** FPL `element_type` → label used after player name, e.g. `(D)`. */
+function fplElementTypeToPosLabel(elementType) {
+  const et = Number(elementType);
+  if (et === 1) return 'GK';
+  if (et === 2) return 'D';
+  if (et === 3) return 'M';
+  if (et === 4) return 'F';
+  return null;
+}
+
 export function enrichWithFplElements({ fplFixture, events, lineups, elementById }) {
   const homeFpl = coerceInt(fplFixture?.team_h);
   const awayFpl = coerceInt(fplFixture?.team_a);
@@ -628,12 +638,23 @@ export function enrichWithFplElements({ fplFixture, events, lineups, elementById
 
   const enrichSide = (side, teamFpl) => {
     if (!side || teamFpl == null) return side;
-    const eid = (player) =>
-      player?.name ? matchFplElementId(teamFpl, player.name, elementById) : null;
+    const enrichPlayer = (player) => {
+      const elementId = player?.name
+        ? matchFplElementId(teamFpl, player.name, elementById)
+        : null;
+      const el =
+        elementId != null && elementById ? elementById[elementId] : null;
+      const fplWebName =
+        el && typeof el.web_name === 'string' && el.web_name.trim()
+          ? el.web_name.trim()
+          : null;
+      const fplPos = el ? fplElementTypeToPosLabel(el.element_type) : null;
+      return { ...player, elementId, fplWebName, fplPos };
+    };
     return {
       ...side,
-      xi: side.xi.map((p) => ({ ...p, elementId: eid(p) })),
-      bench: side.bench.map((p) => ({ ...p, elementId: eid(p) })),
+      xi: side.xi.map(enrichPlayer),
+      bench: side.bench.map(enrichPlayer),
     };
   };
 

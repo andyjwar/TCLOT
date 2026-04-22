@@ -87,6 +87,26 @@ function patternIdBase(reactId) {
   return `k${reactId.replace(/[^a-zA-Z0-9]/g, '')}`
 }
 
+/**
+ * Rounded “badge” with one initial (no shirt SVG) — for contexts that prefer a crest over kit.
+ * Matches {@link team-avatar-frame} sizing.
+ */
+function CircleInitialsBadge({ name, size }) {
+  const initial = (() => {
+    const t = String(name ?? '').trim()
+    if (t) return t.slice(0, 1).toUpperCase()
+    return '?'
+  })()
+  return (
+    <span
+      className={`team-avatar-frame team-avatar-fallback-initials team-avatar-frame--${size}`}
+      aria-hidden
+    >
+      <span className="team-avatar-fallback-initials__glyph">{initial}</span>
+    </span>
+  )
+}
+
 function ShirtInitialsBadge({ name, entryId, size, kitIndex }) {
   const initial = (name || '?').slice(0, 2).toUpperCase()
   const kit = TEAM_KITS[kitIndex] ?? TEAM_KITS[0]
@@ -187,6 +207,11 @@ export function TeamAvatar({
   noFallback = false,
   /** If true, only try custom uploads (team-logos/ + logoMap), not team-logos-web pipeline. */
   customLogoOnly = false,
+  /**
+   * If true, when no logo image is shown, use a simple circular initial instead of the shirt
+   * silhouette.
+   */
+  badgeFallback = false,
 }) {
   const kitIndex = useMemo(
     () => resolveKitIndex(entryId, kitIndexByEntry, name),
@@ -206,6 +231,9 @@ export function TeamAvatar({
 
   if (entryId == null || showInitials) {
     if (noFallback) return null
+    if (badgeFallback) {
+      return <CircleInitialsBadge name={name} size={size} />
+    }
     return (
       <ShirtInitialsBadge
         name={name}
@@ -219,6 +247,9 @@ export function TeamAvatar({
   const src = srcList[idx]
   if (!src) {
     if (noFallback) return null
+    if (badgeFallback) {
+      return <CircleInitialsBadge name={name} size={size} />
+    }
     return (
       <ShirtInitialsBadge
         name={name}

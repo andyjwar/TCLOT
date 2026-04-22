@@ -103,6 +103,7 @@ test('buildLatestDropByElementOut — highest GW wins', () => {
   const m = buildLatestDropByElementOut(rows);
   assert.equal(m.get(7).gameweek, 12);
   assert.equal(m.get(7).teamName, 'NewerGW');
+  assert.equal(m.get(7).leagueEntryId, 2);
 });
 
 test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc vs zero; cards need delta tick', () => {

@@ -3,6 +3,9 @@ import { useLiveScores } from './useLiveScores';
 import { TeamAvatar } from './TeamAvatar';
 import { fetchEspnPremWindow } from './espnPremWindow.js';
 import { buildOwnerByElementId } from './playerContributionEvents.js';
+import { gameWeekSelectLabel } from './gwLabel.js';
+import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
+import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
 function plBadgeUrl(code) {
@@ -21,6 +24,52 @@ function formatKickoff(iso) {
     hour: 'numeric',
     minute: '2-digit',
   });
+}
+
+/** Date only — pairs with `kickoffTimeLabel` for the header line. */
+function kickoffDateLabel(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function kickoffTimeLabel(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleTimeString(undefined, {
+    hour: 'numeric',
+    minute: '2-digit',
+  });
+}
+
+function lineupsBothConfirmed(fx) {
+  return (
+    fx?.lineups?.home?.confirmed === true &&
+    fx?.lineups?.away?.confirmed === true
+  );
+}
+
+/** In-play (ESPN: match started, not full time). */
+function isFixtureLive(fx) {
+  const s = fx?.score;
+  if (!s) return false;
+  return s.started === true && s.finished !== true;
+}
+
+/** Stable key for expand state and React (FPL `fixtures.id` when present). */
+function fixtureKey(fx) {
+  const id = Number(fx?.fplFixture?.id);
+  if (Number.isFinite(id) && id > 0) return id;
+  const th = Number(fx?.fplFixture?.team_h);
+  const ta = Number(fx?.fplFixture?.team_a);
+  if (Number.isFinite(th) && Number.isFinite(ta)) return `f-${th}-${ta}`;
+  return 0;
 }
 
 /**
@@ -44,6 +93,16 @@ const EVENT_META = {
   red_card: { icon: '🟥', label: 'Red', className: 'prem-ev--red' },
 };
 
+/** Yellow / red only if the player is on a league squad (owner map has the element). */
+function includePremWindowEvent(ev, ownerByEl) {
+  if (ev.kind !== 'yellow_card' && ev.kind !== 'red_card') return true;
+  const id = ev.elementId;
+  if (id == null) return false;
+  const n = Number(id);
+  if (!Number.isFinite(n)) return false;
+  return ownerByEl != null && ownerByEl.has(n);
+}
+
 /**
  * `{ element → { leagueEntryId, teamName, fplEntryId } }` — enriched version of
  * `buildOwnerByElementId` that also keeps `fplEntryId` (same shape we'd use for logos).
@@ -65,10 +124,19 @@ function buildOwnerMap(squads) {
   return out;
 }
 
+/** First word of fantasy team name (e.g. "Hackney Meat Loaf" → "Hackney"). */
+function fantasyTeamFirstWord(fullName) {
+  const t = String(fullName ?? '').trim();
+  if (!t) return '';
+  return t.split(/\s+/)[0] || t;
+}
+
 function OwnerTag({ owner, teamLogoMap, kitIndexByEntry }) {
   if (!owner) return null;
+  const label = fantasyTeamFirstWord(owner.teamName) || owner.teamName;
   return (
     <span className="prem-owner-tag" title={owner.teamName}>
+      <span className="prem-owner-tag__name">{label}</span>
       <span className="prem-owner-tag__avatar">
         <TeamAvatar
           entryId={owner.leagueEntryId}
@@ -78,7 +146,6 @@ function OwnerTag({ owner, teamLogoMap, kitIndexByEntry }) {
           kitIndexByEntry={kitIndexByEntry}
         />
       </span>
-      <span className="prem-owner-tag__name">{owner.teamName}</span>
     </span>
   );
 }
@@ -95,8 +162,10 @@ function EventRow({ ev, ownerByEl, teamLogoMap, kitIndexByEntry }) {
         : '';
   return (
     <li className={`prem-ev-row ${meta.className} ${sideClass}`}>
-      <span className="prem-ev-minute">{ev.minuteLabel}</span>
-      <span className="prem-ev-icon" aria-hidden="true">{meta.icon}</span>
+      <span className="prem-ev-minute">{ev.minuteLabel || '—'}</span>
+      <span className="prem-ev-icon" aria-hidden="true">
+        {meta.icon}
+      </span>
       <span className="prem-ev-player">
         <span className="prem-ev-name">{ev.playerName || '—'}</span>
         {ev.isPenalty ? <span className="prem-ev-tag">(pen)</span> : null}
@@ -120,18 +189,26 @@ function LineupPlayerRow({
   kitIndexByEntry,
 }) {
   const owner = player.elementId != null ? ownerByEl.get(player.elementId) : null;
+  const displayName =
+    player.fplWebName?.trim() ||
+    player.name ||
+    `#${player.fotmobPlayerId ?? '?'}`;
+  const fplPos =
+    player.fplPos != null && String(player.fplPos).trim()
+      ? String(player.fplPos).trim()
+      : null;
   return (
-    <li className="prem-lineup-row">
-      <span className="prem-lineup-shirt tabular" aria-hidden="true">
-        {player.shirt ?? '·'}
-      </span>
+    <div className="prem-lineup-row">
       <span className="prem-lineup-core">
         <span className="prem-lineup-name">
-          {player.name || `#${player.fotmobPlayerId ?? '?'}`}
+          {displayName}
+          {fplPos ? (
+            <span className="prem-lineup-fpl-bracket" title="FPL position">
+              {' '}
+              ({fplPos})
+            </span>
+          ) : null}
         </span>
-        {player.usualPosition ? (
-          <span className="prem-lineup-pos">{player.usualPosition}</span>
-        ) : null}
       </span>
       {owner ? (
         <span className="prem-lineup-owner">
@@ -142,74 +219,156 @@ function LineupPlayerRow({
           />
         </span>
       ) : null}
-    </li>
+    </div>
   );
 }
 
-function LineupColumn({
-  title,
-  side,
-  ownerByEl,
-  teamLogoMap,
-  kitIndexByEntry,
-}) {
+function LineupPairedHead({ title, side }) {
   if (!side) {
     return (
-      <div className="prem-lineup-col">
-        <div className="prem-lineup-col__head">
-          <span className="prem-lineup-col__title">{title}</span>
-        </div>
-        <p className="muted muted--tight">No lineup yet</p>
+      <div className="prem-lineup-col__head">
+        <span className="prem-lineup-col__title">{title}</span>
       </div>
     );
   }
   return (
-    <div className="prem-lineup-col">
-      <div className="prem-lineup-col__head">
-        <span className="prem-lineup-col__title">{title}</span>
-        {side.formation ? (
-          <span className="prem-lineup-col__formation">{side.formation}</span>
-        ) : null}
-        {side.confirmed ? (
-          <span className="prem-lineup-col__badge prem-lineup-col__badge--confirmed">
-            Confirmed
-          </span>
-        ) : (
-          <span className="prem-lineup-col__badge prem-lineup-col__badge--predicted">
-            Predicted
-          </span>
-        )}
+    <div className="prem-lineup-col__head">
+      <span className="prem-lineup-col__title">{title}</span>
+      {side.formation ? (
+        <span className="prem-lineup-col__formation">{side.formation}</span>
+      ) : null}
+      {side.confirmed ? (
+        <span className="prem-lineup-col__badge prem-lineup-col__badge--confirmed">
+          Confirmed
+        </span>
+      ) : (
+        <span className="prem-lineup-col__badge prem-lineup-col__badge--predicted">
+          Predicted
+        </span>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Home and away lineups in locked rows so each XI line is the same height and lines up
+ * side-by-side; bench rows follow the same pattern.
+ */
+function LineupPaired({
+  homeTitle,
+  awayTitle,
+  homeSide,
+  awaySide,
+  ownerByEl,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
+  if (!homeSide && !awaySide) {
+    return (
+      <p className="muted muted--tight">No lineup yet</p>
+    );
+  }
+  const h = homeSide;
+  const a = awaySide;
+  const xiLen = Math.max(h?.xi?.length ?? 0, a?.xi?.length ?? 0);
+  const benchH = h?.bench ?? [];
+  const benchA = a?.bench ?? [];
+  const benchLen = Math.max(benchH.length, benchA.length);
+
+  return (
+    <div className="prem-lineup-paired">
+      <div className="prem-lineup-paired__heads">
+        <div className="prem-lineup-paired__head-slab prem-lineup-paired__head-slab--home">
+          <LineupPairedHead title={homeTitle} side={h} />
+        </div>
+        <div className="prem-lineup-paired__head-slab prem-lineup-paired__head-slab--away">
+          <LineupPairedHead title={awayTitle} side={a} />
+        </div>
       </div>
-      <ul className="prem-lineup-list" role="list">
-        {side.xi.map((p, i) => (
-          <LineupPlayerRow
-            key={`xi-${p.fotmobPlayerId ?? i}`}
-            player={p}
-            ownerByEl={ownerByEl}
-            teamLogoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
+
+      <div className="prem-lineup-paired__rows" role="list">
+        {Array.from({ length: xiLen }, (_, i) => (
+          <div
+            className="prem-lineup-paired__row"
+            key={`xi-${i}`}
+            role="listitem"
+          >
+            <div className="prem-lineup-paired__cell prem-lineup-paired__cell--home">
+              {h?.xi?.[i] ? (
+                <LineupPlayerRow
+                  player={h.xi[i]}
+                  ownerByEl={ownerByEl}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              ) : (
+                <div className="prem-lineup-paired__empty" aria-hidden />
+              )}
+            </div>
+            <div className="prem-lineup-paired__cell prem-lineup-paired__cell--away">
+              {a?.xi?.[i] ? (
+                <LineupPlayerRow
+                  player={a.xi[i]}
+                  ownerByEl={ownerByEl}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              ) : (
+                <div className="prem-lineup-paired__empty" aria-hidden />
+              )}
+            </div>
+          </div>
         ))}
-      </ul>
-      {side.bench?.length ? (
+      </div>
+
+      {benchLen > 0 ? (
         <>
-          <div className="prem-lineup-col__bench-head">Bench</div>
-          <ul className="prem-lineup-list prem-lineup-list--bench" role="list">
-            {side.bench.map((p, i) => (
-              <LineupPlayerRow
-                key={`bench-${p.fotmobPlayerId ?? i}`}
-                player={p}
-                ownerByEl={ownerByEl}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
+          <div className="prem-lineup-paired__bench-head">Bench</div>
+          <div className="prem-lineup-paired__rows" role="list">
+            {Array.from({ length: benchLen }, (_, i) => (
+              <div
+                className="prem-lineup-paired__row prem-lineup-paired__row--bench"
+                key={`bench-${i}`}
+                role="listitem"
+              >
+                <div className="prem-lineup-paired__cell prem-lineup-paired__cell--home">
+                  {benchH[i] ? (
+                    <LineupPlayerRow
+                      player={benchH[i]}
+                      ownerByEl={ownerByEl}
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  ) : (
+                    <div className="prem-lineup-paired__empty" aria-hidden />
+                  )}
+                </div>
+                <div className="prem-lineup-paired__cell prem-lineup-paired__cell--away">
+                  {benchA[i] ? (
+                    <LineupPlayerRow
+                      player={benchA[i]}
+                      ownerByEl={ownerByEl}
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  ) : (
+                    <div className="prem-lineup-paired__empty" aria-hidden />
+                  )}
+                </div>
+              </div>
             ))}
-          </ul>
+          </div>
         </>
       ) : null}
-      {side.coach ? (
-        <div className="prem-lineup-col__coach muted muted--tight">
-          Manager: {side.coach}
+
+      {h?.coach || a?.coach ? (
+        <div className="prem-lineup-paired__coaches">
+          <div className="prem-lineup-paired__coach-slab prem-lineup-paired__cell--home prem-lineup-col__coach muted muted--tight">
+            {h?.coach ? <>Manager: {h.coach}</> : null}
+          </div>
+          <div className="prem-lineup-paired__coach-slab prem-lineup-paired__cell--away prem-lineup-col__coach muted muted--tight">
+            {a?.coach ? <>Manager: {a.coach}</> : null}
+          </div>
         </div>
       ) : null}
     </div>
@@ -238,55 +397,96 @@ function FixtureCard({
     (fx.score.started || fx.score.finished) &&
     Number.isFinite(Number(fx.score.homeScore));
 
-  const canShowLineups =
-    fx.lineups?.home?.confirmed === true && fx.lineups?.away?.confirmed === true;
-  const hasEvents = (fx.events || []).length > 0;
+  const canShowLineups = lineupsBothConfirmed(fx);
+  const visibleEvents = (fx.events || []).filter((ev) =>
+    includePremWindowEvent(ev, ownerByEl)
+  );
+  const hasEvents = visibleEvents.length > 0;
+  const kickIso =
+    fx.fplFixture?.kickoff_time || fx.score?.kickoffIso || null;
+  const live = isFixtureLive(fx);
 
   return (
-    <section className="prem-fixture">
+    <section
+      className={`prem-fixture${live ? ' prem-fixture--live' : ''}`}
+    >
+      {live ? <span className="prem-fixture__live-badge">Live</span> : null}
       <button
         type="button"
         className="prem-fixture__header"
         onClick={onToggle}
         aria-expanded={expanded}
+        aria-label={
+          live
+            ? `Live — ${homeShort} vs ${awayShort}, ${status}. Expand for details.`
+            : undefined
+        }
       >
-        <span className="prem-fixture__side prem-fixture__side--home">
-          <span className="prem-fixture__team-name">{homeShort}</span>
-          {plBadgeUrl(home?.code) ? (
-            <img
-              className="prem-fixture__badge"
-              src={plBadgeUrl(home?.code)}
-              alt={homeName}
-              loading="lazy"
-            />
+        <div className="prem-fixture__header-content">
+          <div className="prem-fixture__top-row">
+            <div className="prem-fixture__match-line">
+              <span className="prem-fixture__club prem-fixture__club--home">
+                <span className="prem-fixture__team-abbr" title={homeName}>
+                  {homeShort}
+                </span>
+                {plBadgeUrl(home?.code) ? (
+                  <img
+                    className="prem-fixture__badge"
+                    src={plBadgeUrl(home?.code)}
+                    alt={homeName}
+                    loading="lazy"
+                  />
+                ) : null}
+              </span>
+              <span className="prem-fixture__score">
+                {showScore ? (
+                  <>
+                    <span className="tabular">{fx.score.homeScore}</span>
+                    <span className="prem-fixture__score-sep">–</span>
+                    <span className="tabular">{fx.score.awayScore}</span>
+                  </>
+                ) : (
+                  <span className="prem-fixture__vs">vs</span>
+                )}
+              </span>
+              <span className="prem-fixture__club prem-fixture__club--away">
+                {plBadgeUrl(away?.code) ? (
+                  <img
+                    className="prem-fixture__badge"
+                    src={plBadgeUrl(away?.code)}
+                    alt={awayName}
+                    loading="lazy"
+                  />
+                ) : null}
+                <span className="prem-fixture__team-abbr" title={awayName}>
+                  {awayShort}
+                </span>
+              </span>
+            </div>
+            <span className="prem-fixture__status">{status}</span>
+          </div>
+          {kickIso ? (
+            <div
+              className="prem-fixture__kickoff-row"
+              title={formatKickoff(String(kickIso))}
+            >
+              <span className="prem-fixture__kickoff">
+                <span className="prem-fixture__kickoff-date">
+                  {kickoffDateLabel(String(kickIso))}
+                </span>
+                <span className="prem-fixture__kickoff-sep" aria-hidden>
+                  {' · '}
+                </span>
+                <span className="prem-fixture__kickoff-time">
+                  {kickoffTimeLabel(String(kickIso))}
+                </span>
+              </span>
+            </div>
           ) : null}
-        </span>
-        <span className="prem-fixture__score">
-          {showScore ? (
-            <>
-              <span>{fx.score.homeScore}</span>
-              <span className="prem-fixture__score-sep">–</span>
-              <span>{fx.score.awayScore}</span>
-            </>
-          ) : (
-            <span className="prem-fixture__vs">vs</span>
-          )}
-        </span>
-        <span className="prem-fixture__side prem-fixture__side--away">
-          {plBadgeUrl(away?.code) ? (
-            <img
-              className="prem-fixture__badge"
-              src={plBadgeUrl(away?.code)}
-              alt={awayName}
-              loading="lazy"
-            />
-          ) : null}
-          <span className="prem-fixture__team-name">{awayShort}</span>
-        </span>
+        </div>
         <span className="prem-fixture__chevron" aria-hidden="true">
           {expanded ? '▾' : '▸'}
         </span>
-        <span className="prem-fixture__status">{status}</span>
       </button>
 
       {expanded ? (
@@ -311,7 +511,7 @@ function FixtureCard({
             <div className="prem-events">
               <h3 className="prem-events__title">Events</h3>
               <ul className="prem-events__list">
-                {fx.events.map((ev, i) => (
+                {visibleEvents.map((ev, i) => (
                   <EventRow
                     key={`${ev.kind}-${ev.eventId ?? i}-${i}`}
                     ev={ev}
@@ -329,22 +529,15 @@ function FixtureCard({
           {canShowLineups ? (
             <div className="prem-lineups">
               <h3 className="prem-lineups__title">Lineups</h3>
-              <div className="prem-lineups__cols">
-                <LineupColumn
-                  title={homeName}
-                  side={fx.lineups.home}
-                  ownerByEl={ownerByEl}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-                <LineupColumn
-                  title={awayName}
-                  side={fx.lineups.away}
-                  ownerByEl={ownerByEl}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-              </div>
+              <LineupPaired
+                homeTitle={homeName}
+                awayTitle={awayName}
+                homeSide={fx.lineups.home}
+                awaySide={fx.lineups.away}
+                ownerByEl={ownerByEl}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
             </div>
           ) : fx.matchId && !fx.detailsBlockedReason ? (
             <p className="muted muted--tight">
@@ -394,7 +587,6 @@ export function PremWindow({
   const gwFixtures = contributionLiveContext?.gwFixtures ?? null;
   const teamById = contributionLiveContext?.teamById ?? null;
   const elementById = contributionLiveContext?.elementById ?? null;
-
   const [espnWindowLoading, setEspnWindowLoading] = useState(false);
   const [espnWindowError, setEspnWindowError] = useState(null);
   const [espnWindowRows, setEspnWindowRows] = useState(/** @type {any[]} */ ([]));
@@ -429,15 +621,24 @@ export function PremWindow({
     void doEspnWindowFetch();
   }, [doEspnWindowFetch]);
 
-  /** Sort fixtures by kickoff time ascending so the GW reads chronologically. */
-  const sortedRows = useMemo(() => {
+  /**
+   * Latest kickoff first; split so fixtures with both lineups confirmed list under
+   * "Live fixtures" at the top.
+   */
+  const { liveWithLineups, otherFixtures } = useMemo(() => {
     const rows = [...(espnWindowRows || [])];
     rows.sort((a, b) => {
       const ka = Date.parse(a.fplFixture?.kickoff_time || '') || 0;
       const kb = Date.parse(b.fplFixture?.kickoff_time || '') || 0;
-      return ka - kb;
+      return kb - ka;
     });
-    return rows;
+    const live = [];
+    const other = [];
+    for (const r of rows) {
+      if (lineupsBothConfirmed(r)) live.push(r);
+      else other.push(r);
+    }
+    return { liveWithLineups: live, otherFixtures: other };
   }, [espnWindowRows]);
 
   const ownerByEl = useMemo(() => buildOwnerMap(squads), [squads]);
@@ -447,14 +648,20 @@ export function PremWindow({
     return events
       .map((e) => ({
         id: Number(e.id),
-        label: `GW ${e.id}`,
+        label: `Game Week ${e.id}`,
         finished: e.finished === true,
+        is_current: e.is_current === true,
       }))
       .sort((a, b) => a.id - b.id);
   }, [events]);
 
-  const [expanded, setExpanded] = useState(/** @type {Set<number>} */ (new Set()));
-  const toggle = useCallback((matchKey) => {
+  const selectedGwOption = useMemo(
+    () => gwOptions.find((o) => Number(o.id) === Number(gameweek)),
+    [gwOptions, gameweek],
+  );
+
+  const [expanded, setExpanded] = useState(() => new Set());
+  const toggle = useCallback((/** @type {number | string} */ matchKey) => {
     setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(matchKey)) next.delete(matchKey);
@@ -467,44 +674,46 @@ export function PremWindow({
     <div className="dashboard-stack prem-window-root">
       <section className="tile tile--compact" aria-labelledby="prem-window-heading">
         <h2 id="prem-window-heading" className="tile-title tile-title--sm">
-          Live Teams
+          Squads &amp; Results
         </h2>
-        <p className="muted muted--tight">
-          Live from ESPN. Lineups and events update from the public match feed; full squads
-          usually appear at team news roughly an hour before kickoff.
-        </p>
 
         <div className="live-toolbar">
-          <label className="live-gw-label">
-            <select
-              className="live-gw-select"
-              aria-label="Gameweek"
-              value={gameweek}
-              onChange={(e) => onGameweekChange(Number(e.target.value))}
-            >
-              {gwOptions.length ? (
-                gwOptions.map((o) => (
-                  <option key={o.id} value={o.id}>
-                    {o.label}
-                    {o.finished ? ' ✓' : ''}
-                  </option>
-                ))
-              ) : (
-                <option value={gameweek}>GW {gameweek}</option>
-              )}
-            </select>
-          </label>
-          <button
-            type="button"
-            className="live-refresh-btn"
+          <div className="live-gw-field">
+            <div className="live-gw-input-row">
+              <label className="live-gw-label">
+                <select
+                  className="live-gw-select"
+                  aria-label="Game week"
+                  value={gameweek}
+                  onChange={(e) => onGameweekChange(Number(e.target.value))}
+                >
+                  {gwOptions.length ? (
+                    <GameWeekSelectOptgroups options={gwOptions} />
+                  ) : (
+                    <option value={gameweek}>{gameWeekSelectLabel(gameweek)}</option>
+                  )}
+                </select>
+              </label>
+              {selectedGwOption?.finished ? (
+                <span
+                  className="live-gw-pill"
+                  title="This game week is complete (all fixtures finished)"
+                  aria-label="This game week is complete"
+                >
+                  FT
+                </span>
+              ) : null}
+            </div>
+          </div>
+          <LiveRefreshIconButton
+            title="Refresh squads and results"
+            loading={Boolean(liveLoading || espnWindowLoading)}
+            disabled={Boolean(liveLoading || espnWindowLoading)}
             onClick={() => {
               void refreshLive();
               void doEspnWindowFetch();
             }}
-            disabled={liveLoading || espnWindowLoading}
-          >
-            {liveLoading || espnWindowLoading ? 'Loading…' : 'Refresh'}
-          </button>
+          />
         </div>
 
         {liveError ? (
@@ -519,29 +728,85 @@ export function PremWindow({
         ) : null}
       </section>
 
-      {sortedRows.length === 0 && !espnWindowLoading ? (
+      {liveWithLineups.length === 0 &&
+      otherFixtures.length === 0 &&
+      !espnWindowLoading ? (
         <section className="tile tile--compact">
           <p className="muted muted--tight">No fixtures for this gameweek.</p>
         </section>
       ) : null}
 
-      <div className="prem-fixtures">
-        {sortedRows.map((fx) => {
-          const key = Number(fx.fplFixture?.id) || Math.random();
-          return (
-            <FixtureCard
-              key={key}
-              fx={fx}
-              teamById={teamById || {}}
-              ownerByEl={ownerByEl}
-              teamLogoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-              expanded={expanded.has(key)}
-              onToggle={() => toggle(key)}
-            />
-          );
-        })}
-      </div>
+      {liveWithLineups.length > 0 ? (
+        <section
+          className="prem-fixtures-block"
+          aria-labelledby="prem-live-fixtures-heading"
+        >
+          <h3
+            id="prem-live-fixtures-heading"
+            className="prem-fixtures-block__title"
+          >
+            Live fixtures
+          </h3>
+          <p className="prem-fixtures-block__hint muted muted--tight">
+            Lineups confirmed (both teams)
+          </p>
+          <div className="prem-fixtures prem-fixtures--grid">
+            {liveWithLineups.map((fx) => {
+              const key = fixtureKey(fx);
+              if (key === 0) return null;
+              return (
+                <FixtureCard
+                  key={key}
+                  fx={fx}
+                  teamById={teamById || {}}
+                  ownerByEl={ownerByEl}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  expanded={expanded.has(key)}
+                  onToggle={() => toggle(key)}
+                />
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
+
+      {otherFixtures.length > 0 ? (
+        <section
+          className="prem-fixtures-block"
+          aria-labelledby="prem-rest-fixtures-heading"
+        >
+          <h3
+            id="prem-rest-fixtures-heading"
+            className="prem-fixtures-block__title"
+          >
+            Fixtures
+          </h3>
+          {liveWithLineups.length > 0 ? (
+            <p className="prem-fixtures-block__hint muted muted--tight">
+              Lineups not yet confirmed, or in progress
+            </p>
+          ) : null}
+          <div className="prem-fixtures prem-fixtures--grid">
+            {otherFixtures.map((fx) => {
+              const key = fixtureKey(fx);
+              if (key === 0) return null;
+              return (
+                <FixtureCard
+                  key={key}
+                  fx={fx}
+                  teamById={teamById || {}}
+                  ownerByEl={ownerByEl}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  expanded={expanded.has(key)}
+                  onToggle={() => toggle(key)}
+                />
+              );
+            })}
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }
