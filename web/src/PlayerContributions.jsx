@@ -127,7 +127,7 @@ function contributionActionParts(kind, delta, elementTypeId, scoring) {
   if (kind === 'assist') {
     const label = d === 1 ? 'ASSIST' : `${d} ASSISTS`;
     const br = pointsBracket(d * assistPts);
-    return { emoji: '🅰', text: `${label}${br}`, bracket: br };
+    return { emoji: '🍑', text: `${label}${br}`, bracket: br };
   }
   if (kind === 'dc_points') {
     const br = pointsBracket(d);
@@ -673,16 +673,24 @@ export function PlayerContributions({
             className="player-contrib-kind-btn player-contrib-kind-btn--goal"
             aria-pressed={filterGoal}
             onClick={toggleFilterGoal}
+            aria-label="Filter by goal"
           >
-            Goal
+            <span className="player-contrib-kind-btn__m-wide">Goal</span>
+            <span className="player-contrib-kind-btn__m-ico" aria-hidden>
+              ⚽
+            </span>
           </button>
           <button
             type="button"
             className="player-contrib-kind-btn player-contrib-kind-btn--assist"
             aria-pressed={filterAssist}
             onClick={toggleFilterAssist}
+            aria-label="Filter by assist"
           >
-            Assist
+            <span className="player-contrib-kind-btn__m-wide">Assist</span>
+            <span className="player-contrib-kind-btn__m-ico" aria-hidden>
+              🍑
+            </span>
           </button>
           <button
             type="button"
@@ -768,7 +776,7 @@ export function PlayerContributions({
           return (
             <div
               key={r.stableId}
-              className="player-contrib-pp-row"
+              className={`player-contrib-pp-row player-contrib-pp-row--${r.kind}`}
               role="listitem"
               aria-label={arLabel}
             >
@@ -808,17 +816,19 @@ export function PlayerContributions({
                 )}
                 <span className="pp-ev-club__short">{r.teamShort}</span>
               </div>
-              <div
-                className="pp-ev-midname"
-                title={
-                  r.playerLabelFull !== r.playerLabel
-                    ? r.playerLabelFull
-                    : undefined
-                }
-              >
-                <span className="pp-ev-name">
-                  {r.playerLabel}
-                </span>
+              <div className="pp-ev-mid">
+                <div
+                  className="pp-ev-namecell"
+                  title={
+                    r.playerLabelFull !== r.playerLabel
+                      ? r.playerLabelFull
+                      : undefined
+                  }
+                >
+                  <span className="pp-ev-name">
+                    {r.playerLabel}
+                  </span>
+                </div>
                 {showMinute ? (
                   <span className="pp-ev-mins" aria-hidden>
                     {r.minuteLabel}

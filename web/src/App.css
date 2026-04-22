@@ -4068,6 +4068,10 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   line-height: 1.2;
 }
 
+.player-contrib-kind-btn__m-ico {
+  display: none;
+}
+
 .player-contrib-kind-btn:hover {
   border-color: color-mix(in srgb, var(--fm-border) 100%, transparent);
 }
@@ -4234,7 +4238,7 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   min-width: 0;
 }
 
-.pp-ev-midname {
+.pp-ev-mid {
   display: flex;
   flex-direction: row;
   flex-wrap: nowrap;
@@ -4242,6 +4246,12 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   justify-content: flex-start;
   gap: 0 6px;
   min-width: 0;
+}
+
+.pp-ev-namecell {
+  min-width: 0;
+  flex: 1 1 auto;
+  text-align: left;
 }
 
 .pp-ev-mins {
@@ -4316,11 +4326,128 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   transform: translateY(-0.08em);
 }
 
+/* Mobile: club badge → name (left, flexible) → minute → FPL first name → fantasy badge — hide pts + event icon */
 @media (max-width: 600px) {
+  .player-contrib-feed--pp-rich {
+    --player-contrib-row-h: 2.7rem;
+  }
+
   .player-contrib-pp-row {
-    grid-template-columns: 1.2rem minmax(2.5rem, 1fr) 2.75rem minmax(0, 1fr) minmax(0, 5.5rem);
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
     gap: 4px 6px;
     padding: 0.4rem 8px;
+  }
+
+  .player-contrib-pp-row .pp-ev-pts {
+    display: none;
+  }
+
+  .player-contrib-pp-row .pp-ev-emoji {
+    display: none;
+  }
+
+  .player-contrib-pp-row--goal .pp-ev-emoji,
+  .player-contrib-pp-row--assist .pp-ev-emoji {
+    display: inline;
+    flex: 0 0 auto;
+  }
+
+  .pp-ev-club {
+    flex: 0 0 auto;
+  }
+
+  .pp-ev-club__short {
+    display: none;
+  }
+
+  .pp-ev-mid {
+    display: contents;
+  }
+
+  .pp-ev-namecell {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .pp-ev-name {
+    text-align: left;
+  }
+
+  .pp-ev-mins {
+    flex: 0 0 auto;
+  }
+
+  .pp-ev-owner:not(.pp-ev-owner--waiver-drop) {
+    display: contents;
+  }
+
+  .pp-ev-owner--waiver-drop {
+    flex: 1 1 0;
+    min-width: 0;
+    max-width: none;
+    justify-content: flex-end;
+  }
+
+  .pp-ev-owner__word {
+    flex: 0 1 3.8rem;
+    max-width: 4.5rem;
+  }
+
+  .player-contrib-pp-row .pp-ev-owner:not(.pp-ev-owner--waiver-drop) .team-avatar-frame {
+    flex: 0 0 auto;
+  }
+
+  .player-contrib-kind-btn--goal .player-contrib-kind-btn__m-wide,
+  .player-contrib-kind-btn--assist .player-contrib-kind-btn__m-wide {
+    display: none;
+  }
+
+  .player-contrib-kind-btn--goal .player-contrib-kind-btn__m-ico,
+  .player-contrib-kind-btn--assist .player-contrib-kind-btn__m-ico {
+    display: inline;
+    font-size: 1.05rem;
+    line-height: 1;
+  }
+
+  .player-contrib-kind-btn--goal,
+  .player-contrib-kind-btn--assist {
+    min-width: 2.1rem;
+    padding-left: 0.35rem;
+    padding-right: 0.35rem;
+  }
+}
+
+/* FPL live — filters + team select stay on one row in portrait (scroll chips if needed) */
+@media (max-width: 900px) and (orientation: portrait), (max-width: 500px) {
+  .player-contrib-toolbar {
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px 6px;
+  }
+
+  .player-contrib-kind-filters {
+    flex-wrap: nowrap;
+    flex: 1 1 auto;
+    min-width: 0;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .player-contrib-kind-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .player-contrib-team-select {
+    margin-left: 0;
+    flex: 0 1 auto;
+    min-width: min(7.5rem, 36vw);
+    max-width: 12rem;
   }
 }
 
@@ -6161,6 +6288,28 @@ button.live-fixture-banner--toggle {
   .title-hero-row__title {
     order: -1;
     max-width: 100%;
+  }
+
+  /* One horizontal row of four per side (eight total in two rows below the title). */
+  .title-hero-row__logos {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-rows: auto;
+    width: 100%;
+    max-width: min(100%, 22rem);
+    margin-left: auto;
+    margin-right: auto;
+    gap: 6px 4px;
+    justify-items: center;
+  }
+
+  .title-hero-row__logo-wrap {
+    width: min(48px, 20vw);
+    height: min(48px, 20vw);
+  }
+
+  .title-hero-row__logo-wrap .team-avatar-frame--lg {
+    width: min(46px, calc(20vw - 2px));
+    height: min(46px, calc(20vw - 2px));
   }
 
   .title-hero-row__logos--left,

@@ -88,7 +88,7 @@ function matchStatusText({ score, fplFixture }) {
 
 const EVENT_META = {
   goal: { icon: '⚽', label: 'Goal', className: 'prem-ev--goal' },
-  assist: { icon: '🅰', label: 'Assist', className: 'prem-ev--assist' },
+  assist: { icon: '🍑', label: 'Assist', className: 'prem-ev--assist' },
   yellow_card: { icon: '🟨', label: 'Yellow', className: 'prem-ev--yellow' },
   red_card: { icon: '🟥', label: 'Red', className: 'prem-ev--red' },
 };
