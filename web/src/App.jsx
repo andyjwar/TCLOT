@@ -1559,7 +1559,7 @@ function App() {
             <span className="dashboard-nav__emoji" aria-hidden="true">
               🏟️
             </span>
-            <span className="dashboard-nav__label">Premier League</span>
+            <span className="dashboard-nav__label">Live Teams</span>
           </button>
           <button
             type="button"

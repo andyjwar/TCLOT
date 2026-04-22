@@ -467,7 +467,7 @@ export function PremWindow({
     <div className="dashboard-stack prem-window-root">
       <section className="tile tile--compact" aria-labelledby="prem-window-heading">
         <h2 id="prem-window-heading" className="tile-title tile-title--sm">
-          Premier League window
+          Live Teams
         </h2>
         <p className="muted muted--tight">
           Live from ESPN. Lineups and events update from the public match feed; full squads
@@ -521,7 +521,7 @@ export function PremWindow({
 
       {sortedRows.length === 0 && !espnWindowLoading ? (
         <section className="tile tile--compact">
-          <p className="muted muted--tight">No Premier League fixtures for this gameweek.</p>
+          <p className="muted muted--tight">No fixtures for this gameweek.</p>
         </section>
       ) : null}
 
