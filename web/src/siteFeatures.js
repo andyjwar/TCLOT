@@ -73,9 +73,13 @@ export const leagueHeaderBrandSrc = (() => {
   const abbr = readStringEnv(
     import.meta.env.VITE_LEAGUE_TITLE_ABBR,
     DEFAULT_LEAGUE_TITLE_ABBR,
-  ).trim()
-  if (abbr === 'exFOS') return publicAssetPath('exfos-header-brand.png')
-  if (abbr === 'EA Galaxy') return publicAssetPath('ea-galaxy-header-brand.png')
+  )
+    .trim()
+    .replace(/\s+/g, ' ')
+  // Case-insensitive so GitHub Variables match (e.g. exfos, EA GALAXY)
+  const abbrLc = abbr.toLowerCase()
+  if (abbrLc === 'exfos') return publicAssetPath('exfos-header-brand.png')
+  if (abbrLc === 'ea galaxy') return publicAssetPath('ea-galaxy-header-brand.png')
   if (showTclotHeaderBrand) return publicAssetPath('tclot-header-brand.png')
   return null
 })()
