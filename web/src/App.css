@@ -128,7 +128,48 @@
 .fotmob[data-theme='light'] .tile.hall-of-champions {
   --hall-rule: rgba(0, 0, 0, 0.12);
   --hall-muted: rgba(0, 0, 0, 0.48);
+  /* Strip behind gold manager / team names so yellow reads on light card */
+  --hall-manager-col-bg: color-mix(in srgb, #1a1810 78%, var(--hall-gold) 22%);
   box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+/* Light: no black “pill” on *table* sort headers (title pills stay pill-shaped below). */
+.fotmob[data-theme='light'] .tile.hall-of-champions .standings-table--historic thead th,
+.fotmob[data-theme='light'] .tile.hall-of-champions .standings-table--hall-career thead th {
+  background: transparent !important;
+  color: var(--hall-gold);
+  border-radius: 0;
+  box-shadow: none;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 50%, var(--hall-gold) 18%);
+}
+
+.fotmob[data-theme='light']
+  .tile.hall-of-champions
+  .standings-table--hall-career
+  thead
+  th
+  .standings-sort-arrow--active {
+  color: color-mix(in srgb, var(--fm-text-strong) 55%, var(--hall-gold) 45%) !important;
+  opacity: 1;
+}
+
+.fotmob[data-theme='light'] .tile.hall-of-champions .standings-table--hall-career tbody th.hall-career-mgr {
+  background: var(--hall-manager-col-bg);
+  border-radius: 6px;
+}
+
+.fotmob[data-theme='light'] .tile.hall-of-champions .standings-table--historic tbody td.col-team {
+  background: var(--hall-manager-col-bg);
+  border-radius: 6px;
+  vertical-align: top;
+}
+
+.fotmob[data-theme='light'] .tile.hall-of-champions .standings-table--historic tbody td.col-team .historic-standings-team__name {
+  color: color-mix(in srgb, #fff 90%, var(--hall-gold) 10%);
+}
+
+.fotmob[data-theme='light'] .tile.hall-of-champions .standings-table--historic tbody td.col-team .historic-standings-team__mgr {
+  color: color-mix(in srgb, var(--hall-muted) 50%, #fff 50%);
 }
 
 .fotmob[data-theme='light'] .hall-of-champions .hall-team-history .hall-team-history__team-name {
@@ -4479,11 +4520,16 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
     display: none;
   }
 
+  /* Cap width: native <select> sizes to the longest option; without a cap it overlaps
+     the scrolling filter pills. "Teams" + padding fits ~5.5–6.25rem at this font size. */
   .player-contrib-team-select {
     margin-left: auto;
     flex: 0 0 auto;
-    min-width: min(6rem, 32vw);
-    max-width: 12rem;
+    min-width: 0;
+    width: 6.25rem;
+    max-width: 6.25rem;
+    padding: 0.3rem 0.35rem;
+    box-sizing: border-box;
   }
 }
 

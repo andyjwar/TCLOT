@@ -739,7 +739,7 @@ export function PlayerContributions({
           onChange={(e) => setFantasyTeamEntryId(e.target.value)}
           aria-label="Filter by fantasy team"
         >
-          <option value="">teams</option>
+          <option value="">Teams</option>
           {fantasyTeamOptions.map((t) => (
             <option key={t.id} value={String(t.id)}>
               {t.name}
