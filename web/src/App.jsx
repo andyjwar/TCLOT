@@ -9,15 +9,12 @@ import {
 import {
   LEAGUE_TITLE,
   LEAGUE_TITLE_ABBR,
-  showTclotHeaderBrand,
+  leagueHeaderBrandSrc,
   showDashboardHall,
   showDashboardPlayoff,
   showDashboardTrades,
 } from './siteFeatures'
 import { gameWeekSelectLabel } from './gwLabel.js'
-
-/** Full-width league lockup (lion + TCLOT + name) from `public/tclot-header-brand.png` */
-const TCL_HEADER_BRAND_SRC = `${import.meta.env.BASE_URL}tclot-header-brand.png`
 import {
   useLeagueData,
   FORM_LAST_N,
@@ -1310,11 +1307,11 @@ function App() {
             <div className="title-banner__toolbar">
               <ThemeToggle value={colorTheme} onChange={setColorTheme} />
             </div>
-            {showTclotHeaderBrand ? (
+            {leagueHeaderBrandSrc ? (
               <div className="title-banner__brand">
                 <img
                   className="title-hero-brand-img"
-                  src={TCL_HEADER_BRAND_SRC}
+                  src={leagueHeaderBrandSrc}
                   alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
                   decoding="async"
                 />
@@ -1439,13 +1436,13 @@ function App() {
                 <div
                   className={
                     'title-hero-row__title' +
-                    (showTclotHeaderBrand ? ' title-hero-row__title--brand' : '')
+                    (leagueHeaderBrandSrc ? ' title-hero-row__title--brand' : '')
                   }
                 >
-                  {showTclotHeaderBrand ? (
+                  {leagueHeaderBrandSrc ? (
                     <img
                       className="title-hero-brand-img"
-                      src={TCL_HEADER_BRAND_SRC}
+                      src={leagueHeaderBrandSrc}
                       alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
                       decoding="async"
                     />

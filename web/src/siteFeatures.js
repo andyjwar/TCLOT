@@ -3,10 +3,12 @@
  * Set in GitHub: Settings → Secrets and variables → Actions → Variables
  * (or Environment variables on `github-pages`), same as VITE_FPL_PROXY_URL.
  *
- * Title tile (omit vars for TCLOT defaults). TCLOT image header only when abbr is TCLOT (or
- * VITE_USE_TCLOT_HEADER_BRAND=true); other abbrs use text + pill in the title tile.
- * - ExFOS: VITE_LEAGUE_TITLE_ABBR=exFOS, VITE_LEAGUE_TITLE=2025-26 season
- * - EAGalaxy: VITE_LEAGUE_TITLE_ABBR=EA Galaxy, VITE_LEAGUE_TITLE=2025-26 season
+ * Title tile (omit vars for TCLOT defaults). Branded `public/*.png` header when: optional
+ * `VITE_LEAGUE_HEADER_IMAGE`, or abbr is exFOS / EA Galaxy / TCLOT (see `leagueHeaderBrandSrc`). Otherwise: text
+ * + pill in the title tile.
+ * - exFOS: VITE_LEAGUE_TITLE_ABBR=exFOS — uses `exfos-header-brand.png` (replaces abbr + season line in tile)
+ * - EAGalaxy: VITE_LEAGUE_TITLE_ABBR=EA Galaxy — `ea-galaxy-header-brand.png`
+ * - (Legacy) VITE_LEAGUE_TITLE=2025-26 season when using text title only
  *
  * Dashboard toggles:
  * - Trades / Hall: omit = on. EAGalaxy: VITE_SHOW_DASHBOARD_TRADES=false, VITE_SHOW_DASHBOARD_HALL=false
@@ -51,6 +53,31 @@ export const showTclotHeaderBrand = (() => {
     DEFAULT_LEAGUE_TITLE_ABBR,
   )
   return abbr.trim().toUpperCase() === 'TCLOT'
+})()
+
+const viteBase = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/')
+function publicAssetPath(filename) {
+  return `${viteBase}${String(filename).replace(/^\//, '')}`
+}
+
+/**
+ * `null` = text title (abbr + VITE_LEAGUE_TITLE). Otherwise `<img src>` in the title tile.
+ * - `VITE_LEAGUE_HEADER_IMAGE` = public path/filename (highest priority)
+ * - Else exFOS → `exfos-header-brand.png`
+ * - Else EA Galaxy → `ea-galaxy-header-brand.png`
+ * - Else TCLOT when `showTclotHeaderBrand` → `tclot-header-brand.png`
+ */
+export const leagueHeaderBrandSrc = (() => {
+  const fromEnv = readStringEnv(import.meta.env.VITE_LEAGUE_HEADER_IMAGE, '')
+  if (fromEnv) return publicAssetPath(fromEnv)
+  const abbr = readStringEnv(
+    import.meta.env.VITE_LEAGUE_TITLE_ABBR,
+    DEFAULT_LEAGUE_TITLE_ABBR,
+  ).trim()
+  if (abbr === 'exFOS') return publicAssetPath('exfos-header-brand.png')
+  if (abbr === 'EA Galaxy') return publicAssetPath('ea-galaxy-header-brand.png')
+  if (showTclotHeaderBrand) return publicAssetPath('tclot-header-brand.png')
+  return null
 })()
 
 export const showDashboardTrades = readBoolEnv(
