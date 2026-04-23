@@ -92,10 +92,19 @@ export function mapEspnTeamsToFpl(teamById, espnTeams) {
 
 export function classifyEspnEvent(ev) {
   const t = String(ev?.type?.type || '').toLowerCase();
-  if (t === 'goal') return 'goal';
+  // ESPN uses `own-goal` (not `goal`) for OGs, e.g. "Own Goal by James Hill, Bournemouth."
+  if (t === 'goal' || t === 'own-goal' || t === 'owngoal') return 'goal';
   if (t === 'yellow-card') return 'yellow_card';
   if (t === 'red-card') return 'red_card';
   return null;
+}
+
+/** True when the feed marks an own goal (separate `type` and/or text). */
+export function isEspnOwnGoalEvent(ev) {
+  const t = String(ev?.type?.type || '').toLowerCase();
+  if (t === 'own-goal' || t === 'owngoal') return true;
+  const textBlob = `${ev?.text || ''} ${ev?.shortText || ''}`;
+  return /own goal/i.test(textBlob);
 }
 
 /**
@@ -314,8 +323,7 @@ export async function fetchEspnContributionTimeline({
       const primaryAthlete = participants[0]?.athlete;
       if (!primaryAthlete?.displayName) continue;
 
-      const textBlob = `${ev?.text || ''} ${ev?.shortText || ''}`;
-      const isOwnGoal = kind === 'goal' && /own goal/i.test(textBlob);
+      const isOwnGoal = kind === 'goal' && isEspnOwnGoalEvent(ev);
 
       /** @type {number | null} */
       let primaryId;

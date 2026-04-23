@@ -10,6 +10,7 @@ import {
   collectDayMatches,
   findEspnMatchForFixture,
   harvestTeams,
+  isEspnOwnGoalEvent,
   mapEspnTeamsToFpl,
   yyyymmddUtc,
 } from './espnPremTimeline.js';
@@ -137,7 +138,7 @@ export function parseEspnKeyEventsForPrem(
     const name0 =
       p0 && typeof p0.displayName === 'string' ? p0.displayName.trim() : null;
     const textBlob = `${ev?.text || ''} ${ev?.shortText || ''}`;
-    const isOwnGoal = kind === 'goal' && /own goal/i.test(textBlob);
+    const isOwnGoal = kind === 'goal' && isEspnOwnGoalEvent(ev);
     const isPenalty = kind === 'goal' && /\bpenalt/i.test(textBlob);
     const mm = espnClockToMinute(ev);
     const w = Date.parse(String(ev?.wallclock || ''));
@@ -156,7 +157,13 @@ export function parseEspnKeyEventsForPrem(
         wallclock: Number.isFinite(w) ? w : 0,
       });
     }
-    if (kind === 'goal' && p1 && typeof p1.displayName === 'string' && p1.displayName.trim()) {
+    if (
+      kind === 'goal' &&
+      !isOwnGoal &&
+      p1 &&
+      typeof p1.displayName === 'string' &&
+      p1.displayName.trim()
+    ) {
       work.push({
         kind: 'assist',
         teamSide,

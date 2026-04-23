@@ -1,7 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  classifyEspnEvent,
   collectDayMatches,
+  isEspnOwnGoalEvent,
   mapEspnTeamsToFpl,
   matchFplElementId,
   fetchEspnContributionTimeline,
@@ -70,6 +72,36 @@ test('mapEspnTeamsToFpl — direct abbreviation match', () => {
   assert.equal(m.get(359), 1);
   assert.equal(m.get(331), 6);
   assert.equal(m.get(363), 7);
+});
+
+test('classifyEspnEvent — maps ESPN own-goal type to goal', () => {
+  assert.equal(classifyEspnEvent({ type: { type: 'own-goal' } }), 'goal');
+  assert.equal(classifyEspnEvent({ type: { type: 'goal' } }), 'goal');
+  assert.equal(classifyEspnEvent({ type: { type: 'yellow-card' } }), 'yellow_card');
+});
+
+test('isEspnOwnGoalEvent — type own-goal or text', () => {
+  assert.equal(
+    isEspnOwnGoalEvent({
+      type: { type: 'own-goal' },
+      text: '',
+    }),
+    true
+  );
+  assert.equal(
+    isEspnOwnGoalEvent({
+      type: { type: 'goal' },
+      text: 'Own Goal by James Hill, Bournemouth.',
+    }),
+    true
+  );
+  assert.equal(
+    isEspnOwnGoalEvent({
+      type: { type: 'goal' },
+      text: 'Goal! Scorer Name.',
+    }),
+    false
+  );
 });
 
 test('mapEspnTeamsToFpl — Manchester abbreviation aliases (MNC→MCI, MAN→MUN)', () => {
@@ -263,7 +295,7 @@ test('fetchEspnContributionTimeline — own goal resolves scorer on either fixtu
           keyEvents: [
             {
               id: 'og1',
-              type: { type: 'goal' },
+              type: { type: 'own-goal' },
               // Credited to "receiving" side in ESPN; scorer is a BHA player — must still match
               team: { id: '363' },
               text: 'Own goal! Jack Hinshelwood (Brighton and Hove Albion).',
