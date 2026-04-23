@@ -407,6 +407,24 @@ export function buildLatestDropByElementOut(waiverOutGwRows) {
 }
 
 /**
+ * Stable key for “ESPN already covered this contribution” — includes FPL fixture id so a
+ * player can have one assist from ESPN in fixture A and a second from FPL in fixture B (DGW),
+ * or FPL-only assists when ESPN omits them (e.g. some own-goal assist rules).
+ * @param {number} elementId
+ * @param {string} kind
+ * @param {number | null | undefined} fplFixtureId
+ */
+export function contributionCoverageKey(elementId, kind, fplFixtureId) {
+  const el = Number(elementId);
+  const k = String(kind || '');
+  const fx =
+    fplFixtureId != null && Number.isFinite(Number(fplFixtureId))
+      ? Number(fplFixtureId)
+      : 'na';
+  return `${el}:${k}:${fx}`;
+}
+
+/**
  * Compare two live snapshots; emit positive deltas only. First snapshot (prev null) yields [].
  *
  * @param {{
@@ -418,7 +436,7 @@ export function buildLatestDropByElementOut(waiverOutGwRows) {
  *   nowIso: string,
  *   gwFixtures?: object[],
  *   omitKinds?: Set<string> | null — skip these kinds from FPL diffs globally (e.g. FotMob owns all yellow/red ordering)
- *   omitByElementKind?: Map<number, Set<string>> | null — per-player opt-out; FotMob matched this (elementId, kind) so don't double-emit FPL approximation
+ *   omitByElementKind?: Set<string> | null — keys from {@link contributionCoverageKey}; ESPN covered this slot
  * }} p
  * @returns {object[]}
  */
@@ -433,11 +451,11 @@ export function diffContributionEvents({
   omitKinds = null,
   omitByElementKind = null,
 }) {
-  const isOmitted = (elid, kind) => {
+  const isOmitted = (elid, kind, fplFixtureId) => {
     if (omitKinds && omitKinds.has(kind)) return true;
-    if (omitByElementKind) {
-      const s = omitByElementKind.get(Number(elid));
-      if (s && s.has(kind)) return true;
+    if (omitByElementKind && omitByElementKind.size > 0) {
+      const key = contributionCoverageKey(elid, kind, fplFixtureId);
+      if (omitByElementKind.has(key)) return true;
     }
     return false;
   };
@@ -464,13 +482,15 @@ export function diffContributionEvents({
     if (!nextRow) continue;
     const el = elementById?.[elid];
     const et = el?.element_type;
+    const fxRow = primaryFixtureForContribution(nextRow, el?.team, gwFixtures);
+    const fplFixtureId = fxRow?.id != null ? Number(fxRow.id) : null;
 
     const ps = statsOf(prevRow);
     const ns = statsOf(nextRow);
 
     const g0 = Number(ps.goals_scored) || 0;
     const g1 = Number(ns.goals_scored) || 0;
-    if (!isOmitted(elid, 'goal') && g1 > g0) {
+    if (!isOmitted(elid, 'goal', fplFixtureId) && g1 > g0) {
       const d = g1 - g0;
       out.push({
         stableId: `${gw}:${elid}:goal:tot${g1}`,
@@ -488,12 +508,13 @@ export function diffContributionEvents({
           emitSeq++
         ),
         source: 'fpl',
+        fplFixtureId,
       });
     }
 
     const a0 = Number(ps.assists) || 0;
     const a1 = Number(ns.assists) || 0;
-    if (!isOmitted(elid, 'assist') && a1 > a0) {
+    if (!isOmitted(elid, 'assist', fplFixtureId) && a1 > a0) {
       out.push({
         stableId: `${gw}:${elid}:assist:tot${a1}`,
         kind: 'assist',
@@ -510,6 +531,7 @@ export function diffContributionEvents({
           emitSeq++
         ),
         source: 'fpl',
+        fplFixtureId,
       });
     }
 
@@ -532,6 +554,7 @@ export function diffContributionEvents({
           emitSeq++
         ),
         source: 'fpl',
+        fplFixtureId,
       });
     }
 
@@ -554,12 +577,13 @@ export function diffContributionEvents({
           emitSeq++
         ),
         source: 'fpl',
+        fplFixtureId,
       });
     }
 
     const y0 = Number(ps.yellow_cards) || 0;
     const y1 = Number(ns.yellow_cards) || 0;
-    if (!bootstrap && !isOmitted(elid, 'yellow_card') && y1 > y0) {
+    if (!bootstrap && !isOmitted(elid, 'yellow_card', fplFixtureId) && y1 > y0) {
       out.push({
         stableId: `${gw}:${elid}:yellow_card:tot${y1}`,
         kind: 'yellow_card',
@@ -576,12 +600,13 @@ export function diffContributionEvents({
           emitSeq++
         ),
         source: 'fpl',
+        fplFixtureId,
       });
     }
 
     const rc0 = Number(ps.red_cards) || 0;
     const rc1 = Number(ns.red_cards) || 0;
-    if (!bootstrap && !isOmitted(elid, 'red_card') && rc1 > rc0) {
+    if (!bootstrap && !isOmitted(elid, 'red_card', fplFixtureId) && rc1 > rc0) {
       out.push({
         stableId: `${gw}:${elid}:red_card:tot${rc1}`,
         kind: 'red_card',
@@ -598,6 +623,7 @@ export function diffContributionEvents({
           emitSeq++
         ),
         source: 'fpl',
+        fplFixtureId,
       });
     }
   }

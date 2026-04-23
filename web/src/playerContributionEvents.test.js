@@ -9,6 +9,7 @@ import {
   compareContributionEventsDesc,
   contributionApproxTimelineSortKey,
   compareContributionEventsAscWithContext,
+  contributionCoverageKey,
   effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
@@ -315,7 +316,7 @@ test('compareContributionEventsDesc — later sortKey sorts first (newest at top
   assert.ok(compareContributionEventsDesc(b, a) < 0, 'later timeline key (b) before earlier (a) in feed');
 });
 
-test('diffContributionEvents — omitByElementKind skips covered (element, kind) only for that player', () => {
+test('diffContributionEvents — omitByElementKind skips covered (element, kind, fixture) only', () => {
   const prev = {
     12: {
       stats: { goals_scored: 0, assists: 0, saves: 0, minutes: 45 },
@@ -343,10 +344,41 @@ test('diffContributionEvents — omitByElementKind skips covered (element, kind)
     trackedElementIds: new Set([12, 15]),
     gameweek: 8,
     nowIso: '2026-01-01T12:00:00.000Z',
-    omitByElementKind: new Map([[12, new Set(['goal'])]]),
+    omitByElementKind: new Set([contributionCoverageKey(12, 'goal', null)]),
   });
   const byKey = out.map((e) => `${e.elementId}:${e.kind}`).sort();
   assert.deepEqual(byKey, ['15:assist', '15:goal']);
+});
+
+test('diffContributionEvents — FPL assist still emits if ESPN only covered a different fixture', () => {
+  const gwFixtures = [
+    { id: 100, team_h: 5, team_a: 6, kickoff_time: '2026-04-10T12:00:00Z' },
+  ];
+  const prev = {
+    20: {
+      stats: { goals_scored: 0, assists: 0, saves: 0, minutes: 0 },
+      explain: [[[{ stat: 'minutes', value: 90 }], 100]],
+    },
+  };
+  const next = {
+    20: {
+      stats: { goals_scored: 0, assists: 1, saves: 0, minutes: 90 },
+      explain: [[[{ stat: 'minutes', value: 90 }], 100]],
+    },
+  };
+  const out = diffContributionEvents({
+    prevLiveByElementId: prev,
+    nextLiveByElementId: next,
+    elementById: { 20: { element_type: 2, team: 5 } },
+    trackedElementIds: new Set([20]),
+    gameweek: 8,
+    nowIso: '2026-01-01T12:00:00.000Z',
+    gwFixtures,
+    omitByElementKind: new Set([contributionCoverageKey(20, 'assist', 999)]),
+  });
+  const assistEv = out.find((e) => e.kind === 'assist');
+  assert.ok(assistEv, 'omit key was wrong fixture; assist in fixture 100 should still emit');
+  assert.equal(assistEv.fplFixtureId, 100);
 });
 
 test('diffContributionEvents — omitKinds skips goal', () => {

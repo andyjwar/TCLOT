@@ -12,6 +12,7 @@ import {
   buildTrackedElementIdSetWithFixtures,
   compareContributionEventsDesc,
   compareContributionEventsDescWithContext,
+  contributionCoverageKey,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -39,25 +40,19 @@ function stripStaleTimelineRows(events) {
 }
 
 /**
- * Build (elementId → Set of kinds) covered by ESPN. Used to:
- *  - tell the FPL diff: don't emit these kinds for these players (avoids duplicates + stale order)
- *  - de-duplicate in render when FPL already wrote to storage before ESPN matched
- * @param {Array<{ elementId?: number, kind?: string }>} timelineEvents
+ * Keys {@link contributionCoverageKey} for each ESPN (or FotMob) row — per FPL fixture so
+ * a player can have assists from FPL in a match where ESPN did not list them (e.g. OG assists).
+ * @param {Array<{ elementId?: number, kind?: string, fplFixtureId?: number | null }>} timelineEvents
  */
-function buildTimelineCoverage(timelineEvents) {
-  const m = new Map();
+function buildTimelineCoverageSet(timelineEvents) {
+  const s = new Set();
   for (const e of timelineEvents || []) {
     const elid = Number(e?.elementId);
     const kind = e?.kind;
     if (!Number.isFinite(elid) || !kind) continue;
-    let s = m.get(elid);
-    if (!s) {
-      s = new Set();
-      m.set(elid, s);
-    }
-    s.add(kind);
+    s.add(contributionCoverageKey(elid, kind, e?.fplFixtureId));
   }
-  return m;
+  return s;
 }
 
 function badgeUrl(teamCode) {
@@ -257,12 +252,11 @@ export function PlayerContributions({
 }) {
   const [displayed, setDisplayed] = useState([]);
   /**
-   * (elementId → Set<kind>) of goal/assist/card rows the latest ESPN fetch provided.
-   * When a (player, kind) is covered we prefer ESPN's wallclock ordering and suppress
-   * the FPL approximation for that specific slot. Unmatched players still fall back to FPL.
+   * {@link contributionCoverageKey} per ESPN/FotMob row (includes `fplFixtureId`) so
+   * FPL-only assists in the same GW are not hidden after an assist ESPN covered in another game.
    */
   const [timelineCoverage, setTimelineCoverage] = useState(
-    /** @type {Map<number, Set<string>>} */ (new Map())
+    /** @type {Set<string>} */ (new Set())
   );
   /** '' = all fantasy teams; otherwise `leagueEntryId` of owning squad. */
   const [fantasyTeamEntryId, setFantasyTeamEntryId] = useState('');
@@ -360,7 +354,7 @@ export function PlayerContributions({
 
   useEffect(() => {
     prevLiveRef.current = null;
-    setTimelineCoverage(new Map());
+    setTimelineCoverage(new Set());
     setFantasyTeamEntryId('');
     setFilterGoal(false);
     setFilterAssist(false);
@@ -419,14 +413,18 @@ export function PlayerContributions({
           const filteredEv = timelineEvents.filter((e) =>
             contributionEventShownForLeague(e, ownerByEl)
           );
-          const coverage = buildTimelineCoverage(filteredEv);
+          const coverage = buildTimelineCoverageSet(filteredEv);
           setTimelineCoverage(coverage);
           setDisplayed((prev) => {
             const keep = (prev || []).filter((e) => {
               const sid = String(e?.stableId || '');
               if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return false;
-              const covered = coverage.get(Number(e?.elementId));
-              if (covered && covered.has(e.kind)) return false;
+              const key = contributionCoverageKey(
+                e?.elementId,
+                e?.kind,
+                e?.fplFixtureId
+              );
+              if (coverage.has(key)) return false;
               return true;
             });
             return mergeContributionLists([filteredEv, keep]);
@@ -439,12 +437,12 @@ export function PlayerContributions({
             2000
           );
         } else {
-          setTimelineCoverage(new Map());
+          setTimelineCoverage(new Set());
           setDisplayed((prev) => stripStaleTimelineRows(prev));
         }
       } catch {
         if (!cancelled) {
-          setTimelineCoverage(new Map());
+          setTimelineCoverage(new Set());
           setDisplayed((prev) => stripStaleTimelineRows(prev));
         }
       }
@@ -455,8 +453,7 @@ export function PlayerContributions({
   }, [espnFetchKey, gameweek, storageKey, trackedKey, ownerByEl]);
 
   /**
-   * Per-player ESPN coverage → FPL diff skips the (player, kind) slots ESPN already ordered.
-   * Players ESPN didn't match still get FPL approximation (better than nothing).
+   * ESPN/FotMob coverage keys → FPL diff skips only matching (player, kind, fixture) slots.
    */
   const fplOmitByElementKind = useMemo(
     () => timelineCoverage,
@@ -525,13 +522,12 @@ export function PlayerContributions({
 
   /**
    * Latest first (top), reading down goes back in time. No auto-scroll — user controls position.
-   * Dedupe: when ESPN covers (elementId, kind) we drop the FPL approximation for that slot
-   * (handles the case where FPL wrote to localStorage before ESPN matched the player).
+   * Dedupe: when ESPN covers (elementId, kind, fixture) we drop the matching FPL row.
    */
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
     const liveFull = contributionLiveContext?.liveFullByElementId;
-    const liveCoverage = buildTimelineCoverage(
+    const liveCoverage = buildTimelineCoverageSet(
       (displayed || []).filter((e) => {
         const id = String(e?.stableId || '');
         return id.startsWith('espn:') || id.startsWith('fotmob:');
@@ -543,8 +539,12 @@ export function PlayerContributions({
         if (!contributionEventShownForLeague(ev, ownerByEl)) return false;
         const sid = String(ev?.stableId || '');
         if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return true;
-        const covered = liveCoverage.get(Number(ev?.elementId));
-        if (covered && covered.has(ev.kind)) return false;
+        const key = contributionCoverageKey(
+          ev?.elementId,
+          ev?.kind,
+          ev?.fplFixtureId
+        );
+        if (liveCoverage.has(key)) return false;
         return true;
       })
       .map((ev) => {

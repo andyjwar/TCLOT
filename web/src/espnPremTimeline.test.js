@@ -246,6 +246,7 @@ test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Ch
 
     const kadiogluGoal = events.find((e) => e.elementId === 321 && e.kind === 'goal');
     assert.ok(kadiogluGoal);
+    assert.equal(kadiogluGoal.fplFixtureId, 333);
     assert.equal(kadiogluGoal.minuteLabel, "19'");
 
     const welbeckish = events.find((e) => e.elementId === 322);

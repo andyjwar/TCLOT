@@ -417,6 +417,8 @@ export async function fetchFotmobContributionTimeline({
           recordedAt: iso,
           sortKey,
           source: 'fotmob',
+          fplFixtureId:
+            fx?.id != null && Number.isFinite(Number(fx.id)) ? Number(fx.id) : null,
         });
       };
 
@@ -439,6 +441,8 @@ export async function fetchFotmobContributionTimeline({
               recordedAt: iso,
               sortKey: sortKey + 1,
               source: 'fotmob',
+              fplFixtureId:
+                fx?.id != null && Number.isFinite(Number(fx.id)) ? Number(fx.id) : null,
             });
           }
         } else {

@@ -194,7 +194,7 @@
   z-index: 3;
 }
 
-/* Mobile / narrow: keep theme toggle out of the title banner (no overlap on the brand strip) */
+/* Mobile / narrow: theme row below brand strip; align toggle top-left */
 @media (max-width: 960px) {
   .title-banner__toolbar {
     position: static;
@@ -202,7 +202,7 @@
     left: auto;
     z-index: auto;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     width: 100%;
     max-width: none;
     margin: 0 0 10px;
@@ -215,7 +215,7 @@
     left: auto;
     margin: 0 0 1.1rem;
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
   }
 }
 

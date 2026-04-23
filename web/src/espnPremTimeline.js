@@ -359,6 +359,8 @@ export async function fetchEspnContributionTimeline({
           sortKey: key,
           source: 'espn',
           minuteLabel: mm.label,
+          fplFixtureId:
+            fx?.id != null && Number.isFinite(Number(fx.id)) ? Number(fx.id) : null,
           ...meta,
         });
       };
