@@ -98,6 +98,13 @@ function pointsPerGoal(scoring, elementTypeId) {
   return 4;
 }
 
+/** FPL-style: `settings.scoring.own_goals` (e.g. -2). Not position-specific in standard rules. */
+function pointsPerOwnGoal(scoring) {
+  const n = Number(scoring?.own_goals);
+  if (Number.isFinite(n)) return n;
+  return -2;
+}
+
 /** e.g. (+3) or (-1) */
 function pointsBracket(signedTotal) {
   if (!Number.isFinite(signedTotal) || signedTotal === 0) return '';
@@ -127,7 +134,9 @@ function contributionActionParts(kind, delta, elementTypeId, scoring, opts) {
       : d === 1
         ? 'GOAL'
         : `${d} GOALS`;
-    const pts = d * pointsPerGoal(scoring, elementTypeId);
+    const pts = opts?.isOwnGoal
+      ? d * pointsPerOwnGoal(scoring)
+      : d * pointsPerGoal(scoring, elementTypeId);
     const br = pointsBracket(pts);
     return { emoji: '⚽', text: `${label}${br}`, bracket: br };
   }
@@ -568,6 +577,13 @@ export function PlayerContributions({
         rawEventMin.trim() !== '—'
           ? rawEventMin.trim()
           : minFromLive;
+      const isOwnGoalGoal = ev.kind === 'goal' && Boolean(ev.isOwnGoal);
+      const minLblWithOg =
+        isOwnGoalGoal && minLbl && minLbl !== '—'
+          ? `${minLbl} (Own Goal)`
+          : isOwnGoalGoal
+            ? '(Own Goal)'
+            : minLbl;
       const firstWord = own
         ? fantasyTeamFirstLabel(
             own.leagueEntryId,
@@ -603,7 +619,7 @@ export function PlayerContributions({
         actionEmoji: ap.emoji,
         actionText: ap.text,
         actionBracket: ap.bracket,
-        minuteLabel: minLbl,
+        minuteLabel: minLblWithOg,
         ownerFirstWord: firstWord,
         waiverDrop,
       };
