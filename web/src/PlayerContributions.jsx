@@ -110,16 +110,23 @@ function pointsBracket(signedTotal) {
  * @param {number} delta — count for goals/assists/cards; fantasy pts for dc_points / save_points
  * @param {number | null | undefined} elementTypeId
  * @param {object | null | undefined} scoring — draft `settings.scoring`
+ * @param {{ isOwnGoal?: boolean }} [opts]
  * @returns {{ emoji: string, text: string, bracket: string }}
  */
-function contributionActionParts(kind, delta, elementTypeId, scoring) {
+function contributionActionParts(kind, delta, elementTypeId, scoring, opts) {
   const d = Number(delta) || 0;
   const assistPts = Number(scoring?.assists) || 3;
   const yellowPts = Number(scoring?.yellow_cards) || -1;
   const redPts = Number(scoring?.red_cards) || -3;
 
   if (kind === 'goal') {
-    const label = d === 1 ? 'GOAL' : `${d} GOALS`;
+    const label = opts?.isOwnGoal
+      ? d === 1
+        ? 'OWN GOAL'
+        : `${d} OWN GOALS`
+      : d === 1
+        ? 'GOAL'
+        : `${d} GOALS`;
     const pts = d * pointsPerGoal(scoring, elementTypeId);
     const br = pointsBracket(pts);
     return { emoji: '⚽', text: `${label}${br}`, bracket: br };
@@ -548,7 +555,8 @@ export function PlayerContributions({
         ev.kind,
         ev.delta,
         elementTypeId,
-        contributionLiveContext?.draftScoring
+        contributionLiveContext?.draftScoring,
+        { isOwnGoal: Boolean(ev.isOwnGoal) }
       );
       const fullName = displayPlayerName(el, ev.elementId);
       const shortName = displayPlayerNameShort(el, ev.elementId);
@@ -731,7 +739,7 @@ export function PlayerContributions({
           onChange={(e) => setFantasyTeamEntryId(e.target.value)}
           aria-label="Filter by fantasy team"
         >
-          <option value="">All teams</option>
+          <option value="">teams</option>
           {fantasyTeamOptions.map((t) => (
             <option key={t.id} value={String(t.id)}>
               {t.name}

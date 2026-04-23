@@ -81,7 +81,7 @@ function teamNameLastWord(name) {
   return parts[parts.length - 1]
 }
 
-/** Complete / future GW tiles: split for mobile (hide first token under 560px). */
+/** Complete / future GW tiles: split so mobile can show first token only (narrow under 560px). */
 function teamNameFirstRest(name) {
   if (typeof name !== 'string') return { single: true, first: '', rest: '' }
   const parts = name.trim().split(/\s+/u).filter(Boolean)
@@ -100,7 +100,7 @@ function GwFixtureTightTeamName({ name }) {
   }
   return (
     <span
-      className="gw-fixture-name-text team-name team-name--sidebar gw-fixture-name-text--mobile-hide-first"
+      className="gw-fixture-name-text team-name team-name--sidebar gw-fixture-name-text--mobile-first-token"
       title={name || undefined}
     >
       <span className="gw-fixture-name-text__first">{first}</span>
@@ -811,6 +811,12 @@ function initialDashboardViewForViewport() {
   return window.matchMedia('(max-width: 1080px)').matches ? 'live' : 'standings'
 }
 
+/** Match `max-width: 600px` mobile layout — default waivers tab to compact Waiver summary. */
+function initialWaiverFeedTabForViewport() {
+  if (typeof window === 'undefined') return 'latest'
+  return window.matchMedia('(max-width: 600px)').matches ? 'summary' : 'latest'
+}
+
 const STANDINGS_SORT_KEYS = /** @type {const} */ (['gf', 'ga', 'gd', 'total'])
 
 /** Sortable header for For / Faced / GD / PTS — `null` sortState = league order. */
@@ -929,7 +935,7 @@ function App() {
   const [fplLiveLandingGw, setFplLiveLandingGw] = useState(null)
   const [waiverGwView, setWaiverGwView] = useState(null)
   /** latest = rich cards; summary = compact share / screenshot layout */
-  const [waiverFeedTab, setWaiverFeedTab] = useState('latest')
+  const [waiverFeedTab, setWaiverFeedTab] = useState(initialWaiverFeedTabForViewport)
   const [completeGwView, setCompleteGwView] = useState(null)
   const [futureGwView, setFutureGwView] = useState(null)
   const formStripDisplayCount = useFormStripDisplayCount()

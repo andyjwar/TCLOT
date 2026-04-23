@@ -153,10 +153,28 @@
   z-index: 3;
 }
 
+/* Mobile / narrow: keep theme toggle out of the title banner (no overlap on the brand strip) */
 @media (max-width: 960px) {
   .title-banner__toolbar {
-    top: 12px;
-    left: 12px;
+    position: static;
+    top: auto;
+    left: auto;
+    z-index: auto;
+    display: flex;
+    justify-content: flex-end;
+    width: 100%;
+    max-width: none;
+    margin: 0 0 10px;
+    box-sizing: border-box;
+  }
+
+  .fotmob .load-screen .title-banner__toolbar {
+    position: static;
+    top: auto;
+    left: auto;
+    margin: 0 0 1.1rem;
+    display: flex;
+    justify-content: flex-end;
   }
 }
 
@@ -2295,9 +2313,10 @@
   opacity: 0.9;
 }
 
+/* Complete / future GW rows: show first word only (e.g. Toronto, Brampton); full name in title */
 @media (max-width: 560px) {
-  .gw-fixture-list--tight .gw-fixture-name-text--mobile-hide-first .gw-fixture-name-text__first,
-  .gw-fixture-list--tight .gw-fixture-name-text--mobile-hide-first .gw-fixture-name-text__sep {
+  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__rest,
+  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__sep {
     display: none;
   }
 }
@@ -4030,10 +4049,10 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
 }
 
 .player-contrib-team-select {
-  flex-shrink: 0;
-  min-width: 9.5rem;
-  max-width: min(18rem, 100%);
+  flex: 0 0 auto;
   margin-left: auto;
+  min-width: 6rem;
+  max-width: min(18rem, 100%);
   padding: 0.35rem 0.5rem;
   font-size: 0.82rem;
   font-weight: 600;
@@ -4461,9 +4480,9 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   }
 
   .player-contrib-team-select {
-    margin-left: 0;
-    flex: 0 1 auto;
-    min-width: min(7.5rem, 36vw);
+    margin-left: auto;
+    flex: 0 0 auto;
+    min-width: min(6rem, 32vw);
     max-width: 12rem;
   }
 }
@@ -6553,6 +6572,8 @@ button.live-fixture-banner--toggle {
   --hall-bg: var(--fm-card);
   /* Match baked banner typography (#ffd54a in generate-*-banner.mjs) */
   --hall-gold: #ffd54a;
+  /* Gold text on table / tile headings sits on a black pill for contrast (esp. light theme). */
+  --hall-header-pill-bg: #0d0d0d;
   --hall-rule: rgba(255, 255, 255, 0.22);
   --hall-muted: rgba(255, 255, 255, 0.55);
   background: var(--hall-bg);
@@ -6561,9 +6582,17 @@ button.live-fixture-banner--toggle {
 }
 
 .hall-of-champions__main-title {
-  margin: 0 0 16px;
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto 16px;
+  padding: 0.4em 1em 0.45em;
+  border-radius: 999px;
+  background: var(--hall-header-pill-bg);
   color: var(--hall-gold);
   text-align: center;
+  line-height: 1.25;
 }
 
 /* Hall — team history (All Waivers–style rows: manager, then horizontal season strip) */
@@ -6572,10 +6601,17 @@ button.live-fixture-banner--toggle {
 }
 
 .hall-team-history .tile-head-row .hall-manager-dash__title {
+  display: inline-block;
   margin: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.28em 0.8em 0.32em;
+  border-radius: 999px;
+  background: var(--hall-header-pill-bg);
   color: var(--hall-gold);
   text-align: left;
-  width: 100%;
+  width: auto;
+  line-height: 1.25;
 }
 
 .hall-team-history__list {
@@ -6637,15 +6673,36 @@ button.live-fixture-banner--toggle {
   gap: 10px;
   width: 100%;
   margin: 0;
-  color: var(--hall-gold);
   text-align: left;
 }
 
+.hall-standings-sheet
+  .hall-standings-sheet__title.tile-title--with-select
+  .tile-title__text {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 0.28em 0.75em 0.32em;
+  border-radius: 999px;
+  background: var(--hall-header-pill-bg);
+  color: var(--hall-gold);
+  line-height: 1.2;
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
 .hall-standings-sheet .hall-standings-sheet__title:not(.tile-title--with-select) {
+  display: inline-block;
+  width: auto;
+  max-width: 100%;
+  box-sizing: border-box;
   margin: 0;
+  padding: 0.32em 0.85em 0.38em;
+  border-radius: 999px;
+  background: var(--hall-header-pill-bg);
   color: var(--hall-gold);
   text-align: left;
-  width: 100%;
+  line-height: 1.25;
 }
 
 .hall-standings-sheet__headstack {
@@ -6663,6 +6720,53 @@ button.live-fixture-banner--toggle {
   line-height: 1.45;
   text-align: left;
   max-width: 40rem;
+}
+
+/* Historic Standings + Champion of Champions: column headers = gold on black pill */
+.tile.hall-of-champions .standings-table--historic thead th,
+.tile.hall-of-champions .standings-table--hall-career thead th {
+  background: var(--hall-header-pill-bg) !important;
+  color: var(--hall-gold);
+  font-weight: 700;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 50%, #000 50%);
+  border-radius: 8px;
+  vertical-align: middle;
+  padding-top: 0.45rem;
+  padding-bottom: 0.45rem;
+}
+
+.tile.hall-of-champions
+  .standings-table--hall-career
+  thead
+  th
+  .hall-manager-sort-btn {
+  color: var(--hall-gold);
+}
+
+.tile.hall-of-champions
+  .standings-table--hall-career
+  thead
+  th
+  .hall-manager-sort-btn:hover {
+  color: #f5f0e6;
+}
+
+.tile.hall-of-champions
+  .standings-table--hall-career
+  thead
+  th
+  .standings-sort-arrow {
+  color: color-mix(in srgb, var(--hall-gold) 78%, #fff 22%);
+  opacity: 0.95;
+}
+
+.tile.hall-of-champions
+  .standings-table--hall-career
+  thead
+  th
+  .standings-sort-arrow--active {
+  color: #fff;
+  opacity: 1;
 }
 
 /* Match Live Scoring GW control: chevron, radius, brand-violet-tinted surface */

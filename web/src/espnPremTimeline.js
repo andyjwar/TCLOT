@@ -314,14 +314,31 @@ export async function fetchEspnContributionTimeline({
       const primaryAthlete = participants[0]?.athlete;
       if (!primaryAthlete?.displayName) continue;
 
-      const primaryId = matchFplElementId(
-        teamFplId,
-        primaryAthlete.displayName,
-        elementById
-      );
+      const textBlob = `${ev?.text || ''} ${ev?.shortText || ''}`;
+      const isOwnGoal = kind === 'goal' && /own goal/i.test(textBlob);
+
+      /** @type {number | null} */
+      let primaryId;
+      if (kind === 'goal' && isOwnGoal) {
+        const thF = Number(fx?.team_h);
+        const taF = Number(fx?.team_a);
+        primaryId =
+          (Number.isFinite(thF)
+            ? matchFplElementId(thF, primaryAthlete.displayName, elementById)
+            : null) ??
+          (Number.isFinite(taF)
+            ? matchFplElementId(taF, primaryAthlete.displayName, elementById)
+            : null);
+      } else {
+        primaryId = matchFplElementId(
+          teamFplId,
+          primaryAthlete.displayName,
+          elementById
+        );
+      }
 
       const mm = espnClockToMinute(ev);
-      const pushOne = (k, elid, extraMs = 0) => {
+      const pushOne = (k, elid, extraMs = 0, meta = {}) => {
         if (elid == null || !tracked.has(elid)) return;
         const key = wallclock + extraMs;
         out.push({
@@ -334,20 +351,23 @@ export async function fetchEspnContributionTimeline({
           sortKey: key,
           source: 'espn',
           minuteLabel: mm.label,
+          ...meta,
         });
       };
 
       if (kind === 'goal') {
-        pushOne('goal', primaryId, 0);
-        const assistAthlete = participants[1]?.athlete;
-        if (assistAthlete?.displayName) {
-          const assistId = matchFplElementId(
-            teamFplId,
-            assistAthlete.displayName,
-            elementById
-          );
-          // `+1` ms so the assist sorts immediately after its goal when `wallclock` is identical.
-          pushOne('assist', assistId, 1);
+        pushOne('goal', primaryId, 0, isOwnGoal ? { isOwnGoal: true } : {});
+        if (!isOwnGoal) {
+          const assistAthlete = participants[1]?.athlete;
+          if (assistAthlete?.displayName) {
+            const assistId = matchFplElementId(
+              teamFplId,
+              assistAthlete.displayName,
+              elementById
+            );
+            // `+1` ms so the assist sorts immediately after its goal when `wallclock` is identical.
+            pushOne('assist', assistId, 1);
+          }
         }
       } else {
         pushOne(kind, primaryId, 0);

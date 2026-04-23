@@ -237,6 +237,77 @@ test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Ch
   }
 });
 
+test('fetchEspnContributionTimeline — own goal resolves scorer on either fixture team; no assist', async () => {
+  const origFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    if (String(url).includes('scoreboard?dates=20260422')) {
+      return {
+        ok: true,
+        json: async () => ({
+          events: [{
+            id: '740999',
+            competitions: [{
+              competitors: [
+                { homeAway: 'home', team: { id: '331', abbreviation: 'BHA' } },
+                { homeAway: 'away', team: { id: '363', abbreviation: 'CHE' } },
+              ],
+            }],
+          }],
+        }),
+      };
+    }
+    if (String(url).includes('summary?event=740999')) {
+      return {
+        ok: true,
+        json: async () => ({
+          keyEvents: [
+            {
+              id: 'og1',
+              type: { type: 'goal' },
+              // Credited to "receiving" side in ESPN; scorer is a BHA player — must still match
+              team: { id: '363' },
+              text: 'Own goal! Jack Hinshelwood (Brighton and Hove Albion).',
+              wallclock: '2026-04-22T20:00:00Z',
+              clock: { displayValue: "45'+2", value: 45 * 60 + 2 },
+              participants: [
+                { athlete: { displayName: 'Jack Hinshelwood' } },
+                { athlete: { displayName: 'Some Random' } },
+              ],
+            },
+          ],
+        }),
+      };
+    }
+    throw new Error(`unexpected url: ${url}`);
+  };
+
+  try {
+    const teamById = {
+      6: { short_name: 'BHA' },
+      7: { short_name: 'CHE' },
+    };
+    const elementById = {
+      322: { id: 322, team: 6, first_name: 'Jack', second_name: 'Hinshelwood', web_name: 'Hinshelwood' },
+    };
+    const events = await fetchEspnContributionTimeline({
+      gameweek: 33,
+      gwFixtures: [
+        { team_h: 6, team_a: 7, kickoff_time: '2026-04-22T19:00:00Z', id: 334 },
+      ],
+      elementById,
+      teamById,
+      trackedElementIds: new Set([322]),
+    });
+
+    assert.equal(events.length, 1);
+    assert.equal(events[0].kind, 'goal');
+    assert.equal(events[0].elementId, 322);
+    assert.equal(events[0].isOwnGoal, true);
+  } finally {
+    globalThis.fetch = origFetch;
+  }
+});
+
 test('fetchEspnContributionTimeline — drops events for untracked players', async () => {
   const origFetch = globalThis.fetch;
   globalThis.fetch = async (url) => {
