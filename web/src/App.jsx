@@ -1615,9 +1615,14 @@ function App() {
             onClick={() => setDashboardView('live')}
             aria-current={dashboardView === 'live' ? 'page' : undefined}
           >
-            <span className="dashboard-nav__emoji" aria-hidden="true">
-              ⚽
-            </span>
+            <img
+              className="dashboard-nav__fd-logo"
+              src={`${import.meta.env.BASE_URL}fpl-fantasy-draft-logo.png`}
+              alt=""
+              loading="eager"
+              decoding="async"
+              aria-hidden
+            />
             <span className="dashboard-nav__label">FPL Live Scores</span>
           </button>
         </nav>

@@ -62,6 +62,33 @@ function isFixtureLive(fx) {
   return s.started === true && s.finished !== true;
 }
 
+/** Full time — ESPN score, or FPL fixture flags. */
+function isFixtureFullTime(fx) {
+  if (fx?.score?.finished === true) return true;
+  const f = fx?.fplFixture;
+  if (f == null) return false;
+  if (f.finished === true || f.finished_provisional === true) return true;
+  return false;
+}
+
+/**
+ * "Live fixtures" strip: from squad release / kickoff through full time, then back to main list.
+ * Excludes finished fixtures; includes in-progress and pre-kick with both lineups out.
+ */
+function inLiveFixturesSection(fx) {
+  if (isFixtureFullTime(fx)) return false;
+  return lineupsBothConfirmed(fx) || isFixtureLive(fx);
+}
+
+/**
+ * Card pill (right of tile): `Live` (squads in or game on) or `FT` only — no kickoff string.
+ */
+function fixturePillStatus(fx) {
+  if (isFixtureFullTime(fx)) return 'FT';
+  if (lineupsBothConfirmed(fx) || isFixtureLive(fx)) return 'Live';
+  return null;
+}
+
 /** Stable key for expand state and React (FPL `fixtures.id` when present). */
 function fixtureKey(fx) {
   const id = Number(fx?.fplFixture?.id);
@@ -392,6 +419,7 @@ function FixtureCard({
   const awayShort = away?.short_name || '—';
 
   const status = matchStatusText(fx);
+  const pillStatus = fixturePillStatus(fx);
   const showScore =
     fx.score &&
     (fx.score.started || fx.score.finished) &&
@@ -410,7 +438,6 @@ function FixtureCard({
     <section
       className={`prem-fixture${live ? ' prem-fixture--live' : ''}`}
     >
-      {live ? <span className="prem-fixture__live-badge">Live</span> : null}
       <button
         type="button"
         className="prem-fixture__header"
@@ -463,7 +490,23 @@ function FixtureCard({
                 </span>
               </span>
             </div>
-            <span className="prem-fixture__status">{status}</span>
+            {pillStatus ? (
+              <span
+                className={
+                  'prem-fixture__status' +
+                  (pillStatus === 'FT'
+                    ? ' prem-fixture__status--ft'
+                    : ' prem-fixture__status--live')
+                }
+              >
+                {pillStatus}
+              </span>
+            ) : (
+              <span
+                className="prem-fixture__status prem-fixture__status--empty"
+                aria-hidden="true"
+              />
+            )}
           </div>
           {kickIso ? (
             <div
@@ -622,20 +665,20 @@ export function PremWindow({
   }, [doEspnWindowFetch]);
 
   /**
-   * Latest kickoff first; split so fixtures with both lineups confirmed list under
-   * "Live fixtures" at the top.
+   * Earliest kickoff first. "Live fixtures" = squads out or match under way, until full time
+   * (then the fixture rejoins the main list with other scheduled/finished games).
    */
   const { liveWithLineups, otherFixtures } = useMemo(() => {
     const rows = [...(espnWindowRows || [])];
     rows.sort((a, b) => {
       const ka = Date.parse(a.fplFixture?.kickoff_time || '') || 0;
       const kb = Date.parse(b.fplFixture?.kickoff_time || '') || 0;
-      return kb - ka;
+      return ka - kb;
     });
     const live = [];
     const other = [];
     for (const r of rows) {
-      if (lineupsBothConfirmed(r)) live.push(r);
+      if (inLiveFixturesSection(r)) live.push(r);
       else other.push(r);
     }
     return { liveWithLineups: live, otherFixtures: other };
@@ -748,7 +791,7 @@ export function PremWindow({
             Live fixtures
           </h3>
           <p className="prem-fixtures-block__hint muted muted--tight">
-            Lineups confirmed (both teams)
+            Squad announced or in progress (hidden after full time)
           </p>
           <div className="prem-fixtures prem-fixtures--grid">
             {liveWithLineups.map((fx) => {
@@ -784,7 +827,7 @@ export function PremWindow({
           </h3>
           {liveWithLineups.length > 0 ? (
             <p className="prem-fixtures-block__hint muted muted--tight">
-              Lineups not yet confirmed, or in progress
+              Full time, upcoming, or lineups not out yet
             </p>
           ) : null}
           <div className="prem-fixtures prem-fixtures--grid">
