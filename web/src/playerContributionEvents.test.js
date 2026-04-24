@@ -10,12 +10,14 @@ import {
   contributionApproxTimelineSortKey,
   compareContributionEventsAscWithContext,
   contributionCoverageKey,
+  contributionCoveredByTimelineOmit,
   contributionEventMatchesGameweek,
   fplTotalFeedEventContradictsLive,
   liveElementRowForFeedValidation,
   effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
+  primaryFixtureForContribution,
   saveFantasyPointsFromSaves,
 } from './playerContributionEvents.js';
 
@@ -195,6 +197,40 @@ test('diffContributionEvents — 0-min totals do not emit after bootstrap either
     nowIso: '2026-01-01T12:00:00.000Z',
   });
   assert.equal(out.length, 0, 'FPL 0-min rows must not become feed events on any tick');
+});
+
+test('contributionCoveredByTimelineOmit — SGW aliases goal/assist when fixture id mismatches :na or wrong id', () => {
+  const cov = new Set([contributionCoverageKey(7, 'assist', 42)]);
+  const gw = [{ id: 42, team_h: 3, team_a: 4 }];
+  assert.equal(
+    contributionCoveredByTimelineOmit(cov, 7, 'assist', 999, 3, gw),
+    true
+  );
+  assert.equal(
+    contributionCoveredByTimelineOmit(cov, 7, 'yellow_card', 999, 3, gw),
+    false
+  );
+  const dgw = [
+    { id: 40, team_h: 3, team_a: 4 },
+    { id: 41, team_h: 3, team_a: 5 },
+  ];
+  assert.equal(
+    contributionCoveredByTimelineOmit(cov, 7, 'assist', 999, 3, dgw),
+    false
+  );
+});
+
+test('primaryFixtureForContribution — DGW: single active explain block wins over earlier kickoff', () => {
+  const gw = [
+    { id: 10, team_h: 3, team_a: 4, kickoff_time: '2026-01-10T12:00:00Z' },
+    { id: 11, team_h: 3, team_a: 5, kickoff_time: '2026-01-11T12:00:00Z' },
+  ];
+  const row = {
+    stats: { minutes: 90, assists: 1 },
+    explain: [[[{ stat: 'minutes', value: 90 }], 11]],
+  };
+  const fx = primaryFixtureForContribution(row, 3, gw);
+  assert.equal(fx?.id, 11);
 });
 
 test('fplTotalFeedEventContradictsLive — stale assist row vs 0 state', () => {

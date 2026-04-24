@@ -16,6 +16,7 @@ import {
   contributionEventMatchesGameweek,
   fplTotalFeedEventContradictsLive,
   liveElementRowForFeedValidation,
+  contributionCoveredByTimelineOmit,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -410,15 +411,23 @@ export function PlayerContributions({
           const coverage = buildTimelineCoverageSet(filteredEv);
           setTimelineCoverage(coverage);
           setDisplayed((prev) => {
+            const gwFx = liveCtx.gwFixtures || [];
+            const eBy = liveCtx.elementById || {};
             const keep = (prev || []).filter((e) => {
               const sid = String(e?.stableId || '');
               if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return false;
-              const key = contributionCoverageKey(
-                e?.elementId,
-                e?.kind,
-                e?.fplFixtureId
-              );
-              if (coverage.has(key)) return false;
+              if (
+                contributionCoveredByTimelineOmit(
+                  coverage,
+                  e?.elementId,
+                  e?.kind,
+                  e?.fplFixtureId,
+                  eBy?.[e?.elementId]?.team,
+                  gwFx
+                )
+              ) {
+                return false;
+              }
               return true;
             });
             return mergeContributionLists([filteredEv, keep]);
@@ -547,12 +556,18 @@ export function PlayerContributions({
         }
         const sid = String(ev?.stableId || '');
         if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return true;
-        const key = contributionCoverageKey(
-          ev?.elementId,
-          ev?.kind,
-          ev?.fplFixtureId
-        );
-        if (liveCoverage.has(key)) return false;
+        if (
+          contributionCoveredByTimelineOmit(
+            liveCoverage,
+            ev?.elementId,
+            ev?.kind,
+            ev?.fplFixtureId,
+            elForLive?.team,
+            contributionLiveContext?.gwFixtures
+          )
+        ) {
+          return false;
+        }
         return true;
       })
       .map((ev) => {

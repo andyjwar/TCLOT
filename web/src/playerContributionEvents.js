@@ -1,6 +1,8 @@
 import {
+  activeExplainBlocks,
   defensiveContributionPointsFromLiveRow,
   explainBlocksFromLiveElement,
+  fixturesForTeamInGw,
 } from './fplBonusFromBps.js';
 
 /** FPL element_type id for goalkeepers */
@@ -146,6 +148,15 @@ export function primaryFixtureForContribution(nextRow, teamId, gwFixtures) {
     if (fx) return fx;
   }
   const mine = list.filter((f) => teamPlaysFixture(t, f));
+  if (mine.length > 1) {
+    const withMin = activeExplainBlocks(nextRow).filter((b) => b.minutes > 0);
+    if (withMin.length === 1) {
+      const fx = list.find(
+        (f) => Number(f.id) === withMin[0].fixtureId && teamPlaysFixture(t, f)
+      );
+      if (fx) return fx;
+    }
+  }
   if (mine.length === 1) return mine[0];
   if (mine.length > 1) {
     return [...mine].sort((a, b) => {
@@ -489,6 +500,34 @@ export function contributionCoverageKey(elementId, kind, fplFixtureId) {
 }
 
 /**
+ * True if ESPN/FotMob {@link buildTimelineCoverageSet} already covers this FPL row.
+ * Matches exact `fplFixtureId` or, for goal/assist, the same slot on a **single** team fixture
+ * this GW when the row has `:na` or a mismatched id (common SGW + wrong `primaryFixture`).
+ */
+export function contributionCoveredByTimelineOmit(
+  coverageSet,
+  elementId,
+  kind,
+  fplFixtureId,
+  teamId,
+  gwFixtures
+) {
+  if (!coverageSet || coverageSet.size === 0) return false;
+  if (coverageSet.has(contributionCoverageKey(elementId, kind, fplFixtureId)))
+    return true;
+  if (kind !== 'goal' && kind !== 'assist') return false;
+  const t = Number(teamId);
+  if (!Number.isFinite(t)) return false;
+  const mine = fixturesForTeamInGw(gwFixtures || [], t);
+  if (mine.length !== 1) return false;
+  const onlyId = mine[0]?.id;
+  if (onlyId == null) return false;
+  return coverageSet.has(
+    contributionCoverageKey(elementId, kind, Number(onlyId))
+  );
+}
+
+/**
  * True if a feed row belongs to the selected gameweek. Rows from a previous GW can
  * remain in `displayed` for a few ticks after the user changes GW (before `hydrate` runs);
  * the feed should never show them.
@@ -540,8 +579,18 @@ export function diffContributionEvents({
   const isOmitted = (elid, kind, fplFixtureId) => {
     if (omitKinds && omitKinds.has(kind)) return true;
     if (omitByElementKind && omitByElementKind.size > 0) {
-      const key = contributionCoverageKey(elid, kind, fplFixtureId);
-      if (omitByElementKind.has(key)) return true;
+      const el = elementById?.[elid];
+      if (
+        contributionCoveredByTimelineOmit(
+          omitByElementKind,
+          elid,
+          kind,
+          fplFixtureId,
+          el?.team,
+          gwFixtures
+        )
+      )
+        return true;
     }
     return false;
   };
