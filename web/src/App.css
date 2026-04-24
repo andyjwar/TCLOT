@@ -4436,6 +4436,17 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   word-break: break-word;
 }
 
+.pp-ev-owner__waiver-same-gw {
+  display: block;
+  max-width: 100%;
+  text-align: right;
+  line-height: 1.35;
+  word-break: break-word;
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--fm-muted, #6b7280);
+}
+
 .pp-ev-owner__waiver-bin {
   display: inline-block;
   font-size: 0.95em;

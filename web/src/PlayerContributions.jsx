@@ -946,7 +946,9 @@ export function PlayerContributions({
                 }
                 title={
                   r.waiverDrop
-                    ? `${r.waiverDrop.dropperTeamName} (GW ${r.waiverDrop.gw})`
+                    ? Number(r.waiverDrop.gw) === Number(gameweek)
+                      ? `🗑️ - ${r.waiverDrop.dropperTeamName}, utter twat`
+                      : `${r.waiverDrop.dropperTeamName} (GW ${r.waiverDrop.gw})`
                     : r.ownerLine
                 }
               >
@@ -964,15 +966,35 @@ export function PlayerContributions({
                   </>
                 ) : r.waiverDrop ? (
                   <span className="pp-ev-owner__waiver-drop-line">
-                    <span className="pp-ev-owner__waiver-bin" role="img" aria-hidden>
-                      🗑️
-                    </span>
-                    <span className="pp-ev-owner__waiver-gw tabular" aria-hidden>
-                      GW{r.waiverDrop.gw} -{' '}
-                    </span>
-                    <span className="pp-ev-owner__waiver-first">
-                      {r.waiverDrop.dropperFirstWord}
-                    </span>
+                    {Number(r.waiverDrop.gw) === Number(gameweek) ? (
+                      <span
+                        className="pp-ev-owner__waiver-same-gw"
+                        aria-label={`🗑️ - ${r.waiverDrop.dropperTeamName}, utter twat`}
+                      >
+                        <span aria-hidden>
+                          🗑️ - {r.waiverDrop.dropperTeamName}, utter twat
+                        </span>
+                      </span>
+                    ) : (
+                      <>
+                        <span
+                          className="pp-ev-owner__waiver-bin"
+                          role="img"
+                          aria-hidden
+                        >
+                          🗑️
+                        </span>
+                        <span
+                          className="pp-ev-owner__waiver-gw tabular"
+                          aria-hidden
+                        >
+                          GW{r.waiverDrop.gw} -{' '}
+                        </span>
+                        <span className="pp-ev-owner__waiver-first">
+                          {r.waiverDrop.dropperFirstWord}
+                        </span>
+                      </>
+                    )}
                   </span>
                 ) : (
                   <span className="pp-ev-owner__word">{r.ownerFirstWord}</span>
