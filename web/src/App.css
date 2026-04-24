@@ -4538,27 +4538,20 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
     justify-content: flex-end;
   }
 
-  /* Same-GW "utter twat" waiver: second row, full width — avoids flex nowrap clipping */
+  /* Same-GW "utter twat" waiver: no full-bleed second row (that broke R-alignment);
+     keep the owner in the right column, allow width + wrap, align row tops. */
   .player-contrib-pp-row--waiver-same-gw {
-    flex-wrap: wrap;
     align-items: flex-start;
     min-height: auto;
-    row-gap: 4px;
   }
 
   .player-contrib-pp-row--waiver-same-gw .pp-ev-owner--waiver-same-gw {
-    flex: 0 0 100%;
-    width: 100%;
-    max-width: 100%;
+    flex: 0 1 auto;
     min-width: 0;
-    margin-left: 0;
-    align-self: stretch;
-    align-items: flex-start;
+    max-width: min(24rem, calc(100% - 6.5rem));
+    margin-left: auto;
+    align-self: flex-start;
     justify-content: flex-end;
-  }
-
-  .player-contrib-pp-row--waiver-same-gw .pp-ev-owner__waiver-same-gw {
-    max-width: 100%;
   }
 
   .pp-ev-owner__word {
