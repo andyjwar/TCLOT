@@ -12,6 +12,7 @@ import {
   contributionCoverageKey,
   contributionEventMatchesGameweek,
   fplTotalFeedEventContradictsLive,
+  liveElementRowForFeedValidation,
   effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
@@ -202,6 +203,34 @@ test('fplTotalFeedEventContradictsLive — stale assist row vs 0 state', () => {
   assert.equal(fplTotalFeedEventContradictsLive(ev, live0, 2), true);
   const liveOk = { stats: { goals_scored: 0, assists: 1, minutes: 1 }, explain: [] };
   assert.equal(fplTotalFeedEventContradictsLive(ev, liveOk, 2), false);
+});
+
+test('liveElementRowForFeedValidation — full row wins; else stats map', () => {
+  const full = { 7: { stats: { assists: 1, minutes: 1 }, explain: [] } };
+  const stats = { 7: { assists: 0, minutes: 0 } };
+  const row7 = liveElementRowForFeedValidation(full, null, 7);
+  assert.equal((row7?.stats || {}).assists, 1);
+  assert.equal(
+    liveElementRowForFeedValidation(null, { 8: { assists: 0, minutes: 0 } }, 8)?.stats
+      ?.assists,
+    0
+  );
+  const stats2 = { ...stats, 9: { assists: 0, minutes: 0 } };
+  assert.equal(
+    liveElementRowForFeedValidation({ 9: null }, stats2, 9)?.stats?.assists,
+    0
+  );
+  assert.equal(
+    liveElementRowForFeedValidation({ 9: undefined }, stats2, 9)?.stats?.assists,
+    0
+  );
+  const ev = { kind: 'assist', stableId: '34:9:assist:tot1' };
+  const merged = liveElementRowForFeedValidation(
+    { 9: undefined },
+    { 9: { assists: 0, minutes: 0 } },
+    9
+  );
+  assert.equal(fplTotalFeedEventContradictsLive(ev, merged, 2), true);
 });
 
 test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc vs zero; cards need delta tick', () => {

@@ -15,6 +15,7 @@ import {
   contributionCoverageKey,
   contributionEventMatchesGameweek,
   fplTotalFeedEventContradictsLive,
+  liveElementRowForFeedValidation,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -520,6 +521,7 @@ export function PlayerContributions({
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
     const liveFull = contributionLiveContext?.liveFullByElementId;
+    const liveBy = contributionLiveContext?.liveByElementId;
     const inThisGw = (displayed || []).filter((e) =>
       contributionEventMatchesGameweek(e, gameweek)
     );
@@ -537,7 +539,7 @@ export function PlayerContributions({
         if (
           fplTotalFeedEventContradictsLive(
             ev,
-            liveFull?.[ev.elementId],
+            liveElementRowForFeedValidation(liveFull, liveBy, ev.elementId),
             elForLive?.element_type
           )
         ) {

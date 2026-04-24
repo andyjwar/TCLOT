@@ -503,6 +503,8 @@ export function useLiveScores({
       }
       setContributionLiveContext({
         liveFullByElementId: liveFullNumeric,
+        /** Per-element `stats` from the same `event/{gw}/live` — fallback when a full row is not keyed. */
+        liveByElementId,
         elementById,
         typeById,
         teamById,

@@ -40,15 +40,16 @@ function hasMeaningfulMinutesOnPitch(liveRow) {
 /**
  * Dropped for display when current live is still a pre/pitch 0-state but a stale FPL row
  * (from an earlier diff bug or `localStorage`) still lives in the feed. Does not run when
- * the player is missing from the live map (treated as "can't validate").
+ * the player is missing from both the full map and the compact `live` stats (treated as "can't validate").
  * @param {object} ev
  * @param {object | null | undefined} liveRow
  * @param {number | null | undefined} elementTypeId
  */
 export function fplTotalFeedEventContradictsLive(ev, liveRow, elementTypeId) {
-  if (!ev || !liveRow) return false;
+  if (!ev) return false;
   if (!/^\d+:\d+:(goal|assist|dc_points|save_points):tot/.test(String(ev.stableId || '')))
     return false;
+  if (!liveRow) return false;
   if (hasMeaningfulMinutesOnPitch(liveRow)) return false;
   const s = statsOf(liveRow);
   if (Number(s.minutes) > 0) return false;
@@ -59,6 +60,29 @@ export function fplTotalFeedEventContradictsLive(ev, liveRow, elementTypeId) {
   if (ev.kind === 'save_points')
     return saveFantasyPointsFromSaves(s.saves, elementTypeId) === 0;
   return false;
+}
+
+/**
+ * Full `event/live` element (stats + `explain`) is used for FPL :tot… validation; if that
+ * id is missing from `liveFull` (e.g. keying quirks) fall back to the same payload’s
+ * `liveBy` stats map.
+ *
+ * @param {Record<number, object> | null | undefined} liveFullById
+ * @param {Record<number, object> | null | undefined} liveById — per-element `stats` only
+ * @param {number | null | undefined} elementId
+ */
+export function liveElementRowForFeedValidation(
+  liveFullById,
+  liveById,
+  elementId
+) {
+  const eid = Number(elementId);
+  if (!Number.isFinite(eid)) return null;
+  if (liveFullById && liveFullById[eid] != null) return liveFullById[eid];
+  if (liveById && liveById[eid] != null) {
+    return { stats: liveById[eid] };
+  }
+  return null;
 }
 
 /**
