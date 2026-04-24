@@ -4403,6 +4403,13 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   max-width: 10rem;
 }
 
+/* Grid layout: last column is wide; narrow owner box must sit on the end edge, not the start. */
+@media (min-width: 601px) {
+  .player-contrib-pp-row .pp-ev-owner {
+    justify-self: end;
+  }
+}
+
 .pp-ev-owner__word {
   font-size: 0.75rem;
   color: var(--fm-muted, #6b7280);
@@ -4504,7 +4511,7 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   }
 
   .pp-ev-namecell {
-    flex: 0 1 auto;
+    flex: 1 1 0;
     min-width: 0;
     text-align: left;
   }
@@ -4528,7 +4535,7 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
     justify-content: flex-end;
     gap: 6px;
     margin-left: auto;
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     min-width: 0;
     max-width: 9.5rem;
   }
