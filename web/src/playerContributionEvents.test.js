@@ -107,6 +107,40 @@ test('buildLatestDropByElementOut — highest GW wins', () => {
   assert.equal(m.get(7).leagueEntryId, 2);
 });
 
+test('diffContributionEvents — bootstrap with 0′ minutes: no spurious goal/assist/dc/save rows', () => {
+  const next = {
+    1: {
+      stats: {
+        goals_scored: 0,
+        assists: 0,
+        saves: 3,
+        minutes: 0,
+      },
+      explain: [],
+    },
+    2: {
+      stats: { goals_scored: 0, assists: 1, minutes: 0, defensive_contribution: 1 },
+      explain: [],
+    },
+  };
+  const out = diffContributionEvents({
+    prevLiveByElementId: null,
+    nextLiveByElementId: next,
+    elementById: {
+      1: { element_type: 1 },
+      2: { element_type: 2 },
+    },
+    trackedElementIds: new Set([1, 2]),
+    gameweek: 5,
+    nowIso: '2026-01-01T12:00:00.000Z',
+  });
+  assert.equal(
+    out.length,
+    0,
+    'bootstrap should not treat pre-clock placeholder totals as events'
+  );
+});
+
 test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc vs zero; cards need delta tick', () => {
   const next = {
     12: {

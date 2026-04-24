@@ -15,29 +15,9 @@
  */
 
 import { espnResourceUrl } from './espnUrl.js';
+import { matchFplElementId } from './fotmobPremTimeline.js';
 
-/**
- * Lowercase, strip diacritics and punctuation so "Ferdi Kadioglu" ≈ "F.Kadıoğlu".
- * NFD only decomposes precomposed accents; a handful of Latin-derived characters
- * (Turkish `ı`, Nordic `ø/æ`, German `ß`, etc.) are standalone code points and
- * need explicit mapping.
- */
-function normPlayer(s) {
-  return String(s || '')
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/ı/g, 'i')
-    .replace(/ø/g, 'o')
-    .replace(/æ/g, 'ae')
-    .replace(/œ/g, 'oe')
-    .replace(/ß/g, 'ss')
-    .replace(/ð/g, 'd')
-    .replace(/þ/g, 'th')
-    .replace(/ł/g, 'l')
-    .replace(/['`’.]/g, '')
-    .trim();
-}
+export { matchFplElementId };
 
 export function yyyymmddUtc(iso) {
   const d = new Date(iso);
@@ -127,44 +107,6 @@ function espnClockToMinute(ev) {
     }
   }
   return { label: display };
-}
-
-/**
- * Resolve ESPN athlete display name to FPL element id on `teamFplId`.
- * ESPN ships full first + last names, e.g. "Jack Hinshelwood", "Ferdi Kadioglu".
- * FPL has separate `first_name` / `second_name` plus a short `web_name`; we try several
- * combinations and only accept a match when it's unique on the given team.
- * @returns {number | null}
- */
-export function matchFplElementId(teamFplId, displayName, elementById) {
-  const needle = normPlayer(displayName);
-  if (!needle) return null;
-  const team = Number(teamFplId);
-  if (!Number.isFinite(team)) return null;
-  const cands = [];
-  for (const el of Object.values(elementById || {})) {
-    if (Number(el?.team) !== team) continue;
-    const id = Number(el?.id);
-    if (!Number.isFinite(id)) continue;
-    const w = normPlayer(el.web_name);
-    const kn = normPlayer(el.known_name);
-    const sn = normPlayer(el.second_name);
-    const full = normPlayer(
-      [el.first_name, el.second_name].filter(Boolean).join(' ')
-    );
-    if (
-      needle === full ||
-      needle === w ||
-      needle === kn ||
-      needle === sn ||
-      (full && (full.includes(needle) || needle.includes(full))) ||
-      (w && (needle === w || needle.endsWith(` ${w}`)))
-    ) {
-      cands.push(id);
-    }
-  }
-  if (cands.length === 1) return cands[0];
-  return null;
 }
 
 /**

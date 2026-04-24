@@ -22,6 +22,23 @@ function statsOf(liveRow) {
 }
 
 /**
+ * True if FPL shows the player has on-pitch time this GW (GW `stats.minutes` or per-fixture
+ * `explain` block minutes). On the first live tick (`prev` null) we only emit goal/assist/DC/save
+ * rows when this is true, so a fresh page load on mobile does not flood the feed with 0′
+ * placeholder totals before the match clock advances.
+ * @param {object | null | undefined} liveRow
+ */
+function hasMeaningfulMinutesOnPitch(liveRow) {
+  if (!liveRow) return false;
+  const m = Number(liveRow.stats?.minutes);
+  if (Number.isFinite(m) && m > 0) return true;
+  for (const b of explainBlocksFromLiveElement(liveRow)) {
+    if (Number(b.minutes) > 0) return true;
+  }
+  return false;
+}
+
+/**
  * Clock proxy for this appearance: `explain` minutes for `fixtureId`, else GW `stats.minutes`.
  * `stats.minutes` alone is a poor timeline key after FT (often 90 for everyone) and can
  * double-count oddly on DGW without per-fixture explain.
@@ -425,7 +442,9 @@ export function contributionCoverageKey(elementId, kind, fplFixtureId) {
 }
 
 /**
- * Compare two live snapshots; emit positive deltas only. First snapshot (prev null) yields [].
+ * Compare two live snapshots; emit positive deltas only. When `prev` is null (bootstrap),
+ * totals vs zero only become feed rows if the player already has on-pitch minutes (see
+ * `hasMeaningfulMinutesOnPitch`); otherwise the next tick emits real deltas.
  *
  * @param {{
  *   prevLiveByElementId: Record<number, object> | null,
@@ -468,7 +487,12 @@ export function diffContributionEvents({
   const gw = Number(gameweek);
   if (!Number.isFinite(gw)) return out;
 
-  /** First live tick after mount: treat missing prev as zero baseline for totals (goals/assists/saves/dc). Cards still need a delta vs prior tick to avoid double-counting with FotMob. */
+  /**
+   * First live tick after mount: treat missing prev as zero baseline for totals
+   * (goals/assists/saves/dc). We still require {@link hasMeaningfulMinutesOnPitch} for those
+   * kinds on bootstrap so 0′ placeholder stats do not appear as “events.” Cards use `!bootstrap`
+   * to avoid double-counting with FotMob.
+   */
   const bootstrap = prevLiveByElementId == null;
 
   const ids = [...trackedElementIds].filter((n) => Number.isFinite(Number(n))).sort((a, b) => a - b);
@@ -490,7 +514,12 @@ export function diffContributionEvents({
 
     const g0 = Number(ps.goals_scored) || 0;
     const g1 = Number(ns.goals_scored) || 0;
-    if (!isOmitted(elid, 'goal', fplFixtureId) && g1 > g0) {
+    const canEmitTotalsOnBootstrap = !bootstrap || hasMeaningfulMinutesOnPitch(nextRow);
+    if (
+      canEmitTotalsOnBootstrap &&
+      !isOmitted(elid, 'goal', fplFixtureId) &&
+      g1 > g0
+    ) {
       const d = g1 - g0;
       out.push({
         stableId: `${gw}:${elid}:goal:tot${g1}`,
@@ -514,7 +543,11 @@ export function diffContributionEvents({
 
     const a0 = Number(ps.assists) || 0;
     const a1 = Number(ns.assists) || 0;
-    if (!isOmitted(elid, 'assist', fplFixtureId) && a1 > a0) {
+    if (
+      canEmitTotalsOnBootstrap &&
+      !isOmitted(elid, 'assist', fplFixtureId) &&
+      a1 > a0
+    ) {
       out.push({
         stableId: `${gw}:${elid}:assist:tot${a1}`,
         kind: 'assist',
@@ -537,7 +570,7 @@ export function diffContributionEvents({
 
     const dc0 = defensiveContributionPointsFromLiveRow(prevRow);
     const dc1 = defensiveContributionPointsFromLiveRow(nextRow);
-    if (dc1 > dc0) {
+    if (canEmitTotalsOnBootstrap && dc1 > dc0) {
       out.push({
         stableId: `${gw}:${elid}:dc_points:tot${dc1}`,
         kind: 'dc_points',
@@ -560,7 +593,7 @@ export function diffContributionEvents({
 
     const s0 = saveFantasyPointsFromSaves(ps.saves, et);
     const s1 = saveFantasyPointsFromSaves(ns.saves, et);
-    if (s1 > s0) {
+    if (canEmitTotalsOnBootstrap && s1 > s0) {
       out.push({
         stableId: `${gw}:${elid}:save_points:tot${s1}`,
         kind: 'save_points',

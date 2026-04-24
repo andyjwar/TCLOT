@@ -151,41 +151,111 @@ function normPlayer(s) {
     .toLowerCase()
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
-    .replace(/['’.]/g, '')
+    .replace(/ı/g, 'i')
+    .replace(/ø/g, 'o')
+    .replace(/æ/g, 'ae')
+    .replace(/œ/g, 'oe')
+    .replace(/ß/g, 'ss')
+    .replace(/ð/g, 'd')
+    .replace(/þ/g, 'th')
+    .replace(/ł/g, 'l')
+    .replace(/['’`.]/g, '')
     .trim();
 }
 
+function lastNameToken(needle) {
+  const p = String(needle || '')
+    .split(/\s+/)
+    .filter(Boolean);
+  return p.length ? p[p.length - 1] : '';
+}
+
 /**
- * Resolve FotMob display name to FPL element id on `teamFplId`.
+ * Resolve FotMob/ESPN display name to FPL element id on `teamFplId`.
+ * ESPN often differs from FPL (`Danny` vs `Daniel`, `Robin Roefs` vs `R. Roefs` in `web_name`);
+ * we disambiguate with last name and first initial when the loose rules hit 0 or 2+ candidates.
+ *
  * @returns {number | null}
  */
 export function matchFplElementId(teamFplId, displayName, elementById) {
   const needle = normPlayer(displayName);
   if (!needle) return null;
-  const cands = [];
-  for (const el of Object.values(elementById || {})) {
-    if (Number(el.team) !== Number(teamFplId)) continue;
+
+  const teamEls = Object.values(elementById || {}).filter(
+    (el) => Number(el.team) === Number(teamFplId),
+  );
+  /** @type {Array<{ id: number, w: string, kn: string, sn: string, fn: string, full: string }>} */
+  const rows = [];
+  for (const el of teamEls) {
     const id = Number(el.id);
     if (!Number.isFinite(id)) continue;
-    const w = normPlayer(el.web_name);
-    const kn = normPlayer(el.known_name);
-    const sn = normPlayer(el.second_name);
-    const fn = normPlayer(el.first_name);
-    const full = normPlayer([el.first_name, el.second_name].filter(Boolean).join(' '));
-    if (
-      needle === w ||
-      needle === kn ||
-      needle === sn ||
-      needle === full ||
-      w.includes(needle) ||
-      needle.includes(w) ||
-      sn === needle ||
-      needle.includes(sn)
-    ) {
-      cands.push(id);
-    }
+    rows.push({
+      id,
+      w: normPlayer(el.web_name),
+      kn: normPlayer(el.known_name),
+      sn: normPlayer(el.second_name),
+      fn: normPlayer(el.first_name),
+      full: normPlayer([el.first_name, el.second_name].filter(Boolean).join(' ')),
+    });
   }
-  if (cands.length === 1) return cands[0];
+
+  function looseMatch(r) {
+    if (!r) return false;
+    return (
+      needle === r.w ||
+      needle === r.kn ||
+      needle === r.sn ||
+      needle === r.full ||
+      (r.w && (r.w.includes(needle) || needle.includes(r.w))) ||
+      (r.sn && (r.sn === needle || needle.includes(r.sn)))
+    );
+  }
+
+  const cands = rows.filter(looseMatch);
+
+  if (cands.length === 1) return cands[0].id;
+
+  if (cands.length > 1) {
+    const last = lastNameToken(needle);
+    if (last.length >= 2) {
+      const byLast = cands.filter(
+        (r) => r.sn === last || r.w === last || r.kn === last,
+      );
+      if (byLast.length > 1) return null;
+      if (byLast.length === 1) return byLast[0].id;
+    }
+
+    const strong = cands.filter(
+      (r) => needle === r.full || needle === r.w || needle === r.kn,
+    );
+    if (strong.length === 1) return strong[0].id;
+
+    const parts = needle.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      const surname = parts[parts.length - 1];
+      if (surname.length >= 2) {
+        const bySurname = cands.filter(
+          (r) => r.sn === surname || r.w === surname || r.full.endsWith(' ' + surname),
+        );
+        if (bySurname.length === 1) return bySurname[0].id;
+        const firstTok = parts[0];
+        if (firstTok.length === 1 && bySurname.length > 0) {
+          const byInit = bySurname.filter((r) => !r.fn || r.fn.charAt(0) === firstTok);
+          if (byInit.length === 1) return byInit[0].id;
+        }
+      }
+    }
+    return null;
+  }
+
+  const last = lastNameToken(needle);
+  if (last.length >= 2) {
+    const byLast = rows.filter(
+      (r) => r.sn === last || r.w === last || r.kn === last || r.full.endsWith(' ' + last),
+    );
+    if (byLast.length === 1) return byLast[0].id;
+  }
+
   return null;
 }
 

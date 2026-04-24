@@ -148,6 +148,21 @@ test('matchFplElementId — rejects wrong team', () => {
   assert.equal(matchFplElementId(2, 'Bukayo Saka', elementById), null);
 });
 
+test('matchFplElementId — ESPN “Danny” vs FPL “Daniel” (surname + loose web_name)', () => {
+  const elementById = {
+    700: { id: 700, team: 4, first_name: 'Daniel', second_name: 'Ballard', web_name: 'D.Ballard' },
+  };
+  assert.equal(matchFplElementId(4, 'Danny Ballard', elementById), 700);
+  assert.equal(matchFplElementId(4, 'D. Ballard', elementById), 700);
+});
+
+test('matchFplElementId — ESPN full first name vs FPL R. in web_name (unique last name)', () => {
+  const elementById = {
+    701: { id: 701, team: 4, first_name: 'L.', second_name: 'Roefs', web_name: 'R.Roefs' },
+  };
+  assert.equal(matchFplElementId(4, 'Robin Roefs', elementById), 701);
+});
+
 test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Chelsea yellow', async () => {
   const origFetch = globalThis.fetch;
   const calls = [];

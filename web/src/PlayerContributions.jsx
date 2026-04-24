@@ -771,7 +771,7 @@ export function PlayerContributions({
       <>
         {toolbar}
         <p className="muted muted--tight player-contrib-empty">
-          Goals, Assists, Def Cons, Saves, Red/Yellow cards for owned players in league appear here.
+          Goals, Assists, Def Cons, Saves & Cards will appear here as they happen.
         </p>
       </>
     );
