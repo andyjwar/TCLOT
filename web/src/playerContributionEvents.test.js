@@ -284,6 +284,29 @@ test('fplTotalFeedEventContradictsLive — stale assist row vs 0 state', () => {
   assert.equal(fplTotalFeedEventContradictsLive(ev, live0, 2), true);
   const liveOk = { stats: { goals_scored: 0, assists: 1, minutes: 1 }, explain: [] };
   assert.equal(fplTotalFeedEventContradictsLive(ev, liveOk, 2), false);
+  const liveGhostWithMins = {
+    stats: { goals_scored: 0, assists: 0, minutes: 90 },
+    explain: [],
+  };
+  assert.equal(
+    fplTotalFeedEventContradictsLive(ev, liveGhostWithMins, 2),
+    true,
+    '0 assists but 90min on pitch: previously skipped; still a ghost'
+  );
+});
+
+test('fplTotalFeedEventContradictsLive — save_points tot vs live FPL save pts (GKP)', () => {
+  const ev = { kind: 'save_points', stableId: '34:1:save_points:tot1' };
+  const liveNoSaves = {
+    stats: { goals_scored: 0, assists: 0, saves: 2, minutes: 90 },
+    explain: [],
+  };
+  assert.equal(fplTotalFeedEventContradictsLive(ev, liveNoSaves, 1), true);
+  const liveOnePt = {
+    stats: { goals_scored: 0, assists: 0, saves: 3, minutes: 90 },
+    explain: [],
+  };
+  assert.equal(fplTotalFeedEventContradictsLive(ev, liveOnePt, 1), false);
 });
 
 test('liveElementRowForFeedValidation — full row wins; else stats map', () => {

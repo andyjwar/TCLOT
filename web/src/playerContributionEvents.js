@@ -79,9 +79,19 @@ function hasMeaningfulMinutesOnPitch(liveRow) {
 }
 
 /**
- * Dropped for display when current live is still a pre/pitch 0-state but a stale FPL row
- * (from an earlier diff bug or `localStorage`) still lives in the feed. Does not run when
- * the player is missing from both the full map and the compact `live` stats (treated as "can't validate").
+ * Cumulative N from FPL `stableId` `…:totN` (goals, assists, DC/save **points** tiers, etc.).
+ */
+function fplTotSuffixN(stableId) {
+  const m = String(stableId || '').match(/:tot(\d+)$/);
+  if (!m) return null;
+  const n = Number(m[1]);
+  return Number.isFinite(n) ? n : null;
+}
+
+/**
+ * Dropped when current FPL live **stats** do not back this `…:totN` row. Handles stale
+ * `localStorage` or bad rows for players with real minutes (previously they were never
+ * pruned because we only treated 0-minute ghosts as invalid).
  * @param {object} ev
  * @param {object | null | undefined} liveRow
  * @param {number | null | undefined} elementTypeId
@@ -91,15 +101,21 @@ export function fplTotalFeedEventContradictsLive(ev, liveRow, elementTypeId) {
   if (!/^\d+:\d+:(goal|assist|dc_points|save_points):tot/.test(String(ev.stableId || '')))
     return false;
   if (!liveRow) return false;
-  if (hasMeaningfulMinutesOnPitch(liveRow)) return false;
+  const N = fplTotSuffixN(ev.stableId);
+  if (N == null || N < 0) return false;
   const s = statsOf(liveRow);
-  if (Number(s.minutes) > 0) return false;
-  if (ev.kind === 'goal') return (Number(s.goals_scored) || 0) === 0;
-  if (ev.kind === 'assist') return (Number(s.assists) || 0) === 0;
-  if (ev.kind === 'dc_points')
-    return defensiveContributionPointsFromLiveRow(liveRow) === 0;
-  if (ev.kind === 'save_points')
-    return saveFantasyPointsFromSaves(s.saves, elementTypeId) === 0;
+  if (ev.kind === 'goal') {
+    return (Number(s.goals_scored) || 0) < N;
+  }
+  if (ev.kind === 'assist') {
+    return (Number(s.assists) || 0) < N;
+  }
+  if (ev.kind === 'dc_points') {
+    return defensiveContributionPointsFromLiveRow(liveRow) < N;
+  }
+  if (ev.kind === 'save_points') {
+    return saveFantasyPointsFromSaves(s.saves, elementTypeId) < N;
+  }
   return false;
 }
 
