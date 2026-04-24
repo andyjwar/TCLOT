@@ -11,6 +11,7 @@ import {
   compareContributionEventsAscWithContext,
   contributionCoverageKey,
   contributionEventMatchesGameweek,
+  fplTotalFeedEventContradictsLive,
   effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
@@ -172,6 +173,35 @@ test('diffContributionEvents — bootstrap with 0′ minutes: no spurious goal/a
     0,
     'bootstrap should not treat pre-clock placeholder totals as events'
   );
+});
+
+test('diffContributionEvents — 0-min totals do not emit after bootstrap either', () => {
+  const prev = {
+    1: { stats: { goals_scored: 0, assists: 0, minutes: 0, saves: 0 }, explain: [] },
+  };
+  const next = {
+    1: {
+      stats: { goals_scored: 1, assists: 1, minutes: 0, saves: 0 },
+      explain: [],
+    },
+  };
+  const out = diffContributionEvents({
+    prevLiveByElementId: prev,
+    nextLiveByElementId: next,
+    elementById: { 1: { element_type: 3 } },
+    trackedElementIds: new Set([1]),
+    gameweek: 5,
+    nowIso: '2026-01-01T12:00:00.000Z',
+  });
+  assert.equal(out.length, 0, 'FPL 0-min rows must not become feed events on any tick');
+});
+
+test('fplTotalFeedEventContradictsLive — stale assist row vs 0 state', () => {
+  const ev = { kind: 'assist', stableId: '34:1:assist:tot1' };
+  const live0 = { stats: { goals_scored: 0, assists: 0, minutes: 0 }, explain: [] };
+  assert.equal(fplTotalFeedEventContradictsLive(ev, live0, 2), true);
+  const liveOk = { stats: { goals_scored: 0, assists: 1, minutes: 1 }, explain: [] };
+  assert.equal(fplTotalFeedEventContradictsLive(ev, liveOk, 2), false);
 });
 
 test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc vs zero; cards need delta tick', () => {

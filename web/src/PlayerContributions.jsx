@@ -14,6 +14,7 @@ import {
   compareContributionEventsDescWithContext,
   contributionCoverageKey,
   contributionEventMatchesGameweek,
+  fplTotalFeedEventContradictsLive,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -532,6 +533,16 @@ export function PlayerContributions({
       .sort(compareRowsFn)
       .filter((ev) => {
         if (!contributionEventShownForLeague(ev, ownerByEl)) return false;
+        const elForLive = contributionLiveContext?.elementById?.[ev.elementId];
+        if (
+          fplTotalFeedEventContradictsLive(
+            ev,
+            liveFull?.[ev.elementId],
+            elForLive?.element_type
+          )
+        ) {
+          return false;
+        }
         const sid = String(ev?.stableId || '');
         if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return true;
         const key = contributionCoverageKey(

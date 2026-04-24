@@ -23,9 +23,8 @@ function statsOf(liveRow) {
 
 /**
  * True if FPL shows the player has on-pitch time this GW (GW `stats.minutes` or per-fixture
- * `explain` block minutes). On the first live tick (`prev` null) we only emit goal/assist/DC/save
- * rows when this is true, so a fresh page load on mobile does not flood the feed with 0′
- * placeholder totals before the match clock advances.
+ * `explain` block minutes). Goal/assist/DC/save feed rows are only created when this is true
+ * (including every live poll, not just the first) so 0-minute placeholder stats never become events.
  * @param {object | null | undefined} liveRow
  */
 function hasMeaningfulMinutesOnPitch(liveRow) {
@@ -35,6 +34,30 @@ function hasMeaningfulMinutesOnPitch(liveRow) {
   for (const b of explainBlocksFromLiveElement(liveRow)) {
     if (Number(b.minutes) > 0) return true;
   }
+  return false;
+}
+
+/**
+ * Dropped for display when current live is still a pre/pitch 0-state but a stale FPL row
+ * (from an earlier diff bug or `localStorage`) still lives in the feed. Does not run when
+ * the player is missing from the live map (treated as "can't validate").
+ * @param {object} ev
+ * @param {object | null | undefined} liveRow
+ * @param {number | null | undefined} elementTypeId
+ */
+export function fplTotalFeedEventContradictsLive(ev, liveRow, elementTypeId) {
+  if (!ev || !liveRow) return false;
+  if (!/^\d+:\d+:(goal|assist|dc_points|save_points):tot/.test(String(ev.stableId || '')))
+    return false;
+  if (hasMeaningfulMinutesOnPitch(liveRow)) return false;
+  const s = statsOf(liveRow);
+  if (Number(s.minutes) > 0) return false;
+  if (ev.kind === 'goal') return (Number(s.goals_scored) || 0) === 0;
+  if (ev.kind === 'assist') return (Number(s.assists) || 0) === 0;
+  if (ev.kind === 'dc_points')
+    return defensiveContributionPointsFromLiveRow(liveRow) === 0;
+  if (ev.kind === 'save_points')
+    return saveFantasyPointsFromSaves(s.saves, elementTypeId) === 0;
   return false;
 }
 
@@ -461,9 +484,10 @@ export function contributionEventMatchesGameweek(ev, gameweek) {
 }
 
 /**
- * Compare two live snapshots; emit positive deltas only. When `prev` is null (bootstrap),
- * totals vs zero only become feed rows if the player already has on-pitch minutes (see
- * `hasMeaningfulMinutesOnPitch`); otherwise the next tick emits real deltas.
+ * Compare two live snapshots; emit positive deltas only. Goals, assists, DC fantasy points, and
+ * save fantasy points require {@link hasMeaningfulMinutesOnPitch} on `nextRow` on every tick, so
+ * 0-minute placeholder or inconsistent API state never creates rows. Yellow/red still require
+ * `!bootstrap` to avoid double-counting with match-feed sources.
  *
  * @param {{
  *   prevLiveByElementId: Record<number, object> | null,
@@ -506,12 +530,6 @@ export function diffContributionEvents({
   const gw = Number(gameweek);
   if (!Number.isFinite(gw)) return out;
 
-  /**
-   * First live tick after mount: treat missing prev as zero baseline for totals
-   * (goals/assists/saves/dc). We still require {@link hasMeaningfulMinutesOnPitch} for those
-   * kinds on bootstrap so 0′ placeholder stats do not appear as “events.” Cards use `!bootstrap`
-   * to avoid double-counting with FotMob.
-   */
   const bootstrap = prevLiveByElementId == null;
 
   const ids = [...trackedElementIds].filter((n) => Number.isFinite(Number(n))).sort((a, b) => a - b);
@@ -533,9 +551,9 @@ export function diffContributionEvents({
 
     const g0 = Number(ps.goals_scored) || 0;
     const g1 = Number(ns.goals_scored) || 0;
-    const canEmitTotalsOnBootstrap = !bootstrap || hasMeaningfulMinutesOnPitch(nextRow);
+    const canEmitGoalAssistDcSaves = hasMeaningfulMinutesOnPitch(nextRow);
     if (
-      canEmitTotalsOnBootstrap &&
+      canEmitGoalAssistDcSaves &&
       !isOmitted(elid, 'goal', fplFixtureId) &&
       g1 > g0
     ) {
@@ -563,7 +581,7 @@ export function diffContributionEvents({
     const a0 = Number(ps.assists) || 0;
     const a1 = Number(ns.assists) || 0;
     if (
-      canEmitTotalsOnBootstrap &&
+      canEmitGoalAssistDcSaves &&
       !isOmitted(elid, 'assist', fplFixtureId) &&
       a1 > a0
     ) {
@@ -589,7 +607,7 @@ export function diffContributionEvents({
 
     const dc0 = defensiveContributionPointsFromLiveRow(prevRow);
     const dc1 = defensiveContributionPointsFromLiveRow(nextRow);
-    if (canEmitTotalsOnBootstrap && dc1 > dc0) {
+    if (canEmitGoalAssistDcSaves && dc1 > dc0) {
       out.push({
         stableId: `${gw}:${elid}:dc_points:tot${dc1}`,
         kind: 'dc_points',
@@ -612,7 +630,7 @@ export function diffContributionEvents({
 
     const s0 = saveFantasyPointsFromSaves(ps.saves, et);
     const s1 = saveFantasyPointsFromSaves(ns.saves, et);
-    if (canEmitTotalsOnBootstrap && s1 > s0) {
+    if (canEmitGoalAssistDcSaves && s1 > s0) {
       out.push({
         stableId: `${gw}:${elid}:save_points:tot${s1}`,
         kind: 'save_points',
