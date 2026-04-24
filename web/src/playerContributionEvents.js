@@ -442,6 +442,25 @@ export function contributionCoverageKey(elementId, kind, fplFixtureId) {
 }
 
 /**
+ * True if a feed row belongs to the selected gameweek. Rows from a previous GW can
+ * remain in `displayed` for a few ticks after the user changes GW (before `hydrate` runs);
+ * the feed should never show them.
+ *
+ * FPL `stableId` is `${gw}:…`; ESPN/FotMob rows must set `gameweek`.
+ */
+export function contributionEventMatchesGameweek(ev, gameweek) {
+  const gwN = Number(gameweek);
+  if (!Number.isFinite(gwN)) return true;
+  const g = Number(ev?.gameweek);
+  if (Number.isFinite(g)) return g === gwN;
+  const sid = String(ev?.stableId || '');
+  const m = sid.match(/^(\d+):/);
+  if (m) return Number(m[1]) === gwN;
+  if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return false;
+  return true;
+}
+
+/**
  * Compare two live snapshots; emit positive deltas only. When `prev` is null (bootstrap),
  * totals vs zero only become feed rows if the player already has on-pitch minutes (see
  * `hasMeaningfulMinutesOnPitch`); otherwise the next tick emits real deltas.

@@ -13,6 +13,7 @@ import {
   compareContributionEventsDesc,
   compareContributionEventsDescWithContext,
   contributionCoverageKey,
+  contributionEventMatchesGameweek,
   diffContributionEvents,
 } from './playerContributionEvents';
 import {
@@ -343,11 +344,13 @@ export function PlayerContributions({
 
   useEffect(() => {
     prevLiveRef.current = null;
+    setDisplayed([]);
     setTimelineCoverage(new Set());
     setFantasyTeamEntryId('');
     setFilterGoal(false);
     setFilterAssist(false);
     setFilterDc(false);
+    setFilterCards(false);
   }, [gameweek, leagueId]);
 
   const fantasyTeamOptions = useMemo(() => {
@@ -516,13 +519,16 @@ export function PlayerContributions({
   const rows = useMemo(() => {
     const teamById = contributionLiveContext?.teamById || {};
     const liveFull = contributionLiveContext?.liveFullByElementId;
+    const inThisGw = (displayed || []).filter((e) =>
+      contributionEventMatchesGameweek(e, gameweek)
+    );
     const liveCoverage = buildTimelineCoverageSet(
-      (displayed || []).filter((e) => {
+      inThisGw.filter((e) => {
         const id = String(e?.stableId || '');
         return id.startsWith('espn:') || id.startsWith('fotmob:');
       })
     );
-    return [...displayed]
+    return [...inThisGw]
       .sort(compareRowsFn)
       .filter((ev) => {
         if (!contributionEventShownForLeague(ev, ownerByEl)) return false;
@@ -614,7 +620,15 @@ export function PlayerContributions({
         waiverDrop,
       };
     });
-  }, [displayed, contributionLiveContext, ownerByEl, dropByEl, compareRowsFn, narrow]);
+  }, [
+    displayed,
+    gameweek,
+    contributionLiveContext,
+    ownerByEl,
+    dropByEl,
+    compareRowsFn,
+    narrow,
+  ]);
 
   const filteredRows = useMemo(() => {
     let out = rows;

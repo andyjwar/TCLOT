@@ -10,11 +10,44 @@ import {
   contributionApproxTimelineSortKey,
   compareContributionEventsAscWithContext,
   contributionCoverageKey,
+  contributionEventMatchesGameweek,
   effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
   saveFantasyPointsFromSaves,
 } from './playerContributionEvents.js';
+
+test('contributionEventMatchesGameweek — FPL stableId and field', () => {
+  assert.equal(
+    contributionEventMatchesGameweek(
+      { gameweek: 34, stableId: '34:1:goal:tot1' },
+      34
+    ),
+    true
+  );
+  assert.equal(
+    contributionEventMatchesGameweek(
+      { gameweek: 33, stableId: '33:1:goal:tot1' },
+      34
+    ),
+    false
+  );
+  assert.equal(
+    contributionEventMatchesGameweek({ stableId: '33:1:goal:tot1' }, 34),
+    false
+  );
+  assert.equal(
+    contributionEventMatchesGameweek(
+      { gameweek: 34, stableId: 'espn:1:2:3:1' },
+      34
+    ),
+    true
+  );
+  assert.equal(
+    contributionEventMatchesGameweek({ stableId: 'espn:1:2' }, 34),
+    false
+  );
+});
 
 test('saveFantasyPointsFromSaves — only GKP, 1 pt per 3 saves', () => {
   assert.equal(saveFantasyPointsFromSaves(0, 1), 0);
