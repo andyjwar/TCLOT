@@ -858,10 +858,18 @@ export function PlayerContributions({
             ? `Fantasy points for this event${r.actionBracket}`
             : 'No point change for this event';
           const arLabel = `${r.actionText}. ${r.playerLabelFull}${minPhrase}. ${r.ownerLine}. ${ptsLine}`;
+          const isWaiverSameGw = Boolean(
+            r.waiverDrop &&
+              Number(r.waiverDrop.gw) === Number(gameweek)
+          );
           return (
             <div
               key={r.stableId}
-              className={`player-contrib-pp-row player-contrib-pp-row--${r.kind}`}
+              className={`player-contrib-pp-row player-contrib-pp-row--${r.kind}${
+                isWaiverSameGw
+                  ? ' player-contrib-pp-row--waiver-same-gw'
+                  : ''
+              }`}
               role="listitem"
               aria-label={arLabel}
             >
@@ -941,12 +949,14 @@ export function PlayerContributions({
               <div
                 className={
                   r.waiverDrop
-                    ? 'pp-ev-owner pp-ev-owner--waiver-drop'
+                    ? isWaiverSameGw
+                      ? 'pp-ev-owner pp-ev-owner--waiver-drop pp-ev-owner--waiver-same-gw'
+                      : 'pp-ev-owner pp-ev-owner--waiver-drop'
                     : 'pp-ev-owner'
                 }
                 title={
                   r.waiverDrop
-                    ? Number(r.waiverDrop.gw) === Number(gameweek)
+                    ? isWaiverSameGw
                       ? `🗑️ - this GW ${r.waiverDrop.dropperFirstWord} utter twat`
                       : `${r.waiverDrop.dropperTeamName} (GW ${r.waiverDrop.gw})`
                     : r.ownerLine
@@ -966,7 +976,7 @@ export function PlayerContributions({
                   </>
                 ) : r.waiverDrop ? (
                   <span className="pp-ev-owner__waiver-drop-line">
-                    {Number(r.waiverDrop.gw) === Number(gameweek) ? (
+                    {isWaiverSameGw ? (
                       <span
                         className="pp-ev-owner__waiver-same-gw"
                         aria-label={`🗑️ - this GW ${r.waiverDrop.dropperFirstWord} utter twat`}
