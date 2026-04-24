@@ -456,16 +456,11 @@
 }
 
 .prem-fixtures-block__title {
-  margin: 0;
+  margin: 0 0 6px;
   font-size: 0.9rem;
   font-weight: 700;
   color: var(--fm-text-strong);
   letter-spacing: 0.01em;
-}
-
-.prem-fixtures-block__hint {
-  margin: 0 0 6px;
-  font-size: 0.75rem;
 }
 
 .prem-fixtures {
@@ -496,14 +491,15 @@
 }
 
 .prem-fixture--live {
-  border-color: rgba(34, 197, 94, 0.75);
+  border-color: rgba(34, 197, 94, 0.85);
   box-shadow:
     0 2px 12px rgba(0, 0, 0, 0.35),
-    0 0 0 1px rgba(34, 197, 94, 0.2);
+    0 0 0 1px rgba(34, 197, 94, 0.35);
   background: linear-gradient(
     165deg,
-    rgba(22, 163, 74, 0.14) 0%,
-    var(--fm-card) 42%
+    rgba(22, 163, 74, 0.38) 0%,
+    rgba(22, 163, 74, 0.2) 55%,
+    rgba(22, 163, 74, 0.12) 100%
   );
 }
 
@@ -512,14 +508,15 @@
 }
 
 .fotmob[data-theme='light'] .prem-fixture--live {
-  border-color: rgba(22, 163, 74, 0.55);
+  border-color: rgba(22, 163, 74, 0.65);
   box-shadow:
     0 1px 4px rgba(0, 0, 0, 0.08),
-    0 0 0 1px rgba(34, 197, 94, 0.18);
+    0 0 0 1px rgba(34, 197, 94, 0.28);
   background: linear-gradient(
     165deg,
-    rgba(187, 247, 208, 0.65) 0%,
-    var(--fm-card) 48%
+    rgba(187, 247, 208, 0.95) 0%,
+    rgba(134, 239, 172, 0.55) 50%,
+    rgba(220, 252, 231, 0.85) 100%
   );
 }
 
@@ -529,7 +526,7 @@
   align-items: center;
   column-gap: 4px;
   width: 100%;
-  padding: 10px 8px 10px 10px;
+  padding: 10px 10px 10px 10px;
   margin: 0;
   border: none;
   background: var(--fm-surface-2);
@@ -538,6 +535,16 @@
   text-align: left;
   cursor: pointer;
   border-bottom: 1px solid var(--fm-border);
+}
+
+.prem-fixture--live .prem-fixture__header {
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom-color: rgba(34, 197, 94, 0.35);
+}
+
+.fotmob[data-theme='light'] .prem-fixture--live .prem-fixture__header {
+  background: rgba(255, 255, 255, 0.35);
+  border-bottom-color: rgba(22, 163, 74, 0.25);
 }
 
 .prem-fixture__header-content {
@@ -549,23 +556,36 @@
   gap: 3px;
 }
 
+.prem-fixture__top-spacer {
+  min-width: 0;
+}
+
+/* Three columns so the LIVE pill does not pull the matchup off-center */
 .prem-fixture__top-row {
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 8px;
+  column-gap: 6px;
   min-width: 0;
   width: 100%;
 }
 
 .prem-fixture__match-line {
   display: grid;
-  flex: 1;
+  grid-column: 2;
+  justify-self: center;
+  width: max-content;
+  max-width: 100%;
   min-width: 0;
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   justify-items: stretch;
   gap: 4px 6px;
+}
+
+.prem-fixture__top-row > .prem-fixture__status {
+  grid-column: 3;
+  justify-self: end;
 }
 
 .prem-fixture__club {

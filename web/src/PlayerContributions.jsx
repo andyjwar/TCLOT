@@ -21,6 +21,11 @@ import {
   readPlayerContributionBucket,
 } from './playerContributionStorage';
 import { fetchEspnContributionTimeline } from './espnPremTimeline';
+import {
+  fplElementFullName,
+  fplElementWebName,
+  useNarrow560,
+} from './fplElementNames.js';
 
 /**
  * ESPN supplies real wallclock (epoch-ms) ordering for these. We prefer its ordering when it matches
@@ -58,23 +63,6 @@ function buildTimelineCoverageSet(timelineEvents) {
 function badgeUrl(teamCode) {
   if (teamCode == null) return null;
   return `https://resources.premierleague.com/premierleague/badges/50/t${teamCode}.png`;
-}
-
-function displayPlayerName(el, elementId) {
-  if (!el) return `Player #${elementId}`;
-  const known = el.known_name?.trim();
-  if (known) return known;
-  const parts = [el.first_name, el.second_name].filter(Boolean);
-  if (parts.length) return parts.join(' ');
-  return el.web_name ?? `Player #${elementId}`;
-}
-
-/** FPL-style short label (`web_name`) — better on narrow screens. */
-function displayPlayerNameShort(el, elementId) {
-  if (!el) return `Player #${elementId}`;
-  const w = el.web_name?.trim();
-  if (w) return w;
-  return displayPlayerName(el, elementId);
 }
 
 function pointsPerGoal(scoring, elementTypeId) {
@@ -268,6 +256,7 @@ export function PlayerContributions({
   const prevLiveRef = useRef(null);
   const hydratedKeyRef = useRef('');
   const listScrollRef = useRef(null);
+  const narrow = useNarrow560();
 
   const storageKey = useMemo(
     () => playerContributionStorageKey(leagueId, gameweek),
@@ -567,8 +556,8 @@ export function PlayerContributions({
         contributionLiveContext?.draftScoring,
         { isOwnGoal: Boolean(ev.isOwnGoal) }
       );
-      const fullName = displayPlayerName(el, ev.elementId);
-      const shortName = displayPlayerNameShort(el, ev.elementId);
+      const fullName = fplElementFullName(el, ev.elementId);
+      const shortName = fplElementWebName(el, ev.elementId);
       const minFromLive = liveStatMinutesLabel(liveFull, ev.elementId);
       const rawEventMin = ev.minuteLabel;
       const minLbl =
@@ -607,10 +596,11 @@ export function PlayerContributions({
           : null;
       return {
         ...ev,
-        /** Short label (`web_name` when present) — shown in the feed (matches FPL pick names). */
-        playerLabel: shortName,
-        /** `displayPlayerName` — screen-reader + title when it differs from `playerLabel`. */
+        /** Visible list label: `web_name` on ≤560px, full FPL name on larger viewports. */
+        playerLabel: narrow ? shortName : fullName,
+        /** FPL `first_name`+`second_name` (or fallback) — always for screen readers. */
         playerLabelFull: fullName,
+        playerLabelShort: shortName,
         badgeUrl: badgeUrl(tm?.code),
         teamShort: tm?.short_name ?? '—',
         ownerLine,
@@ -624,7 +614,7 @@ export function PlayerContributions({
         waiverDrop,
       };
     });
-  }, [displayed, contributionLiveContext, ownerByEl, dropByEl, compareRowsFn]);
+  }, [displayed, contributionLiveContext, ownerByEl, dropByEl, compareRowsFn, narrow]);
 
   const filteredRows = useMemo(() => {
     let out = rows;

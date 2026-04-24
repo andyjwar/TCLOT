@@ -86,14 +86,7 @@ function badgeUrl(teamCode) {
   return `https://resources.premierleague.com/premierleague/badges/50/t${teamCode}.png`;
 }
 
-function displayPlayerName(el, elementId) {
-  if (!el) return `Player #${elementId}`;
-  const known = el.known_name?.trim();
-  if (known) return known;
-  const parts = [el.first_name, el.second_name].filter(Boolean);
-  if (parts.length) return parts.join(' ');
-  return el.web_name ?? `Player #${elementId}`;
-}
+import { fplElementFullName } from './fplElementNames.js';
 
 /**
  * True when this PL team has at least one GW fixture and all are finished (provisional).
@@ -216,7 +209,7 @@ function mapPickRows(
     return {
       element: pid,
       web_name: webName,
-      displayName: displayPlayerName(el, pid),
+      displayName: fplElementFullName(el, pid),
       /** FPL element `status`: `i` = injured (see bootstrap-static). */
       availabilityStatus: el?.status != null ? String(el.status) : null,
       availabilityNews: el?.news != null ? String(el.news) : null,

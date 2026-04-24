@@ -163,6 +163,20 @@ test('matchFplElementId — ESPN full first name vs FPL R. in web_name (unique l
   assert.equal(matchFplElementId(4, 'Robin Roefs', elementById), 701);
 });
 
+test('matchFplElementId — ESPN "Stefan" vs FPL S. in first_name (surname-locked Ortega)', () => {
+  const elementById = {
+    902: { id: 902, team: 11, first_name: 'S.', second_name: 'Ortega', web_name: 'Ortega' },
+  };
+  assert.equal(matchFplElementId(11, 'Stefan Ortega', elementById), 902);
+});
+
+test('matchFplElementId — Jair Paula / J.Paula web', () => {
+  const elementById = {
+    903: { id: 903, team: 2, first_name: 'Jair', second_name: 'Paula', web_name: 'J.Paula' },
+  };
+  assert.equal(matchFplElementId(2, 'Jair Paula', elementById), 903);
+});
+
 test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Chelsea yellow', async () => {
   const origFetch = globalThis.fetch;
   const calls = [];

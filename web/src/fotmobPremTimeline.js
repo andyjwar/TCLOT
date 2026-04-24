@@ -171,9 +171,106 @@ function lastNameToken(needle) {
 }
 
 /**
+ * Unaccented, lower; map common given-name variants to FPL `first_name` (also normalized).
+ */
+const GIVEN_NAME_ALIASES = {
+  danny: 'daniel',
+  dave: 'david',
+  bobby: 'robert',
+  billy: 'william',
+  will: 'william',
+  mike: 'michael',
+  mick: 'michael',
+  matt: 'matthew',
+  chris: 'christopher',
+  tommy: 'thomas',
+  tom: 'thomas',
+  tony: 'anthony',
+  nico: 'nicolas',
+  nick: 'nicholas',
+  alex: 'alexander',
+  sasha: 'oleksandr',
+  eddy: 'edouard',
+  micky: 'michail',
+  sam: 'samuel',
+  tim: 'timothy',
+  jim: 'james',
+  vini: 'vinícius',
+  stevie: 'steven',
+  stev: 'steven',
+  steve: 'steven',
+  rob: 'robert',
+  bob: 'robert',
+  fred: 'frederick',
+  fran: 'francis',
+  charlie: 'charles',
+  paddy: 'padraig',
+  willy: 'william',
+};
+
+function aliasOrSelf(t) {
+  return GIVEN_NAME_ALIASES[t] || t;
+}
+
+/**
+ * FPL can store a short `first_name` (e.g. S.) while feeds use a full name (e.g. Stefan) —
+ * match the first *token* of the external given-name segment against `first_name` / `known_name`.
+ * @param {string} g — first name token (normalized)
+ * @param {{ w: string, kn: string, sn: string, fn: string }} r
+ */
+function firstGivenTokenFits(g, r) {
+  if (!g) return !r.fn && !r.kn;
+  const fn = r.fn;
+  const kn = r.kn;
+  if (g === fn) return true;
+  if (kn && g === kn) return true;
+  if (fn) {
+    if (aliasOrSelf(g) === fn) return true;
+    if (aliasOrSelf(fn) === g) return true;
+  }
+  if (kn) {
+    if (aliasOrSelf(g) === kn) return true;
+  }
+  if (fn) {
+    if (g[0] === fn[0] && (fn.length <= 2 && g.length >= 2)) return true;
+  }
+  if (kn) {
+    if (g[0] === kn[0] && (kn.length <= 2 && g.length >= 2)) return true;
+  }
+  return false;
+}
+
+/**
+ * Surname-locked + flexible first name (e.g. ESPN "Stefan" vs FPL `first_name` "S.").
+ * @param {string} needle — normPlayer(…)
+ * @param {{ w: string, kn: string, sn: string, fn: string, full: string }} r
+ */
+function espnFuzzySurnameAndGiven(needle, r) {
+  const toks = needle.split(/\s+/).filter(Boolean);
+  if (toks.length < 1) return false;
+  const lastT = toks[toks.length - 1];
+  if (lastT.length < 2) return false;
+
+  const lastOk =
+    (r.sn && r.sn === lastT) ||
+    (r.w && r.w === lastT) ||
+    (r.kn && r.kn === lastT);
+  if (!lastOk) return false;
+
+  if (toks.length === 1) return true;
+
+  const gSeg = toks.slice(0, -1).join(' ').trim();
+  const firstTok = gSeg.split(/\s+/).filter(Boolean)[0] || '';
+  if (!firstTok) return true;
+  return firstGivenTokenFits(firstTok, r);
+}
+
+/**
  * Resolve FotMob/ESPN display name to FPL element id on `teamFplId`.
  * ESPN often differs from FPL (`Danny` vs `Daniel`, `Robin Roefs` vs `R. Roefs` in `web_name`);
  * we disambiguate with last name and first initial when the loose rules hit 0 or 2+ candidates.
+ * Prefer FPL `first_name`+`second_name` alignment with the feed, not `web_name` alone, when
+ * the surname + given token match uniquely.
  *
  * @returns {number | null}
  */
@@ -211,11 +308,16 @@ export function matchFplElementId(teamFplId, displayName, elementById) {
     );
   }
 
-  const cands = rows.filter(looseMatch);
+  const cands = rows.filter(
+    (r) => looseMatch(r) || espnFuzzySurnameAndGiven(needle, r),
+  );
 
   if (cands.length === 1) return cands[0].id;
 
   if (cands.length > 1) {
+    const fuzzyOnly = cands.filter((r) => espnFuzzySurnameAndGiven(needle, r));
+    if (fuzzyOnly.length === 1) return fuzzyOnly[0].id;
+
     const last = lastNameToken(needle);
     if (last.length >= 2) {
       const byLast = cands.filter(
