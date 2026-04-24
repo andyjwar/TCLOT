@@ -416,13 +416,15 @@ export function PlayerContributions({
             const keep = (prev || []).filter((e) => {
               const sid = String(e?.stableId || '');
               if (sid.startsWith('espn:') || sid.startsWith('fotmob:')) return false;
+              const elid = Number(e?.elementId);
+              const elRow = Number.isFinite(elid) ? eBy[elid] : null;
               if (
                 contributionCoveredByTimelineOmit(
                   coverage,
-                  e?.elementId,
+                  elid,
                   e?.kind,
                   e?.fplFixtureId,
-                  eBy?.[e?.elementId]?.team,
+                  elRow?.team,
                   gwFx
                 )
               ) {
@@ -544,11 +546,14 @@ export function PlayerContributions({
       .sort(compareRowsFn)
       .filter((ev) => {
         if (!contributionEventShownForLeague(ev, ownerByEl)) return false;
-        const elForLive = contributionLiveContext?.elementById?.[ev.elementId];
+        const elidN = Number(ev?.elementId);
+        const elForLive = Number.isFinite(elidN)
+          ? contributionLiveContext?.elementById?.[elidN]
+          : undefined;
         if (
           fplTotalFeedEventContradictsLive(
             ev,
-            liveElementRowForFeedValidation(liveFull, liveBy, ev.elementId),
+            liveElementRowForFeedValidation(liveFull, liveBy, elidN),
             elForLive?.element_type
           )
         ) {
@@ -559,7 +564,7 @@ export function PlayerContributions({
         if (
           contributionCoveredByTimelineOmit(
             liveCoverage,
-            ev?.elementId,
+            elidN,
             ev?.kind,
             ev?.fplFixtureId,
             elForLive?.team,
@@ -571,12 +576,15 @@ export function PlayerContributions({
         return true;
       })
       .map((ev) => {
-      const el = contributionLiveContext?.elementById?.[ev.elementId];
+      const elidN = Number(ev?.elementId);
+      const el = Number.isFinite(elidN)
+        ? contributionLiveContext?.elementById?.[elidN]
+        : undefined;
       const elementTypeId = el?.element_type;
       const tid = el?.team != null ? Number(el.team) : null;
       const tm = tid != null ? teamById[tid] : null;
-      const own = ownerByEl.get(ev.elementId);
-      const drop = dropByEl.get(ev.elementId);
+      const own = ownerByEl.get(elidN) ?? ownerByEl.get(ev.elementId);
+      const drop = dropByEl.get(elidN) ?? dropByEl.get(ev.elementId);
       let ownerLine = own?.teamName ?? null;
       if (!ownerLine) {
         ownerLine = drop
@@ -590,9 +598,9 @@ export function PlayerContributions({
         contributionLiveContext?.draftScoring,
         { isOwnGoal: Boolean(ev.isOwnGoal) }
       );
-      const fullName = fplElementFullName(el, ev.elementId);
-      const shortName = fplElementWebName(el, ev.elementId);
-      const minFromLive = liveStatMinutesLabel(liveFull, ev.elementId);
+      const fullName = fplElementFullName(el, elidN);
+      const shortName = fplElementWebName(el, elidN);
+      const minFromLive = liveStatMinutesLabel(liveFull, elidN);
       const rawEventMin = ev.minuteLabel;
       const minLbl =
         typeof rawEventMin === 'string' &&

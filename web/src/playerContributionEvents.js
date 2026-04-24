@@ -500,9 +500,38 @@ export function contributionCoverageKey(elementId, kind, fplFixtureId) {
 }
 
 /**
+ * @param {Set<string>} coverageSet
+ * @param {number} el
+ * @param {string} kind
+ * @returns {number[]} distinct numeric fixture ids present in the set
+ */
+function numericFixtureIdsInCoverageSet(coverageSet, el, kind) {
+  const p = `${Number(el)}:${String(kind)}:`;
+  if (!Number.isFinite(Number(el))) return [];
+  const fids = [];
+  for (const k of coverageSet) {
+    const s = String(k);
+    if (!s.startsWith(p)) continue;
+    const rest = s.slice(p.length);
+    if (rest === 'na') continue;
+    if (!/^\d+$/.test(rest)) continue;
+    fids.push(Number(rest));
+  }
+  return [...new Set(fids)];
+}
+
+/**
  * True if ESPN/FotMob {@link buildTimelineCoverageSet} already covers this FPL row.
  * Matches exact `fplFixtureId` or, for goal/assist, the same slot on a **single** team fixture
  * this GW when the row has `:na` or a mismatched id (common SGW + wrong `primaryFixture`).
+ *
+ * Also, when the coverage set has a single numeric (el, kind) id and the row has
+ * `:na` fpl, or the row’s id disagrees with the one real SGW fixture for the player’s
+ * team (and ESPN’s set key matches that fixture), the FPL row is dropped.
+ * If ESPN’s key does not match the SGW (wrong fixture in feed), the FPL row is kept
+ * (see `diffContributionEvents` test: omit key wrong fixture). DGW: two team fixtures
+ * in `gw` falls through to the SGW `mine.length === 1` check below, not the fids+sgwFid
+ * line above, so a second-future game is not incorrectly hidden.
  */
 export function contributionCoveredByTimelineOmit(
   coverageSet,
@@ -516,6 +545,36 @@ export function contributionCoveredByTimelineOmit(
   if (coverageSet.has(contributionCoverageKey(elementId, kind, fplFixtureId)))
     return true;
   if (kind !== 'goal' && kind !== 'assist') return false;
+
+  const fids = numericFixtureIdsInCoverageSet(
+    coverageSet,
+    Number(elementId),
+    kind
+  );
+  if (fids.length === 1) {
+    const fromOmit = fids[0];
+    const fp =
+      fplFixtureId != null && Number.isFinite(Number(fplFixtureId))
+        ? Number(fplFixtureId)
+        : null;
+    if (fp == null) {
+      return true;
+    }
+    const tForMine = Number(teamId);
+    if (Array.isArray(gwFixtures) && gwFixtures.length > 0 && Number.isFinite(tForMine)) {
+      const m = fixturesForTeamInGw(gwFixtures, tForMine);
+      if (m.length === 1 && m[0]?.id != null) {
+        const sgwFid = Number(m[0].id);
+        if (fromOmit === sgwFid && fp !== sgwFid) {
+          return true;
+        }
+        if (fromOmit !== sgwFid) {
+          return false;
+        }
+      }
+    }
+  }
+
   const t = Number(teamId);
   if (!Number.isFinite(t)) return false;
   const mine = fixturesForTeamInGw(gwFixtures || [], t);

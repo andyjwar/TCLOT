@@ -220,6 +220,21 @@ test('contributionCoveredByTimelineOmit — SGW aliases goal/assist when fixture
   );
 });
 
+test('contributionCoveredByTimelineOmit — :na FPL; SGW mismatch with team+fixtures (no :na on teamId)', () => {
+  const cov = new Set([contributionCoverageKey(7, 'assist', 100)]);
+  assert.equal(
+    contributionCoveredByTimelineOmit(cov, 7, 'assist', null, Number.NaN, []),
+    true
+  );
+  // Single fixture for team 3, ESPN 100, FPL row says 999 → still duplicate
+  assert.equal(
+    contributionCoveredByTimelineOmit(cov, 7, 'assist', 999, 3, [
+      { id: 100, team_h: 3, team_a: 2 },
+    ]),
+    true
+  );
+});
+
 test('primaryFixtureForContribution — DGW: single active explain block wins over earlier kickoff', () => {
   const gw = [
     { id: 10, team_h: 3, team_a: 4, kickoff_time: '2026-01-10T12:00:00Z' },
