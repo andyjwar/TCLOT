@@ -947,7 +947,7 @@ export function PlayerContributions({
                 title={
                   r.waiverDrop
                     ? Number(r.waiverDrop.gw) === Number(gameweek)
-                      ? `🗑️ - this GW (${r.waiverDrop.dropperFirstWord}) utter twat`
+                      ? `🗑️ - this GW ${r.waiverDrop.dropperFirstWord} utter twat`
                       : `${r.waiverDrop.dropperTeamName} (GW ${r.waiverDrop.gw})`
                     : r.ownerLine
                 }
@@ -969,10 +969,10 @@ export function PlayerContributions({
                     {Number(r.waiverDrop.gw) === Number(gameweek) ? (
                       <span
                         className="pp-ev-owner__waiver-same-gw"
-                        aria-label={`🗑️ - this GW (${r.waiverDrop.dropperFirstWord}) utter twat`}
+                        aria-label={`🗑️ - this GW ${r.waiverDrop.dropperFirstWord} utter twat`}
                       >
                         <span aria-hidden>
-                          🗑️ - this GW ({r.waiverDrop.dropperFirstWord}) utter twat
+                          🗑️ - this GW {r.waiverDrop.dropperFirstWord} utter twat
                         </span>
                       </span>
                     ) : (
