@@ -4337,6 +4337,23 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   min-width: 0;
 }
 
+.pp-ev-minline {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: baseline;
+  flex: 0 0 auto;
+  min-width: 0;
+  white-space: nowrap;
+  gap: 0;
+}
+
+.pp-ev-mins-sep {
+  font-size: 0.65rem;
+  color: var(--fm-muted, #9ca3af);
+  font-weight: 500;
+  user-select: none;
+}
+
 /* Don’t grow the name across the full mid column — keeps the minute next to the player name */
 .pp-ev-namecell {
   min-width: 0;
@@ -4350,6 +4367,17 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   font-variant-numeric: tabular-nums;
   flex: 0 0 auto;
   white-space: nowrap;
+}
+
+.pp-ev-ordinal {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--fm-muted, #6b7280);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  max-width: 7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .pp-ev-name {
@@ -4472,6 +4500,10 @@ body[data-tclot-theme='dark'] .live-score-ticker__dash {
   }
 
   .pp-ev-mins {
+    flex: 0 0 auto;
+  }
+
+  .pp-ev-minline {
     flex: 0 0 auto;
   }
 

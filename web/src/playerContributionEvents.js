@@ -19,6 +19,45 @@ export function saveFantasyPointsFromSaves(saves, elementTypeId) {
   return Math.floor(s / 3);
 }
 
+/**
+ * English ordinals: 1st, 2nd, 3rd, 4th, …
+ * @param {number} n
+ */
+export function englishOrdinal(n) {
+  const i = Math.floor(Math.abs(Number(n)));
+  if (i < 1 || !Number.isFinite(i)) return String(n);
+  if (i % 100 >= 11 && i % 100 <= 13) return `${i}th`;
+  switch (i % 10) {
+    case 1:
+      return `${i}st`;
+    case 2:
+      return `${i}nd`;
+    case 3:
+      return `${i}rd`;
+    default:
+      return `${i}th`;
+  }
+}
+
+/**
+ * From FPL `stableId` `${gw}:${el}:(goal|assist):totN` (cumulative in GW), a short
+ * label for the 2nd+ such event, e.g. "2nd assist" / "3rd goal". Null for 1st or
+ * non-FPL rows (ESPN, FotMob, cards).
+ * @param {string | null | undefined} stableId
+ * @param {string} kind
+ * @returns {string | null}
+ */
+export function fplCumulativeEventOrdinalLabel(stableId, kind) {
+  if (kind !== 'goal' && kind !== 'assist') return null;
+  const s = String(stableId || '');
+  const m = s.match(/^\d+:\d+:(goal|assist):tot(\d+)$/);
+  if (!m) return null;
+  if (m[1] !== kind) return null;
+  const tot = Number(m[2]);
+  if (!Number.isFinite(tot) || tot < 2) return null;
+  return `${englishOrdinal(tot)} ${kind === 'goal' ? 'goal' : 'assist'}`;
+}
+
 function statsOf(liveRow) {
   return liveRow?.stats || {};
 }

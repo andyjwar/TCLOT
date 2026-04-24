@@ -17,9 +17,39 @@ import {
   effectiveContributionSortKey,
   diffContributionEvents,
   elementIdsFromGwFixtureTeams,
+  englishOrdinal,
+  fplCumulativeEventOrdinalLabel,
   primaryFixtureForContribution,
   saveFantasyPointsFromSaves,
 } from './playerContributionEvents.js';
+
+test('englishOrdinal — basic ordinals', () => {
+  assert.equal(englishOrdinal(1), '1st');
+  assert.equal(englishOrdinal(2), '2nd');
+  assert.equal(englishOrdinal(3), '3rd');
+  assert.equal(englishOrdinal(4), '4th');
+  assert.equal(englishOrdinal(11), '11th');
+  assert.equal(englishOrdinal(12), '12th');
+  assert.equal(englishOrdinal(13), '13th');
+  assert.equal(englishOrdinal(22), '22nd');
+});
+
+test('fplCumulativeEventOrdinalLabel — tot2+ goal/assist only', () => {
+  assert.equal(fplCumulativeEventOrdinalLabel('34:5:assist:tot1', 'assist'), null);
+  assert.equal(
+    fplCumulativeEventOrdinalLabel('34:5:assist:tot2', 'assist'),
+    '2nd assist'
+  );
+  assert.equal(
+    fplCumulativeEventOrdinalLabel('34:5:goal:tot3', 'goal'),
+    '3rd goal'
+  );
+  assert.equal(
+    fplCumulativeEventOrdinalLabel('espn:1:2:3:4', 'assist'),
+    null
+  );
+  assert.equal(fplCumulativeEventOrdinalLabel('34:5:yellow_card:tot2', 'yellow_card'), null);
+});
 
 test('contributionEventMatchesGameweek — FPL stableId and field', () => {
   assert.equal(

@@ -14,8 +14,9 @@ import {
   compareContributionEventsDescWithContext,
   contributionCoverageKey,
   contributionEventMatchesGameweek,
-  fplTotalFeedEventContradictsLive,
+  fplCumulativeEventOrdinalLabel,
   liveElementRowForFeedValidation,
+  fplTotalFeedEventContradictsLive,
   contributionCoveredByTimelineOmit,
   diffContributionEvents,
 } from './playerContributionEvents';
@@ -598,6 +599,10 @@ export function PlayerContributions({
         contributionLiveContext?.draftScoring,
         { isOwnGoal: Boolean(ev.isOwnGoal) }
       );
+      const ordinalFplEventLabel = fplCumulativeEventOrdinalLabel(
+        ev.stableId,
+        ev.kind
+      );
       const fullName = fplElementFullName(el, elidN);
       const shortName = fplElementWebName(el, elidN);
       const minFromLive = liveStatMinutesLabel(liveFull, elidN);
@@ -652,6 +657,8 @@ export function PlayerContributions({
         actionText: ap.text,
         actionBracket: ap.bracket,
         minuteLabel: minLblWithOg,
+        /** e.g. "2nd assist" for FPL :tot2+ — shown by minutes */
+        ordinalFplEventLabel,
         ownerFirstWord: firstWord,
         waiverDrop,
       };
@@ -837,13 +844,19 @@ export function PlayerContributions({
         {filteredRows.map((r) => {
           const hasEvPts = Boolean(r.actionBracket && r.actionBracket.trim());
           const showMinute = r.kind !== 'dc_points';
+          const ordTag = r.ordinalFplEventLabel;
+          const minSrPart = showMinute
+            ? ordTag
+              ? `${r.minuteLabel} — ${ordTag}`
+              : r.minuteLabel
+            : null;
+          const minPhrase = minSrPart != null ? ` (${minSrPart})` : '';
           const ptsLine = hasEvPts
             ? r.actionBracket.trim()
             : '—';
           const ptsAria = hasEvPts
             ? `Fantasy points for this event${r.actionBracket}`
             : 'No point change for this event';
-          const minPhrase = showMinute ? ` (${r.minuteLabel})` : '';
           const arLabel = `${r.actionText}. ${r.playerLabelFull}${minPhrase}. ${r.ownerLine}. ${ptsLine}`;
           return (
             <div
@@ -902,8 +915,26 @@ export function PlayerContributions({
                   </span>
                 </div>
                 {showMinute ? (
-                  <span className="pp-ev-mins" aria-hidden>
-                    {r.minuteLabel}
+                  <span
+                    className="pp-ev-minline"
+                    title={ordTag || undefined}
+                  >
+                    <span className="pp-ev-mins" aria-hidden>
+                      {r.minuteLabel}
+                    </span>
+                    {ordTag ? (
+                      <>
+                        <span className="pp-ev-mins-sep" aria-hidden>
+                          &nbsp;·&nbsp;
+                        </span>
+                        <span
+                          className="pp-ev-ordinal"
+                          aria-hidden
+                        >
+                          {ordTag}
+                        </span>
+                      </>
+                    ) : null}
                   </span>
                 ) : null}
               </div>
