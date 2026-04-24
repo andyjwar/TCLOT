@@ -170,11 +170,18 @@ test('matchFplElementId — ESPN "Stefan" vs FPL S. in first_name (surname-locke
   assert.equal(matchFplElementId(11, 'Stefan Ortega', elementById), 902);
 });
 
-test('matchFplElementId — Jair Paula / J.Paula web', () => {
+test('matchFplElementId — Jair: feed "Jair Paula" vs FPL second_name "Paula da Cunha Filho"', () => {
   const elementById = {
-    903: { id: 903, team: 2, first_name: 'Jair', second_name: 'Paula', web_name: 'J.Paula' },
+    510: {
+      id: 510,
+      team: 16,
+      first_name: 'Jair',
+      second_name: 'Paula da Cunha Filho',
+      web_name: 'Jair Cunha',
+      known_name: 'Jair Cunha',
+    },
   };
-  assert.equal(matchFplElementId(2, 'Jair Paula', elementById), 903);
+  assert.equal(matchFplElementId(16, 'Jair Paula', elementById), 510);
 });
 
 test('fetchEspnContributionTimeline — mocks end-to-end: BHA goal + assist + Chelsea yellow', async () => {

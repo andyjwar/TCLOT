@@ -170,6 +170,14 @@ function lastNameToken(needle) {
   return p.length ? p[p.length - 1] : '';
 }
 
+/** First whitespace-delimited token; used for multi-part FPL `second_name` (e.g. "Paula da …"). */
+function firstWord(s) {
+  const p = String(s || '')
+    .split(/\s+/)
+    .filter(Boolean);
+  return p.length ? p[0] : '';
+}
+
 /**
  * Unaccented, lower; map common given-name variants to FPL `first_name` (also normalized).
  */
@@ -251,8 +259,9 @@ function espnFuzzySurnameAndGiven(needle, r) {
   const lastT = toks[toks.length - 1];
   if (lastT.length < 2) return false;
 
+  const snFirst = r.sn ? firstWord(r.sn) : '';
   const lastOk =
-    (r.sn && r.sn === lastT) ||
+    (r.sn && (r.sn === lastT || snFirst === lastT)) ||
     (r.w && r.w === lastT) ||
     (r.kn && r.kn === lastT);
   if (!lastOk) return false;
@@ -298,6 +307,15 @@ export function matchFplElementId(teamFplId, displayName, elementById) {
 
   function looseMatch(r) {
     if (!r) return false;
+    const toksN = needle.split(/\s+/).filter(Boolean);
+    if (toksN.length >= 2 && r.sn) {
+      if (
+        firstWord(r.sn) === toksN[toksN.length - 1] &&
+        firstGivenTokenFits(toksN[0], r)
+      ) {
+        return true;
+      }
+    }
     return (
       needle === r.w ||
       needle === r.kn ||
@@ -321,7 +339,11 @@ export function matchFplElementId(teamFplId, displayName, elementById) {
     const last = lastNameToken(needle);
     if (last.length >= 2) {
       const byLast = cands.filter(
-        (r) => r.sn === last || r.w === last || r.kn === last,
+        (r) =>
+          r.sn === last ||
+          (r.sn && firstWord(r.sn) === last) ||
+          r.w === last ||
+          r.kn === last,
       );
       if (byLast.length > 1) return null;
       if (byLast.length === 1) return byLast[0].id;
@@ -337,7 +359,11 @@ export function matchFplElementId(teamFplId, displayName, elementById) {
       const surname = parts[parts.length - 1];
       if (surname.length >= 2) {
         const bySurname = cands.filter(
-          (r) => r.sn === surname || r.w === surname || r.full.endsWith(' ' + surname),
+          (r) =>
+            r.sn === surname ||
+            r.w === surname ||
+            (r.sn && firstWord(r.sn) === surname) ||
+            r.full.endsWith(' ' + surname),
         );
         if (bySurname.length === 1) return bySurname[0].id;
         const firstTok = parts[0];
@@ -353,7 +379,12 @@ export function matchFplElementId(teamFplId, displayName, elementById) {
   const last = lastNameToken(needle);
   if (last.length >= 2) {
     const byLast = rows.filter(
-      (r) => r.sn === last || r.w === last || r.kn === last || r.full.endsWith(' ' + last),
+      (r) =>
+        r.sn === last ||
+        (r.sn && firstWord(r.sn) === last) ||
+        r.w === last ||
+        r.kn === last ||
+        r.full.endsWith(' ' + last),
     );
     if (byLast.length === 1) return byLast[0].id;
   }
