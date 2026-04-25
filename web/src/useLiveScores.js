@@ -196,6 +196,13 @@ function mapPickRows(
     const webName = el?.web_name ?? `Player #${pid}`;
     const tid = el?.team != null ? Number(el.team) : null;
     const opponentShortLabel = opponentShortLabelForTeam(tid, gwFixtures, teamById);
+    const hasGwFixture = (() => {
+      if (tid == null || !Number.isFinite(tid)) return true;
+      if (!Array.isArray(gwFixtures) || !gwFixtures.length) return true;
+      return gwFixtures.some(
+        (f) => Number(f.team_h) === tid || Number(f.team_a) === tid
+      );
+    })();
     const stillYetToPlayPl = computeStillYetToPlayPl(mins, tid, gwFixtures);
     const leftToPlayStarter = p.position <= 11 && stillYetToPlayPl;
     const leftToPlayFixtureCount = countUnfinishedGwFixturesForTeam(tid, gwFixtures);
@@ -235,6 +242,8 @@ function mapPickRows(
       leftToPlayFixtureCount,
       /** Per-player fixture count still to score from (DGW after first match uses explain / heuristics). */
       playerGamesLeftToPlay,
+      /** False when the player’s real-life club has no PL match this gameweek (blank week for that team). */
+      hasGwFixture,
     };
   });
   rows.sort((a, b) => a.pickPosition - b.pickPosition);

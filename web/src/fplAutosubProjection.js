@@ -1,16 +1,50 @@
 /**
  * FPL-style automatic substitution for live scores.
  * When `automatic_subs` is empty (GW still live), project swaps from minutes + bench order.
+ * Covers: (1) 0 min + club’s GW finished (DNP) — bench must have played; (2) 0 min + no PL
+ * fixture for the player’s club this GW — first eligible bench in order (GK for GK) who
+ * has a fixture and is playing or not yet started, keeping a valid formation (≥3 DEF, etc.).
  */
 
-/** @param {{ minutes: number, clubGwFixturesFinished?: boolean }} r */
-function isDnpStarter(r) {
-  return (Number(r.minutes) || 0) === 0 && r.clubGwFixturesFinished === true;
+/** @param {{ minutes: number, clubGwFixturesFinished?: boolean, hasGwFixture?: boolean, pickPosition?: number }} r */
+function isDnpAfterFinished(r) {
+  if ((Number(r.minutes) || 0) > 0) return false;
+  if (r.clubGwFixturesFinished === true) return true;
+  return false;
+}
+
+/** @param {{ minutes: number, hasGwFixture?: boolean, pickPosition?: number }} r */
+function isNoFixtureInXi(r) {
+  if (r == null || r.pickPosition == null || r.pickPosition > 11) return false;
+  if ((Number(r.minutes) || 0) > 0) return false;
+  if (r.hasGwFixture === false) return true;
+  return false;
+}
+
+/** @param {{ minutes: number, clubGwFixturesFinished?: boolean, hasGwFixture?: boolean, pickPosition?: number }} r */
+function needsXiAutosubFromBench(r) {
+  if (r == null || r.pickPosition == null || r.pickPosition > 11) return false;
+  if ((Number(r.minutes) || 0) > 0) return false;
+  if (isDnpAfterFinished(r)) return true;
+  if (isNoFixtureInXi(r)) return true;
+  return false;
 }
 
 /** @param {{ minutes: number }} r */
 function playedOnBench(r) {
   return (Number(r.minutes) || 0) > 0;
+}
+
+/**
+ * @param {object} cand
+ * @param {boolean} outIsNoFix — starter was subbed out because the club has no GW fixture
+ */
+function benchPlayerEligibleForOut(cand, outIsNoFix) {
+  if (cand == null) return false;
+  if (cand.hasGwFixture === false) return false;
+  if (playedOnBench(cand)) return true;
+  if (outIsNoFix && cand.stillYetToPlayPl === true) return true;
+  return false;
 }
 
 /** @param {{ posSingular: string }} r */
@@ -54,7 +88,7 @@ function formationOk(xiRows) {
  * @param {Array<object>} bench
  * @returns {{ displayStarters: object[], displayBench: object[], projectedAutoSubs: { element_in: number, element_out: number }[] }}
  */
-function projectAutosubFromLive(starters, bench) {
+export function projectAutosubFromLive(starters, bench) {
   const xi = starters
     .slice()
     .sort((a, b) => a.pickPosition - b.pickPosition);
@@ -72,21 +106,32 @@ function projectAutosubFromLive(starters, bench) {
    */
   function findReplacement(out, xiLocal, pool) {
     const ordered = pool.slice().sort((a, b) => a.pickPosition - b.pickPosition);
+    const outIsNoFix = isNoFixtureInXi(out);
 
     if (isGkRow(out)) {
       for (const r of ordered) {
-        if (isGkRow(r) && playedOnBench(r)) return r;
+        if (!isGkRow(r)) continue;
+        if (!benchPlayerEligibleForOut(r, outIsNoFix)) continue;
+        const idx = xiLocal.indexOf(out);
+        if (idx < 0) continue;
+        const trial = xiLocal.slice();
+        trial[idx] = r;
+        if (!formationOk(trial)) continue;
+        return r;
       }
       return null;
     }
 
     const defCountInXi = xiLocal.filter((r) => r.posSingular === 'DEF').length;
-    const needBenchDef =
-      out.posSingular === 'DEF' && defCountInXi === 3;
+    const needBenchDef = out.posSingular === 'DEF' && defCountInXi === 3;
 
     for (const r of ordered) {
       if (isGkRow(r)) continue;
-      if (!playedOnBench(r)) continue;
+      if (outIsNoFix) {
+        if (!benchPlayerEligibleForOut(r, true)) continue;
+      } else {
+        if (!playedOnBench(r)) continue;
+      }
       if (needBenchDef && r.posSingular !== 'DEF') continue;
       const idx = xiLocal.indexOf(out);
       if (idx < 0) continue;
@@ -99,15 +144,27 @@ function projectAutosubFromLive(starters, bench) {
   }
 
   for (let guard = 0; guard < 16; guard++) {
-    const dnpList = xi.filter(isDnpStarter);
-    if (!dnpList.length) break;
+    const subNeed = xi.filter(needsXiAutosubFromBench);
+    if (!subNeed.length) break;
 
-    const out =
-      dnpList.find((r) => isGkRow(r)) ??
-      dnpList.slice().sort((a, b) => a.pickPosition - b.pickPosition)[0];
+    const gkDnp = subNeed.find((r) => isGkRow(r));
+    const ordered = gkDnp
+      ? [gkDnp, ...subNeed.filter((r) => r !== gkDnp).sort((a, b) => a.pickPosition - b.pickPosition)]
+      : subNeed.slice().sort((a, b) => a.pickPosition - b.pickPosition);
 
-    const cand = findReplacement(out, xi, benchPool);
-    if (!cand) break;
+    /** @type {object | null} */
+    let out = null;
+    /** @type {object | null} */
+    let cand = null;
+    for (const o of ordered) {
+      const c = findReplacement(o, xi, benchPool);
+      if (c) {
+        out = o;
+        cand = c;
+        break;
+      }
+    }
+    if (!out || !cand) break;
 
     const xiIdx = xi.indexOf(out);
     const benchIdx = benchPool.indexOf(cand);
