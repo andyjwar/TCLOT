@@ -5409,6 +5409,28 @@ button.live-fixture-banner--toggle {
   align-self: center;
 }
 
+/* Avatar + name cluster; grows on mobile so villain badge can sit on the outer edge */
+.live-fixture-banner__team-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.live-fixture-banner__team-cluster--home {
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+
+.live-fixture-banner__team-cluster--away {
+  flex: 1 1 auto;
+  justify-content: flex-start;
+}
+
+.live-fixture-banner__villain-edge {
+  flex: 0 0 auto;
+}
+
 .live-fixture-banner__team--home {
   justify-self: end;
   justify-content: flex-start;
@@ -5416,8 +5438,8 @@ button.live-fixture-banner--toggle {
 
 .live-fixture-banner__team--away {
   justify-self: start;
-  justify-content: flex-end; /* row-reverse: pulls name+avatar toward the score */
-  flex-direction: row-reverse;
+  justify-content: flex-start;
+  flex-direction: row;
 }
 
 .live-fixture-banner__team-text {

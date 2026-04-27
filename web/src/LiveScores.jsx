@@ -1106,9 +1106,15 @@ export function LiveScores({
                   <span className="live-fixture-chevron live-fixture-chevron--desktop" aria-hidden>
                     {lineupOpen ? '▼' : '▶'}
                   </span>
-                  <span className="live-fixture-banner__row">
+                    <span className="live-fixture-banner__row">
                     <span className="live-fixture-banner__team live-fixture-banner__team--home">
-                      <span className="live-fixture-banner__team-avatar">
+                      {homeVillain ? (
+                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--home">
+                          <VillainDetectedBadge variant="compact" />
+                        </span>
+                      ) : null}
+                      <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--home">
+                        <span className="live-fixture-banner__team-avatar">
                         <TeamAvatar
                           entryId={homeId}
                           name={homeName}
@@ -1125,9 +1131,6 @@ export function LiveScores({
                             >
                               {homeName}
                             </span>
-                            {homeVillain ? (
-                              <VillainDetectedBadge variant="compact" />
-                            ) : null}
                           </span>
                           {typeof homeLtp === 'number' ? (
                             <span className="live-fixture-banner__ltp-line">
@@ -1135,6 +1138,7 @@ export function LiveScores({
                             </span>
                           ) : null}
                         </span>
+                      </span>
                       </span>
                     </span>
 
@@ -1182,25 +1186,7 @@ export function LiveScores({
                     </span>
 
                     <span className="live-fixture-banner__team live-fixture-banner__team--away">
-                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--away">
-                        <span className="live-fixture-banner__team-inner">
-                          <span className="live-fixture-banner__name-line">
-                            <span
-                              className={`live-fixture-banner__name ${awayLead ? 'live-fixture-banner__name--lead' : ''}`}
-                            >
-                              {awayName}
-                            </span>
-                            {awayVillain ? (
-                              <VillainDetectedBadge variant="compact" />
-                            ) : null}
-                          </span>
-                          {typeof awayLtp === 'number' ? (
-                            <span className="live-fixture-banner__ltp-line">
-                              <LeftToPlayOutsideAfter count={awayLtp} leadingSpace={false} />
-                            </span>
-                          ) : null}
-                        </span>
-                      </span>
+                      <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--away">
                       <span className="live-fixture-banner__team-avatar">
                         <TeamAvatar
                           entryId={awayId}
@@ -1210,6 +1196,28 @@ export function LiveScores({
                           kitIndexByEntry={kitIndexByEntry}
                         />
                       </span>
+                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--away">
+                        <span className="live-fixture-banner__team-inner">
+                          <span className="live-fixture-banner__name-line">
+                            <span
+                              className={`live-fixture-banner__name ${awayLead ? 'live-fixture-banner__name--lead' : ''}`}
+                            >
+                              {awayName}
+                            </span>
+                          </span>
+                          {typeof awayLtp === 'number' ? (
+                            <span className="live-fixture-banner__ltp-line">
+                              <LeftToPlayOutsideAfter count={awayLtp} leadingSpace={false} />
+                            </span>
+                          ) : null}
+                        </span>
+                      </span>
+                      </span>
+                      {awayVillain ? (
+                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
+                          <VillainDetectedBadge variant="compact" />
+                        </span>
+                      ) : null}
                     </span>
                   </span>
                   {/* Mobile: bottom affordance — ▼ = collapsed (lineup below), ▲ = expanded (hide). */}
