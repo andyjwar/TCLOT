@@ -8,6 +8,8 @@ import {
   selectDisplayBonus,
 } from './fplBonusFromBps';
 import { buildEffectiveLineup } from './fplAutosubProjection';
+import { fetchEspnPremWindow } from './espnPremWindow.js';
+import { computeEspnMatchdayRole } from './espnMatchdayRoleForAutosub.js';
 import {
   FPL_DIRECT,
   draftEntryEventUrl,
@@ -179,7 +181,8 @@ function mapPickRows(
   elementById,
   teamById,
   typeById,
-  gwFixtures
+  gwFixtures,
+  espnPremRows
 ) {
   const rows = (picks || []).map((p) => {
     const pid = Number(p.element);
@@ -229,6 +232,12 @@ function mapPickRows(
           Number(f?.minutes) > 0
         );
       })();
+    const espnMatchdayRole = computeEspnMatchdayRole(
+      espnPremRows,
+      gwFixtures,
+      pid,
+      tid
+    );
     return {
       element: pid,
       web_name: webName,
@@ -268,6 +277,11 @@ function mapPickRows(
        * 0-min starters (e.g. not in matchday squad) before FPL closes the club’s GW.
        */
       teamSingleFixtureLiveOrDone,
+      /**
+       * ESPN Prem confirmed matchday squad role (`xi` / `bench` / `absent`) for projected autosub;
+       * `null` when unknown (no lineups, DGW, or low name-match coverage).
+       */
+      espnMatchdayRole,
     };
   });
   rows.sort((a, b) => a.pickPosition - b.pickPosition);
@@ -426,6 +440,19 @@ export function useLiveScores({
 
       if (loadGen !== loadGenerationRef.current) return;
 
+      /** Best-effort ESPN Prem lineups — projected autosub uses `espnMatchdayRole` per pick. */
+      let espnPremRows = [];
+      try {
+        espnPremRows = await fetchEspnPremWindow({
+          gwFixtures,
+          teamById,
+          elementById,
+        });
+      } catch {
+        espnPremRows = [];
+      }
+      if (loadGen !== loadGenerationRef.current) return;
+
       const squadList = await Promise.all(
         teamList.map(async (t) => {
           if (t.fplEntryId == null) {
@@ -475,7 +502,8 @@ export function useLiveScores({
             elementById,
             teamById,
             typeById,
-            gwFixtures
+            gwFixtures,
+            espnPremRows
           );
           const withBonus = applyBonusColumn(rows, provisionalByElement);
           const starters = withBonus.filter((r) => r.pickPosition <= 11);

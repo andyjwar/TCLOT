@@ -4,10 +4,9 @@
  * Covers: (1) 0 min + club’s GW finished (DNP) — bench must have played; (2) 0 min + no PL
  * fixture for the player’s club this GW — first eligible bench in order (GK for GK) who
  * has a fixture and is playing or not yet started, keeping a valid formation (≥3 DEF, etc.);
- * (3) **Single-club-fixture GW** while that match is underway or finished (but FPL has not yet
- * closed the GW): 0-min starters are treated like not in the matchday squad / DNP for projection —
- * same bench eligibility as (2), so a bench pick can come in before they have recorded minutes
- * (e.g. outfielder not in the XI when teammates are already playing).
+ * (3) **ESPN confirmed lineups** (single club fixture this GW): `absent` from matchday 20 →
+ *    project off 0-min starters immediately; `bench` → wait until the club’s GW is finished;
+ *    `xi` / unknown → classic rules, with an SGW live fallback when ESPN is unavailable.
  */
 
 /** @param {{ minutes: number, clubGwFixturesFinished?: boolean, hasGwFixture?: boolean, pickPosition?: number }} r */
@@ -27,9 +26,8 @@ function isNoFixtureInXi(r) {
 
 /**
  * One PL fixture this GW for this club, and that fixture has kicked off or ended (live clock /
- * `started` / finished flags). Used so 0-min starters project off **during** the match, not only
- * after FPL marks all club fixtures finished.
- * Relies on `teamGwFixtureCount` / `teamSingleFixtureLiveOrDone` from `mapPickRows` (useLiveScores).
+ * `started` / finished flags). **Fallback** when ESPN matchday role is unknown — same bench
+ * eligibility as a blank GW once the match is live.
  * @param {{ minutes?: number, hasGwFixture?: boolean, pickPosition?: number, clubGwFixturesFinished?: boolean, teamGwFixtureCount?: number, teamSingleFixtureLiveOrDone?: boolean }} r
  */
 function isSameDayDnpWhileSingleFixtureLive(r) {
@@ -41,13 +39,42 @@ function isSameDayDnpWhileSingleFixtureLive(r) {
   return r.teamSingleFixtureLiveOrDone === true;
 }
 
-/** @param {{ minutes: number, clubGwFixturesFinished?: boolean, hasGwFixture?: boolean, pickPosition?: number }} r */
+/**
+ * @param {{
+ *   minutes: number,
+ *   clubGwFixturesFinished?: boolean,
+ *   hasGwFixture?: boolean,
+ *   pickPosition?: number,
+ *   espnMatchdayRole?: 'xi' | 'bench' | 'absent' | null,
+ *   teamGwFixtureCount?: number,
+ *   teamSingleFixtureLiveOrDone?: boolean,
+ * }} r
+ */
 function needsXiAutosubFromBench(r) {
   if (r == null || r.pickPosition == null || r.pickPosition > 11) return false;
   if ((Number(r.minutes) || 0) > 0) return false;
-  if (isDnpAfterFinished(r)) return true;
-  if (isNoFixtureInXi(r)) return true;
-  if (isSameDayDnpWhileSingleFixtureLive(r)) return true;
+
+  const role = r.espnMatchdayRole ?? null;
+
+  /** ESPN bench: wait until the club’s GW is finished before projecting autosub off 0 minutes. */
+  if (role === 'bench') {
+    return isDnpAfterFinished(r) || isNoFixtureInXi(r);
+  }
+
+  /** Left out of the matchday squad entirely — project off immediately (bench may not have played). */
+  if (role === 'absent') {
+    if (r.hasGwFixture === false) return isNoFixtureInXi(r);
+    return true;
+  }
+
+  /** ESPN starting XI (or unknown): preserve classic rules; unknown keeps SGW live fallback. */
+  if (role === 'xi' || role == null) {
+    if (isDnpAfterFinished(r)) return true;
+    if (isNoFixtureInXi(r)) return true;
+    if (role == null && isSameDayDnpWhileSingleFixtureLive(r)) return true;
+    return false;
+  }
+
   return false;
 }
 
@@ -58,7 +85,7 @@ function playedOnBench(r) {
 
 /**
  * @param {object} cand
- * @param {boolean} outAllowsUnplayedBench — starter is out for BGW / single-fixture live DNP:
+ * @param {boolean} outAllowsUnplayedBench — starter is out for BGW / ESPN absent / SGW live fallback:
  *   bench pick may sub in before recording minutes if they still have a PL fixture to play.
  */
 function benchPlayerEligibleForOut(cand, outAllowsUnplayedBench) {
@@ -129,7 +156,9 @@ export function projectAutosubFromLive(starters, bench) {
   function findReplacement(out, xiLocal, pool) {
     const ordered = pool.slice().sort((a, b) => a.pickPosition - b.pickPosition);
     const outAllowsUnplayedBench =
-      isNoFixtureInXi(out) || isSameDayDnpWhileSingleFixtureLive(out);
+      isNoFixtureInXi(out) ||
+      (out.espnMatchdayRole === 'absent' && (Number(out.minutes) || 0) === 0) ||
+      (out.espnMatchdayRole == null && isSameDayDnpWhileSingleFixtureLive(out));
 
     if (isGkRow(out)) {
       for (const r of ordered) {

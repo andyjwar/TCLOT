@@ -20,6 +20,7 @@ function r(pick, pos, element, min, opt = {}) {
     stillYetToPlayPl: opt.stillYetToPlayPl,
     teamGwFixtureCount: opt.teamGwFixtureCount,
     teamSingleFixtureLiveOrDone: opt.teamSingleFixtureLiveOrDone,
+    espnMatchdayRole: opt.espnMatchdayRole ?? null,
   };
 }
 
@@ -76,6 +77,130 @@ test('DNP GKP with no reserve GKP: still processes BGW / DNP outfield', () => {
   assert.ok(!ids.has(5));
   assert.ok(ids.has(12));
   assert.ok(ids.has(1), 'GKP with no sub stays when no reserve keeper');
+});
+
+test('ESPN bench: 0-min starter stays in XI while fixture live (wait for club GW to finish)', () => {
+  const xi = [
+    r(1, 'GKP', 1, 90, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      espnMatchdayRole: 'xi',
+    }),
+    r(2, 'DEF', 2, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(3, 'DEF', 3, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(4, 'DEF', 4, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(5, 'MID', 5, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(6, 'MID', 6, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(7, 'MID', 7, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(8, 'MID', 8, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(9, 'FWD', 9, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(10, 'FWD', 10, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(11, 'FWD', 11, 0, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      stillYetToPlayPl: true,
+      espnMatchdayRole: 'bench',
+    }),
+  ];
+  const bench = [
+    r(12, 'FWD', 12, 0, {
+      hasGwFixture: true,
+      stillYetToPlayPl: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      espnMatchdayRole: 'xi',
+    }),
+  ];
+  const { displayStarters, projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  assert.equal(projectedAutoSubs.length, 0);
+  assert.ok(displayStarters.some((x) => x.element === 11));
+});
+
+test('ESPN absent: 0-min starter swaps off immediately (unplayed bench allowed)', () => {
+  const xi = [
+    r(1, 'GKP', 1, 90, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      espnMatchdayRole: 'xi',
+    }),
+    r(2, 'DEF', 2, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(3, 'DEF', 3, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(4, 'DEF', 4, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(5, 'MID', 5, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(6, 'MID', 6, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(7, 'MID', 7, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(8, 'MID', 8, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(9, 'FWD', 9, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(10, 'FWD', 10, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(11, 'FWD', 11, 0, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      stillYetToPlayPl: true,
+      espnMatchdayRole: 'absent',
+    }),
+  ];
+  const bench = [
+    r(12, 'FWD', 12, 0, {
+      hasGwFixture: true,
+      stillYetToPlayPl: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      espnMatchdayRole: 'bench',
+    }),
+  ];
+  const { displayStarters, projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  const ids = new Set(displayStarters.map((x) => x.element));
+  assert.ok(!ids.has(11));
+  assert.ok(ids.has(12));
+  assert.equal(projectedAutoSubs.length, 1);
+});
+
+test('ESPN xi: 0-min starter does not use SGW live fallback', () => {
+  const xi = [
+    r(1, 'GKP', 1, 90, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      espnMatchdayRole: 'xi',
+    }),
+    r(2, 'DEF', 2, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(3, 'DEF', 3, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(4, 'DEF', 4, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(5, 'MID', 5, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(6, 'MID', 6, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(7, 'MID', 7, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(8, 'MID', 8, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(9, 'FWD', 9, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(10, 'FWD', 10, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true, espnMatchdayRole: 'xi' }),
+    r(11, 'FWD', 11, 0, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      stillYetToPlayPl: true,
+      espnMatchdayRole: 'xi',
+    }),
+  ];
+  const bench = [
+    r(12, 'FWD', 12, 45, {
+      hasGwFixture: true,
+      stillYetToPlayPl: false,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      espnMatchdayRole: 'xi',
+    }),
+  ];
+  const { projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  assert.equal(projectedAutoSubs.length, 0);
 });
 
 test('SGW fixture live: 0-min starter projects out for bench pick not yet played (not in squad / DNP live)', () => {
