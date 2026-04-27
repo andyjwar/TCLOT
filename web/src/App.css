@@ -5778,7 +5778,7 @@ button.live-fixture-banner--toggle {
   justify-content: flex-start;
 }
 
-/* Villain’s victory: #1 live standings but only 6th–7th raw GW score in the league */
+/* Villain’s victory: winning H2H on live GW pts while only 6th–7th raw GW total in the league */
 .live-villain-detected {
   display: inline-flex;
   flex-direction: row;

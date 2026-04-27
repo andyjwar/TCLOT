@@ -343,21 +343,44 @@ function fplGwScoreOrdinalByEntryId(squads) {
 }
 
 /**
- * Managers who are #1 in live projected standings this GW but only 6th–7th by raw GW score
- * across the league — “villain’s victory”.
+ * Managers winning their **H2H gameweek** on live GW points vs their opponent, while their raw
+ * GW total is only 6th–7th highest in the league (ordinal by `liveGwDisplayTotal` across squads).
  * @param {object[]} squads
- * @param {object[]} liveStandingsRows
+ * @param {object[]} gwMatches — H2H rows for this GW (`league_entry_1` / `league_entry_2`)
  * @returns {Set<number>}
  */
-function villainVictoryLeagueEntryIds(squads, liveStandingsRows) {
+function villainVictoryLeagueEntryIds(squads, gwMatches) {
   const ordinalById = fplGwScoreOrdinalByEntryId(squads);
+  const byEntry = new Map(
+    (squads || []).map((s) => [Number(s.leagueEntryId), s])
+  );
   const out = new Set();
-  for (const row of liveStandingsRows || []) {
-    const id = Number(row.league_entry);
-    if (!Number.isFinite(id)) continue;
-    if (row.liveRank !== 1) continue;
-    const ord = ordinalById.get(id);
-    if (ord === 6 || ord === 7) out.add(id);
+
+  for (const m of gwMatches || []) {
+    const homeId = Number(m.league_entry_1);
+    const awayId = Number(m.league_entry_2);
+    if (!Number.isFinite(homeId) || !Number.isFinite(awayId)) continue;
+
+    const homePts = liveGwDisplayTotal(byEntry.get(homeId));
+    const awayPts = liveGwDisplayTotal(byEntry.get(awayId));
+    if (
+      homePts == null ||
+      awayPts == null ||
+      !Number.isFinite(Number(homePts)) ||
+      !Number.isFinite(Number(awayPts))
+    ) {
+      continue;
+    }
+    const h = Number(homePts);
+    const a = Number(awayPts);
+
+    if (h > a) {
+      const ord = ordinalById.get(homeId);
+      if (ord === 6 || ord === 7) out.add(homeId);
+    } else if (a > h) {
+      const ord = ordinalById.get(awayId);
+      if (ord === 6 || ord === 7) out.add(awayId);
+    }
   }
   return out;
 }
@@ -374,7 +397,7 @@ function VillainDetectedBadge({ variant = 'default' }) {
         (compact ? ' live-villain-detected--compact' : '')
       }
       role="img"
-      aria-label="Villain detected: leading live standings this week despite one of the lowest raw scores in the league"
+      aria-label="Villain detected: winning this head-to-head gameweek on live points while ranked 6th or 7th in the league for raw gameweek total"
     >
       <img
         className="live-villain-detected__img"
@@ -861,8 +884,8 @@ export function LiveScores({
   }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry, gwStandingsFrozen]);
 
   const villainVictoryEntryIds = useMemo(
-    () => villainVictoryLeagueEntryIds(squads, liveStandingsRows),
-    [squads, liveStandingsRows]
+    () => villainVictoryLeagueEntryIds(squads, gwMatches),
+    [squads, gwMatches]
   );
 
   /** One object per H2H fixture with both sides’ fixture totals and player lines. */
@@ -1267,7 +1290,7 @@ export function LiveScores({
         </div>
       ) : (
         squads.map((squad) => {
-          const squadVillain = villainVictoryEntryIds.has(squad.leagueEntryId);
+          const squadVillain = villainVictoryEntryIds.has(Number(squad.leagueEntryId));
           return (
             <section
               key={squad.leagueEntryId}
@@ -1321,7 +1344,7 @@ export function LiveScores({
 
       {useFixtureLayout && orphanSquads.length > 0
         ? orphanSquads.map((squad) => {
-            const squadVillain = villainVictoryEntryIds.has(squad.leagueEntryId);
+            const squadVillain = villainVictoryEntryIds.has(Number(squad.leagueEntryId));
             return (
             <section
               key={`orphan-${squad.leagueEntryId}`}
