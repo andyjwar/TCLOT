@@ -312,6 +312,86 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
+/**
+ * Ordinal rank of raw FPL GW points among all loaded squads (1 = highest). Ties break by
+ * `leagueEntryId` for a stable order.
+ * @param {object[] | null | undefined} squads
+ * @returns {Map<number, number>}
+ */
+function fplGwScoreOrdinalByEntryId(squads) {
+  const rows = (squads || [])
+    .map((s) => ({
+      id: Number(s.leagueEntryId),
+      pts: liveGwDisplayTotal(s),
+    }))
+    .filter(
+      (r) =>
+        Number.isFinite(r.id) &&
+        r.pts != null &&
+        Number.isFinite(Number(r.pts))
+    );
+  rows.sort((a, b) => {
+    const d = Number(b.pts) - Number(a.pts);
+    if (d !== 0) return d;
+    return a.id - b.id;
+  });
+  const m = new Map();
+  rows.forEach((r, idx) => {
+    m.set(r.id, idx + 1);
+  });
+  return m;
+}
+
+/**
+ * Managers who are #1 in live projected standings this GW but only 6th–7th by raw GW score
+ * across the league — “villain’s victory”.
+ * @param {object[]} squads
+ * @param {object[]} liveStandingsRows
+ * @returns {Set<number>}
+ */
+function villainVictoryLeagueEntryIds(squads, liveStandingsRows) {
+  const ordinalById = fplGwScoreOrdinalByEntryId(squads);
+  const out = new Set();
+  for (const row of liveStandingsRows || []) {
+    const id = Number(row.league_entry);
+    if (!Number.isFinite(id)) continue;
+    if (row.liveRank !== 1) continue;
+    const ord = ordinalById.get(id);
+    if (ord === 6 || ord === 7) out.add(id);
+  }
+  return out;
+}
+
+/** Joker + “Villain Detected” for live tiles (image in `public/villain-detected.png`). */
+function VillainDetectedBadge({ variant = 'default' }) {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+  const src = `${base}villain-detected.png`;
+  const compact = variant === 'compact';
+  return (
+    <span
+      className={
+        'live-villain-detected' +
+        (compact ? ' live-villain-detected--compact' : '')
+      }
+      role="img"
+      aria-label="Villain detected: leading live standings this week despite one of the lowest raw scores in the league"
+    >
+      <img
+        className="live-villain-detected__img"
+        src={src}
+        alt=""
+        width={compact ? 32 : 40}
+        height={compact ? 32 : 40}
+        decoding="async"
+        loading="lazy"
+      />
+      <span className="live-villain-detected__label" aria-hidden="true">
+        Villain Detected
+      </span>
+    </span>
+  );
+}
+
 /** Insert script + stickers after this many team names (each H2H row has 2 names). */
 const TICKER_NAMES_PER_INSERT = 6;
 
@@ -780,6 +860,11 @@ export function LiveScores({
     });
   }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry, gwStandingsFrozen]);
 
+  const villainVictoryEntryIds = useMemo(
+    () => villainVictoryLeagueEntryIds(squads, liveStandingsRows),
+    [squads, liveStandingsRows]
+  );
+
   /** One object per H2H fixture with both sides’ fixture totals and player lines. */
   const leftToPlayByFixture = useMemo(() => {
     if (!gwMatches.length) return [];
@@ -966,6 +1051,9 @@ export function LiveScores({
             const homeLtp = homeSquad?.leftToPlayCount;
             const awayLtp = awaySquad?.leftToPlayCount;
 
+            const homeVillain = villainVictoryEntryIds.has(homeId);
+            const awayVillain = villainVictoryEntryIds.has(awayId);
+
             const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
             const lineupOpen = expandedFixtures.has(fixtureKey);
             const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
@@ -973,7 +1061,12 @@ export function LiveScores({
             return (
               <section
                 key={fixtureKey}
-                className="tile tile--compact live-fixture-tile"
+                className={
+                  'tile tile--compact live-fixture-tile' +
+                  (homeVillain || awayVillain
+                    ? ' live-fixture-tile--villain-victory'
+                    : '')
+                }
                 aria-label={
                   typeof homeLtp === 'number' && typeof awayLtp === 'number'
                     ? `${homeName}, ${homeLtp} fixtures left, vs ${awayName}, ${awayLtp} fixtures left`
@@ -1009,6 +1102,9 @@ export function LiveScores({
                             >
                               {homeName}
                             </span>
+                            {homeVillain ? (
+                              <VillainDetectedBadge variant="compact" />
+                            ) : null}
                           </span>
                           {typeof homeLtp === 'number' ? (
                             <span className="live-fixture-banner__ltp-line">
@@ -1071,6 +1167,9 @@ export function LiveScores({
                             >
                               {awayName}
                             </span>
+                            {awayVillain ? (
+                              <VillainDetectedBadge variant="compact" />
+                            ) : null}
                           </span>
                           {typeof awayLtp === 'number' ? (
                             <span className="live-fixture-banner__ltp-line">
@@ -1100,11 +1199,21 @@ export function LiveScores({
 
                 {lineupOpen ? (
                 <div className="live-fixture-split" id={fixtureBodyId}>
-                  <div className="live-fixture-column">
+                  <div
+                    className={
+                      'live-fixture-column' +
+                      (homeVillain ? ' live-fixture-column--villain-victory' : '')
+                    }
+                  >
                     <div className="live-fixture-column-head">
                       <h3 className="live-fixture-column-title">
-                        {homeName}
-                        <LeftToPlayOutsideAfter count={homeLtp} />
+                        <span className="live-fixture-column-title__row">
+                          <span>
+                            {homeName}
+                            <LeftToPlayOutsideAfter count={homeLtp} />
+                          </span>
+                          {homeVillain ? <VillainDetectedBadge /> : null}
+                        </span>
                       </h3>
                       <div className="live-squad-meta tabular">
                         {homeLive != null ? (
@@ -1120,11 +1229,21 @@ export function LiveScores({
                     <SquadLineupPanel squad={homeSquad} />
                   </div>
                   <div className="live-fixture-divider" aria-hidden="true" />
-                  <div className="live-fixture-column">
+                  <div
+                    className={
+                      'live-fixture-column' +
+                      (awayVillain ? ' live-fixture-column--villain-victory' : '')
+                    }
+                  >
                     <div className="live-fixture-column-head">
                       <h3 className="live-fixture-column-title">
-                        {awayName}
-                        <LeftToPlayOutsideAfter count={awayLtp} />
+                        <span className="live-fixture-column-title__row">
+                          <span>
+                            {awayName}
+                            <LeftToPlayOutsideAfter count={awayLtp} />
+                          </span>
+                          {awayVillain ? <VillainDetectedBadge /> : null}
+                        </span>
                       </h3>
                       <div className="live-squad-meta tabular">
                         {awayLive != null ? (
@@ -1147,10 +1266,15 @@ export function LiveScores({
           </div>
         </div>
       ) : (
-        squads.map((squad) => (
+        squads.map((squad) => {
+          const squadVillain = villainVictoryEntryIds.has(squad.leagueEntryId);
+          return (
             <section
               key={squad.leagueEntryId}
-              className="tile tile--compact live-squad-tile"
+              className={
+                'tile tile--compact live-squad-tile' +
+                (squadVillain ? ' live-squad-tile--villain-victory' : '')
+              }
               aria-labelledby={`live-squad-${squad.leagueEntryId}`}
             >
               <div className="live-squad-head">
@@ -1170,9 +1294,12 @@ export function LiveScores({
                     logoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                   />
-                  <span>
-                    {squad.teamName}
-                    <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
+                  <span className="live-squad-title__text">
+                    <span>
+                      {squad.teamName}
+                      <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
+                    </span>
+                    {squadVillain ? <VillainDetectedBadge variant="compact" /> : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1188,14 +1315,20 @@ export function LiveScores({
               </div>
               <SquadLineupPanel squad={squad} />
             </section>
-        ))
+          );
+        })
       )}
 
       {useFixtureLayout && orphanSquads.length > 0
-        ? orphanSquads.map((squad) => (
+        ? orphanSquads.map((squad) => {
+            const squadVillain = villainVictoryEntryIds.has(squad.leagueEntryId);
+            return (
             <section
               key={`orphan-${squad.leagueEntryId}`}
-              className="tile tile--compact live-squad-tile live-squad-tile--orphan"
+              className={
+                'tile tile--compact live-squad-tile live-squad-tile--orphan' +
+                (squadVillain ? ' live-squad-tile--villain-victory' : '')
+              }
               aria-labelledby={`live-squad-o-${squad.leagueEntryId}`}
             >
               <p className="muted muted--tight live-orphan-note">
@@ -1218,9 +1351,12 @@ export function LiveScores({
                     logoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                   />
-                  <span>
-                    {squad.teamName}
-                    <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
+                  <span className="live-squad-title__text">
+                    <span>
+                      {squad.teamName}
+                      <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
+                    </span>
+                    {squadVillain ? <VillainDetectedBadge variant="compact" /> : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1233,7 +1369,8 @@ export function LiveScores({
               </div>
               <SquadLineupPanel squad={squad} />
             </section>
-          ))
+            );
+          })
         : null}
 
       {leftToPlayByFixture.length > 0 ? (
@@ -1398,12 +1535,16 @@ export function LiveScores({
               <tbody>
                 {liveStandingsRows.map((row) => {
                   const isLeader = row.liveRank === 1;
+                  const isVillainVictory = villainVictoryEntryIds.has(
+                    Number(row.league_entry)
+                  );
                   const rowClass = [
                     isLeader ? 'row-highlight' : '',
                     row.liveRank === 1 ? 'standings-row--divider-below' : '',
                     row.liveRank === 8
                       ? 'standings-row--divider-above standings-row--8th'
                       : '',
+                    isVillainVictory ? 'standings-row--villain-victory' : '',
                   ]
                     .filter(Boolean)
                     .join(' ');
@@ -1435,6 +1576,9 @@ export function LiveScores({
                           />
                           <span className="team-name team-name--sidebar live-standings-team-name">
                             {row.teamName}
+                            {isVillainVictory ? (
+                              <VillainDetectedBadge variant="compact" />
+                            ) : null}
                             {moveUp ? (
                               <span
                                 className="live-standings-move live-standings-move--up"

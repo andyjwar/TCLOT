@@ -5760,6 +5760,92 @@ button.live-fixture-banner--toggle {
   font-weight: 700;
 }
 
+.live-squad-title__text {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+}
+
+.live-fixture-column-title__row {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  justify-content: flex-start;
+}
+
+/* Villain’s victory: #1 live standings but only 6th–7th raw GW score in the league */
+.live-villain-detected {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, #7c3aed 12%, transparent);
+  border: 1px solid color-mix(in srgb, #7c3aed 35%, var(--fm-border));
+}
+
+.live-villain-detected--compact {
+  padding: 3px 6px;
+  gap: 4px 6px;
+  border-radius: 6px;
+}
+
+.live-villain-detected__img {
+  display: block;
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.live-villain-detected--compact .live-villain-detected__img {
+  width: 32px;
+  height: 32px;
+  border-radius: 5px;
+}
+
+.live-villain-detected__label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #5b21b6;
+  line-height: 1.2;
+  max-width: 8.5rem;
+}
+
+.live-villain-detected--compact .live-villain-detected__label {
+  font-size: 0.65rem;
+  max-width: 7rem;
+}
+
+.live-fixture-tile--villain-victory {
+  box-shadow: 0 0 0 1px color-mix(in srgb, #7c3aed 28%, transparent);
+}
+
+.live-fixture-column--villain-victory {
+  background: color-mix(in srgb, #7c3aed 6%, transparent);
+  border-radius: 8px;
+  padding: 6px 8px 0;
+  margin: -6px -8px 0;
+}
+
+.live-squad-tile--villain-victory {
+  box-shadow: 0 0 0 1px color-mix(in srgb, #7c3aed 28%, transparent);
+}
+
+.standings-row--villain-victory td {
+  background: color-mix(in srgb, #7c3aed 8%, transparent);
+}
+
 .live-squad-meta {
   display: flex;
   flex-wrap: wrap;
@@ -7780,7 +7866,7 @@ button.live-fixture-banner--toggle {
 .live-standings-team-name {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 6px 8px;
   flex-wrap: wrap;
 }
 
