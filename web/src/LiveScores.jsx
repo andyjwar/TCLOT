@@ -344,7 +344,7 @@ function fplGwScoreOrdinalByEntryId(squads) {
 
 /**
  * Managers winning their **H2H gameweek** on live GW points vs their opponent, while their raw
- * GW total is only 6th–7th highest in the league (ordinal by `liveGwDisplayTotal` across squads).
+ * GW total is only the **7th** highest in the league (ordinal by `liveGwDisplayTotal` across squads).
  * @param {object[]} squads
  * @param {object[]} gwMatches — H2H rows for this GW (`league_entry_1` / `league_entry_2`)
  * @returns {Set<number>}
@@ -376,10 +376,10 @@ function villainVictoryLeagueEntryIds(squads, gwMatches) {
 
     if (h > a) {
       const ord = ordinalById.get(homeId);
-      if (ord === 6 || ord === 7) out.add(homeId);
+      if (ord === 7) out.add(homeId);
     } else if (a > h) {
       const ord = ordinalById.get(awayId);
-      if (ord === 6 || ord === 7) out.add(awayId);
+      if (ord === 7) out.add(awayId);
     }
   }
   return out;
@@ -397,7 +397,7 @@ function VillainDetectedBadge({ variant = 'default' }) {
         (compact ? ' live-villain-detected--compact' : '')
       }
       role="img"
-      aria-label="Villain detected: winning this head-to-head gameweek on live points while ranked 6th or 7th in the league for raw gameweek total"
+      aria-label="Villain detected: winning this head-to-head gameweek on live points while ranked 7th in the league for raw gameweek total"
     >
       <img
         className="live-villain-detected__img"
