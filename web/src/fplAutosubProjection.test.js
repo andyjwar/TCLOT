@@ -18,6 +18,8 @@ function r(pick, pos, element, min, opt = {}) {
     clubGwFixturesFinished: opt.clubGwFixturesFinished,
     hasGwFixture: opt.hasGwFixture,
     stillYetToPlayPl: opt.stillYetToPlayPl,
+    teamGwFixtureCount: opt.teamGwFixtureCount,
+    teamSingleFixtureLiveOrDone: opt.teamSingleFixtureLiveOrDone,
   };
 }
 
@@ -74,6 +76,86 @@ test('DNP GKP with no reserve GKP: still processes BGW / DNP outfield', () => {
   assert.ok(!ids.has(5));
   assert.ok(ids.has(12));
   assert.ok(ids.has(1), 'GKP with no sub stays when no reserve keeper');
+});
+
+test('SGW fixture live: 0-min starter projects out for bench pick not yet played (not in squad / DNP live)', () => {
+  const xi = [
+    r(1, 'GKP', 1, 90, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+    }),
+    r(2, 'DEF', 2, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(3, 'DEF', 3, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(4, 'DEF', 4, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(5, 'MID', 5, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(6, 'MID', 6, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(7, 'MID', 7, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(8, 'MID', 8, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(9, 'FWD', 9, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(10, 'FWD', 10, 90, { hasGwFixture: true, teamGwFixtureCount: 1, teamSingleFixtureLiveOrDone: true }),
+    r(11, 'FWD', 11, 0, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+      stillYetToPlayPl: true,
+    }),
+  ];
+  const bench = [
+    r(12, 'FWD', 12, 0, {
+      hasGwFixture: true,
+      stillYetToPlayPl: true,
+      teamGwFixtureCount: 1,
+      teamSingleFixtureLiveOrDone: true,
+    }),
+  ];
+  const { displayStarters, projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  const ids = new Set(displayStarters.map((x) => x.element));
+  assert.ok(!ids.has(11), '0-min FWD should autosub off while match is live');
+  assert.ok(ids.has(12));
+  assert.equal(projectedAutoSubs.length, 1);
+  assert.equal(projectedAutoSubs[0].element_out, 11);
+  assert.equal(projectedAutoSubs[0].element_in, 12);
+});
+
+test('DGW: two club fixtures — 0-min starter does not use live-single-fixture path before GW closes', () => {
+  const xi = [
+    r(1, 'GKP', 1, 90, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 2,
+      teamSingleFixtureLiveOrDone: false,
+    }),
+    r(2, 'DEF', 2, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(3, 'DEF', 3, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(4, 'DEF', 4, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(5, 'MID', 5, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(6, 'MID', 6, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(7, 'MID', 7, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(8, 'MID', 8, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(9, 'FWD', 9, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(10, 'FWD', 10, 90, { hasGwFixture: true, teamGwFixtureCount: 2, teamSingleFixtureLiveOrDone: false }),
+    r(11, 'FWD', 11, 0, {
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+      teamGwFixtureCount: 2,
+      teamSingleFixtureLiveOrDone: false,
+      stillYetToPlayPl: true,
+    }),
+  ];
+  const bench = [
+    r(12, 'FWD', 12, 0, {
+      hasGwFixture: true,
+      stillYetToPlayPl: true,
+      teamGwFixtureCount: 2,
+      teamSingleFixtureLiveOrDone: false,
+    }),
+  ];
+  const { displayStarters, projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  assert.equal(projectedAutoSubs.length, 0);
+  assert.ok(displayStarters.some((x) => x.element === 11));
 });
 
 test('classic DNP: bench with 0 min and game still to come does not sub in (must have played)', () => {

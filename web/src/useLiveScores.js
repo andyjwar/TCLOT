@@ -3,6 +3,7 @@ import {
   computeProvisionalGwBonusByElementId,
   countElementGamesLeftToPlay,
   defensiveContributionCountFromLiveRow,
+  fixturesForTeamInGw,
   isFixtureFullyDone,
   selectDisplayBonus,
 } from './fplBonusFromBps';
@@ -213,6 +214,21 @@ function mapPickRows(
       tid,
       mins
     );
+    const teamGwFixturesThisEvent =
+      tid != null && Number.isFinite(tid) && Array.isArray(gwFixtures) && gwFixtures.length
+        ? fixturesForTeamInGw(gwFixtures, tid)
+        : [];
+    const teamGwFixtureCount = teamGwFixturesThisEvent.length;
+    const teamSingleFixtureLiveOrDone =
+      teamGwFixturesThisEvent.length === 1 &&
+      (() => {
+        const f = teamGwFixturesThisEvent[0];
+        return (
+          isFixtureFullyDone(f) ||
+          f?.started === true ||
+          Number(f?.minutes) > 0
+        );
+      })();
     return {
       element: pid,
       web_name: webName,
@@ -244,6 +260,14 @@ function mapPickRows(
       playerGamesLeftToPlay,
       /** False when the player’s real-life club has no PL match this gameweek (blank week for that team). */
       hasGwFixture,
+      /** PL fixtures this GW for this player’s club (same filter as classic `event=` list). */
+      teamGwFixtureCount,
+      /**
+       * True only when the club has exactly one GW fixture and it has kicked off or finished
+       * (`started`, live `minutes`, or finished flags). Drives live autosub projection for
+       * 0-min starters (e.g. not in matchday squad) before FPL closes the club’s GW.
+       */
+      teamSingleFixtureLiveOrDone,
     };
   });
   rows.sort((a, b) => a.pickPosition - b.pickPosition);

@@ -3,7 +3,11 @@
  * When `automatic_subs` is empty (GW still live), project swaps from minutes + bench order.
  * Covers: (1) 0 min + club’s GW finished (DNP) — bench must have played; (2) 0 min + no PL
  * fixture for the player’s club this GW — first eligible bench in order (GK for GK) who
- * has a fixture and is playing or not yet started, keeping a valid formation (≥3 DEF, etc.).
+ * has a fixture and is playing or not yet started, keeping a valid formation (≥3 DEF, etc.);
+ * (3) **Single-club-fixture GW** while that match is underway or finished (but FPL has not yet
+ * closed the GW): 0-min starters are treated like not in the matchday squad / DNP for projection —
+ * same bench eligibility as (2), so a bench pick can come in before they have recorded minutes
+ * (e.g. outfielder not in the XI when teammates are already playing).
  */
 
 /** @param {{ minutes: number, clubGwFixturesFinished?: boolean, hasGwFixture?: boolean, pickPosition?: number }} r */
@@ -21,12 +25,29 @@ function isNoFixtureInXi(r) {
   return false;
 }
 
+/**
+ * One PL fixture this GW for this club, and that fixture has kicked off or ended (live clock /
+ * `started` / finished flags). Used so 0-min starters project off **during** the match, not only
+ * after FPL marks all club fixtures finished.
+ * Relies on `teamGwFixtureCount` / `teamSingleFixtureLiveOrDone` from `mapPickRows` (useLiveScores).
+ * @param {{ minutes?: number, hasGwFixture?: boolean, pickPosition?: number, clubGwFixturesFinished?: boolean, teamGwFixtureCount?: number, teamSingleFixtureLiveOrDone?: boolean }} r
+ */
+function isSameDayDnpWhileSingleFixtureLive(r) {
+  if (r == null || r.pickPosition == null || r.pickPosition > 11) return false;
+  if ((Number(r.minutes) || 0) !== 0) return false;
+  if (r.hasGwFixture === false) return false;
+  if (Number(r.teamGwFixtureCount) !== 1) return false;
+  if (r.clubGwFixturesFinished === true) return false;
+  return r.teamSingleFixtureLiveOrDone === true;
+}
+
 /** @param {{ minutes: number, clubGwFixturesFinished?: boolean, hasGwFixture?: boolean, pickPosition?: number }} r */
 function needsXiAutosubFromBench(r) {
   if (r == null || r.pickPosition == null || r.pickPosition > 11) return false;
   if ((Number(r.minutes) || 0) > 0) return false;
   if (isDnpAfterFinished(r)) return true;
   if (isNoFixtureInXi(r)) return true;
+  if (isSameDayDnpWhileSingleFixtureLive(r)) return true;
   return false;
 }
 
@@ -37,13 +58,14 @@ function playedOnBench(r) {
 
 /**
  * @param {object} cand
- * @param {boolean} outIsNoFix — starter was subbed out because the club has no GW fixture
+ * @param {boolean} outAllowsUnplayedBench — starter is out for BGW / single-fixture live DNP:
+ *   bench pick may sub in before recording minutes if they still have a PL fixture to play.
  */
-function benchPlayerEligibleForOut(cand, outIsNoFix) {
+function benchPlayerEligibleForOut(cand, outAllowsUnplayedBench) {
   if (cand == null) return false;
   if (cand.hasGwFixture === false) return false;
   if (playedOnBench(cand)) return true;
-  if (outIsNoFix && cand.stillYetToPlayPl === true) return true;
+  if (outAllowsUnplayedBench && cand.stillYetToPlayPl === true) return true;
   return false;
 }
 
@@ -106,12 +128,13 @@ export function projectAutosubFromLive(starters, bench) {
    */
   function findReplacement(out, xiLocal, pool) {
     const ordered = pool.slice().sort((a, b) => a.pickPosition - b.pickPosition);
-    const outIsNoFix = isNoFixtureInXi(out);
+    const outAllowsUnplayedBench =
+      isNoFixtureInXi(out) || isSameDayDnpWhileSingleFixtureLive(out);
 
     if (isGkRow(out)) {
       for (const r of ordered) {
         if (!isGkRow(r)) continue;
-        if (!benchPlayerEligibleForOut(r, outIsNoFix)) continue;
+        if (!benchPlayerEligibleForOut(r, outAllowsUnplayedBench)) continue;
         const idx = xiLocal.indexOf(out);
         if (idx < 0) continue;
         const trial = xiLocal.slice();
@@ -127,7 +150,7 @@ export function projectAutosubFromLive(starters, bench) {
 
     for (const r of ordered) {
       if (isGkRow(r)) continue;
-      if (outIsNoFix) {
+      if (outAllowsUnplayedBench) {
         if (!benchPlayerEligibleForOut(r, true)) continue;
       } else {
         if (!playedOnBench(r)) continue;
