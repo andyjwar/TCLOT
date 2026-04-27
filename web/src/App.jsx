@@ -2812,6 +2812,7 @@ function App() {
               kitIndexByEntry={kitIndexByEntry}
               leagueId={data?.league?.id ?? null}
               waiverOutGwRows={waiverOutGwRows}
+              fplDraftCurrentGw={fplLiveLandingGw}
             />
           )}
 

@@ -790,7 +790,7 @@ function isLikelyLocalDev() {
 }
 
 /**
- * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object, leagueId?: number | null, waiverOutGwRows?: object[] }}
+ * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object, leagueId?: number | null, waiverOutGwRows?: object[], fplDraftCurrentGw?: number | null }}
  */
 export function LiveScores({
   teams,
@@ -803,6 +803,8 @@ export function LiveScores({
   kitIndexByEntry,
   leagueId = null,
   waiverOutGwRows = [],
+  /** Draft bootstrap `events.current` — when the selected GW is earlier, standings use league totals only (no live +3 overlay). */
+  fplDraftCurrentGw = null,
 }) {
   const { loading, error, refresh, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
@@ -877,13 +879,23 @@ export function LiveScores({
     return m;
   }, [gwMatches, squadByLeagueEntry]);
 
-  /** After the GW ends, official league standings already include its PTS / For / Faced. */
-  const gwStandingsFrozen = useMemo(
-    () =>
+  /**
+   * When “frozen”, PTS / For / Faced come from league `standings` only (no live +3 overlay).
+   * FPL sometimes leaves `matches[].finished` false briefly after scores settle, and
+   * `events.data[id].finished` can lag — so also freeze when the user is viewing a GW **before**
+   * draft `events.current` (FPL has rolled the calendar to a later GW).
+   */
+  const gwStandingsFrozen = useMemo(() => {
+    const cur = Number(fplDraftCurrentGw);
+    const gw = Number(gameweek);
+    const viewingPastGw =
+      Number.isFinite(cur) && Number.isFinite(gw) && gw < cur;
+    return (
       Boolean(eventSnapshot?.finished) ||
-      (gwMatches.length > 0 && gwMatches.every((m) => m.finished)),
-    [eventSnapshot?.finished, gwMatches]
-  );
+      (gwMatches.length > 0 && gwMatches.every((m) => m.finished)) ||
+      viewingPastGw
+    );
+  }, [eventSnapshot?.finished, gwMatches, gameweek, fplDraftCurrentGw]);
 
   /**
    * Projected For / Faced / GD / PTS from this GW’s live fixtures, then sorted by projected PTS,
@@ -1794,6 +1806,13 @@ export function LiveScores({
         )}
         <p className="table-foot muted standings-landscape-hint">
           On mobile, turn your device to landscape for the full table.
+          {gwStandingsFrozen ? (
+            <>
+              {' '}
+              Frozen standings use league totals from the last loaded league file; refresh ingest /
+              deploy so <code>details.json</code> matches FPL if PTS look stale.
+            </>
+          ) : null}
         </p>
       </section>
     </div>
