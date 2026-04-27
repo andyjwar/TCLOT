@@ -5923,6 +5923,23 @@ button.live-fixture-banner--toggle {
   white-space: nowrap;
 }
 
+/* Narrow portrait: icon-only chip (parent keeps role="img" + aria-label for a11y) */
+@media (max-width: 1080px) and (orientation: portrait) {
+  .live-hero-defeat__label {
+    display: none;
+  }
+
+  .live-hero-defeat {
+    gap: 0;
+    padding: 2px 4px;
+  }
+
+  .live-hero-defeat--compact {
+    gap: 0;
+    padding: 2px 3px;
+  }
+}
+
 .live-fixture-tile--hero-defeat {
   box-shadow: 0 0 0 1px color-mix(in srgb, #d97706 30%, transparent);
 }

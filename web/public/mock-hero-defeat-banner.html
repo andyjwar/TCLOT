@@ -175,6 +175,17 @@
         max-width: 4.75rem;
         white-space: nowrap;
       }
+
+      /* Match App.css: narrow portrait = image only */
+      @media (max-width: 1080px) and (orientation: portrait) {
+        .live-hero-defeat .label {
+          display: none;
+        }
+        .live-hero-defeat {
+          gap: 0;
+          padding: 2px 3px;
+        }
+      }
     </style>
   </head>
   <body>
