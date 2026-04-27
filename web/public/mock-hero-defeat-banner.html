@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hero Defeat — banner mock (waving man)</title>
+    <style>
+      :root {
+        --fm-border: #e4e4e7;
+        --fm-surface-2: #f4f4f5;
+        --amber-bg: color-mix(in srgb, #d97706 14%, transparent);
+        --amber-border: color-mix(in srgb, #d97706 38%, #e4e4e7);
+        --amber-label: #b45309;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        padding: 24px;
+        font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+        background: #fafafa;
+        color: #18181b;
+      }
+      h1 {
+        font-size: 1.1rem;
+        margin: 0 0 8px;
+      }
+      p.note {
+        margin: 0 0 20px;
+        font-size: 0.85rem;
+        color: #52525b;
+        max-width: 42rem;
+      }
+      .demo-block {
+        margin-bottom: 28px;
+      }
+      .demo-block h2 {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #71717a;
+        margin: 0 0 10px;
+      }
+      /* Mirrors app fixture banner row */
+      .live-fixture-banner {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        width: 100%;
+        max-width: 720px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        background: var(--fm-surface-2);
+        border: 1px solid var(--fm-border);
+      }
+      .chev {
+        flex-shrink: 0;
+        width: 1rem;
+        color: #71717a;
+      }
+      .live-fixture-banner__row {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+      }
+      .live-fixture-banner__team {
+        display: flex;
+        flex: 1;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+      .live-fixture-banner__team--home {
+        justify-content: flex-start;
+      }
+      .live-fixture-banner__team--away {
+        justify-content: flex-end;
+      }
+      .live-fixture-banner__villain-edge {
+        flex: 0 0 auto;
+      }
+      .live-fixture-banner__team-cluster {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+        flex: 1;
+      }
+      .live-fixture-banner__team-cluster--home {
+        flex-direction: row;
+      }
+      .live-fixture-banner__team-cluster--away {
+        flex-direction: row;
+        justify-content: flex-end;
+      }
+      /* Let long team names shrink instead of colliding with the score / badge */
+      .live-fixture-banner__team-cluster > span:not(.avatar) {
+        min-width: 0;
+        flex: 1;
+      }
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, #a1a1aa, #d4d4d8);
+        flex-shrink: 0;
+      }
+      .name {
+        font-weight: 700;
+        font-size: 0.95rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .ltp {
+        font-size: 0.75rem;
+        color: #71717a;
+      }
+      .vs {
+        flex-shrink: 0;
+        font-size: 0.8rem;
+        color: #a1a1aa;
+        font-weight: 600;
+      }
+      .scorebox {
+        flex-shrink: 0;
+        text-align: center;
+        padding: 0 6px;
+      }
+      .score {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        font-size: 1.05rem;
+      }
+      .lead {
+        color: #16a34a;
+      }
+      .caption {
+        display: block;
+        font-size: 0.68rem;
+        color: #71717a;
+        margin-top: 2px;
+      }
+      /* Badge = same structure as .live-hero-defeat--compact in App.css */
+      .live-hero-defeat {
+        display: inline-flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 4px 5px;
+        padding: 2px 5px;
+        border-radius: 6px;
+        background: var(--amber-bg);
+        border: 1px solid var(--amber-border);
+      }
+      .live-hero-defeat img {
+        display: block;
+        width: 32px;
+        height: 46px;
+        object-fit: contain;
+        object-position: center bottom;
+        border-radius: 5px;
+        flex-shrink: 0;
+      }
+      .live-hero-defeat .label {
+        font-size: 0.52rem;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+        color: var(--amber-label);
+        line-height: 1.1;
+        max-width: 4.75rem;
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Hero Defeat — fixture banner mock</h1>
+    <p class="note">
+      Uses <code>hero-defeat.png</code> from this folder (same file the app loads). Open via
+      <code>file://…/mock-hero-defeat-banner.html</code> or, with Vite dev,
+      <code>http://localhost:5173/TCLOT/mock-hero-defeat-banner.html</code>.
+    </p>
+
+    <div class="demo-block">
+      <h2>Away losing (badge on the far right)</h2>
+      <div class="live-fixture-banner" aria-label="Mock fixture">
+        <span class="chev" aria-hidden="true">▶</span>
+        <span class="live-fixture-banner__row">
+          <span class="live-fixture-banner__team live-fixture-banner__team--home">
+            <span class="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--home">
+              <span class="avatar" aria-hidden="true"></span>
+              <span>
+                <div class="name">North London Reds</div>
+                <div class="ltp">3 fixtures left</div>
+              </span>
+            </span>
+          </span>
+          <span class="vs" aria-hidden="true">vs</span>
+          <span class="scorebox">
+            <span class="score"><span class="lead">64</span> – 58</span>
+            <span class="caption">GW pts (live)</span>
+          </span>
+          <span class="live-fixture-banner__team live-fixture-banner__team--away">
+            <span class="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--away">
+              <span class="avatar" aria-hidden="true"></span>
+              <span style="text-align: right">
+                <div class="name">Merseyside Blues</div>
+                <div class="ltp">1 fixture left</div>
+              </span>
+            </span>
+            <span class="live-fixture-banner__villain-edge">
+              <span class="live-hero-defeat" role="img" aria-label="Hero Defeat">
+                <img src="./hero-defeat.png" alt="" width="32" height="46" decoding="async" />
+                <span class="label" aria-hidden="true">Hero Defeat</span>
+              </span>
+            </span>
+          </span>
+        </span>
+      </div>
+    </div>
+
+    <div class="demo-block">
+      <h2>Home losing (badge on the far left)</h2>
+      <div class="live-fixture-banner" aria-label="Mock fixture">
+        <span class="chev" aria-hidden="true">▶</span>
+        <span class="live-fixture-banner__row">
+          <span class="live-fixture-banner__team live-fixture-banner__team--home">
+            <span class="live-fixture-banner__villain-edge">
+              <span class="live-hero-defeat" role="img" aria-label="Hero Defeat">
+                <img src="./hero-defeat.png" alt="" width="32" height="46" decoding="async" />
+                <span class="label" aria-hidden="true">Hero Defeat</span>
+              </span>
+            </span>
+            <span class="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--home">
+              <span class="avatar" aria-hidden="true"></span>
+              <span>
+                <div class="name">North London Reds</div>
+                <div class="ltp">2 fixtures left</div>
+              </span>
+            </span>
+          </span>
+          <span class="vs" aria-hidden="true">vs</span>
+          <span class="scorebox">
+            <span class="score">52 – <span class="lead">61</span></span>
+            <span class="caption">GW pts (live)</span>
+          </span>
+          <span class="live-fixture-banner__team live-fixture-banner__team--away">
+            <span class="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--away">
+              <span class="avatar" aria-hidden="true"></span>
+              <span style="text-align: right">
+                <div class="name">Merseyside Blues</div>
+                <div class="ltp">0 fixtures left</div>
+              </span>
+            </span>
+          </span>
+        </span>
+      </div>
+    </div>
+  </body>
+</html>

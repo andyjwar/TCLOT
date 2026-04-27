@@ -5868,6 +5868,87 @@ button.live-fixture-banner--toggle {
   background: color-mix(in srgb, #7c3aed 8%, transparent);
 }
 
+/* Hero defeat: 2nd-highest raw GW in the league but losing this H2H on live GW pts */
+.live-hero-defeat {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, #d97706 14%, transparent);
+  border: 1px solid color-mix(in srgb, #d97706 38%, var(--fm-border));
+}
+
+.live-hero-defeat--compact {
+  padding: 2px 5px;
+  gap: 4px 5px;
+  border-radius: 6px;
+  flex-wrap: nowrap;
+}
+
+/* Full-body / tall cutouts: contain so the figure stays visible in the chip */
+.live-hero-defeat__img {
+  display: block;
+  width: 38px;
+  height: 52px;
+  object-fit: contain;
+  object-position: center bottom;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.live-hero-defeat--compact .live-hero-defeat__img {
+  width: 32px;
+  height: 46px;
+  border-radius: 5px;
+}
+
+.live-hero-defeat__label {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #b45309;
+  line-height: 1.15;
+  max-width: 8.5rem;
+}
+
+.live-hero-defeat--compact .live-hero-defeat__label {
+  font-size: 0.52rem;
+  letter-spacing: 0.02em;
+  line-height: 1.1;
+  max-width: 4.75rem;
+  white-space: nowrap;
+}
+
+.live-fixture-tile--hero-defeat {
+  box-shadow: 0 0 0 1px color-mix(in srgb, #d97706 30%, transparent);
+}
+
+/* One side villain, other hero — show both accent rings */
+.live-fixture-tile--villain-victory.live-fixture-tile--hero-defeat {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, #7c3aed 28%, transparent),
+    0 0 0 3px color-mix(in srgb, #d97706 26%, transparent);
+}
+
+.live-fixture-column--hero-defeat {
+  background: color-mix(in srgb, #d97706 7%, transparent);
+  border-radius: 8px;
+  padding: 6px 8px 0;
+  margin: -6px -8px 0;
+}
+
+.live-squad-tile--hero-defeat {
+  box-shadow: 0 0 0 1px color-mix(in srgb, #d97706 30%, transparent);
+}
+
+.standings-row--hero-defeat td {
+  background: color-mix(in srgb, #d97706 9%, transparent);
+}
+
 .live-squad-meta {
   display: flex;
   flex-wrap: wrap;

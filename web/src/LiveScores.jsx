@@ -385,6 +385,49 @@ function villainVictoryLeagueEntryIds(squads, gwMatches) {
   return out;
 }
 
+/**
+ * Managers **losing** their H2H on live GW points while their raw GW total is **2nd** highest in
+ * the league — “hero defeat”.
+ * @param {object[]} squads
+ * @param {object[]} gwMatches
+ * @returns {Set<number>}
+ */
+function heroDefeatLeagueEntryIds(squads, gwMatches) {
+  const ordinalById = fplGwScoreOrdinalByEntryId(squads);
+  const byEntry = new Map(
+    (squads || []).map((s) => [Number(s.leagueEntryId), s])
+  );
+  const out = new Set();
+
+  for (const m of gwMatches || []) {
+    const homeId = Number(m.league_entry_1);
+    const awayId = Number(m.league_entry_2);
+    if (!Number.isFinite(homeId) || !Number.isFinite(awayId)) continue;
+
+    const homePts = liveGwDisplayTotal(byEntry.get(homeId));
+    const awayPts = liveGwDisplayTotal(byEntry.get(awayId));
+    if (
+      homePts == null ||
+      awayPts == null ||
+      !Number.isFinite(Number(homePts)) ||
+      !Number.isFinite(Number(awayPts))
+    ) {
+      continue;
+    }
+    const h = Number(homePts);
+    const a = Number(awayPts);
+
+    if (h < a) {
+      const ord = ordinalById.get(homeId);
+      if (ord === 2) out.add(homeId);
+    } else if (a < h) {
+      const ord = ordinalById.get(awayId);
+      if (ord === 2) out.add(awayId);
+    }
+  }
+  return out;
+}
+
 /** Joker + “Villain Detected” for live tiles (image in `public/villain-detected.png`). */
 function VillainDetectedBadge({ variant = 'default' }) {
   const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
@@ -410,6 +453,36 @@ function VillainDetectedBadge({ variant = 'default' }) {
       />
       <span className="live-villain-detected__label" aria-hidden="true">
         Villain Detected
+      </span>
+    </span>
+  );
+}
+
+/** Bonnie Tyler cover + “Hero Defeat” (`public/hero-defeat.png`). */
+function HeroDefeatBadge({ variant = 'default' }) {
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
+  const src = `${base}hero-defeat.png`;
+  const compact = variant === 'compact';
+  return (
+    <span
+      className={
+        'live-hero-defeat' +
+        (compact ? ' live-hero-defeat--compact' : '')
+      }
+      role="img"
+      aria-label="Hero defeat: 2nd-highest raw gameweek score in the league but losing this head-to-head on live points"
+    >
+      <img
+        className="live-hero-defeat__img"
+        src={src}
+        alt=""
+        width={compact ? 32 : 38}
+        height={compact ? 46 : 52}
+        decoding="async"
+        loading="lazy"
+      />
+      <span className="live-hero-defeat__label" aria-hidden="true">
+        Hero Defeat
       </span>
     </span>
   );
@@ -888,6 +961,11 @@ export function LiveScores({
     [squads, gwMatches]
   );
 
+  const heroDefeatEntryIds = useMemo(
+    () => heroDefeatLeagueEntryIds(squads, gwMatches),
+    [squads, gwMatches]
+  );
+
   /** One object per H2H fixture with both sides’ fixture totals and player lines. */
   const leftToPlayByFixture = useMemo(() => {
     if (!gwMatches.length) return [];
@@ -1076,6 +1154,8 @@ export function LiveScores({
 
             const homeVillain = villainVictoryEntryIds.has(homeId);
             const awayVillain = villainVictoryEntryIds.has(awayId);
+            const homeHero = heroDefeatEntryIds.has(homeId);
+            const awayHero = heroDefeatEntryIds.has(awayId);
 
             const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
             const lineupOpen = expandedFixtures.has(fixtureKey);
@@ -1088,7 +1168,8 @@ export function LiveScores({
                   'tile tile--compact live-fixture-tile' +
                   (homeVillain || awayVillain
                     ? ' live-fixture-tile--villain-victory'
-                    : '')
+                    : '') +
+                  (homeHero || awayHero ? ' live-fixture-tile--hero-defeat' : '')
                 }
                 aria-label={
                   typeof homeLtp === 'number' && typeof awayLtp === 'number'
@@ -1111,6 +1192,10 @@ export function LiveScores({
                       {homeVillain ? (
                         <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--home">
                           <VillainDetectedBadge variant="compact" />
+                        </span>
+                      ) : homeHero ? (
+                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--home">
+                          <HeroDefeatBadge variant="compact" />
                         </span>
                       ) : null}
                       <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--home">
@@ -1217,6 +1302,10 @@ export function LiveScores({
                         <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
                           <VillainDetectedBadge variant="compact" />
                         </span>
+                      ) : awayHero ? (
+                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
+                          <HeroDefeatBadge variant="compact" />
+                        </span>
                       ) : null}
                     </span>
                   </span>
@@ -1233,7 +1322,8 @@ export function LiveScores({
                   <div
                     className={
                       'live-fixture-column' +
-                      (homeVillain ? ' live-fixture-column--villain-victory' : '')
+                      (homeVillain ? ' live-fixture-column--villain-victory' : '') +
+                      (homeHero ? ' live-fixture-column--hero-defeat' : '')
                     }
                   >
                     <div className="live-fixture-column-head">
@@ -1243,7 +1333,11 @@ export function LiveScores({
                             {homeName}
                             <LeftToPlayOutsideAfter count={homeLtp} />
                           </span>
-                          {homeVillain ? <VillainDetectedBadge /> : null}
+                          {homeVillain ? (
+                            <VillainDetectedBadge />
+                          ) : homeHero ? (
+                            <HeroDefeatBadge />
+                          ) : null}
                         </span>
                       </h3>
                       <div className="live-squad-meta tabular">
@@ -1263,7 +1357,8 @@ export function LiveScores({
                   <div
                     className={
                       'live-fixture-column' +
-                      (awayVillain ? ' live-fixture-column--villain-victory' : '')
+                      (awayVillain ? ' live-fixture-column--villain-victory' : '') +
+                      (awayHero ? ' live-fixture-column--hero-defeat' : '')
                     }
                   >
                     <div className="live-fixture-column-head">
@@ -1273,7 +1368,11 @@ export function LiveScores({
                             {awayName}
                             <LeftToPlayOutsideAfter count={awayLtp} />
                           </span>
-                          {awayVillain ? <VillainDetectedBadge /> : null}
+                          {awayVillain ? (
+                            <VillainDetectedBadge />
+                          ) : awayHero ? (
+                            <HeroDefeatBadge />
+                          ) : null}
                         </span>
                       </h3>
                       <div className="live-squad-meta tabular">
@@ -1299,12 +1398,14 @@ export function LiveScores({
       ) : (
         squads.map((squad) => {
           const squadVillain = villainVictoryEntryIds.has(Number(squad.leagueEntryId));
+          const squadHero = heroDefeatEntryIds.has(Number(squad.leagueEntryId));
           return (
             <section
               key={squad.leagueEntryId}
               className={
                 'tile tile--compact live-squad-tile' +
-                (squadVillain ? ' live-squad-tile--villain-victory' : '')
+                (squadVillain ? ' live-squad-tile--villain-victory' : '') +
+                (squadHero ? ' live-squad-tile--hero-defeat' : '')
               }
               aria-labelledby={`live-squad-${squad.leagueEntryId}`}
             >
@@ -1330,7 +1431,11 @@ export function LiveScores({
                       {squad.teamName}
                       <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
                     </span>
-                    {squadVillain ? <VillainDetectedBadge variant="compact" /> : null}
+                    {squadVillain ? (
+                      <VillainDetectedBadge variant="compact" />
+                    ) : squadHero ? (
+                      <HeroDefeatBadge variant="compact" />
+                    ) : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1353,12 +1458,14 @@ export function LiveScores({
       {useFixtureLayout && orphanSquads.length > 0
         ? orphanSquads.map((squad) => {
             const squadVillain = villainVictoryEntryIds.has(Number(squad.leagueEntryId));
+            const squadHero = heroDefeatEntryIds.has(Number(squad.leagueEntryId));
             return (
             <section
               key={`orphan-${squad.leagueEntryId}`}
               className={
                 'tile tile--compact live-squad-tile live-squad-tile--orphan' +
-                (squadVillain ? ' live-squad-tile--villain-victory' : '')
+                (squadVillain ? ' live-squad-tile--villain-victory' : '') +
+                (squadHero ? ' live-squad-tile--hero-defeat' : '')
               }
               aria-labelledby={`live-squad-o-${squad.leagueEntryId}`}
             >
@@ -1387,7 +1494,11 @@ export function LiveScores({
                       {squad.teamName}
                       <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
                     </span>
-                    {squadVillain ? <VillainDetectedBadge variant="compact" /> : null}
+                    {squadVillain ? (
+                      <VillainDetectedBadge variant="compact" />
+                    ) : squadHero ? (
+                      <HeroDefeatBadge variant="compact" />
+                    ) : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1569,6 +1680,9 @@ export function LiveScores({
                   const isVillainVictory = villainVictoryEntryIds.has(
                     Number(row.league_entry)
                   );
+                  const isHeroDefeat = heroDefeatEntryIds.has(
+                    Number(row.league_entry)
+                  );
                   const rowClass = [
                     isLeader ? 'row-highlight' : '',
                     row.liveRank === 1 ? 'standings-row--divider-below' : '',
@@ -1576,6 +1690,7 @@ export function LiveScores({
                       ? 'standings-row--divider-above standings-row--8th'
                       : '',
                     isVillainVictory ? 'standings-row--villain-victory' : '',
+                    isHeroDefeat ? 'standings-row--hero-defeat' : '',
                   ]
                     .filter(Boolean)
                     .join(' ');
@@ -1609,6 +1724,8 @@ export function LiveScores({
                             {row.teamName}
                             {isVillainVictory ? (
                               <VillainDetectedBadge variant="compact" />
+                            ) : isHeroDefeat ? (
+                              <HeroDefeatBadge variant="compact" />
                             ) : null}
                             {moveUp ? (
                               <span
