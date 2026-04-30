@@ -23,6 +23,7 @@ import {
 } from './useLeagueData'
 import { TeamAvatar } from './TeamAvatar'
 import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
+import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
 import { PremWindow } from './PremWindow'
@@ -954,6 +955,9 @@ function App() {
     setFplLiveLandingGw(meta?.currentGw ?? null)
   }, [])
 
+  /** FPL draft calendar — fetched on mount so Waivers tab does not depend on opening Live first. */
+  const draftBootstrapEvents = useDraftBootstrapEvents()
+
   useEffect(() => {
     if (dashboardView === 'trades' && !showDashboardTrades) {
       setDashboardView('live')
@@ -1113,18 +1117,57 @@ function App() {
     processedCompleteGws.length > 0
       ? processedCompleteGws[processedCompleteGws.length - 1]
       : null
-  const waiverGwEffective = (() => {
-    const fallback =
-      latestProcessedWaiverGw ?? previousGameweek ?? 1
+
+  const draftGwCalendarCurrent =
+    draftBootstrapEvents.current ?? fplLiveLandingGw
+  const draftGwCalendarNext = draftBootstrapEvents.next
+
+  /** Waiver GW picker: drops-gw-live GWs plus draft bootstrap current/next (shows GW35 before redeploy). */
+  const waiverGwPickerOptions = useMemo(() => {
+    const s = new Set(processedWaiverGws)
+    const cur = Number(draftGwCalendarCurrent)
+    const nxt = Number(draftGwCalendarNext)
+    if (Number.isFinite(cur) && cur >= 1 && cur <= 38) s.add(cur)
+    if (Number.isFinite(nxt) && nxt >= 1 && nxt <= 38) s.add(nxt)
+    return [...s].sort((a, b) => a - b)
+  }, [processedWaiverGws, draftGwCalendarCurrent, draftGwCalendarNext])
+
+  /**
+   * Default waiver tab GW: when static JSON lags FPL (e.g. GW35 waivers in API but build not yet),
+   * follow `events.next` so the upcoming waiver week is selected automatically.
+   */
+  const waiverGwNumericFallback = useMemo(() => {
+    const lp = latestProcessedWaiverGw
+    const nLp = Number.isFinite(Number(lp)) ? Number(lp) : 0
+    const nNext = Number.isFinite(Number(draftGwCalendarNext))
+      ? Number(draftGwCalendarNext)
+      : 0
+    const nCur = Number.isFinite(Number(draftGwCalendarCurrent))
+      ? Number(draftGwCalendarCurrent)
+      : 0
+    if (nNext > nLp && nNext >= 1 && nNext <= 38) return nNext
+    if (nLp >= 1) return nLp
+    const pg = Number(previousGameweek)
+    if (Number.isFinite(pg) && pg >= 1 && pg <= 38) return pg
+    return Math.min(Math.max(nCur, nNext, 1), 38)
+  }, [
+    latestProcessedWaiverGw,
+    draftGwCalendarNext,
+    draftGwCalendarCurrent,
+    previousGameweek,
+  ])
+
+  const waiverGwEffective = useMemo(() => {
+    const opts = waiverGwPickerOptions
+    const fallback = waiverGwNumericFallback
     const raw = waiverGwView ?? fallback
-    if (
-      processedWaiverGws.length > 0 &&
-      !processedWaiverGws.includes(raw)
-    ) {
-      return latestProcessedWaiverGw ?? processedWaiverGws[0]
+    if (!opts.length) {
+      return Number.isFinite(raw) && raw >= 1 ? raw : 1
     }
-    return raw
-  })()
+    if (opts.includes(raw)) return raw
+    if (opts.includes(fallback)) return fallback
+    return opts[opts.length - 1]
+  }, [waiverGwView, waiverGwNumericFallback, waiverGwPickerOptions])
 
   const completeGwEffective = (() => {
     const fallback =
@@ -2227,14 +2270,14 @@ function App() {
                         Waiver summary
                       </button>
                     </span>
-                    {processedWaiverGws.length > 0 ? (
+                    {waiverGwPickerOptions.length > 0 ? (
                       <select
                         className="tile-gw-select tile-gw-select--inline"
                         aria-label="Waivers game week"
                         value={waiverGwEffective}
                         onChange={(e) => setWaiverGwView(Number(e.target.value))}
                       >
-                        {processedWaiverGws.map((gw) => (
+                        {waiverGwPickerOptions.map((gw) => (
                           <option key={gw} value={gw}>
                             {gameWeekSelectLabel(gw)}
                           </option>
