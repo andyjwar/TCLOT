@@ -5925,6 +5925,22 @@ button.live-fixture-banner--toggle {
 
 /* Narrow portrait: icon-only chip (parent keeps role="img" + aria-label for a11y) */
 @media (max-width: 1080px) and (orientation: portrait) {
+  .live-villain-detected__label {
+    display: none;
+  }
+
+  .live-villain-detected {
+    gap: 0;
+    padding: 2px 4px;
+    flex-wrap: nowrap;
+  }
+
+  .live-villain-detected--compact {
+    gap: 0;
+    padding: 2px 3px;
+    flex-wrap: nowrap;
+  }
+
   .live-hero-defeat__label {
     display: none;
   }
