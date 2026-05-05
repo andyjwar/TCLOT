@@ -94,6 +94,7 @@ jobs:
           VITE_SHOW_DASHBOARD_HALL: ${{ vars.VITE_SHOW_DASHBOARD_HALL }}
           # Playoff bracket: omit = hidden. ExFOS: set to true in repo Variables.
           VITE_SHOW_DASHBOARD_PLAYOFF: ${{ vars.VITE_SHOW_DASHBOARD_PLAYOFF }}
+          VITE_LEAGUE_DATA_REVISION: gw-${{ github.sha }}
         run: |
           echo "VITE_BASE_PATH=$VITE_BASE_PATH (relative — use URL with trailing slash: …/repo-name/)"
           if [ -n "$VITE_FPL_PROXY_URL" ]; then

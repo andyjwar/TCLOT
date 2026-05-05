@@ -41,6 +41,10 @@ import {
   computeHallManagerTeamHistory,
   computeLiveHallManagerCareerRows,
 } from './hallManagerHistory'
+import {
+  resolveDefaultWaiverGameweek,
+  resolveLiveGameweek,
+} from './h2hScheduleGw.js'
 import './App.css'
 
 /** Sorted ascending unique GWs from schedule rows (1–38). */
@@ -919,6 +923,9 @@ function App() {
     gwRankExtremesMeta = { maxGw: 0, teamCount: 0 },
     gwWeeksAtFirst = [],
     gwWeeksAtLast = [],
+    gwRawPointsRankMeta = { maxGw: 0, teamCount: 0 },
+    gwRawPointsRankRows = [],
+    leagueDataRevision = null,
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [formTeamId, setFormTeamId] = useState(null)
@@ -1136,26 +1143,25 @@ function App() {
    * Default waiver tab GW: when static JSON lags FPL (e.g. GW35 waivers in API but build not yet),
    * follow `events.next` so the upcoming waiver week is selected automatically.
    */
-  const waiverGwNumericFallback = useMemo(() => {
-    const lp = latestProcessedWaiverGw
-    const nLp = Number.isFinite(Number(lp)) ? Number(lp) : 0
-    const nNext = Number.isFinite(Number(draftGwCalendarNext))
-      ? Number(draftGwCalendarNext)
-      : 0
-    const nCur = Number.isFinite(Number(draftGwCalendarCurrent))
-      ? Number(draftGwCalendarCurrent)
-      : 0
-    if (nNext > nLp && nNext >= 1 && nNext <= 38) return nNext
-    if (nLp >= 1) return nLp
-    const pg = Number(previousGameweek)
-    if (Number.isFinite(pg) && pg >= 1 && pg <= 38) return pg
-    return Math.min(Math.max(nCur, nNext, 1), 38)
-  }, [
-    latestProcessedWaiverGw,
-    draftGwCalendarNext,
-    draftGwCalendarCurrent,
-    previousGameweek,
-  ])
+  const waiverGwNumericFallback = useMemo(
+    () =>
+      resolveDefaultWaiverGameweek({
+        matches,
+        latestProcessedWaiverGw,
+        waiverOutGwRows,
+        bootstrapCurrent: draftGwCalendarCurrent,
+        bootstrapNext: draftGwCalendarNext,
+        previousGameweek,
+      }),
+    [
+      matches,
+      latestProcessedWaiverGw,
+      waiverOutGwRows,
+      draftGwCalendarCurrent,
+      draftGwCalendarNext,
+      previousGameweek,
+    ],
+  )
 
   const waiverGwEffective = useMemo(() => {
     const opts = waiverGwPickerOptions
@@ -1383,12 +1389,14 @@ function App() {
     )
   }
 
-  /**
-   * Live tab GW: explicit pick → FPL official current (from bootstrap) → first unfinished H2H in
-   * schedule → last finished — so e.g. GW31 shows while live, not GW30.
-   */
-  const liveGameweek =
-    Number(liveGw ?? fplLiveLandingGw ?? nextEvent ?? previousGameweek ?? 1) || 1
+  const liveGameweek = resolveLiveGameweek({
+    matches,
+    bootstrapCurrent: draftBootstrapEvents.current ?? fplLiveLandingGw,
+    previousGameweek,
+    nextEvent,
+    fplLiveLandingGw,
+    explicitLiveGw: liveGw,
+  })
 
   const renderGwFixture = (fx, i) => {
     const homeRank = rankByEntryId.get(fx.homeId)
@@ -1534,6 +1542,18 @@ function App() {
                 <code>web/public/league-data/</code>. ID: <code>draft.premierleague.com/league/YOUR_ID</code>
               </div>
             )}
+            {!isSampleData && !fetchFailedDemo && previousGameweek != null ? (
+              <div className="data-banner data-banner--muted" role="status">
+                Head-to-head schedule through{' '}
+                <span className="tabular">GW {previousGameweek}</span>
+                {leagueDataRevision ? (
+                  <span className="muted"> · data {leagueDataRevision}</span>
+                ) : null}
+                . FPL calendar may show GW {draftGwCalendarNext ?? draftGwCalendarCurrent ?? '—'} before
+                this file updates — use <strong>Complete game weeks</strong> or the Live GW picker for the
+                latest finished H2H week.
+              </div>
+            ) : null}
           </header>
         </div>
         <nav className="dashboard-nav" aria-label="Dashboard sections">
@@ -2084,6 +2104,109 @@ function App() {
               <p className="muted muted--tight">No losses in finished matches yet.</p>
             )}
           </section>
+
+                <section
+                  className="tile tile--compact"
+                  aria-labelledby="gw-raw-points-rank-heading"
+                >
+                  <div className="tile-head-row tile-head-row--tight">
+                    <h2 id="gw-raw-points-rank-heading" className="tile-title tile-title--sm">
+                      Gameweek points table
+                    </h2>
+                  </div>
+                  <p className="tile-hint muted tile-hint--tight">
+                    Each finished week, teams are ordered by <strong>raw GW FPL points</strong>{' '}
+                    (from the H2H scoreline). Finish 1st → 1 position point, 8th → 8 (lower
+                    total is better). Tied raw scores share the average of those ranks.
+                    <strong> Villain</strong>: won the H2H while ranked 7th on raw GW points.{' '}
+                    <strong> Hero</strong>: lost the H2H while ranked 2nd (same rules as Live).
+                    {gwRawPointsRankMeta.maxGw > 0 ? (
+                      <>
+                        {' '}
+                        Through <span className="tabular">GW {gwRawPointsRankMeta.maxGw}</span>.
+                      </>
+                    ) : null}
+                  </p>
+                  {gwRawPointsRankRows.length > 0 ? (
+                    <div className="table-scroll table-scroll--win-margin">
+                      <table className="win-margin-table gw-raw-points-rank-table">
+                        <thead>
+                          <tr>
+                            <th scope="col" className="win-margin-table__team">
+                              Team
+                            </th>
+                            <th
+                              scope="col"
+                              className="win-margin-table__n tabular"
+                              title="Sum of weekly position points (1 best … 8 worst)"
+                            >
+                              Total
+                            </th>
+                            <th
+                              scope="col"
+                              className="win-margin-table__n tabular"
+                              title="Mean finish position by raw GW points (1 = best)"
+                            >
+                              Avg finish
+                            </th>
+                            <th
+                              scope="col"
+                              className="win-margin-table__n tabular"
+                              title="Villain victory: H2H win at 7th on raw GW points"
+                            >
+                              Villain
+                            </th>
+                            <th
+                              scope="col"
+                              className="win-margin-table__n tabular"
+                              title="Hero defeat: H2H loss at 2nd on raw GW points"
+                            >
+                              Hero
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {gwRawPointsRankRows.map((row) => (
+                            <tr key={row.league_entry}>
+                              <th scope="row" className="win-margin-table__team">
+                                <span className="win-margin-table__team-inner">
+                                  <TeamAvatar
+                                    entryId={row.league_entry}
+                                    name={row.teamName}
+                                    size="sm"
+                                    logoMap={teamLogoMap}
+                                    kitIndexByEntry={kitIndexByEntry}
+                                  />
+                                  <span className="win-margin-table__name">{row.teamName}</span>
+                                </span>
+                              </th>
+                              <td className="tabular win-margin-table__n">
+                                {Number.isInteger(row.totalPositionPoints)
+                                  ? row.totalPositionPoints
+                                  : row.totalPositionPoints.toFixed(1)}
+                              </td>
+                              <td className="tabular win-margin-table__n">
+                                {row.avgFinishRank != null
+                                  ? row.avgFinishRank.toFixed(2)
+                                  : '—'}
+                              </td>
+                              <td className="tabular win-margin-table__n">
+                                {row.villainVictories}
+                              </td>
+                              <td className="tabular win-margin-table__n">{row.heroDefeats}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  ) : (
+                    <p className="muted muted--tight">
+                      {gwRawPointsRankMeta.maxGw > 0
+                        ? 'No finished gameweek scores for all teams yet.'
+                        : 'No finished gameweeks in the schedule yet.'}
+                    </p>
+                  )}
+                </section>
 
                 <div className="dashboard-gw-two">
                   <section className="tile tile--compact" aria-labelledby="gw-weeks-first-heading">

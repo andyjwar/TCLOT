@@ -1,15 +1,36 @@
 import { useState, useEffect } from 'react';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
+import { buildGwRawPointsRankSeasonTotals } from './gwRawPointsRankSeason.js';
 
 const DATA_BASE = `${import.meta.env.BASE_URL}league-data`;
+/** Set at build (`write-league-data-revision.mjs`) and mirrored in `revision.json`. */
+const BUILD_LEAGUE_DATA_V = String(import.meta.env.VITE_LEAGUE_DATA_REVISION || '').trim();
+
+async function leagueDataCacheKey() {
+  if (BUILD_LEAGUE_DATA_V) return BUILD_LEAGUE_DATA_V;
+  try {
+    const r = await fetch(`${DATA_BASE}/revision.json`, { cache: 'no-store' });
+    if (!r.ok) return '';
+    const j = await r.json();
+    return j?.v != null ? String(j.v) : '';
+  } catch {
+    return '';
+  }
+}
+
+function leagueDataUrl(path, cacheKey) {
+  const base = `${DATA_BASE}/${path}`;
+  if (!cacheKey) return base;
+  return `${base}${base.includes('?') ? '&' : '?'}v=${encodeURIComponent(cacheKey)}`;
+}
 const FORM_LAST_N = 7;
 /** Team form tile: last N finished H2Hs (standings form column still uses FORM_LAST_N). */
 const FORM_STRIP_N = 8;
 
-async function fetchJSON(path) {
-  const url = `${DATA_BASE}/${path}`;
-  const res = await fetch(url);
+async function fetchJSON(path, cacheKey = '') {
+  const url = leagueDataUrl(path, cacheKey);
+  const res = await fetch(url, cacheKey ? { cache: 'no-store' } : undefined);
   if (!res.ok) {
     const abs = new URL(url, window.location.href).href;
     throw new Error(`${path} (${res.status}). Tried: ${abs}`);
@@ -17,9 +38,9 @@ async function fetchJSON(path) {
   return res.json();
 }
 
-async function fetchJSONOptional(path) {
+async function fetchJSONOptional(path, cacheKey = '') {
   try {
-    const res = await fetch(`${DATA_BASE}/${path}`);
+    const res = await fetch(leagueDataUrl(path, cacheKey), cacheKey ? { cache: 'no-store' } : undefined);
     if (!res.ok) return null;
     return res.json();
   } catch {
@@ -28,9 +49,9 @@ async function fetchJSONOptional(path) {
 }
 
 /** Try paths in order (ad blockers often block URLs containing "waiver"). */
-async function fetchFirstOptional(paths) {
+async function fetchFirstOptional(paths, cacheKey = '') {
   for (const p of paths) {
-    const j = await fetchJSONOptional(p);
+    const j = await fetchJSONOptional(p, cacheKey);
     if (j != null && typeof j === 'object') return j;
   }
   return null;
@@ -269,10 +290,11 @@ export function useLeagueData() {
     let cancelled = false;
     async function load() {
       try {
+        const leagueDataV = await leagueDataCacheKey();
         let details;
         let fetchFailedDemo = false;
         try {
-          details = await fetchJSON('details.json');
+          details = await fetchJSON('details.json', leagueDataV);
         } catch (fetchErr) {
           try {
             const mod = await import('../sample-details.json');
@@ -285,14 +307,17 @@ export function useLeagueData() {
         }
         const [transactions, fplMini, waiverOutGw, waiverInTenureTop, tradesPanel] =
           await Promise.all([
-            fetchJSONOptional('transactions.json'),
-            fetchJSONOptional('fpl-mini.json'),
-            fetchFirstOptional([
-              'drops-gw-live.json',
-              'waiver-out-gw-scores.json',
-            ]),
-            fetchFirstOptional(['pickups-tenure.json', 'waiver-in-tenure-top.json']),
-            fetchJSONOptional('trades-panel.json'),
+            fetchJSONOptional('transactions.json', leagueDataV),
+            fetchJSONOptional('fpl-mini.json', leagueDataV),
+            fetchFirstOptional(
+              ['drops-gw-live.json', 'waiver-out-gw-scores.json'],
+              leagueDataV,
+            ),
+            fetchFirstOptional(
+              ['pickups-tenure.json', 'waiver-in-tenure-top.json'],
+              leagueDataV,
+            ),
+            fetchJSONOptional('trades-panel.json', leagueDataV),
           ]);
         let teamLogoMap = {};
         try {
@@ -319,6 +344,7 @@ export function useLeagueData() {
             }),
             teamLogoMap,
             fetchFailedDemo,
+            leagueDataRevision: leagueDataV || null,
           });
       } catch (e) {
         if (!cancelled) setError(e.message);
@@ -675,6 +701,12 @@ function processLeagueData(raw, extras = {}) {
   );
 
   const { gwRankExtremesMeta, gwWeeksAtFirst, gwWeeksAtLast } = buildGwRankExtremes(
+    matches,
+    leagueEntries,
+    teams,
+  );
+
+  const { gwRawPointsRankMeta, gwRawPointsRankRows } = buildGwRawPointsRankSeasonTotals(
     matches,
     leagueEntries,
     teams,
@@ -1065,6 +1097,8 @@ function processLeagueData(raw, extras = {}) {
     gwRankExtremesMeta,
     gwWeeksAtFirst,
     gwWeeksAtLast,
+    gwRawPointsRankMeta,
+    gwRawPointsRankRows,
     mostWaiveredPlayers,
     pointsAgainstList,
     waiverOutGwRows,

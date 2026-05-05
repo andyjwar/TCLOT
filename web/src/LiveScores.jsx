@@ -10,6 +10,7 @@ import { useLiveScores } from './useLiveScores';
 import { eventNameToGameWeekLabel, gameWeekSelectLabel } from './gwLabel.js';
 import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
 import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
+import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
 
 /**
  * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
@@ -312,120 +313,25 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
-/**
- * Ordinal rank of raw FPL GW points among all loaded squads (1 = highest). Ties break by
- * `leagueEntryId` for a stable order.
- * @param {object[] | null | undefined} squads
- * @returns {Map<number, number>}
- */
-function fplGwScoreOrdinalByEntryId(squads) {
-  const rows = (squads || [])
-    .map((s) => ({
-      id: Number(s.leagueEntryId),
-      pts: liveGwDisplayTotal(s),
-    }))
-    .filter(
-      (r) =>
-        Number.isFinite(r.id) &&
-        r.pts != null &&
-        Number.isFinite(Number(r.pts))
-    );
-  rows.sort((a, b) => {
-    const d = Number(b.pts) - Number(a.pts);
-    if (d !== 0) return d;
-    return a.id - b.id;
-  });
-  const m = new Map();
-  rows.forEach((r, idx) => {
-    m.set(r.id, idx + 1);
-  });
-  return m;
+function squadsToGwPointsMap(squads) {
+  const pointsByEntryId = new Map();
+  for (const s of squads || []) {
+    const id = Number(s.leagueEntryId);
+    const pts = liveGwDisplayTotal(s);
+    if (!Number.isFinite(id) || pts == null || !Number.isFinite(Number(pts))) continue;
+    pointsByEntryId.set(id, Number(pts));
+  }
+  return pointsByEntryId;
 }
 
-/**
- * Managers winning their **H2H gameweek** on live GW points vs their opponent, while their raw
- * GW total is only the **7th** highest in the league (ordinal by `liveGwDisplayTotal` across squads).
- * @param {object[]} squads
- * @param {object[]} gwMatches — H2H rows for this GW (`league_entry_1` / `league_entry_2`)
- * @returns {Set<number>}
- */
+/** @param {object[]} squads @param {object[]} gwMatches */
 function villainVictoryLeagueEntryIds(squads, gwMatches) {
-  const ordinalById = fplGwScoreOrdinalByEntryId(squads);
-  const byEntry = new Map(
-    (squads || []).map((s) => [Number(s.leagueEntryId), s])
-  );
-  const out = new Set();
-
-  for (const m of gwMatches || []) {
-    const homeId = Number(m.league_entry_1);
-    const awayId = Number(m.league_entry_2);
-    if (!Number.isFinite(homeId) || !Number.isFinite(awayId)) continue;
-
-    const homePts = liveGwDisplayTotal(byEntry.get(homeId));
-    const awayPts = liveGwDisplayTotal(byEntry.get(awayId));
-    if (
-      homePts == null ||
-      awayPts == null ||
-      !Number.isFinite(Number(homePts)) ||
-      !Number.isFinite(Number(awayPts))
-    ) {
-      continue;
-    }
-    const h = Number(homePts);
-    const a = Number(awayPts);
-
-    if (h > a) {
-      const ord = ordinalById.get(homeId);
-      if (ord === 7) out.add(homeId);
-    } else if (a > h) {
-      const ord = ordinalById.get(awayId);
-      if (ord === 7) out.add(awayId);
-    }
-  }
-  return out;
+  return villainVictoryEntryIds(squadsToGwPointsMap(squads), gwMatches);
 }
 
-/**
- * Managers **losing** their H2H on live GW points while their raw GW total is **2nd** highest in
- * the league — “hero defeat”.
- * @param {object[]} squads
- * @param {object[]} gwMatches
- * @returns {Set<number>}
- */
+/** @param {object[]} squads @param {object[]} gwMatches */
 function heroDefeatLeagueEntryIds(squads, gwMatches) {
-  const ordinalById = fplGwScoreOrdinalByEntryId(squads);
-  const byEntry = new Map(
-    (squads || []).map((s) => [Number(s.leagueEntryId), s])
-  );
-  const out = new Set();
-
-  for (const m of gwMatches || []) {
-    const homeId = Number(m.league_entry_1);
-    const awayId = Number(m.league_entry_2);
-    if (!Number.isFinite(homeId) || !Number.isFinite(awayId)) continue;
-
-    const homePts = liveGwDisplayTotal(byEntry.get(homeId));
-    const awayPts = liveGwDisplayTotal(byEntry.get(awayId));
-    if (
-      homePts == null ||
-      awayPts == null ||
-      !Number.isFinite(Number(homePts)) ||
-      !Number.isFinite(Number(awayPts))
-    ) {
-      continue;
-    }
-    const h = Number(homePts);
-    const a = Number(awayPts);
-
-    if (h < a) {
-      const ord = ordinalById.get(homeId);
-      if (ord === 2) out.add(homeId);
-    } else if (a < h) {
-      const ord = ordinalById.get(awayId);
-      if (ord === 2) out.add(awayId);
-    }
-  }
-  return out;
+  return heroDefeatEntryIds(squadsToGwPointsMap(squads), gwMatches);
 }
 
 /** Joker + “Villain Detected” for live tiles (image in `public/villain-detected.png`). */

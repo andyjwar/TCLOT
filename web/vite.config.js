@@ -4,6 +4,11 @@ import react from '@vitejs/plugin-react'
 // GitHub Actions sets VITE_BASE_PATH=./ for Pages; local dev defaults to /TCLOT/
 export default defineConfig({
   base: process.env.VITE_BASE_PATH || '/TCLOT/',
+  define: {
+    'import.meta.env.VITE_LEAGUE_DATA_REVISION': JSON.stringify(
+      process.env.VITE_LEAGUE_DATA_REVISION || '',
+    ),
+  },
   plugins: [react()],
   server: {
     // App lives under base `/TCLOT/` — open `http://localhost:5173/TCLOT/` (root URL alone is empty).
