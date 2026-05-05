@@ -344,7 +344,6 @@ export function useLeagueData() {
             }),
             teamLogoMap,
             fetchFailedDemo,
-            leagueDataRevision: leagueDataV || null,
           });
       } catch (e) {
         if (!cancelled) setError(e.message);

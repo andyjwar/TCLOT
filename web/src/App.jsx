@@ -925,7 +925,6 @@ function App() {
     gwWeeksAtLast = [],
     gwRawPointsRankMeta = { maxGw: 0, teamCount: 0 },
     gwRawPointsRankRows = [],
-    leagueDataRevision = null,
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [formTeamId, setFormTeamId] = useState(null)
@@ -1542,18 +1541,6 @@ function App() {
                 <code>web/public/league-data/</code>. ID: <code>draft.premierleague.com/league/YOUR_ID</code>
               </div>
             )}
-            {!isSampleData && !fetchFailedDemo && previousGameweek != null ? (
-              <div className="data-banner data-banner--muted" role="status">
-                Head-to-head schedule through{' '}
-                <span className="tabular">GW {previousGameweek}</span>
-                {leagueDataRevision ? (
-                  <span className="muted"> · data {leagueDataRevision}</span>
-                ) : null}
-                . FPL calendar may show GW {draftGwCalendarNext ?? draftGwCalendarCurrent ?? '—'} before
-                this file updates — use <strong>Complete game weeks</strong> or the Live GW picker for the
-                latest finished H2H week.
-              </div>
-            ) : null}
           </header>
         </div>
         <nav className="dashboard-nav" aria-label="Dashboard sections">
