@@ -8,8 +8,8 @@ on:
   workflow_dispatch:
   # Schedules (UTC):
   # - 30 5 * * * — once daily: full data refresh (gate always allows via daily window in script)
-  # - 0 * * * *  — every hour: only runs ingest+build in ~36h after each FPL `waivers_time` (from draft
-  #   bootstrap-static) or during the 05:26–05:45 daily window (see web/scripts/waiver-refresh-gate.mjs)
+  # - 0 * * * *  — every hour: post-waivers window, post-deadline ingest window, or 05:26–05:45 UTC daily
+  #   (see web/scripts/waiver-refresh-gate.mjs). Push / workflow_dispatch always deploy.
   schedule:
     - cron: '30 5 * * *'
     - cron: '0 * * * *'

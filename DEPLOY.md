@@ -19,6 +19,8 @@ The live site reads **`league-data/details.json`** (and other JSON next to it).
 On each build, GitHub runs **`ingest.py`** with that ID, then builds the site.  
 **If the secret lived only under “Environment” before, it never reached the build step** — that’s fixed now by tying the build job to the same `github-pages` environment, but **Repository secret** is still the simplest.
 
+**Scheduled builds are gated** (`web/scripts/waiver-refresh-gate.mjs`): the hourly cron only deploys during ~36h after each FPL `waivers_time`, during **05:26–05:45 UTC** daily, or (after a finished gameweek) from **2h after that GW’s deadline** until **3h before the next GW deadline** — so H2H `details.json` can update when a week ends, not only when waivers run. **Pushes to `main` and manual “Run workflow” always deploy.** If the live site looks a week behind, run the workflow or push after `python3 ingest.py` + `npm run publish-real-league`; open `deploy-check.json` on the site and confirm `details.json` reflects the latest finished GW.
+
 You can also set **Repository variable** `FPL_LEAGUE_ID` (Settings → Variables) if you prefer — same name.
 
 ### Path B — commit files
