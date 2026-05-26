@@ -18,6 +18,7 @@
 
 import { Fragment, useMemo, useState } from 'react'
 import { useLeagueData } from './useLeagueData'
+import { TeamAvatar } from './TeamAvatar'
 import './Mockup.css'
 import { MOCKUP_PART2_SECTIONS } from './MockupSurfacesPart2.jsx'
 import './MockupSurfacesPart2.css'
@@ -245,6 +246,7 @@ const DECISIONS_DECIDED = [
       'Variant B — gradient pill (lion + TCLOT) on left, season label right-aligned',
       'Theme toggle moves to a Settings page (not in header)',
       'Live / GW state chip lives on the Live page only (not in header)',
+      'Post-PR-#2 evolution: status strip below the brand pill (variant 1) — locked',
     ],
   },
   {
@@ -413,7 +415,7 @@ const DECISIONS_OPEN = [
     surface: 'OPEN VARIANTS · NEEDS PICK BEFORE PR #4',
     items: [
       'FPL Live sub-nav: text-only (A) vs PL-crest-on-Lineups-only (B) vs icons-everywhere (C). See SUB-NAV · FPL LIVE showcase.',
-      'Header evolution after PR #2: keep current (0) vs status strip (1) vs league strip (2) vs full-bleed (3). See HEADER · POST-PR-#2 EVOLUTION showcase.',
+      'Header polish details (post status-strip): 2025/26 caps-mono replaces "FPL DRAFT H2H" meta + 8 fantasy team crests right-aligned in standings order. See variant 4 PROPOSED in the HEADER · POST-PR-#2 EVOLUTION showcase.',
     ],
   },
 ]
@@ -740,7 +742,86 @@ function HeroVariantBLeagueStrip() {
   )
 }
 
-function HeaderVariantsShowcase() {
+/* Variant 4 (combined refinement of variant 1) — brand pill on left,
+ * '2025/26' caps-mono in the meta slot (replaces 'FPL Draft H2H'), and
+ * the 8 fantasy team crests in current standings order on the right.
+ *
+ * Crest source: production `TeamAvatar` component (same as live site).
+ * It tries `team-logos/{entryId}.{ext}` raw uploads, then the
+ * `team-logos-web/{entryId}.png` pipeline output, then falls back to
+ * a `ShirtInitialsBadge` SVG. That gives 4 real PNG crests today
+ * (Crouch End Oashisu, Hanson of York AFC, Morpeth Jamiroquai, plus
+ * one mapped via kit) and shirt-initial silhouettes for the rest —
+ * which is exactly how the production standings render them. */
+function HeroVariantBSeasonAndCrests({ rows, entries, teamLogoMap, kitIndexByEntry }) {
+  const entryById = useMemo(() => {
+    const m = {}
+    for (const e of entries ?? []) {
+      if (e?.id != null) m[e.id] = e
+    }
+    return m
+  }, [entries])
+  const top8 = useMemo(() => {
+    const sorted = [...(rows ?? [])].sort(
+      (a, b) => (a.rank ?? 99) - (b.rank ?? 99),
+    )
+    return sorted.slice(0, 8)
+  }, [rows])
+
+  return (
+    <div className="mockup-hero mockup-brand-b mockup-brand-b--crests">
+      <span className="mockup-brand-pill" aria-label="TCLOT">
+        <TclotLionIcon size={22} />
+        <span className="mockup-brand-pill__wordmark">TCLOT</span>
+      </span>
+      <span className="mockup-brand-b__meta mockup-brand-b__meta--season">
+        2025/26
+      </span>
+      <span
+        className="mockup-hero-team-crests"
+        aria-label="League standings — top 8"
+      >
+        {top8.length > 0 ? (
+          top8.map((r) => {
+            const e = entryById[r.league_entry] ?? {}
+            const teamName = e.entry_name ?? '—'
+            const mgr = `${e.player_first_name ?? ''} ${e.player_last_name ?? ''}`.trim()
+            const title = mgr
+              ? `${r.rank}. ${teamName} — ${mgr}`
+              : `${r.rank}. ${teamName}`
+            return (
+              <span
+                className="mockup-hero-team-crests__cell"
+                key={r.league_entry}
+                title={title}
+              >
+                <TeamAvatar
+                  entryId={e.id}
+                  name={teamName}
+                  size="sm"
+                  logoMap={teamLogoMap ?? {}}
+                  kitIndexByEntry={kitIndexByEntry}
+                  badgeFallback
+                />
+              </span>
+            )
+          })
+        ) : (
+          <span className="mockup-hero-team-crests__placeholder">
+            8 fantasy team crests · rank 1 → 8
+          </span>
+        )}
+      </span>
+    </div>
+  )
+}
+
+function HeaderVariantsShowcase({
+  tableRows,
+  leagueEntries,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
   return (
     <div className="mockup-header-variants">
       {/* 0. Baseline — current PR #2 */}
@@ -782,6 +863,38 @@ function HeaderVariantsShowcase() {
         </div>
         <div className="mockup-hero-tile mockup-hero-tile--bleed">
           <HeroVariantB />
+        </div>
+      </div>
+
+      {/* 4. Combined refinement of variant 1 — status strip locked,
+       *    plus '2025/26' caps-mono meta + 8 fantasy crests right. */}
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">
+          4 — Status strip + 2025/26 meta + 8 fantasy crests right (PROPOSED)
+          <span
+            className="mockup-variant-picked mockup-variant-picked--proposed"
+            aria-label="Proposed option"
+          >
+            PROPOSED
+          </span>
+        </div>
+        <div className="mockup-hero-tile">
+          <HeroVariantBSeasonAndCrests
+            rows={tableRows}
+            entries={leagueEntries}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+          <HeroVariantBStatusStrip state="live" />
+        </div>
+        <div className="mockup-hero-tile" style={{ marginTop: 'var(--space-3)' }}>
+          <HeroVariantBSeasonAndCrests
+            rows={tableRows}
+            entries={leagueEntries}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+          <HeroVariantBStatusStrip state="idle" />
         </div>
       </div>
     </div>
@@ -4563,14 +4676,22 @@ export function Mockup() {
         {/* 1b. Header variant showcase — post-PR-#2 evolution */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">HEADER · POST-PR-#2 EVOLUTION</div>
-          <h2 className="mockup__section-h">Three ideas to fill the white-tile space</h2>
+          <h2 className="mockup__section-h">Four ideas to fill the white-tile space</h2>
           <p className="mockup__section-sub">
             User flagged the current header reads as one large white tile.
-            These three options add informational density (status strip),
-            visual richness (league strip), or reduce tile-on-tile stacking
-            (full-bleed). Compare against the current PR #2 baseline.
+            Options 1–3 add informational density (status strip), visual
+            richness (league strip), or reduce tile-on-tile stacking
+            (full-bleed). Option 4 is the combined refinement on top of
+            the locked status-strip — adds the season meta in caps-mono
+            and the 8 fantasy crests in standings order. Compare against
+            the current PR #2 baseline (0).
           </p>
-          <HeaderVariantsShowcase />
+          <HeaderVariantsShowcase
+            tableRows={tableRows}
+            leagueEntries={leagueEntries}
+            teamLogoMap={data?.teamLogoMap ?? {}}
+            kitIndexByEntry={data?.defaultKitIndexByLeagueEntry ?? {}}
+          />
         </section>
 
         {/* 2. Accent compare */}

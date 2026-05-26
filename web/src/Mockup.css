@@ -6818,3 +6818,86 @@
   letter-spacing: 0.04em;
 }
 
+/* --- Variant 4 — '2025/26' caps-mono meta + 8 fantasy crests right --- */
+/* The brand row keeps the standard `auto 1fr auto` grid. The meta slot
+ * adopts the same Geist Mono / caps / muted treatment the right-hand
+ * season label already used (so the user sees the season treatment
+ * applied to the meta slot rather than the rightmost slot). The right
+ * slot becomes the crest row.
+ *
+ * Crest spacing: 4px gap (not -4px overlap). The shirt-silhouette
+ * fallback used for fantasy teams without a custom PNG has visible
+ * outlines that overlap awkwardly; the small gap reads cleaner at
+ * desktop and matches FotMob's compact crest rows on small surfaces. */
+.mockup-brand-b--crests .mockup-brand-b__meta--season {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.mockup-hero-team-crests {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  justify-self: end;
+  white-space: nowrap;
+}
+.mockup-hero-team-crests__cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+/* Force the production crest atom to 24px inside this row regardless of
+ * the size= prop. `team-avatar-frame--sm` is normally 28px; we shrink it
+ * locally so 8 crests fit cleanly in the 68px tile. */
+.mockup-hero-team-crests .team-avatar-frame {
+  width: 24px;
+  height: 24px;
+}
+.mockup-hero-team-crests .team-shirt {
+  width: 24px;
+  height: 24px;
+}
+.mockup-hero-team-crests__placeholder {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* PROPOSED pill — same shape as `mockup-variant-picked`, amber-leaning
+ * tone + circle glyph so it reads as 'candidate, not locked'. */
+.mockup-variant-picked--proposed {
+  background: color-mix(in srgb, var(--brand) 30%, var(--surface-2));
+  color: var(--text-strong);
+  border: 1px solid color-mix(in srgb, var(--brand) 45%, var(--border));
+}
+.mockup-variant-picked--proposed::before {
+  content: '◯';
+  font-weight: 600;
+}
+
+/* Mobile collapse — keep the brand pill + season meta, drop the crest
+ * row down to the first 3 + '+5' overflow chip. The status strip stays
+ * as-is. Quick spec-only sketch; production mobile is iterated later. */
+@media (max-width: 720px) {
+  .mockup-hero-team-crests__cell:nth-child(n + 4) {
+    display: none;
+  }
+  .mockup-hero-team-crests::after {
+    content: '+5';
+    font-family: 'Geist Mono', monospace;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    margin-left: 4px;
+    padding: 2px 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--r-sm);
+    background: var(--surface-2);
+  }
+}
+
