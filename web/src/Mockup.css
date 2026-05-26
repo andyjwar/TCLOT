@@ -6946,3 +6946,674 @@
   /* Inherits all styles from the base `.mockup-hero-status-strip`. */
 }
 
+/* ------------------------------------------------------------------ */
+/* Player Contributions — redesign mockups (PR #5b prep)                */
+/* ------------------------------------------------------------------ */
+/* Sample event feed redesigned with the modern token system. Used by  */
+/* four side-by-side showcases:                                         */
+/*   1. Row density: card per event vs single-line list                 */
+/*   2. Filter UX: chip pills · dropdown · icon-toggle                  */
+/*   3. Mobile collapsed: latest only + expand-to-5                     */
+/*   4. Streaming animation: brand-violet pulse on row arrival          */
+/*                                                                      */
+/* All rules are scoped under `.mockup` and use only existing tokens.    */
+
+/* Side-by-side density layout. Two equal columns at desktop; stacks on  */
+/* portrait. Reuses .mockup-portrait-row's grid + responsive collapse so */
+/* the breakpoint behaviour is consistent with other A/B comparisons.   */
+.mockup-contrib-density-row {
+  grid-template-columns: 1fr 1fr;
+}
+.mockup-contrib-filter-row {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 1100px) {
+  .mockup-contrib-filter-row { grid-template-columns: 1fr; }
+}
+@media (max-width: 820px) {
+  .mockup-contrib-density-row { grid-template-columns: 1fr; }
+}
+
+/* Monogram crest atom — a subtle filled circle with the team / club    */
+/* code inside. Three sizes match the manager-avatar (md), club-crest   */
+/* (sm) and inline-list (xs) needs across the variants. */
+.mockup-contrib-mono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-circle);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.mockup-contrib-mono--xs { width: 16px; height: 16px; font-size: 8px; }
+.mockup-contrib-mono--sm { width: 20px; height: 20px; font-size: 9px; }
+.mockup-contrib-mono--md { width: 24px; height: 24px; font-size: 10px; }
+
+/* Points pill — green tint for positive, red tint for negative.        */
+/* Mono numerals so the trailing digit aligns down a column.            */
+.mockup-contrib-pts {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 2px 6px;
+  border-radius: var(--r-sm);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.mockup-contrib-pts--pos {
+  color: var(--data-positive);
+  background: color-mix(in srgb, var(--data-positive) 16%, transparent);
+}
+.mockup-contrib-pts--neg {
+  color: var(--data-negative);
+  background: color-mix(in srgb, var(--data-negative) 16%, transparent);
+}
+
+/* ----- Variant A — card per event ----- */
+.mockup-contrib-card-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mockup-contrib-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.mockup-contrib-card:last-child { border-bottom: 0; }
+.mockup-contrib-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  min-width: 0;
+}
+.mockup-contrib-card__manager {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mockup-contrib-card__team {
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mockup-contrib-card__time {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.mockup-contrib-card__action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-md);
+  line-height: var(--lh-md);
+  min-width: 0;
+}
+.mockup-contrib-card__glyph {
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mockup-contrib-card__player {
+  color: var(--text-strong);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.mockup-contrib-card__kind {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+.mockup-contrib-card__minute {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* ----- Variant B — single-line list ----- */
+.mockup-contrib-row-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mockup-contrib-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  min-width: 0;
+}
+.mockup-contrib-row:last-child { border-bottom: 0; }
+.mockup-contrib-row__sep {
+  color: color-mix(in srgb, var(--text-muted) 40%, transparent);
+}
+.mockup-contrib-row__manager {
+  color: var(--text-strong);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 120px;
+}
+.mockup-contrib-row__glyph {
+  font-size: 13px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.mockup-contrib-row__player {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex-shrink: 1;
+}
+.mockup-contrib-row__club {
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.mockup-contrib-row__kind {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+}
+.mockup-contrib-row__minute {
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.mockup-contrib-row__time {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+
+/* Streaming animation — newly arrived rows pulse a brand-violet tint   */
+/* and settle to transparent. In production the modifier is added when */
+/* a new event lands and removed after the animation finishes; in the  */
+/* mockup it is permanently applied to the top row.                    */
+@keyframes contrib-arrive {
+  0%   { background: color-mix(in srgb, var(--brand) 16%, transparent); transform: scale(1.01); }
+  100% { background: transparent; transform: scale(1); }
+}
+.mockup-contrib-row--just-arrived {
+  position: relative;
+  animation: contrib-arrive 1.2s ease-out forwards;
+  animation-iteration-count: infinite;
+  border-left: 2px solid var(--brand);
+}
+
+.mockup-contrib-streaming__note {
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: 0.02em;
+}
+
+/* ----- Filter variants — shared toolbar wrapper ----- */
+.mockup-contrib-filter-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mockup-contrib-filters {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+/* Variant 1 — chip pills (mutually exclusive). */
+.mockup-contrib-filters__pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mockup-contrib-filters__pill {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.mockup-contrib-filters__pill:hover { color: var(--text); }
+.mockup-contrib-filters__pill--active {
+  background: var(--surface);
+  color: var(--brand);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--brand) 35%, var(--border));
+}
+.mockup-contrib-team-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 4px 26px 4px 10px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+  background-image: linear-gradient(45deg, transparent 50%, currentColor 50%), linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position: calc(100% - 14px) 50%, calc(100% - 9px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  color: var(--text-muted);
+}
+
+/* Variant 2 — multi-select dropdown popover. */
+.mockup-contrib-filter-dropdown {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.mockup-contrib-filter-button {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.mockup-contrib-filter-button[aria-expanded='true'] {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+}
+.mockup-contrib-filter-button__label {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+.mockup-contrib-filter-button__sep {
+  color: color-mix(in srgb, var(--text-muted) 40%, transparent);
+}
+.mockup-contrib-filter-button__count {
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+}
+.mockup-contrib-filter-button__chev {
+  color: var(--text-muted);
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+.mockup-contrib-filter-popover {
+  width: 240px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+}
+.mockup-contrib-filter-popover__section {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--border);
+}
+.mockup-contrib-filter-popover__section:first-child { padding-top: 4px; }
+.mockup-contrib-filter-popover__section:last-of-type { border-bottom: 0; }
+.mockup-contrib-filter-popover__h {
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 0 var(--space-2) 4px;
+}
+.mockup-contrib-filter-popover__row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-2);
+  border-radius: var(--r-sm);
+  font-size: var(--text-sm);
+  color: var(--text);
+  cursor: pointer;
+}
+.mockup-contrib-filter-popover__row:hover { background: var(--surface-2); }
+.mockup-contrib-checkbox {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: transparent;
+  flex-shrink: 0;
+}
+.mockup-contrib-checkbox--on {
+  background: var(--brand);
+  border-color: var(--brand);
+  color: #fff;
+}
+.mockup-contrib-filter-popover__foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-1) 0;
+  border-top: 1px solid var(--border);
+  margin-top: var(--space-1);
+}
+.mockup-contrib-filter-popover__clear {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  cursor: pointer;
+  padding: 4px 6px;
+}
+.mockup-contrib-filter-popover__apply {
+  appearance: none;
+  background: var(--brand);
+  border: 0;
+  color: #fff;
+  font-family: inherit;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: var(--r-sm);
+}
+
+/* Variant 3 — icon-toggle row. */
+.mockup-contrib-filters--icons { gap: var(--space-3); }
+.mockup-contrib-filter-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.mockup-contrib-filter-icons__btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 24px;
+  background: transparent;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.mockup-contrib-filter-icons__btn:hover { color: var(--text); }
+.mockup-contrib-filter-icons__btn--active {
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  color: var(--brand);
+}
+.mockup-contrib-filter-icons__count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  margin-right: 2px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+}
+.mockup-contrib-filter-team {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+.mockup-contrib-filter-team__chip {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  color: var(--text);
+  font-family: inherit;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.mockup-contrib-filter-team__chip--open {
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+}
+.mockup-contrib-filter-team__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--brand);
+  color: #fff;
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+}
+.mockup-contrib-filter-team__chev {
+  color: var(--text-muted);
+  font-size: 10px;
+}
+.mockup-contrib-filter-team__popover {
+  width: 220px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ----- Mobile collapsed pattern (latest only + expand-to-5) ----- */
+.mockup-contrib-mobile-row-row {
+  display: grid;
+  grid-template-columns: repeat(2, 375px);
+  gap: var(--space-4);
+  justify-content: center;
+}
+@media (max-width: 820px) {
+  .mockup-contrib-mobile-row-row { grid-template-columns: 1fr; justify-content: stretch; }
+}
+
+.mockup-contrib-mobile {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.mockup-contrib-mobile__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mockup-contrib-mobile__title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.mockup-contrib-mobile__sub {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  letter-spacing: 0.02em;
+}
+.mockup-contrib-mobile-collapsed,
+.mockup-contrib-mobile-expanded {
+  display: flex;
+  flex-direction: column;
+}
+.mockup-contrib-mobile-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  padding: 10px var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+.mockup-contrib-mobile-row:last-child { border-bottom: 0; }
+.mockup-contrib-mobile-row__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mockup-contrib-mobile-row__top {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-xs);
+}
+.mockup-contrib-mobile-row__manager {
+  color: var(--text-strong);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mockup-contrib-mobile-row__time {
+  margin-left: auto;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+}
+.mockup-contrib-mobile-row__bottom {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  min-width: 0;
+}
+.mockup-contrib-mobile-row__player {
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.mockup-contrib-mobile-row__kind {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mockup-contrib-mobile__toggle {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  padding: 10px var(--space-3);
+  background: transparent;
+  border: 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: var(--text-xs);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  cursor: pointer;
+}
+.mockup-contrib-mobile__toggle--inline {
+  width: auto;
+  padding: 0;
+  border: 0;
+  margin-left: auto;
+  text-transform: none;
+  letter-spacing: 0;
+}
+.mockup-contrib-mobile__chev {
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1;
+}
+.mockup-contrib-mobile__chev--up { font-size: 14px; }
+

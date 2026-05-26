@@ -360,7 +360,7 @@ const DECISIONS_DECIDED = [
       'Compare experience: kept — existing player data only, no new data introduced',
       'Site-wide approach: redesign of existing surfaces and data; no net-new data sources',
       'Redesign-not-rebuild rule: surfaces with locked decisions get redesigned in Phase 2; all other production surfaces inherit global tokens (--fm-*, --space-*, --brand, Geist fonts) automatically — no bespoke redesign of FormAndH2hSection, PremWindow, WaiverSummaryShare, DraftQuality, LiveFixtureGwPointsChart, FplLiveTripleThreatBanner, etc.',
-      'PlayerContributions.jsx stays on the Live page — live-action event feed, league-wide scope. Player Detail Form tab may surface the player-scoped variant of the same data (separate filter, same source)',
+      'PlayerContributions stays on Live page (locked) — redesigned in PR #5b: chronological newest-first, modern tokens, streaming pulse/highlight. Player Detail Form tab may still surface the player-scoped variant of the same data (separate filter, same source).',
     ],
   },
   {
@@ -416,6 +416,14 @@ const DECISIONS_OPEN = [
     items: [
       'FPL Live sub-nav: text-only (A) vs PL-crest-on-Lineups-only (B) vs icons-everywhere (C). See SUB-NAV · FPL LIVE showcase.',
       'Header tile chrome: variant 4 with tile chrome (currently shipped in PR #3.7) vs full-bleed combos 5a/5b/5c. See HEADER · FULL-BLEED + STATUS STRIP COMBOS showcase.',
+    ],
+  },
+  {
+    surface: 'PLAYER CONTRIBUTIONS · NEEDS PICK',
+    items: [
+      'Row density: card per event (A) vs single-line list (B). See ROW DENSITY showcase.',
+      'Filter UX: chip pills (1) vs multi-select dropdown (2) vs icon-toggle row (3). See FILTER UX showcase.',
+      'Mobile collapsed pattern (latest + expand-to-5): locked, but worth eyeballing for tap-target sizing.',
     ],
   },
 ]
@@ -2768,6 +2776,450 @@ function LiveTicker() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Section: PlayerContributions redesign — sample data + variants       */
+/* ------------------------------------------------------------------ */
+/* Sample event feed used by all four PlayerContributions showcases.    */
+/* Mirrors the production event kinds (goal, assist, dc_points, yellow, */
+/* red) without depending on the real PlayerContributions component.    */
+/* Newest first; manager + player pairings drawn from TROPHY_SEASONS    */
+/* and recognisable FPL names.                                          */
+const CONTRIB_SAMPLE_EVENTS = [
+  { id: 'e1', kind: 'goal',    pts: 5,  manager: 'David Higman',     teamCode: 'CO', teamName: 'Crouch End Oashisu',   player: 'Salah',     club: 'LIV', minute: "67'",  rel: '12s ago'  },
+  { id: 'e2', kind: 'assist',  pts: 3,  manager: 'Andy Ward',        teamCode: 'TO', teamName: 'Toronto Oizo',         player: 'Bruno G.',  club: 'NEW', minute: "61'",  rel: '4m ago'   },
+  { id: 'e3', kind: 'dc',      pts: 2,  manager: 'David Higman',     teamCode: 'CO', teamName: 'Crouch End Oashisu',   player: 'Saliba',    club: 'ARS', minute: "58'",  rel: '8m ago'   },
+  { id: 'e4', kind: 'goal',    pts: 4,  manager: 'Luke Butcher',     teamCode: 'SC', teamName: 'Seoul Club 7',         player: 'Haaland',   club: 'MCI', minute: "44'",  rel: '24m ago'  },
+  { id: 'e5', kind: 'yellow',  pts: -1, manager: 'Mike Sutton',      teamCode: 'CC', teamName: 'Clapton Cornershop',   player: 'Rice',      club: 'ARS', minute: "39'",  rel: '31m ago'  },
+  { id: 'e6', kind: 'assist',  pts: 3,  manager: 'Nick Mottershead', teamCode: 'HM', teamName: 'Hackney Meat Loaf',    player: 'Palmer',    club: 'CHE', minute: "29'",  rel: '46m ago'  },
+  { id: 'e7', kind: 'goal',    pts: 6,  manager: 'Nick Greenwood',   teamCode: 'HY', teamName: 'Hanson of York AFC',   player: 'Van Dijk',  club: 'LIV', minute: "21'",  rel: '54m ago'  },
+  { id: 'e8', kind: 'red',     pts: -3, manager: 'Jon Beale',        teamCode: 'MJ', teamName: 'Morpeth Jamiroquai',   player: 'Caicedo',   club: 'CHE', minute: "16'",  rel: '1h ago'   },
+]
+
+const CONTRIB_KINDS = [
+  { id: 'goal',    label: 'Goals',    short: 'Goal',    glyph: '⚽', sym: '+' },
+  { id: 'assist',  label: 'Assists',  short: 'Assist',  glyph: '🅰', sym: '+' },
+  { id: 'dc',      label: 'DC',       short: 'DC',      glyph: '🛡', sym: '+' },
+  { id: 'cards',   label: 'Cards',    short: 'Cards',   glyph: '🟥', sym: '−' },
+]
+
+function contribKindLabel(kind) {
+  if (kind === 'goal')   return 'Goal'
+  if (kind === 'assist') return 'Assist'
+  if (kind === 'dc')     return 'DC'
+  if (kind === 'yellow') return 'Yellow'
+  if (kind === 'red')    return 'Red'
+  return kind
+}
+
+function contribKindGlyph(kind) {
+  if (kind === 'goal')   return '⚽'
+  if (kind === 'assist') return '🅰'
+  if (kind === 'dc')     return '🛡'
+  if (kind === 'yellow') return '🟨'
+  if (kind === 'red')    return '🟥'
+  return '·'
+}
+
+/* Inline SVG icons used by the icon-toggle filter variant. Stroke 1.75
+ * to match the existing mockup nav-icon weight. */
+function ContribKindIcon({ kind, ...rest }) {
+  const common = {
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 1.75,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    ...rest,
+  }
+  if (kind === 'goal') {
+    return (
+      <svg {...common} aria-hidden>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 3v18" />
+        <path d="M3 12h18" />
+        <path d="M5.6 6.5L12 9l6.4-2.5" />
+        <path d="M5.6 17.5L12 15l6.4 2.5" />
+      </svg>
+    )
+  }
+  if (kind === 'assist') {
+    return (
+      <svg {...common} aria-hidden>
+        <path d="M5 12h13" />
+        <path d="m13 6 6 6-6 6" />
+      </svg>
+    )
+  }
+  if (kind === 'dc') {
+    return (
+      <svg {...common} aria-hidden>
+        <path d="M12 3 4 6v6c0 4.5 3.4 7.7 8 9 4.6-1.3 8-4.5 8-9V6l-8-3Z" />
+      </svg>
+    )
+  }
+  if (kind === 'cards') {
+    return (
+      <svg {...common} aria-hidden>
+        <rect x="6" y="4" width="9" height="14" rx="1.5" />
+        <rect x="9" y="6" width="9" height="14" rx="1.5" fill="currentColor" stroke="currentColor" />
+      </svg>
+    )
+  }
+  return null
+}
+
+/* Small monogram crest used for both manager team avatars and player
+ * club crests in the contrib mockups. Matches the existing
+ * .mockup-ticker__crest visual but is reusable at multiple sizes via
+ * a size modifier. */
+function ContribMonogram({ code, size = 'md' }) {
+  return (
+    <span className={`mockup-contrib-mono mockup-contrib-mono--${size}`} aria-hidden>
+      {code}
+    </span>
+  )
+}
+
+/* Points pill — green tint for positive, red tint for negative. Mono
+ * font + tabular numerals so trailing digits line up across rows. */
+function ContribPointsPill({ pts }) {
+  const positive = pts >= 0
+  return (
+    <span className={'mockup-contrib-pts' + (positive ? ' mockup-contrib-pts--pos' : ' mockup-contrib-pts--neg')}>
+      {positive ? `+${pts}` : `${pts}`}
+    </span>
+  )
+}
+
+/* Variant A — card per event. surface-1 cards in a vertical stack;
+ * the manager identity row sits above the action row so the eye sees
+ * "who scored points" before "how". */
+function ContribCardsVariant({ events }) {
+  return (
+    <div className="mockup-contrib-card-list">
+      {events.map((e) => (
+        <article className="mockup-contrib-card" key={e.id}>
+          <header className="mockup-contrib-card__head">
+            <ContribMonogram code={e.teamCode} size="md" />
+            <span className="mockup-contrib-card__manager">{e.manager}</span>
+            <span className="mockup-contrib-card__team">· {e.teamName}</span>
+            <span className="mockup-contrib-card__time">{e.rel}</span>
+          </header>
+          <div className="mockup-contrib-card__action">
+            <span className="mockup-contrib-card__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
+            <span className="mockup-contrib-card__player">{e.player}</span>
+            <ContribMonogram code={e.club} size="sm" />
+            <span className="mockup-contrib-card__kind">{contribKindLabel(e.kind)}</span>
+            <span className="mockup-contrib-card__minute">{e.minute}</span>
+            <ContribPointsPill pts={e.pts} />
+          </div>
+        </article>
+      ))}
+    </div>
+  )
+}
+
+/* Variant B — single-line list. Each event is one horizontal row:
+ * 16px team avatar · manager · player · kind · pts · minute · rel.
+ * Twitter-feed density. Truncates manager / player on narrow widths. */
+function ContribListVariant({ events }) {
+  return (
+    <ul className="mockup-contrib-row-list">
+      {events.map((e) => (
+        <li className="mockup-contrib-row" key={e.id}>
+          <ContribMonogram code={e.teamCode} size="xs" />
+          <span className="mockup-contrib-row__manager">{e.manager}</span>
+          <span className="mockup-contrib-row__sep" aria-hidden>·</span>
+          <span className="mockup-contrib-row__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
+          <span className="mockup-contrib-row__player">{e.player}</span>
+          <span className="mockup-contrib-row__club">{e.club}</span>
+          <span className="mockup-contrib-row__kind">{contribKindLabel(e.kind)}</span>
+          <ContribPointsPill pts={e.pts} />
+          <span className="mockup-contrib-row__minute">{e.minute}</span>
+          <span className="mockup-contrib-row__time">{e.rel}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
+/* Toolbar wrapper — every filter variant is rendered above 2-3 sample
+ * rows so the user sees how the toolbar relates to the feed. */
+function ContribFilterStub() {
+  const stub = CONTRIB_SAMPLE_EVENTS.slice(0, 3)
+  return <ContribListVariant events={stub} />
+}
+
+/* Filter Variant 1 — chip pills (the current pattern, restyled). */
+function ContribFilterChipPills() {
+  const [active, setActive] = useState('all')
+  const pills = [
+    { id: 'all',     label: 'All'     },
+    { id: 'goal',    label: 'Goals'   },
+    { id: 'assist',  label: 'Assists' },
+    { id: 'dc',      label: 'DC'      },
+    { id: 'cards',   label: 'Cards'   },
+  ]
+  return (
+    <div className="mockup-contrib-filter-block">
+      <div className="mockup-contrib-filters">
+        <div className="mockup-contrib-filters__pills" role="group" aria-label="Event kind filter">
+          {pills.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              className={'mockup-contrib-filters__pill' + (active === p.id ? ' mockup-contrib-filters__pill--active' : '')}
+              onClick={() => setActive(p.id)}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <select className="mockup-contrib-team-select" defaultValue="all" aria-label="Team filter">
+          <option value="all">All teams</option>
+          <option value="CO">Crouch End Oashisu</option>
+          <option value="TO">Toronto Oizo</option>
+          <option value="SC">Seoul Club 7</option>
+        </select>
+      </div>
+      <ContribFilterStub />
+    </div>
+  )
+}
+
+/* Filter Variant 2 — multi-select dropdown popover (kept open in the
+ * mockup so the affordance is visible without interaction). */
+function ContribFilterDropdown() {
+  const checks = [
+    { id: 'goal',   label: 'Goals',   on: true  },
+    { id: 'assist', label: 'Assists', on: true  },
+    { id: 'dc',     label: 'DC',      on: false },
+    { id: 'cards',  label: 'Cards',   on: true  },
+  ]
+  const teams = [
+    { id: 'CO', label: 'Crouch End Oashisu', on: true  },
+    { id: 'TO', label: 'Toronto Oizo',       on: false },
+    { id: 'SC', label: 'Seoul Club 7',       on: false },
+    { id: 'HM', label: 'Hackney Meat Loaf',  on: true  },
+  ]
+  const kindOnCount = checks.filter((c) => c.on).length
+  const teamOnCount = teams.filter((t) => t.on).length
+  const totalOn = kindOnCount + teamOnCount
+  return (
+    <div className="mockup-contrib-filter-block">
+      <div className="mockup-contrib-filter-dropdown">
+        <button type="button" className="mockup-contrib-filter-button" aria-expanded="true">
+          <span className="mockup-contrib-filter-button__label">Filters</span>
+          <span className="mockup-contrib-filter-button__sep" aria-hidden>·</span>
+          <span className="mockup-contrib-filter-button__count">{totalOn} selected</span>
+          <span className="mockup-contrib-filter-button__chev" aria-hidden>▾</span>
+        </button>
+        <div className="mockup-contrib-filter-popover" role="dialog" aria-label="Filters">
+          <div className="mockup-contrib-filter-popover__section">
+            <div className="mockup-contrib-filter-popover__h">Event kind</div>
+            {checks.map((c) => (
+              <label key={c.id} className="mockup-contrib-filter-popover__row">
+                <span className={'mockup-contrib-checkbox' + (c.on ? ' mockup-contrib-checkbox--on' : '')} aria-hidden>
+                  {c.on ? '✓' : ''}
+                </span>
+                <span>{c.label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="mockup-contrib-filter-popover__section">
+            <div className="mockup-contrib-filter-popover__h">Team</div>
+            {teams.map((t) => (
+              <label key={t.id} className="mockup-contrib-filter-popover__row">
+                <span className={'mockup-contrib-checkbox' + (t.on ? ' mockup-contrib-checkbox--on' : '')} aria-hidden>
+                  {t.on ? '✓' : ''}
+                </span>
+                <span>{t.label}</span>
+              </label>
+            ))}
+          </div>
+          <div className="mockup-contrib-filter-popover__foot">
+            <button type="button" className="mockup-contrib-filter-popover__clear">Clear all</button>
+            <button type="button" className="mockup-contrib-filter-popover__apply">Apply</button>
+          </div>
+        </div>
+      </div>
+      <ContribFilterStub />
+    </div>
+  )
+}
+
+/* Filter Variant 3 — icon-toggle row. Each event kind is a small icon
+ * (muted gray when inactive, brand violet when active). Multi-select.
+ * Team filter sits to the right as a dedicated chip with a count
+ * badge that opens a separate popover (rendered open here for clarity). */
+function ContribFilterIconToggle() {
+  const [activeKinds, setActiveKinds] = useState(new Set(['goal', 'assist']))
+  const [teamPopoverOpen, setTeamPopoverOpen] = useState(true)
+  function toggleKind(id) {
+    const next = new Set(activeKinds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setActiveKinds(next)
+  }
+  const teamCount = 2
+  const teams = [
+    { id: 'CO', label: 'Crouch End Oashisu', on: true  },
+    { id: 'TO', label: 'Toronto Oizo',       on: false },
+    { id: 'SC', label: 'Seoul Club 7',       on: true  },
+    { id: 'HM', label: 'Hackney Meat Loaf',  on: false },
+  ]
+  return (
+    <div className="mockup-contrib-filter-block">
+      <div className="mockup-contrib-filters mockup-contrib-filters--icons">
+        <div className="mockup-contrib-filter-icons" role="group" aria-label="Event kind filter">
+          {CONTRIB_KINDS.map((k) => {
+            const on = activeKinds.has(k.id)
+            return (
+              <button
+                key={k.id}
+                type="button"
+                className={'mockup-contrib-filter-icons__btn' + (on ? ' mockup-contrib-filter-icons__btn--active' : '')}
+                onClick={() => toggleKind(k.id)}
+                aria-pressed={on}
+                title={k.label}
+              >
+                <ContribKindIcon kind={k.id} width="16" height="16" />
+              </button>
+            )
+          })}
+          <span className="mockup-contrib-filter-icons__count">{activeKinds.size}</span>
+        </div>
+        <div className="mockup-contrib-filter-team">
+          <button
+            type="button"
+            className={'mockup-contrib-filter-team__chip' + (teamPopoverOpen ? ' mockup-contrib-filter-team__chip--open' : '')}
+            aria-expanded={teamPopoverOpen}
+            onClick={() => setTeamPopoverOpen(!teamPopoverOpen)}
+          >
+            <span>Teams</span>
+            <span className="mockup-contrib-filter-team__badge">{teamCount}</span>
+            <span className="mockup-contrib-filter-team__chev" aria-hidden>▾</span>
+          </button>
+          {teamPopoverOpen && (
+            <div className="mockup-contrib-filter-team__popover" role="dialog" aria-label="Team filter">
+              {teams.map((t) => (
+                <label key={t.id} className="mockup-contrib-filter-popover__row">
+                  <span className={'mockup-contrib-checkbox' + (t.on ? ' mockup-contrib-checkbox--on' : '')} aria-hidden>
+                    {t.on ? '✓' : ''}
+                  </span>
+                  <span>{t.label}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+      <ContribFilterStub />
+    </div>
+  )
+}
+
+/* Mobile collapsed: shows ONLY the latest event by default with a
+ * chevron-down to expand. Expanded shows the latest 5 with a
+ * chevron-up to collapse. Both states stacked in a 375px frame. */
+function ContribMobileCollapsed() {
+  const collapsed = CONTRIB_SAMPLE_EVENTS.slice(0, 1)
+  const expanded = CONTRIB_SAMPLE_EVENTS.slice(0, 5)
+  function ContribMobileRow({ e }) {
+    return (
+      <div className="mockup-contrib-mobile-row">
+        <ContribMonogram code={e.teamCode} size="sm" />
+        <div className="mockup-contrib-mobile-row__body">
+          <div className="mockup-contrib-mobile-row__top">
+            <span className="mockup-contrib-mobile-row__manager">{e.manager}</span>
+            <span className="mockup-contrib-mobile-row__time">{e.rel}</span>
+          </div>
+          <div className="mockup-contrib-mobile-row__bottom">
+            <span aria-hidden>{contribKindGlyph(e.kind)}</span>
+            <span className="mockup-contrib-mobile-row__player">{e.player}</span>
+            <span className="mockup-contrib-mobile-row__kind">{contribKindLabel(e.kind)}</span>
+            <ContribPointsPill pts={e.pts} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div className="mockup-contrib-mobile-row-row">
+      <div className="mockup-portrait-col">
+        <div className="mockup-portrait-col__h">Collapsed · latest only</div>
+        <PortraitFrame>
+          <div className="mockup-contrib-mobile">
+            <div className="mockup-contrib-mobile__head">
+              <span className="mockup-contrib-mobile__title">Contributions</span>
+              <span className="mockup-contrib-mobile__sub">GW 28 · 1 of 8</span>
+            </div>
+            <div className="mockup-contrib-mobile-collapsed">
+              {collapsed.map((e) => <ContribMobileRow key={e.id} e={e} />)}
+              <button type="button" className="mockup-contrib-mobile__toggle" aria-label="Expand to last 5 events">
+                <span>Show last 5</span>
+                <span className="mockup-contrib-mobile__chev" aria-hidden>▾</span>
+              </button>
+            </div>
+          </div>
+        </PortraitFrame>
+      </div>
+      <div className="mockup-portrait-col">
+        <div className="mockup-portrait-col__h">Expanded · last 5</div>
+        <PortraitFrame>
+          <div className="mockup-contrib-mobile">
+            <div className="mockup-contrib-mobile__head">
+              <span className="mockup-contrib-mobile__title">Contributions</span>
+              <span className="mockup-contrib-mobile__sub">GW 28 · 5 of 8</span>
+              <button type="button" className="mockup-contrib-mobile__toggle mockup-contrib-mobile__toggle--inline" aria-label="Collapse to latest only">
+                <span className="mockup-contrib-mobile__chev mockup-contrib-mobile__chev--up" aria-hidden>▴</span>
+              </button>
+            </div>
+            <div className="mockup-contrib-mobile-expanded">
+              {expanded.map((e) => <ContribMobileRow key={e.id} e={e} />)}
+            </div>
+          </div>
+        </PortraitFrame>
+      </div>
+    </div>
+  )
+}
+
+/* Streaming animation showcase. The top row has the `--just-arrived`
+ * modifier permanently applied so the brand-violet entrance pulse
+ * keeps replaying. */
+function ContribStreamingShowcase() {
+  const events = CONTRIB_SAMPLE_EVENTS.slice(0, 4)
+  return (
+    <div className="mockup-contrib-streaming">
+      <ul className="mockup-contrib-row-list">
+        {events.map((e, idx) => (
+          <li
+            key={e.id}
+            className={'mockup-contrib-row' + (idx === 0 ? ' mockup-contrib-row--just-arrived' : '')}
+          >
+            <ContribMonogram code={e.teamCode} size="xs" />
+            <span className="mockup-contrib-row__manager">{e.manager}</span>
+            <span className="mockup-contrib-row__sep" aria-hidden>·</span>
+            <span className="mockup-contrib-row__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
+            <span className="mockup-contrib-row__player">{e.player}</span>
+            <span className="mockup-contrib-row__club">{e.club}</span>
+            <span className="mockup-contrib-row__kind">{contribKindLabel(e.kind)}</span>
+            <ContribPointsPill pts={e.pts} />
+            <span className="mockup-contrib-row__minute">{e.minute}</span>
+            <span className="mockup-contrib-row__time">{e.rel}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="mockup-contrib-streaming__note">
+        Top row = newly arrived; animation triggers on first paint and
+        again when a new event lands.
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /* Section: sub-nav (secondary tabs)                                    */
 /* ------------------------------------------------------------------ */
 function SubNav() {
@@ -5041,6 +5493,84 @@ export function Mockup() {
             rows with winner emphasis.
           </p>
           <LiveTicker />
+        </section>
+
+        {/* 12a-PC1. Player Contributions · row density */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">PLAYER CONTRIBUTIONS · ROW DENSITY</div>
+          <h2 className="mockup__section-h">Card per event vs single-line list</h2>
+          <p className="mockup__section-sub">
+            Same chronological newest-first feed below the live fixtures.
+            Variant A foregrounds the manager identity in a card; Variant B
+            collapses each event to a single Twitter-density line. Pick how
+            each contribution renders.
+          </p>
+          <div className="mockup-portrait-row mockup-contrib-density-row">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Variant A — Card per event</div>
+              <ContribCardsVariant events={CONTRIB_SAMPLE_EVENTS} />
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Variant B — Single-line list</div>
+              <ContribListVariant events={CONTRIB_SAMPLE_EVENTS} />
+            </div>
+          </div>
+        </section>
+
+        {/* 12a-PC2. Player Contributions · filter UX */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">PLAYER CONTRIBUTIONS · FILTER UX</div>
+          <h2 className="mockup__section-h">Three takes on the kind / team filter</h2>
+          <p className="mockup__section-sub">
+            Each variant renders the same toolbar above a stub of 3 events
+            so the relationship is visible. Variant 1 mirrors today's
+            mutually-exclusive chips; Variants 2 and 3 introduce
+            multi-select.
+          </p>
+          <div className="mockup-portrait-row mockup-contrib-filter-row">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">
+                Variant 1 — Restyled chip pills
+              </div>
+              <ContribFilterChipPills />
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">
+                Variant 2 — Multi-select dropdown
+                <span className="mockup-variant-picked mockup-variant-picked--proposed" aria-label="Proposed option">PROPOSED</span>
+              </div>
+              <ContribFilterDropdown />
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Variant 3 — Icon-toggle row</div>
+              <ContribFilterIconToggle />
+            </div>
+          </div>
+        </section>
+
+        {/* 12a-PC3. Player Contributions · mobile collapsed */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">PLAYER CONTRIBUTIONS · MOBILE COLLAPSED</div>
+          <h2 className="mockup__section-h">Latest event default → tap to expand to last 5</h2>
+          <p className="mockup__section-sub">
+            Below 480 px the feed collapses to only the most recent event,
+            with a chevron toggle to reveal the prior 4. Both states
+            rendered in 375 px frames so the tap-target sizing reads true.
+          </p>
+          <ContribMobileCollapsed />
+        </section>
+
+        {/* 12a-PC4. Player Contributions · streaming animation */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">PLAYER CONTRIBUTIONS · STREAMING ANIMATION</div>
+          <h2 className="mockup__section-h">Brand-violet pulse + highlight on row arrival</h2>
+          <p className="mockup__section-sub">
+            New events fade in from a brand-violet tint with a subtle
+            scale-up, then settle into the regular row treatment. In the
+            mockup the entrance is permanently applied to the top row so
+            the visual effect is visible without live data.
+          </p>
+          <ContribStreamingShowcase />
         </section>
 
         {/* 12b. Mobile portrait — other surfaces */}
