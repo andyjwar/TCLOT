@@ -2,8 +2,6 @@ import { Fragment, useMemo, useState } from 'react';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
-  liveGroupStatus,
-  liveGwProgress,
   minutesTone,
   playerLiveState,
   playerXiPillKind,
@@ -11,7 +9,6 @@ import {
   sortStartingXIByPosition,
 } from './liveScoresDerivations.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
-import { deriveLiveSummary } from './useFplFixtureLiveSummary.js';
 
 /**
  * Effective starters/bench (post-autosub when available) — mirror of the
@@ -53,71 +50,6 @@ function pickAutoSubs(squad) {
         : [];
   if (!subs.length) return null;
   return { subs, source: squad.autosubSource };
-}
-
-/**
- * Sticky header that sits at the very top of the expanded body. Shows a
- * slim single-row strip: `< back` chevron · `LIVE · GW N` pill · `N/M done`.
- *
- * The duplicate matchup mini-header (team names + live score) was dropped
- * because the collapsed face-off row directly above the expanded view
- * already shows the same matchup + score.
- *
- * @param {{
- *   eventSnapshot: object | null,
- *   gwFixtures: object[] | null,
- *   onCollapse?: () => void,
- * }} props
- */
-function LiveExpandedStickyHeader({ eventSnapshot, gwFixtures, onCollapse }) {
-  const summary = useMemo(
-    () => deriveLiveSummary(gwFixtures ?? []),
-    [gwFixtures],
-  );
-  const status = useMemo(
-    () =>
-      liveGroupStatus({
-        eventSnapshot,
-        gwFixtures,
-        liveFixtureCount: summary.liveFixtureCount,
-        minute: summary.minute,
-      }),
-    [eventSnapshot, gwFixtures, summary.liveFixtureCount, summary.minute],
-  );
-  const progress = useMemo(() => liveGwProgress(gwFixtures), [gwFixtures]);
-
-  return (
-    <div className={`live-xp__head live-xp__head--${status.kind}`}>
-      {onCollapse ? (
-        <button
-          type="button"
-          className="live-xp__back"
-          onClick={onCollapse}
-          aria-label="Collapse fixture"
-          title="Collapse"
-        >
-          ‹
-        </button>
-      ) : null}
-      <span
-        className={`live-xp__chip live-xp__chip--${status.kind}`}
-        aria-label={status.chipLabel}
-      >
-        {status.kind === 'live' ? (
-          <span className="live-xp__chip-dot" aria-hidden="true" />
-        ) : null}
-        <span className="live-xp__chip-label">{status.chipLabel}</span>
-      </span>
-      {progress ? (
-        <span
-          className="live-xp__head-progress tabular"
-          aria-label={`${progress.done} of ${progress.total} fixtures complete`}
-        >
-          {progress.label}
-        </span>
-      ) : null}
-    </div>
-  );
 }
 
 /**
@@ -402,25 +334,20 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
  * PR #5 / 5a.
  *
  * Layout:
- *   - mobile         : sticky header (`<` back / LIVE · GW N pill /
- *                      N/M done counter) → tab selector (home / away) →
- *                      one team's table. The chevron doubles as the
- *                      collapse affordance + visual anchor above the tabs.
- *   - desktop        : two team tables side-by-side. The sticky header
- *                      is suppressed — the collapsed face-off row above
- *                      already carries the matchup + status implicitly,
- *                      and clicking that row toggles collapse.
+ *   - mobile         : tab selector (home / away) → one team's table.
+ *   - desktop        : two team tables side-by-side.
+ *
+ * In both layouts the collapsed face-off row directly above the
+ * expanded body carries the matchup + status, and clicking it toggles
+ * the collapse — so no in-body sticky header / back-chevron is needed.
  *
  * @param {{
  *   homeSquad: object,
  *   awaySquad: object,
  *   homeName: string,
  *   awayName: string,
- *   eventSnapshot: object | null,
- *   contributionLiveContext: object | null,
  *   viewport?: 'desktop' | 'mobile',
  *   onOpenPlayer?: (row: object, squad: object) => void,
- *   onCollapse?: () => void,
  * }} props
  */
 export function LiveExpandedFixture({
@@ -428,11 +355,8 @@ export function LiveExpandedFixture({
   awaySquad,
   homeName,
   awayName,
-  eventSnapshot,
-  contributionLiveContext,
   viewport = 'desktop',
   onOpenPlayer,
-  onCollapse,
 }) {
   const homeAutoSubs = pickAutoSubs(homeSquad);
   const awayAutoSubs = pickAutoSubs(awaySquad);
@@ -450,8 +374,6 @@ export function LiveExpandedFixture({
   const homeTotal = liveGwDisplayTotal(homeSquad);
   const awayTotal = liveGwDisplayTotal(awaySquad);
 
-  const gwFixtures = contributionLiveContext?.gwFixtures ?? null;
-
   const onPick = onOpenPlayer
     ? (row, squad) => onOpenPlayer(row, squad)
     : undefined;
@@ -461,11 +383,6 @@ export function LiveExpandedFixture({
     const activeAutoIn = tab === 'home' ? homeAutoIn : awayAutoIn;
     return (
       <div className="live-xp live-xp--mobile">
-        <LiveExpandedStickyHeader
-          eventSnapshot={eventSnapshot}
-          gwFixtures={gwFixtures}
-          onCollapse={onCollapse}
-        />
         <div className="live-xp__tabs" role="tablist">
           <button
             type="button"

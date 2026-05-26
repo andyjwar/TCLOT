@@ -11200,87 +11200,6 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   gap: 10px;
 }
 
-/* Sticky header — slim single-row strip: back chevron · status pill · N/M done.
-   The collapsed face-off row directly above already shows the team matchup
-   + live score, so the expanded header no longer restates either. */
-.live-xp__head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  background: var(--fm-surface-2);
-  border: 1px solid var(--fm-border);
-  border-radius: 10px;
-}
-.live-xp__back {
-  background: transparent;
-  border: 1px solid var(--fm-border);
-  color: var(--fm-text);
-  border-radius: 6px;
-  width: 24px;
-  height: 24px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  flex-shrink: 0;
-  padding: 0;
-}
-.live-xp__back:hover {
-  background: color-mix(in srgb, var(--fm-text) 8%, transparent);
-}
-.live-xp__back:focus-visible {
-  outline: 2px solid var(--tclot-logo-purple);
-  outline-offset: 2px;
-}
-.live-xp__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 1px solid transparent;
-}
-.live-xp__chip--pre {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--fm-text);
-  border-color: var(--fm-border);
-}
-.live-xp__chip--live {
-  background: rgba(239, 68, 68, 0.14);
-  color: #fca5a5;
-  border-color: rgba(239, 68, 68, 0.32);
-}
-.fotmob[data-theme='light'] .live-xp__chip--live {
-  background: rgba(220, 38, 38, 0.10);
-  color: #b91c1c;
-  border-color: rgba(220, 38, 38, 0.24);
-}
-.live-xp__chip--ft {
-  background: var(--fm-card);
-  color: var(--fm-text);
-  border-color: var(--fm-border);
-}
-.live-xp__chip-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
-}
-.live-xp__head-progress {
-  margin-left: auto;
-  color: var(--fm-text);
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.72rem;
-}
-
 /* Mobile tabs (rendered only in the mobile branch) */
 .live-xp__tabs {
   display: flex;
@@ -11675,10 +11594,6 @@ button.live-xp__player-name:focus-visible {
 @media (max-width: 720px) {
   .live-xp {
     gap: 8px;
-  }
-  .live-xp__head {
-    padding: 7px 10px;
-    border-radius: 8px;
   }
   .live-xp__thead,
   .live-xp__row {

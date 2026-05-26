@@ -1500,11 +1500,8 @@ export function LiveScores({
                         awaySquad={awaySquad}
                         homeName={homeName}
                         awayName={awayName}
-                        eventSnapshot={eventSnapshot}
-                        contributionLiveContext={contributionLiveContext}
                         viewport={narrowExpandedFixture ? 'mobile' : 'desktop'}
                         onOpenPlayer={openLineupOrHistory}
-                        onCollapse={() => toggleFixtureExpanded(fixtureKey)}
                       />
                     </div>
                   ) : null}
