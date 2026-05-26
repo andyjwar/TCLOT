@@ -1412,22 +1412,6 @@ export function LiveScores({
         />
       ) : (
         <>
-      <section
-        className="tile tile--compact player-contrib-tile"
-        aria-label="FPL live scores"
-      >
-        <PlayerContributions
-          leagueId={leagueId}
-          gameweek={gameweek}
-          squads={squads}
-          contributionLiveContext={contributionLiveContext}
-          waiverOutGwRows={waiverOutGwRows}
-          lastUpdated={lastUpdated}
-          teamLogoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-      </section>
-
       {useFixtureLayout ? (
         <section
           className="tile tile--compact live-banner-group-tile"
@@ -1617,6 +1601,22 @@ export function LiveScores({
           );
         })
       )}
+
+      <section
+        className="tile tile--compact player-contrib-tile"
+        aria-label="FPL live scores"
+      >
+        <PlayerContributions
+          leagueId={leagueId}
+          gameweek={gameweek}
+          squads={squads}
+          contributionLiveContext={contributionLiveContext}
+          waiverOutGwRows={waiverOutGwRows}
+          lastUpdated={lastUpdated}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      </section>
 
       {useFixtureLayout && orphanSquads.length > 0
         ? orphanSquads.map((squad) => {
