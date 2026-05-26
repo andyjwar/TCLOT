@@ -3,7 +3,7 @@ import { NavIcon } from './NavIcon'
 
 /** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
 
-/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'trophy' | 'more'} NavIconName */
+/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'trophy' | 'more' | 'settings'} NavIconName */
 
 /**
  * Note: the view ID for the Transactions tab stays `teamSelection` to keep
@@ -90,7 +90,12 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
     },
   ]
 
+  // Desktop nav order (left → right): FPL Live · Standings · Transactions ·
+  // Hall of Champions · Players. The right edge gets a separate Settings gear
+  // button (rendered below the .map() loop) — kept out of this array so its
+  // hairline-divider + margin-left:auto styling stays local to that button.
   const topItems = [
+    primaryItems.find((i) => i.id === 'fplLive'),
     primaryItems.find((i) => i.id === 'standings'),
     primaryItems.find((i) => i.id === 'teamSelection'),
     {
@@ -100,7 +105,6 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
       icon: /** @type {const} */ ('trophy'),
     },
     primaryItems.find((i) => i.id === 'players'),
-    primaryItems.find((i) => i.id === 'fplLive'),
   ].filter(Boolean)
 
   const items = isBottom
@@ -118,6 +122,8 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
     return dashboardView === id
   }
 
+  const settingsActive = dashboardView === 'settings'
+
   return (
     <nav
       className={
@@ -134,6 +140,21 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
           variant={variant}
         />
       ))}
+      {!isBottom && (
+        <button
+          type="button"
+          className={
+            'dashboard-nav__btn dashboard-nav__btn--settings' +
+            (settingsActive ? ' dashboard-nav__btn--active' : '')
+          }
+          onClick={() => onSelect('settings')}
+          aria-current={settingsActive ? 'page' : undefined}
+          aria-label="Settings"
+          title="Settings"
+        >
+          <NavIcon name="settings" className="dashboard-nav__icon" />
+        </button>
+      )}
     </nav>
   )
 }

@@ -550,6 +550,29 @@
   background: transparent;
 }
 
+/* Desktop-only Settings gear at the right edge of the top nav. Pushed right
+   with margin-left:auto; a 1px hairline divider on the left (rendered via
+   ::before so it sits flush at the button's leading edge regardless of nav
+   wrapping or scroll). Icon-only — accessible name comes from aria-label. */
+.dashboard-nav__btn--settings {
+  margin-left: auto;
+  padding-left: 18px;
+  padding-right: 12px;
+  gap: 0;
+  flex: 0 0 auto;
+}
+
+.dashboard-nav__btn--settings::before {
+  content: '';
+  position: absolute;
+  top: 14px;
+  bottom: 14px;
+  left: 0;
+  width: 1px;
+  background: var(--fm-border);
+  pointer-events: none;
+}
+
 /* —— Mobile app shell: bottom nav, sticky section chrome, scroll-hide —— */
 :root {
   --mobile-bottom-nav-h: 56px;
