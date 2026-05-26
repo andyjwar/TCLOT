@@ -11,7 +11,50 @@ import { gameWeekSelectLabel } from './gwLabel.js'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
 const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
-const TCLOT_HEADER_BRAND_SRC = `${(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/')}tclot-header-brand.png`
+const BRAND_HEADER_META = 'FPL Draft H2H'
+const BRAND_HEADER_SEASON = '2025/26'
+
+// Lion silhouette extracted verbatim from public/tclot-fantasy-style-banner.svg.
+// Kept inline so it inherits currentColor (no second network fetch, themable).
+const TCLOT_LION_PATH = "m 60.78468,39.44666 c -1.88455,1.54443 -3.48225,2.4052 -3.48225,2.4052 l 0.0218,4.89541 c 1.34714,1.46649 2.67613,2.68148 3.67106,4.8954 1.88818,-3.31555 1.52507,-8.18972 -0.2106,-12.19601 m -1.53234,16.0252 c 0,0 -0.38489,-2.01909 -2.02253,-3.90357 l -3.73642,0.0886 c 0,0 -5.03636,4.22239 -8.10829,4.32156 0,0 1.6921,3.07115 2.54905,4.6758 1.68847,-0.36132 4.66235,-1.66133 5.86062,-3.02156 0,0 0.79159,2.49022 0.64271,5.43029 1.68121,-0.94932 3.99786,-3.52809 4.81486,-7.59107 m -4.81486,-8.84149 -0.007,-4.8777 c 0,0 -2.23314,-0.69782 -4.61515,-2.50084 -4.78582,0.70492 -10.58109,5.40195 -10.58109,5.40195 0,0 1.95718,3.62375 4.09954,7.53441 3.76547,0.51362 9.31382,-4.12675 11.10396,-5.55782 m 12.76338,20.31134 -3.07919,-3.32618 c -0.87873,8.99027 -5.39221,16.62385 -13.68205,21.94787 l -1.26726,-4.84936 c -7.03711,4.95917 -19.11421,8.17555 -29.48832,2.45125 1.28904,-6.4115 2.43285,-12.90801 -0.0218,-20.68683 -5.74443,8.67855 -10.828,12.07912 -10.828,12.07912 C 4.95285,68.19927 5.30143,55.44358 6.45976,51.68877 L 0,53.64056 C 0,49.35442 3.1627,40.26143 7.74518,35.15348 L 3.711,34.52296 l -0.004,0 C 6.4485,29.05725 10.54077,24.34603 15.54808,20.80731 l 0.007,-0.004 c -1.50328,2.31664 -1.52507,8.03385 2.87948,10.20881 -1.87002,-3.19866 -2.09515,-7.15184 -0.14161,-9.19927 1.95354,-2.06514 5.2397,-1.35668 7.33849,0.24442 -0.62455,-1.7853 -2.45464,-4.031096 -5.19613,-4.183413 l -0.004,0 c 5.17797,-2.600022 11.05676,-4.062977 17.27686,-4.062977 1.16196,0 2.32029,0.04959 3.4532,0.148775 l 0,0 c 1.8083,0.708453 4.46264,3.195123 5.70086,4.743095 0,0 0.0871,-1.82427 -0.95136,-4.027558 6.73573,1.601103 9.94927,4.275518 11.29641,5.564898 0.27597,2.8409 1.14744,4.54473 2.2985,7.24393 -2.1823,-2.38395 -7.66529,-6.23084 -10.28333,-7.15183 0,0 -0.21423,2.46188 -1.11475,3.64499 -5.21429,-3.66978 -7.77423,-4.59432 -7.77423,-4.59432 -5.72264,0.80055 -9.4046,2.95425 -11.40534,4.64746 l 1.74293,1.44877 c -3.44956,1.03435 -5.68996,3.92483 -5.68996,3.92483 0.0254,0.0532 3.08282,0.47821 3.08282,0.47821 0,0 -0.31228,3.5033 4.18305,5.69951 3.85262,1.88094 9.39007,-0.45341 14.60436,1.58693 -3.42777,-3.86106 -5.7989,-5.58615 -5.7989,-5.58615 0,0 -1.36167,-0.27629 -2.32028,-0.26922 -1.19827,0.007 -2.98478,0.23734 -4.94195,-0.50654 -0.93683,-0.35777 -2.0298,-0.98828 -2.88674,-1.51254 0,0 2.40743,-2.41229 5.92598,-2.94363 0,0 3.1736,0.8714 5.68634,2.68504 1.67031,-1.58693 3.41325,-1.53734 3.41325,-1.53734 0,0 -1.72842,1.57276 -1.20553,3.4785 2.5091,2.18204 5.23244,5.30631 5.23244,5.30631 2.77417,-1.48067 8.80546,-1.14061 10.04367,0.26213 -1.56864,-1.9872 -3.83083,-3.64499 -5.58103,-5.06189 -0.21423,-0.74388 -2.1242,-3.33681 -2.44737,-3.57769 0,0 1.81556,0.54551 3.43867,1.96596 0.46478,-0.64824 1.33625,-1.3071 2.52363,-1.59756 1.22005,0.99891 1.43792,2.53271 1.40524,2.78776 -0.5483,0.64115 -1.09297,0.90328 -1.09297,0.90328 l 2.94121,3.10656 0.29412,-2.22809 c 6.77567,9.44014 10.46852,20.36448 5.71901,34.09784 M 13.69195,7.197881 c 3.90709,1.746337 6.41619,3.949626 6.87371,4.286141 -0.20697,-0.984749 -0.97677,-5.7243 -1.41977,-8.667921 2.27671,1.540885 7.55999,5.118572 9.2993,6.280434 0.70807,-2.1289 3.1627,-9.082366 3.1627,-9.082366 0,0 4.43723,7.0066 5.19613,8.143667 C 37.72996,7.212051 43.03139,1.455872 44.40396,0 c 0.22876,3.312017 0.54103,8.048026 0.62092,8.760021 0.26507,-0.350685 2.29487,-3.12782 5.69722,-5.685335 -1.47423,2.833811 -2.17867,6.744471 -2.49094,9.88646 -3.34789,-0.910362 -6.88097,-1.399194 -10.51936,-1.399194 -6.9899,0 -13.55496,1.792386 -19.2304,4.941459 -1.03124,-3.035721 -2.64709,-6.811775 -4.78945,-9.30553"
+
+function TclotLionIcon({ size = 22 }) {
+  return (
+    <svg
+      viewBox="-10 -8 134 144"
+      width={size}
+      height={size}
+      aria-hidden="true"
+      focusable="false"
+      style={{ display: 'block' }}
+    >
+      <g fill="currentColor" transform="scale(1.58)">
+        <path d={TCLOT_LION_PATH} />
+      </g>
+    </svg>
+  )
+}
+
+function BrandHeader({ colorTheme, onChangeColorTheme }) {
+  return (
+    <section
+      className="tile tile--brand-header"
+      aria-label={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
+    >
+      <span className="brand-header__pill" aria-label={LEAGUE_TITLE_ABBR}>
+        <TclotLionIcon size={22} />
+        <span className="brand-header__wordmark">{LEAGUE_TITLE_ABBR}</span>
+      </span>
+      <span className="brand-header__meta">{BRAND_HEADER_META}</span>
+      <span className="brand-header__season">{BRAND_HEADER_SEASON}</span>
+      {onChangeColorTheme ? (
+        <div className="brand-header__toolbar">
+          <ThemeToggle value={colorTheme} onChange={onChangeColorTheme} />
+        </div>
+      ) : null}
+    </section>
+  )
+}
 import {
   useLeagueData,
   FORM_LAST_N,
@@ -1153,15 +1196,6 @@ function App() {
     data?.teamLogoMap ?? EMPTY_TEAM_LOGO_MAP
   )
 
-  /** First 4 teams left of title, next/last 4 right — shown as 2×2 grids (no overlap; >8 teams → first + last 4). */
-  const heroLogoSides = useMemo(() => {
-    const teams = data?.teamsForFormSelect ?? []
-    const left = teams.slice(0, 4)
-    const right =
-      teams.length > 8 ? teams.slice(-4) : teams.slice(4, 8)
-    return { left, right }
-  }, [data?.teamsForFormSelect])
-
   /** GWs present in waiver / FA analytics (drops-gw-live). */
   const processedWaiverGws = useMemo(() => {
     const s = new Set()
@@ -1462,7 +1496,7 @@ function App() {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
         <div className="load-screen">
-          <div className="title-banner__toolbar">
+          <div className="load-screen__toolbar">
             <ThemeToggle value={colorTheme} onChange={setColorTheme} />
           </div>
           Loading league…
@@ -1474,21 +1508,11 @@ function App() {
   if (error || !data) {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
-        <header className="page-header page-header--centered">
-          <section className="tile tile--title-banner" aria-label="League">
-            <div className="title-banner__toolbar">
-              <ThemeToggle value={colorTheme} onChange={setColorTheme} />
-            </div>
-            <div className="title-banner__brand">
-              <img
-                className="title-hero-brand-img"
-                src={TCLOT_HEADER_BRAND_SRC}
-                alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
-                decoding="async"
-              />
-            </div>
-            <p className="brand-sub brand-sub--in-title-tile">FPL Draft · Head-to-head</p>
-          </section>
+        <header className="page-header">
+          <BrandHeader
+            colorTheme={colorTheme}
+            onChangeColorTheme={setColorTheme}
+          />
         </header>
         <main className="main-tiles">
           <section className="tile error-tile">
@@ -1587,59 +1611,11 @@ function App() {
     >
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
-          <header className="page-header page-header--centered">
-            <section
-              className="tile tile--title-banner tile--title-with-flank-logos"
-              aria-label="League"
-            >
-              <div className="title-banner__toolbar">
-                <ThemeToggle value={colorTheme} onChange={setColorTheme} />
-              </div>
-              <div className="title-hero-row">
-                <div className="title-hero-row__logos title-hero-row__logos--left">
-                  {heroLogoSides.left.map((t) => (
-                    <div
-                      key={t.id}
-                      className="title-hero-row__logo-wrap"
-                      title={t.teamName}
-                    >
-                      <TeamAvatar
-                        entryId={t.id}
-                        name={t.teamName}
-                        size="lg"
-                        logoMap={teamLogoMap}
-                        kitIndexByEntry={kitIndexByEntry}
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="title-hero-row__title title-hero-row__title--brand">
-                  <img
-                    className="title-hero-brand-img"
-                    src={TCLOT_HEADER_BRAND_SRC}
-                    alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
-                    decoding="async"
-                  />
-                </div>
-                <div className="title-hero-row__logos title-hero-row__logos--right">
-                  {heroLogoSides.right.map((t) => (
-                    <div
-                      key={t.id}
-                      className="title-hero-row__logo-wrap"
-                      title={t.teamName}
-                    >
-                      <TeamAvatar
-                        entryId={t.id}
-                        name={t.teamName}
-                        size="lg"
-                        logoMap={teamLogoMap}
-                        kitIndexByEntry={kitIndexByEntry}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
+          <header className="page-header">
+            <BrandHeader
+              colorTheme={colorTheme}
+              onChangeColorTheme={setColorTheme}
+            />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
                 <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}
