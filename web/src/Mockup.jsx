@@ -427,6 +427,14 @@ const DECISIONS_OPEN = [
       'Header tile chrome: variant 4 with tile chrome (currently shipped in PR #3.7) vs full-bleed combos 5a/5b/5c. See HEADER · FULL-BLEED + STATUS STRIP COMBOS showcase.',
     ],
   },
+  {
+    surface: 'LIVE FACE-OFF · HERO/VILLAIN BADGE',
+    items: [
+      'Pick a circular treatment: Variant 1 (avatar status ring + badge dot), Variant 2 (standalone medallion next to avatar), or Variant 3 (horizontal pill = circle + caption).',
+      'Confirm color tokens: orange/red for HERO DEFEAT, purple/violet for VILLAIN VICTORY.',
+      'Confirm whether the badge text label is required or whether the visual cue alone is enough (Variant 1 has both; Variant 1 minimal could drop the caption pill).',
+    ],
+  },
 ]
 
 function DecisionsColumn({ tone, label, groups }) {
@@ -1846,6 +1854,281 @@ function PortraitFrame({ children }) {
   return (
     <div className="mockup-portrait-frame">
       <div className="mockup-portrait-frame__screen">{children}</div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* HERO DEFEAT / VILLAIN VICTORY · circular treatments                  */
+/* ------------------------------------------------------------------ */
+/* User flagged the production rectangular tile feels out of place
+ * against the new circular-avatar design language. Three circular
+ * treatments mocked up side-by-side, plus the reference rectangular
+ * for A/B compare. Both narrative kinds (HERO DEFEAT — orange/red,
+ * VILLAIN VICTORY — purple/violet) rendered per variant. */
+const HV_KINDS = [
+  {
+    key: 'hero',
+    label: 'HERO DEFEAT',
+    short: 'HERO',
+    short2: 'DEFEAT',
+    glyph: '🦸',
+    img: 'hero-defeat.png',
+    objectPosition: 'center bottom',
+  },
+  {
+    key: 'villain',
+    label: 'VILLAIN VICTORY',
+    short: 'VILLAIN',
+    short2: 'VICTORY',
+    glyph: '🦹',
+    img: 'villain-detected.png',
+    objectPosition: 'center top',
+  },
+]
+
+function HvFaceOffShell({ kind, badge, position = 'right' }) {
+  // Mini face-off composition so each variant reads in context of the avatar
+  // row it lives in. The badge slot can be either side-of-avatar (variant 2/3)
+  // or laid over the avatar's bottom-right (variant 1 dot). The caption pill
+  // for variant 1 sits below the team column.
+  const isHero = kind === 'hero'
+  const teamCode = isHero ? 'CO' : 'TO'
+  const teamName = isHero ? 'Crouch End Oashisu' : 'Toronto Oizo'
+  const teamMgr = isHero ? 'David Higman · #1' : 'Andy Ward · #3'
+  const score = isHero ? 67 : 71
+  const oppScore = isHero ? 71 : 67
+  const oppCode = isHero ? 'TO' : 'CO'
+  const oppName = isHero ? 'Toronto Oizo' : 'Crouch End Oashisu'
+  return (
+    <div className={'mockup-hv-faceoff mockup-hv-faceoff--' + kind}>
+      <div className="mockup-hv-faceoff__side mockup-hv-faceoff__side--home">
+        {position === 'left' ? badge : null}
+        <div className="mockup-hv-faceoff__avatar-col">
+          <div className={'mockup-hv-faceoff__crest mockup-hv-faceoff__crest--' + kind}>
+            {teamCode}
+            {position === 'overlay' ? badge : null}
+          </div>
+          {position === 'caption-below' ? (
+            <div className="mockup-hv-faceoff__caption-slot">{badge}</div>
+          ) : null}
+        </div>
+        <div className="mockup-hv-faceoff__names">
+          <span className="mockup-hv-faceoff__name">{teamName}</span>
+          <span className="mockup-hv-faceoff__sub">{teamMgr}</span>
+        </div>
+        {position === 'right' ? badge : null}
+      </div>
+      <div className="mockup-hv-faceoff__score">
+        <span className={
+          'mockup-hv-faceoff__score-half' +
+          (isHero ? ' mockup-hv-faceoff__score-half--loser' : ' mockup-hv-faceoff__score-half--winner')
+        }>
+          {score}
+        </span>
+        <span className="mockup-hv-faceoff__score-sep">–</span>
+        <span className={
+          'mockup-hv-faceoff__score-half' +
+          (isHero ? ' mockup-hv-faceoff__score-half--winner' : ' mockup-hv-faceoff__score-half--loser')
+        }>
+          {oppScore}
+        </span>
+      </div>
+      <div className="mockup-hv-faceoff__side mockup-hv-faceoff__side--away">
+        <div className="mockup-hv-faceoff__names mockup-hv-faceoff__names--away">
+          <span className="mockup-hv-faceoff__name">{oppName}</span>
+          <span className="mockup-hv-faceoff__sub">{isHero ? 'Andy Ward · #3' : 'David Higman · #1'}</span>
+        </div>
+        <div className="mockup-hv-faceoff__crest mockup-hv-faceoff__crest--neutral">{oppCode}</div>
+      </div>
+    </div>
+  )
+}
+
+/* Reference — production rectangular tile (for A/B compare only). */
+function HvReferenceBadge({ kind }) {
+  const meta = HV_KINDS.find((k) => k.key === kind)
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/')
+  return (
+    <span
+      className={'mockup-hv-ref mockup-hv-ref--' + kind}
+      role="img"
+      aria-label={meta.label}
+    >
+      <img
+        className="mockup-hv-ref__img"
+        src={`${base}${meta.img}`}
+        alt=""
+        width={32}
+        height={46}
+        style={{ objectPosition: meta.objectPosition }}
+        decoding="async"
+        loading="lazy"
+      />
+      <span className="mockup-hv-ref__label" aria-hidden="true">{meta.label}</span>
+    </span>
+  )
+}
+
+/* Variant 1 — Avatar status ring + tiny badge dot + caption pill below */
+function HvVariant1Render({ kind }) {
+  const meta = HV_KINDS.find((k) => k.key === kind)
+  const dot = (
+    <span className={'mockup-hv-badge--variant-1__badge-dot mockup-hv-badge--variant-1__badge-dot--' + kind} aria-hidden>
+      {meta.glyph}
+    </span>
+  )
+  const captionPill = (
+    <span className={'mockup-hv-badge--variant-1__caption mockup-hv-badge--variant-1__caption--' + kind} aria-hidden>
+      {meta.label}
+    </span>
+  )
+  return (
+    <div className={'mockup-hv-faceoff mockup-hv-faceoff--' + kind + ' mockup-hv-badge--variant-1'}>
+      <div className="mockup-hv-faceoff__side mockup-hv-faceoff__side--home">
+        <div className="mockup-hv-faceoff__avatar-col">
+          <div
+            className={
+              'mockup-hv-faceoff__crest mockup-hv-faceoff__crest--' + kind +
+              ' mockup-hv-badge--variant-1__avatar mockup-hv-badge--variant-1__avatar--' + kind
+            }
+          >
+            {kind === 'hero' ? 'CO' : 'TO'}
+            {dot}
+          </div>
+          {captionPill}
+        </div>
+        <div className="mockup-hv-faceoff__names">
+          <span className="mockup-hv-faceoff__name">{kind === 'hero' ? 'Crouch End Oashisu' : 'Toronto Oizo'}</span>
+          <span className="mockup-hv-faceoff__sub">{kind === 'hero' ? 'David Higman · #1' : 'Andy Ward · #3'}</span>
+        </div>
+      </div>
+      <div className="mockup-hv-faceoff__score">
+        <span className={'mockup-hv-faceoff__score-half mockup-hv-faceoff__score-half--' + (kind === 'hero' ? 'loser' : 'winner')}>
+          {kind === 'hero' ? 67 : 71}
+        </span>
+        <span className="mockup-hv-faceoff__score-sep">–</span>
+        <span className={'mockup-hv-faceoff__score-half mockup-hv-faceoff__score-half--' + (kind === 'hero' ? 'winner' : 'loser')}>
+          {kind === 'hero' ? 71 : 67}
+        </span>
+      </div>
+      <div className="mockup-hv-faceoff__side mockup-hv-faceoff__side--away">
+        <div className="mockup-hv-faceoff__names mockup-hv-faceoff__names--away">
+          <span className="mockup-hv-faceoff__name">{kind === 'hero' ? 'Toronto Oizo' : 'Crouch End Oashisu'}</span>
+          <span className="mockup-hv-faceoff__sub">{kind === 'hero' ? 'Andy Ward · #3' : 'David Higman · #1'}</span>
+        </div>
+        <div className="mockup-hv-faceoff__crest mockup-hv-faceoff__crest--neutral">{kind === 'hero' ? 'TO' : 'CO'}</div>
+      </div>
+    </div>
+  )
+}
+
+/* Variant 2 — Standalone circular medallion next to the avatar */
+function HvVariant2Render({ kind }) {
+  const meta = HV_KINDS.find((k) => k.key === kind)
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/')
+  const medallion = (
+    <span
+      className={'mockup-hv-badge--variant-2__medallion mockup-hv-badge--variant-2__medallion--' + kind}
+      role="img"
+      aria-label={meta.label}
+    >
+      <img
+        className="mockup-hv-badge--variant-2__img"
+        src={`${base}${meta.img}`}
+        alt=""
+        style={{ objectPosition: meta.objectPosition }}
+        decoding="async"
+        loading="lazy"
+      />
+      <span className={'mockup-hv-badge--variant-2__tint mockup-hv-badge--variant-2__tint--' + kind} aria-hidden />
+      <span className="mockup-hv-badge--variant-2__caption" aria-hidden>
+        <span className="mockup-hv-badge--variant-2__caption-1">{meta.short}</span>
+        <span className="mockup-hv-badge--variant-2__caption-2">{meta.short2}</span>
+      </span>
+    </span>
+  )
+  return <HvFaceOffShell kind={kind} badge={medallion} position="left" />
+}
+
+/* Variant 3 — Two-part horizontal pill (circle + caption) */
+function HvVariant3Render({ kind }) {
+  const meta = HV_KINDS.find((k) => k.key === kind)
+  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/')
+  const pill = (
+    <span
+      className={'mockup-hv-badge--variant-3__pill mockup-hv-badge--variant-3__pill--' + kind}
+      role="img"
+      aria-label={meta.label}
+    >
+      <span className={'mockup-hv-badge--variant-3__circle mockup-hv-badge--variant-3__circle--' + kind}>
+        <img
+          className="mockup-hv-badge--variant-3__img"
+          src={`${base}${meta.img}`}
+          alt=""
+          style={{ objectPosition: meta.objectPosition }}
+          decoding="async"
+          loading="lazy"
+        />
+      </span>
+      <span className="mockup-hv-badge--variant-3__caption" aria-hidden>{meta.label}</span>
+    </span>
+  )
+  return <HvFaceOffShell kind={kind} badge={pill} position="right" />
+}
+
+/* Reference (current production look) wrapped in the same face-off shell */
+function HvReferenceRender({ kind }) {
+  return <HvFaceOffShell kind={kind} badge={<HvReferenceBadge kind={kind} />} position="right" />
+}
+
+function HeroVillainBadgeShowcase() {
+  const variants = [
+    {
+      key: 'ref',
+      label: 'Current — for comparison',
+      caption: 'Production rectangular tile · image cutout + caps text · orange (HERO) / purple (VILLAIN) tint.',
+      Render: HvReferenceRender,
+    },
+    {
+      key: 'v1',
+      label: 'Variant 1 — Status ring + badge dot',
+      caption: 'Avatar gets a 2px tinted ring + a 16px glyph dot at the bottom-right. Caption pill below in caps mono.',
+      Render: HvVariant1Render,
+    },
+    {
+      key: 'v2',
+      label: 'Variant 2 — Standalone medallion',
+      caption: 'Discrete 56px circle next to the manager avatar. Image cropped to circle + faint gradient tint + stacked HERO / DEFEAT text under it.',
+      Render: HvVariant2Render,
+    },
+    {
+      key: 'v3',
+      label: 'Variant 3 — Horizontal pill (circle + caption)',
+      caption: 'Same image + text composition as today, reshaped into a rounded-pill capsule.',
+      Render: HvVariant3Render,
+    },
+  ]
+  return (
+    <div className="mockup-hv-showcase">
+      {variants.map((v) => (
+        <div className="mockup-hv-variant" key={v.key}>
+          <div className="mockup-hv-variant__head">
+            <span className="mockup-hv-variant__label">{v.label}</span>
+            <span className="mockup-hv-variant__caption">{v.caption}</span>
+          </div>
+          <div className="mockup-hv-variant__pair">
+            <div className="mockup-hv-variant__cell">
+              <div className="mockup-hv-variant__kind-h">HERO DEFEAT · orange/red</div>
+              <v.Render kind="hero" />
+            </div>
+            <div className="mockup-hv-variant__cell">
+              <div className="mockup-hv-variant__kind-h">VILLAIN VICTORY · purple/violet</div>
+              <v.Render kind="villain" />
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -5442,6 +5725,20 @@ export function Mockup() {
             score weight/color, or a small dot marker instead.
           </p>
           <WinnerOptions />
+        </section>
+
+        {/* 11a-HV. Hero defeat / Villain victory — circular treatments */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">LIVE FACE-OFF · HERO/VILLAIN BADGE</div>
+          <h2 className="mockup__section-h">Three circular treatments + reference rectangular for comparison</h2>
+          <p className="mockup__section-sub">
+            The current rectangular tile feels out of place against the new
+            circular-avatar design language. Three circular treatments mocked
+            up side-by-side, each rendered for both narrative kinds (HERO
+            DEFEAT — orange/red, VILLAIN VICTORY — purple/violet). Reference
+            rectangular at the top for A/B compare.
+          </p>
+          <HeroVillainBadgeShowcase />
         </section>
 
         {/* 11a-2. Portrait mobile preview */}

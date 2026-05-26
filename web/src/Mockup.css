@@ -7632,3 +7632,424 @@
 }
 .mockup-contrib-mobile__chev--up { font-size: 14px; }
 
+/* ------------------------------------------------------------------ */
+/* HERO DEFEAT / VILLAIN VICTORY · circular treatments (mockup only)    */
+/* ------------------------------------------------------------------ */
+/* Color tokens scoped to the showcase. Values match the production
+ * tile (App.css `live-hero-defeat` / `live-villain-detected`) so the
+ * mockup reads true; no new global tokens introduced. */
+.mockup-hv-showcase {
+  --mockup-hv-hero: #d97706;
+  --mockup-hv-hero-strong: #b45309;
+  --mockup-hv-hero-tint: color-mix(in srgb, #d97706 14%, transparent);
+  --mockup-hv-villain: #7c3aed;
+  --mockup-hv-villain-strong: #5b21b6;
+  --mockup-hv-villain-tint: color-mix(in srgb, #7c3aed 14%, transparent);
+
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.mockup-hv-variant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+}
+
+.mockup-hv-variant__head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.mockup-hv-variant__label {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.mockup-hv-variant__caption {
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-muted);
+}
+
+.mockup-hv-variant__pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+@media (max-width: 720px) {
+  .mockup-hv-variant__pair {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mockup-hv-variant__cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.mockup-hv-variant__kind-h {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Shared face-off shell — minimal version of LiveFaceOffRow ------------- */
+.mockup-hv-faceoff {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+}
+
+.mockup-hv-faceoff__side {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mockup-hv-faceoff__side--away {
+  justify-content: flex-end;
+}
+
+.mockup-hv-faceoff__avatar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.mockup-hv-faceoff__crest {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  background: color-mix(in srgb, var(--brand) 24%, var(--surface-2));
+  color: var(--text-strong);
+  flex-shrink: 0;
+}
+
+.mockup-hv-faceoff__crest--neutral {
+  background: var(--surface-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+.mockup-hv-faceoff__names {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.mockup-hv-faceoff__names--away {
+  align-items: flex-end;
+  text-align: right;
+}
+
+.mockup-hv-faceoff__name {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 12rem;
+}
+
+.mockup-hv-faceoff__sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.mockup-hv-faceoff__score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-lg);
+  font-weight: 600;
+}
+
+.mockup-hv-faceoff__score-half--winner {
+  color: var(--brand);
+}
+
+.mockup-hv-faceoff__score-half--loser {
+  color: var(--text-muted);
+}
+
+.mockup-hv-faceoff__score-sep {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+/* -- Reference rectangular ------------------------------------------- */
+.mockup-hv-ref {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.mockup-hv-ref--hero {
+  background: var(--mockup-hv-hero-tint);
+  border: 1px solid color-mix(in srgb, var(--mockup-hv-hero) 38%, var(--border));
+}
+
+.mockup-hv-ref--villain {
+  background: color-mix(in srgb, var(--mockup-hv-villain) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mockup-hv-villain) 38%, var(--border));
+}
+
+.mockup-hv-ref__img {
+  width: 32px;
+  height: 46px;
+  object-fit: contain;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.mockup-hv-ref__label {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  white-space: nowrap;
+}
+
+.mockup-hv-ref--hero .mockup-hv-ref__label { color: var(--mockup-hv-hero-strong); }
+.mockup-hv-ref--villain .mockup-hv-ref__label { color: var(--mockup-hv-villain-strong); }
+
+/* -- Variant 1 — status ring + badge dot + caption pill below --------- */
+.mockup-hv-badge--variant-1__avatar--hero {
+  box-shadow: 0 0 0 2px var(--mockup-hv-hero);
+}
+
+.mockup-hv-badge--variant-1__avatar--villain {
+  box-shadow: 0 0 0 2px var(--mockup-hv-villain);
+}
+
+.mockup-hv-badge--variant-1__badge-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  color: #fff;
+  border: 1.5px solid var(--surface-2);
+}
+
+.mockup-hv-badge--variant-1__badge-dot--hero {
+  background: var(--mockup-hv-hero);
+}
+
+.mockup-hv-badge--variant-1__badge-dot--villain {
+  background: var(--mockup-hv-villain);
+}
+
+.mockup-hv-badge--variant-1__caption {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.1;
+  padding: 2px 5px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.mockup-hv-badge--variant-1__caption--hero {
+  background: var(--mockup-hv-hero-tint);
+  color: var(--mockup-hv-hero-strong);
+}
+
+.mockup-hv-badge--variant-1__caption--villain {
+  background: color-mix(in srgb, var(--mockup-hv-villain) 14%, transparent);
+  color: var(--mockup-hv-villain-strong);
+}
+
+/* -- Variant 2 — standalone medallion ---------------------------------- */
+.mockup-hv-badge--variant-2__medallion {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+.mockup-hv-badge--variant-2__medallion--hero {
+  border: 1px solid color-mix(in srgb, var(--mockup-hv-hero) 50%, var(--border));
+}
+
+.mockup-hv-badge--variant-2__medallion--villain {
+  border: 1px solid color-mix(in srgb, var(--mockup-hv-villain) 50%, var(--border));
+}
+
+.mockup-hv-badge--variant-2__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.mockup-hv-badge--variant-2__tint {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.mockup-hv-badge--variant-2__tint--hero {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mockup-hv-hero) 10%, transparent) 0%,
+    color-mix(in srgb, var(--mockup-hv-hero) 55%, transparent) 100%
+  );
+}
+
+.mockup-hv-badge--variant-2__tint--villain {
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--mockup-hv-villain) 10%, transparent) 0%,
+    color-mix(in srgb, var(--mockup-hv-villain) 55%, transparent) 100%
+  );
+}
+
+.mockup-hv-badge--variant-2__caption {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 2px 0 4px;
+  font-family: 'Geist Mono', monospace;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  line-height: 1;
+}
+
+.mockup-hv-badge--variant-2__caption-1 {
+  font-size: 8px;
+}
+
+.mockup-hv-badge--variant-2__caption-2 {
+  font-size: 8px;
+}
+
+/* -- Variant 3 — horizontal pill (circle + caption) ------------------- */
+.mockup-hv-badge--variant-3__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px 3px 3px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.mockup-hv-badge--variant-3__pill--hero {
+  background: var(--mockup-hv-hero-tint);
+  border: 1px solid color-mix(in srgb, var(--mockup-hv-hero) 38%, var(--border));
+}
+
+.mockup-hv-badge--variant-3__pill--villain {
+  background: color-mix(in srgb, var(--mockup-hv-villain) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mockup-hv-villain) 38%, var(--border));
+}
+
+.mockup-hv-badge--variant-3__circle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mockup-hv-badge--variant-3__circle--hero {
+  background: color-mix(in srgb, var(--mockup-hv-hero) 22%, var(--surface-2));
+}
+
+.mockup-hv-badge--variant-3__circle--villain {
+  background: color-mix(in srgb, var(--mockup-hv-villain) 22%, var(--surface-2));
+}
+
+.mockup-hv-badge--variant-3__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mockup-hv-badge--variant-3__caption {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.mockup-hv-badge--variant-3__pill--hero .mockup-hv-badge--variant-3__caption {
+  color: var(--mockup-hv-hero-strong);
+}
+
+.mockup-hv-badge--variant-3__pill--villain .mockup-hv-badge--variant-3__caption {
+  color: var(--mockup-hv-villain-strong);
+}
+
