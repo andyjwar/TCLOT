@@ -2892,32 +2892,41 @@ function ContribPointsPill({ pts }) {
   )
 }
 
-/* Variant A — card per event. Two-line surface-1 cards in a vertical
- * stack. The top line is the event itself (icon-led: kind word, player
- * + club crest, minute, points pill on the right). The second line is
- * a subordinate subtitle that names the fantasy team that benefited.
- * Manager name and relative timestamp are intentionally omitted — the
- * minute marker already conveys timing. */
+/* Variant A — card per event. 2x2 grid: left column is two stacked
+ * rows (event line over team subtitle), right column is two stacked
+ * meta cells (minute marker over KIND + points pill). The leading
+ * glyphs (event icon and team avatar) share a fixed 20px lead lane so
+ * they vertically align across the two rows. Manager name and
+ * relative timestamp are omitted — the minute marker already conveys
+ * timing. */
 function ContribCardsVariant({ events }) {
   return (
     <div className="mockup-contrib-card-list">
-      {events.map((e) => (
-        <article className="mockup-contrib-card" key={e.id}>
-          <div className="mockup-contrib-card__top">
-            <span className="mockup-contrib-card__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
-            <span className="mockup-contrib-card__kind">{contribKindLabel(e.kind)}</span>
-            <span className="mockup-contrib-card__sep" aria-hidden>·</span>
-            <span className="mockup-contrib-card__player">{e.player}</span>
-            <ContribMonogram code={e.club} size="sm" />
-            <span className="mockup-contrib-card__minute">{e.minute}</span>
-            <ContribPointsPill pts={e.pts} />
-          </div>
-          <div className="mockup-contrib-card__sub">
-            <ContribMonogram code={e.teamCode} size="sm" />
-            <span className="mockup-contrib-card__team">{e.teamName}</span>
-          </div>
-        </article>
-      ))}
+      {events.map((e) => {
+        const kindLabel = contribKindLabel(e.kind).toUpperCase()
+        const kindToneClass =
+          e.kind === 'red'    ? ' mockup-contrib-card__kind--red'
+          : e.kind === 'yellow' ? ' mockup-contrib-card__kind--yellow'
+          : ''
+        return (
+          <article className="mockup-contrib-card" key={e.id}>
+            <div className="mockup-contrib-card__top">
+              <span className="mockup-contrib-card__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
+              <span className="mockup-contrib-card__player">{e.player}</span>
+              <ContribMonogram code={e.club} size="sm" />
+            </div>
+            <div className="mockup-contrib-card__minute">{e.minute}</div>
+            <div className="mockup-contrib-card__sub">
+              <ContribMonogram code={e.teamCode} size="sm" />
+              <span className="mockup-contrib-card__team">{e.teamName}</span>
+            </div>
+            <div className="mockup-contrib-card__meta-bottom">
+              <span className={'mockup-contrib-card__kind' + kindToneClass}>{kindLabel}</span>
+              <ContribPointsPill pts={e.pts} />
+            </div>
+          </article>
+        )
+      })}
     </div>
   )
 }
