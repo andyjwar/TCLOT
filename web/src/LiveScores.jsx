@@ -1783,6 +1783,11 @@ export function LiveScores({
                     #
                   </th>
                   <th className="col-team">Team</th>
+                  {/* PR #5h — `LIVE` is the mobile-only column (renamed from
+                     PR #5g’s `PL` to avoid conflating with the standings
+                     `P` = matches played column the desktop layout adds).
+                     `.col-pl` class kept to minimise CSS churn — see
+                     `.standings-table--live .col-pl` rules in App.css. */}
                   <th
                     className="col-num col-pl"
                     title={
@@ -1791,7 +1796,34 @@ export function LiveScores({
                         : 'Live played score: FPL points this GW so far (0 pre-kickoff)'
                     }
                   >
-                    PL
+                    LIVE
+                  </th>
+                  {/* PR #5h — desktop-only standings columns. Hidden on
+                     mobile (≤880px) via App.css media query so the
+                     condensed PR #5g layout shows there. */}
+                  <th
+                    className="col-num col-played"
+                    title="Season H2H matches played"
+                  >
+                    P
+                  </th>
+                  <th
+                    className="col-num col-wdl"
+                    title="Season H2H wins"
+                  >
+                    W
+                  </th>
+                  <th
+                    className="col-num col-wdl"
+                    title="Season H2H draws"
+                  >
+                    D
+                  </th>
+                  <th
+                    className="col-num col-wdl"
+                    title="Season H2H losses"
+                  >
+                    L
                   </th>
                   <th
                     className="col-num col-for"
@@ -1802,6 +1834,26 @@ export function LiveScores({
                     }
                   >
                     FOR
+                  </th>
+                  <th
+                    className="col-num col-against"
+                    title={
+                      gwStandingsFrozen
+                        ? 'Season points against (includes this GW)'
+                        : 'Season points against, plus your opponent’s live GW score vs you (when paired)'
+                    }
+                  >
+                    AGT
+                  </th>
+                  <th
+                    className="col-num col-gd"
+                    title={
+                      gwStandingsFrozen
+                        ? 'Goal difference: For minus Against'
+                        : 'Projected GD: projected For minus projected Against'
+                    }
+                  >
+                    GD
                   </th>
                   <th
                     className="col-live-form"
@@ -1909,13 +1961,14 @@ export function LiveScores({
                               </span>
                             ) : null}
                           </span>
-                          {/* PR #5g — inline projected-H2H chip next to the
+                          {/* PR #5h — inline projected-H2H chip next to the
                              team name. Renders `+3` (winning) or `+1`
                              (drawing); hidden on losing rows and pre-kickoff
                              so the row's GW dot column carries the loss
-                             signal. Narrow viewport (≤880px) only — desktop
-                             uses the dedicated GW dot column instead. */}
-                          {narrowViewport && row.h2hProj && row.h2hProj.value != null ? (
+                             signal. Rendered in **both** views (desktop +
+                             mobile) so the chip and the dedicated GW dot
+                             column reinforce each other on desktop. */}
+                          {row.h2hProj && row.h2hProj.value != null ? (
                             <span
                               className={`live-form-margin live-form-margin--${row.h2hProj.kind}`}
                               title={
@@ -1944,11 +1997,30 @@ export function LiveScores({
                       >
                         {row.liveGw != null ? row.liveGw : 0}
                       </td>
+                      <td className="col-num col-played tabular">
+                        {(row.matches_won ?? 0) +
+                          (row.matches_drawn ?? 0) +
+                          (row.matches_lost ?? 0)}
+                      </td>
+                      <td className="col-num col-wdl tabular">{row.matches_won ?? 0}</td>
+                      <td className="col-num col-wdl tabular">{row.matches_drawn ?? 0}</td>
+                      <td className="col-num col-wdl tabular">{row.matches_lost ?? 0}</td>
                       <td
                         className="col-num col-for tabular"
                         title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
                       >
                         {row.projectedFor}
+                      </td>
+                      <td
+                        className="col-num col-against tabular"
+                        title={`Season ${row.ga} + opponent GW${row.oppLiveGw != null ? ` (${row.oppLiveGw})` : ''}`}
+                      >
+                        {row.projectedGa}
+                      </td>
+                      <td className="col-num col-gd tabular">
+                        {row.projectedGd > 0
+                          ? `+${row.projectedGd}`
+                          : row.projectedGd}
                       </td>
                       <td className="col-live-form">
                         <span

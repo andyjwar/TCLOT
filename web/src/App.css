@@ -9782,7 +9782,11 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   color: var(--fm-text-strong);
 }
 .standings-table--live .col-num.col-for,
-.standings-table--live .col-num.col-pl {
+.standings-table--live .col-num.col-pl,
+.standings-table--live .col-num.col-played,
+.standings-table--live .col-num.col-wdl,
+.standings-table--live .col-num.col-against,
+.standings-table--live .col-num.col-gd {
   font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
 }
@@ -9935,25 +9939,25 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 /* ============================================================ */
-/* Projected-H2H chip — narrow viewport (<=880px) only          */
+/* Projected-H2H chip — both desktop + mobile (PR #5h)            */
 /* ============================================================ */
 /*
- * Renders next to the team name on narrow viewports as a compact
- * mono caps chip with the manager's *projected* H2H points for this
- * GW: `+3` when winning, `+1` when drawing. Hidden on losing rows
- * and pre-kickoff (caller passes `null` value) — the dedicated GW
- * dot column carries the loss signal so the team-name cell stays
- * uncluttered. Hidden on desktop entirely where the GW dot column
- * is always visible.
+ * Renders next to the team name as a compact mono caps chip with
+ * the manager's *projected* H2H points for this GW: `+3` when
+ * winning, `+1` when drawing. Hidden on losing rows and pre-kickoff
+ * (caller passes `null` value) — the dedicated GW dot column
+ * carries the loss signal so the team-name cell stays uncluttered.
+ *
+ * PR #5h note: rendered in **both** desktop and mobile views now
+ * (PR #5g had this gated to narrow viewports). On desktop the chip
+ * sits next to the team name and the GW dot column reinforces the
+ * same signal on the right.
  *
  * Class history: `.live-form-margin` predates PR #5g (was the mobile
  * `+N FOR` chip showing signed live FPL points margin). The class
  * name is kept to minimize CSS churn; only the kind modifiers
  * changed (`--pos/--neg/--zero` → `--win/--draw`). Losing rows
  * never receive a chip so no `--loss` style exists.
- *
- * Rendering is gated by `useNarrowViewport()` in JSX so this CSS
- * just has to style what's already conditionally there.
  */
 .live-form-margin {
   display: inline-flex;
@@ -9987,6 +9991,56 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 @media (orientation: portrait) and (max-width: 600px) {
   .standings-table--live .col-live-form {
     display: none;
+  }
+}
+
+/* ============================================================ */
+/* Desktop / mobile column visibility (PR #5h)                  */
+/* ============================================================ */
+/*
+ * The Live Table renders the full standings column set on desktop
+ * (>880px) and the condensed PR #5g column set on mobile
+ * (≤880px). Both layouts share the same `<thead>` / `<tbody>`
+ * markup; CSS toggles cell visibility per breakpoint.
+ *
+ * Render order in JSX is:
+ *   # · TEAM · LIVE · P · W · D · L · FOR · AGT · GD · Last 5 · GW · PTS
+ *
+ * On desktop the `LIVE` column hides, leaving:
+ *   # · TEAM · P · W · D · L · FOR · AGT · GD · Last 5 · GW · PTS
+ *
+ * On mobile (≤880px) the desktop-only columns hide, leaving:
+ *   # · TEAM · LIVE · FOR · Last 5 · GW · PTS
+ *
+ * `display: table-cell` is used to re-enable cells the default rule
+ * hid, since `th` / `td` default to `table-cell`. We choose CSS
+ * toggling over `useNarrowViewport()`-gated JSX because CSS responds
+ * reliably to viewport resizes (the matchMedia hook has had
+ * embedded-browser flakiness on this project) and the JSX stays
+ * single-source-of-truth.
+ *
+ * Naming choice (PR #5h): mobile `PL` was renamed to `LIVE` to
+ * disambiguate from desktop’s `P` (matches played). The CSS class
+ * `.col-pl` is kept (only the header text changed) to minimise
+ * churn elsewhere in the codebase.
+ */
+
+/* Desktop default: hide the mobile-only LIVE column. */
+.standings-table--live .col-pl {
+  display: none;
+}
+
+@media (max-width: 880px) {
+  /* Mobile: hide the desktop-only standings columns. */
+  .standings-table--live .col-played,
+  .standings-table--live .col-wdl,
+  .standings-table--live .col-against,
+  .standings-table--live .col-gd {
+    display: none;
+  }
+  /* Mobile: re-show the LIVE column hidden by the desktop default. */
+  .standings-table--live .col-pl {
+    display: table-cell;
   }
 }
 
