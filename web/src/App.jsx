@@ -224,6 +224,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
+import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
 import { FplLiveTripleThreatBanner } from './FplLiveTripleThreatBanner.jsx'
@@ -1309,15 +1310,24 @@ function App() {
   const draftBootstrapEvents = useDraftBootstrapEvents()
 
   /**
-   * Brand-header status strip state. Derived purely from bootstrap data so it
-   * doesn't add a network call beyond what `useDraftBootstrapEvents` already
-   * fetches. Re-derives every render (cheap object construction) so the strip
-   * stays correct after the bootstrap auto-refetches across the GW deadline.
-   *
-   * Per-fixture `liveFixtureCount` and `minute` are intentionally absent in
-   * #3.7 — that data lives behind `useLiveScores` (FPL Live tab only) and
-   * piping it up here would add a poll loop to every page. The live strip
-   * degrades to `● GW {N} · Live` until a thinner fixtures hook lands.
+   * Page-global fixture summary for the brand-header status strip. PR #4 chose
+   * Option B (a thin hook that polls only `classic fixtures?event={gw}` while
+   * the GW is actually live) over hoisting `useLiveScores` — that hook also
+   * pulls draft bootstrap, event/live, ESPN Prem, and per-team picks, which
+   * would have multiplied off-tab network traffic for header data we don't
+   * need. Shared `fetchFplJsonCached` means the Live tab still gets a warm
+   * cache when the user opens it.
+   */
+  const { liveFixtureCount: brandLiveFixtureCount, minute: brandLiveMinute } =
+    useFplFixtureLiveSummary({
+      currentEvent: draftBootstrapEvents.currentEvent,
+    })
+
+  /**
+   * Brand-header status strip state. Derived from the cheap bootstrap pull
+   * plus the lightweight fixture summary above. Re-derives every render
+   * (cheap object construction) so the strip stays correct after the
+   * bootstrap auto-refetches across the GW deadline.
    */
   const brandHeaderStatus = useMemo(
     () =>
@@ -1326,11 +1336,15 @@ function App() {
         nextEvent: draftBootstrapEvents.nextEvent,
         lastFinishedEvent: draftBootstrapEvents.lastFinishedEvent,
         season: BRAND_HEADER_SEASON,
+        liveFixtureCount: brandLiveFixtureCount,
+        minute: brandLiveMinute,
       }),
     [
       draftBootstrapEvents.currentEvent,
       draftBootstrapEvents.nextEvent,
       draftBootstrapEvents.lastFinishedEvent,
+      brandLiveFixtureCount,
+      brandLiveMinute,
     ],
   )
 
@@ -3129,8 +3143,12 @@ function App() {
               aria-label="FPL Live"
             >
               <div className="section-chrome section-chrome--sticky">
+              {/* FPL Live sub-nav — variant A (text-only segmented control) from the
+                  SUB-NAV · FPL LIVE mockup showcase. "Live GW" carries a pulsing-dot
+                  prefix (same icon family as the main nav's FPL Live tab, scaled to
+                  ~12px). See `.subnav*` rules in App.css. */}
               <div
-                className="team-selection-submenu"
+                className="subnav"
                 role="tablist"
                 aria-label="FPL Live views"
               >
@@ -3140,13 +3158,13 @@ function App() {
                   id="tab-fpl-live-scores"
                   aria-selected={fplLiveTab === 'live'}
                   className={
-                    'team-selection-submenu__btn' +
-                    (fplLiveTab === 'live' ? ' team-selection-submenu__btn--active' : '')
+                    'subnav__tab' +
+                    (fplLiveTab === 'live' ? ' subnav__tab--active' : '')
                   }
                   onClick={() => setFplLiveTab('live')}
                 >
-                  <span className="team-selection-submenu__emoji" aria-hidden="true">
-                    ⚽
+                  <span className="subnav__dot" aria-hidden="true">
+                    <NavIcon name="pulsing-dot" size={12} />
                   </span>
                   Live GW
                 </button>
@@ -3156,17 +3174,11 @@ function App() {
                   id="tab-fpl-live-squads"
                   aria-selected={fplLiveTab === 'squads'}
                   className={
-                    'team-selection-submenu__btn' +
-                    (fplLiveTab === 'squads' ? ' team-selection-submenu__btn--active' : '')
+                    'subnav__tab' +
+                    (fplLiveTab === 'squads' ? ' subnav__tab--active' : '')
                   }
                   onClick={() => setFplLiveTab('squads')}
                 >
-                  <img
-                    className="team-selection-submenu__pl-logo"
-                    src={`${import.meta.env.BASE_URL}premier-league-logo.svg`}
-                    alt=""
-                    aria-hidden
-                  />
                   Lineups
                 </button>
                 <button
@@ -3175,14 +3187,11 @@ function App() {
                   id="tab-fpl-live-projections"
                   aria-selected={fplLiveTab === 'projections'}
                   className={
-                    'team-selection-submenu__btn' +
-                    (fplLiveTab === 'projections' ? ' team-selection-submenu__btn--active' : '')
+                    'subnav__tab' +
+                    (fplLiveTab === 'projections' ? ' subnav__tab--active' : '')
                   }
                   onClick={() => setFplLiveTab('projections')}
                 >
-                  <span className="team-selection-submenu__emoji" aria-hidden="true">
-                    📈
-                  </span>
                   Projections
                 </button>
               </div>

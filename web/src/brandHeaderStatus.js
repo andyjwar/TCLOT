@@ -42,13 +42,26 @@ export function formatDeadlineDate(iso) {
 }
 
 /**
+ * Coerce to a finite positive integer, or return null. Used to gate the
+ * optional per-fixture live fields so 0 / NaN never leak into the UI.
+ * @param {unknown} v
+ * @returns {number | null}
+ */
+function finitePositiveOrNull(v) {
+  const n = Number(v)
+  if (!Number.isFinite(n) || n <= 0) return null
+  return n
+}
+
+/**
  * Derive the brand-header status strip state purely from bootstrap-derived data.
  *
- * Status definitions (locked for PR #3.7):
+ * Status definitions:
  * - `live`: `events.current` exists, its deadline has passed, and `finished === false`.
- *           Live count + minute are not piped through `App.jsx` today; the strip
- *           degrades to `● GW {N} live` and the consumer fills in `liveCount` /
- *           `minute` once a thinner fixtures fetch is wired (out of scope for #3.7).
+ *           Optional `liveFixtureCount` / `minute` (from `useFplFixtureLiveSummary`,
+ *           PR #4) ride along on the result — when both are absent the strip degrades
+ *           to `● GW {N} · Live` (pre-kickoff, between fixture windows, or fetch
+ *           failure).
  * - `idle`: `events.current` is finished (between GWs). Copy: `GW {last} complete ·
  *           GW {next} of {seasonShort} starts {date}`.
  * - `pre-season`: no event has finished yet. Copy: `Pre-season · GW 1 of {seasonShort}
@@ -60,6 +73,8 @@ export function formatDeadlineDate(iso) {
  *   lastFinishedEvent?: object | null,
  *   season?: string,
  *   now?: Date,
+ *   liveFixtureCount?: number | null,
+ *   minute?: number | null,
  * }} p
  * @returns {{
  *   status: 'live' | 'idle' | 'pre-season' | 'unknown',
@@ -68,6 +83,8 @@ export function formatDeadlineDate(iso) {
  *   nextGw: number | null,
  *   nextDeadlineLabel: string | null,
  *   seasonShort: string,
+ *   liveFixtureCount: number | null,
+ *   minute: number | null,
  * }}
  */
 export function deriveBrandHeaderStatus({
@@ -76,6 +93,8 @@ export function deriveBrandHeaderStatus({
   lastFinishedEvent,
   season = '2025/26',
   now = new Date(),
+  liveFixtureCount = null,
+  minute = null,
 }) {
   const seasonShort = seasonShortLabel(season)
   const lastFinishedGw =
@@ -90,6 +109,8 @@ export function deriveBrandHeaderStatus({
       nextGw: null,
       nextDeadlineLabel: null,
       seasonShort,
+      liveFixtureCount: null,
+      minute: null,
     }
   }
 
@@ -107,6 +128,13 @@ export function deriveBrandHeaderStatus({
         nextGw,
         nextDeadlineLabel: formatDeadlineDate(nextEvent?.deadline_time),
         seasonShort,
+        liveFixtureCount: finitePositiveOrNull(liveFixtureCount),
+        /** Allow 0' (kickoff whistle) through — `>= 0` lets us show "0'" briefly
+         * before FPL ticks the counter. Negative / NaN coerce to null. */
+        minute:
+          minute == null || !Number.isFinite(Number(minute)) || Number(minute) < 0
+            ? null
+            : Number(minute),
       }
     }
   }
@@ -119,6 +147,8 @@ export function deriveBrandHeaderStatus({
       nextGw,
       nextDeadlineLabel: formatDeadlineDate(nextEvent?.deadline_time),
       seasonShort,
+      liveFixtureCount: null,
+      minute: null,
     }
   }
 
@@ -129,5 +159,7 @@ export function deriveBrandHeaderStatus({
     nextGw: nextGw ?? 1,
     nextDeadlineLabel: formatDeadlineDate(nextEvent?.deadline_time),
     seasonShort,
+    liveFixtureCount: null,
+    minute: null,
   }
 }

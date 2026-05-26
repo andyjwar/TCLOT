@@ -974,6 +974,99 @@
     0 0 0 3px rgba(121, 91, 251, 0.18);
 }
 
+/* —— FPL Live sub-nav (PR #4: variant A from SUB-NAV · FPL LIVE mockup showcase) ——
+ * Text-only segmented control. "Live GW" tab carries a small pulsing-dot prefix
+ * (same icon family as the main nav). Container is a surface-2 capsule with a
+ * 1px border; the active tab elevates to surface with an inset 1px border. */
+.subnav {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: var(--r-md);
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
+  border: 1px solid var(--border, var(--fm-border));
+}
+
+.subnav__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  margin: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-muted, var(--fm-muted));
+  font: inherit;
+  font-size: var(--text-sm, 13px);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast, 120ms) var(--ease, ease),
+    color var(--dur-fast, 120ms) var(--ease, ease),
+    box-shadow var(--dur-fast, 120ms) var(--ease, ease);
+}
+
+.subnav__tab:hover:not(.subnav__tab--active) {
+  color: var(--text, var(--fm-text));
+}
+
+.subnav__tab:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: 2px;
+}
+
+.subnav__tab--active {
+  background: var(--surface, var(--fm-card));
+  color: var(--text-strong, var(--fm-text-strong));
+  box-shadow: inset 0 0 0 1px var(--border, var(--fm-border));
+}
+
+.fotmob[data-theme='light'] .subnav__tab--active {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+/* Pulsing-dot prefix on the Live GW tab — same green dot as the main nav,
+ * scaled to ~12px to fit the smaller sub-nav hierarchy. Pulse animation
+ * piggy-backs on `dashboard-nav-icon-pulse` (defined above). */
+.subnav__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+
+.subnav__dot .nav-icon__pulse-target {
+  transform-origin: 12px 12px;
+  animation: dashboard-nav-icon-pulse 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .subnav__dot .nav-icon__pulse-target {
+    animation: none;
+  }
+}
+
+/* Narrow viewports: let the sub-nav scroll horizontally rather than wrap.
+ * Matches the existing `.section-chrome--sticky .team-selection-submenu` rule
+ * but scoped to the new class. */
+@media (max-width: 1080px) {
+  .section-chrome--sticky .subnav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .section-chrome--sticky .subnav::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 .dashboard-content {
   min-width: 0;
   display: flex;

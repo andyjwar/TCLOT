@@ -100,3 +100,114 @@ test('deriveBrandHeaderStatus — current event but deadline not yet → falls b
   })
   assert.equal(out.status, 'idle')
 })
+
+// PR #4 — `useFplFixtureLiveSummary` rides along on the `live` branch.
+// Non-live branches must always null these fields so the strip never
+// renders a stale `4 fixtures live` after FT.
+
+test('deriveBrandHeaderStatus — live carries liveFixtureCount + minute when supplied', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+    liveFixtureCount: 4,
+    minute: 47,
+  })
+  assert.equal(out.status, 'live')
+  assert.equal(out.liveFixtureCount, 4)
+  assert.equal(out.minute, 47)
+})
+
+test('deriveBrandHeaderStatus — live without summary nulls liveFixtureCount + minute', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+  })
+  assert.equal(out.status, 'live')
+  assert.equal(out.liveFixtureCount, null)
+  assert.equal(out.minute, null)
+})
+
+test('deriveBrandHeaderStatus — live with 0 / NaN summary coerces to null (consumer falls back to "· Live")', () => {
+  const baseInput = {
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+  }
+  const zeroCount = deriveBrandHeaderStatus({
+    ...baseInput,
+    liveFixtureCount: 0,
+    minute: 47,
+  })
+  assert.equal(zeroCount.liveFixtureCount, null)
+  assert.equal(zeroCount.minute, 47)
+  const nanMinute = deriveBrandHeaderStatus({
+    ...baseInput,
+    liveFixtureCount: 2,
+    minute: Number.NaN,
+  })
+  assert.equal(nanMinute.liveFixtureCount, 2)
+  assert.equal(nanMinute.minute, null)
+})
+
+test('deriveBrandHeaderStatus — live with minute === 0 kept (early kickoff whistle)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+    liveFixtureCount: 2,
+    minute: 0,
+  })
+  assert.equal(out.minute, 0)
+})
+
+test('deriveBrandHeaderStatus — idle ignores liveFixtureCount/minute (defensive null)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 28 },
+    season: '2025/26',
+    now: new Date('2026-03-10T10:00:00Z'),
+    liveFixtureCount: 4,
+    minute: 47,
+  })
+  assert.equal(out.status, 'idle')
+  assert.equal(out.liveFixtureCount, null)
+  assert.equal(out.minute, null)
+})
+
+test('deriveBrandHeaderStatus — pre-season ignores liveFixtureCount/minute', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: null,
+    nextEvent: { id: 1, deadline_time: '2026-08-14T17:30:00Z' },
+    lastFinishedEvent: null,
+    season: '2026/27',
+    now: new Date('2026-06-01T10:00:00Z'),
+    liveFixtureCount: 4,
+    minute: 47,
+  })
+  assert.equal(out.status, 'pre-season')
+  assert.equal(out.liveFixtureCount, null)
+  assert.equal(out.minute, null)
+})
