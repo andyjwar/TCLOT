@@ -95,6 +95,55 @@ function LucideIcon({ name, ...rest }) {
           <circle cx="5" cy="12" r="1" />
         </svg>
       )
+    // ---- FPL Live indicator candidates ----------------------------------
+    // Solid filled dot. Pair with the .mockup-nav-icon--pulse class on the
+    // parent button to get a subtle breathing animation.
+    case 'pulsing-dot':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="5" fill="currentColor" stroke="none" />
+        </svg>
+      )
+    // Center dot + 2 concentric arcs in the upper-right quadrant. Reads as
+    // "broadcasting outward from this point" rather than wifi-symmetric.
+    case 'radar-rings':
+      return (
+        <svg {...common}>
+          <circle cx="7" cy="17" r="1.6" fill="currentColor" stroke="none" />
+          <path d="M7 13a4 4 0 0 1 4 4" />
+          <path d="M7 9a8 8 0 0 1 8 8" />
+        </svg>
+      )
+    // Simplified soccer ball: outer circle + central pentagon stitching.
+    case 'football':
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7.5 16 10.5 14.5 15h-5L8 10.5z" />
+          <path d="M12 7.5V4" />
+          <path d="m16 10.5 3.5-1.5" />
+          <path d="m14.5 15 2.5 3" />
+          <path d="m9.5 15-2.5 3" />
+          <path d="M8 10.5 4.5 9" />
+        </svg>
+      )
+    // Outlined right-pointing triangle (▶), stroke not fill.
+    case 'play-triangle':
+      return (
+        <svg {...common}>
+          <path d="M8 5v14l11-7z" />
+        </svg>
+      )
+    // Top crown bar + side button + circle body + hour hand.
+    case 'stopwatch':
+      return (
+        <svg {...common}>
+          <path d="M10 2h4" />
+          <path d="m18.5 6.5-1.5 1.5" />
+          <circle cx="12" cy="14" r="8" />
+          <path d="M12 14V9.5" />
+        </svg>
+      )
     default:
       return null
   }
@@ -242,6 +291,12 @@ const DECISIONS_DECIDED = [
     items: [
       'Lion icon: keep the inline path extracted from the TCLOT banner SVG',
       'Brand pill scope: header only (not on Trophy cards / Records / share assets)',
+    ],
+  },
+  {
+    surface: 'NAV',
+    items: [
+      '"Team Selection" renames to "Transactions" (label-only, same page, same view ID). Implemented in a small post-PR-#3 follow-up that updates DashboardNav.jsx label string, App.jsx view labels, and Settings dropdown options.',
     ],
   },
   {
@@ -954,6 +1009,163 @@ function NavCompare() {
           ))}
         </div>
       </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Section: FPL Live icon candidates                                    */
+/* ------------------------------------------------------------------ */
+// Six candidate glyphs for the FPL Live nav tab, each rendered inside a
+// full nav row so the user can compare in context. The 'radio' icon
+// (current proposed) reads as "receiving signal" rather than "live now",
+// which is the question this showcase exists to answer.
+const FPL_LIVE_ICON_OPTIONS = [
+  { icon: 'radio',         title: 'Radio',         tag: 'current' },
+  { icon: 'pulsing-dot',   title: 'Pulsing dot',   tag: "Andy's pick" },
+  { icon: 'radar-rings',   title: 'Radar rings' },
+  { icon: 'football',      title: 'Football' },
+  { icon: 'play-triangle', title: 'Play triangle' },
+  { icon: 'stopwatch',     title: 'Stopwatch' },
+]
+
+function NavFplLiveIconShowcase() {
+  return (
+    <div className="mockup-nav-row-stack">
+      {FPL_LIVE_ICON_OPTIONS.map((opt) => {
+        const isPulse = opt.icon === 'pulsing-dot'
+        return (
+          <div className="mockup-nav-row-stack__entry" key={opt.icon}>
+            <div className="mockup-nav-row-stack__label">
+              <span className="mockup-nav-row-stack__label-text">{opt.title}</span>
+              {opt.tag ? (
+                <span
+                  className={
+                    'mockup-nav-row-stack__pill mockup-nav-row-stack__pill--' +
+                    (opt.tag === 'current' ? 'current' : 'pick')
+                  }
+                >
+                  {opt.tag}
+                </span>
+              ) : null}
+            </div>
+            <div className="mockup-nav__row">
+              {NAV_ITEMS.map((it, i) => {
+                const isLive = it.id === 'fplLive'
+                const iconName = isLive ? opt.icon : it.icon
+                const liveStyle = isLive
+                  ? { color: isPulse ? '#16a34a' : 'var(--text-muted)' }
+                  : undefined
+                return (
+                  <button
+                    key={it.id}
+                    className={
+                      'mockup-nav__btn' +
+                      (i === 1 ? ' is-active' : '') +
+                      (isLive && isPulse ? ' mockup-nav-icon--pulse' : '')
+                    }
+                    style={liveStyle}
+                  >
+                    <LucideIcon name={iconName} />
+                    {it.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Section: nav color direction (mono / accent / violet hint / emoji)  */
+/* ------------------------------------------------------------------ */
+// Per-tab accent palette for direction B. Standings is intentionally
+// muted in this map because it sits in the active state (violet wash);
+// the accent only affects inactive icons.
+const NAV_TAB_ACCENT = {
+  fplLive:       '#16a34a', // green-600
+  standings:     '#0ea5e9', // sky-500 (only shows on inactive rows)
+  teamSelection: '#6366f1', // indigo-500
+  players:       '#f59e0b', // amber-500
+  hall:          '#eab308', // yellow-500
+  more:          'var(--text-muted)',
+}
+
+const COLOR_DIRECTION_OPTIONS = [
+  {
+    key: 'mono',
+    title: 'A — Monochrome (current)',
+    sub: 'Pure line icons in muted gray. Reference baseline.',
+  },
+  {
+    key: 'accent',
+    title: 'B — Per-tab accent',
+    tag: "Andy's pick",
+    sub: 'A single brand color per inactive tab; active tab keeps the violet wash.',
+  },
+  {
+    key: 'violet',
+    title: 'C — Violet hint',
+    sub: 'Line icons stay neutral with a soft brand-violet wash. Subtle but present.',
+  },
+  {
+    key: 'emoji',
+    title: 'D — Emojis polished',
+    sub: 'Production emojis with tightened spacing and modern type — no boxy chrome.',
+  },
+]
+
+function NavColorDirectionShowcase() {
+  return (
+    <div className="mockup-nav-row-stack">
+      {COLOR_DIRECTION_OPTIONS.map((opt) => (
+        <div className="mockup-nav-row-stack__entry" key={opt.key}>
+          <div className="mockup-nav-row-stack__label">
+            <span className="mockup-nav-row-stack__label-text">{opt.title}</span>
+            {opt.tag ? (
+              <span className="mockup-nav-row-stack__pill mockup-nav-row-stack__pill--pick">
+                {opt.tag}
+              </span>
+            ) : null}
+          </div>
+          {opt.sub ? (
+            <div className="mockup-nav-row-stack__sub">{opt.sub}</div>
+          ) : null}
+          <div
+            className={
+              'mockup-nav__row mockup-nav__row--color-' + opt.key +
+              (opt.key === 'emoji' ? ' mockup-nav__row--polished-emoji' : '')
+            }
+          >
+            {NAV_ITEMS.map((it, i) => {
+              const isActive = i === 1
+              let style
+              if (opt.key === 'accent' && !isActive) {
+                style = { color: NAV_TAB_ACCENT[it.id] }
+              }
+              return (
+                <button
+                  key={it.id}
+                  className={'mockup-nav__btn' + (isActive ? ' is-active' : '')}
+                  style={style}
+                >
+                  {opt.key === 'emoji' ? (
+                    <span className="emoji" aria-hidden>
+                      {it.legacyEmoji ?? it.emoji}
+                    </span>
+                  ) : (
+                    <LucideIcon name={it.icon} />
+                  )}
+                  {it.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -4215,6 +4427,30 @@ export function Mockup() {
             Bottom: SVG icons + flat accent underline + subtle accent tint on the active tab.
           </p>
           <NavCompare />
+        </section>
+
+        {/* 5a. FPL Live icon candidates */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">NAV ICONS · FPL LIVE</div>
+          <h2 className="mockup__section-h">Six candidates for the live indicator</h2>
+          <p className="mockup__section-sub">
+            The current 'radio' icon reads as 'receiving signal' rather than
+            'broadcasting now'. Compare alternatives.
+          </p>
+          <NavFplLiveIconShowcase />
+        </section>
+
+        {/* 5b. Inactive nav-icon color direction */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">NAV ICONS · COLOR DIRECTION</div>
+          <h2 className="mockup__section-h">
+            Inactive icons — pure mono vs. accent colors vs. emojis
+          </h2>
+          <p className="mockup__section-sub">
+            The proposed nav uses pure monochrome line icons. The user finds them
+            a bit sterile next to the gradient brand pill. Compare four directions.
+          </p>
+          <NavColorDirectionShowcase />
         </section>
 
         {/* 6. Icon compare */}
