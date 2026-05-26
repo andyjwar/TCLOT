@@ -1837,7 +1837,7 @@ function App() {
       kitIndexByEntry={kitIndexByEntry}
       onOpenChange={setPlayerDetailOverlayOpen}
     >
-    <PlayerHistoryProvider teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry}>
+    <PlayerHistoryProvider>
     <div
       className="app fotmob"
       data-theme={colorTheme}

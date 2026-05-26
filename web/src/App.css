@@ -7441,154 +7441,8 @@ body[data-tclot-theme='dark'] .live-player-slide {
   z-index: 1;
 }
 
-/* Narrow portrait: reserve strip for edge dismiss (same breakpoint as swipe — see SWIPE_CLOSE_MEDIA). */
-.live-player-slide__sheet--mobile-edge {
-  padding-left: 44px;
-}
-
-/* Viewport-left back strip: sibling of sheet (not inside transformed sheet) so it stays visible & tappable. */
-.live-player-slide__edge-dismiss {
-  display: flex;
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  z-index: 2;
-  box-sizing: border-box;
-  width: 44px;
-  padding-left: max(4px, env(safe-area-inset-left, 0px));
-  padding-right: 2px;
-  margin: 0;
-  border: none;
-  border-radius: 0;
-  background: transparent;
-  color: var(--fm-muted, #666);
-  cursor: pointer;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.live-player-slide__edge-dismiss:hover {
-  color: var(--fm-text, #333);
-}
-
-.live-player-slide__edge-dismiss:focus {
-  outline: none;
-}
-
-.live-player-slide__edge-dismiss:focus-visible {
-  outline: 2px solid var(--fm-accent, #0b6);
-  outline-offset: -2px;
-}
-
-.live-player-slide__edge-dismiss__rule {
-  width: 2px;
-  height: min(260px, 44vh);
-  border-radius: 1px;
-  background: var(--fm-border, #e2e2e2);
-  flex-shrink: 0;
-}
-
-.live-player-slide__edge-dismiss__chev {
-  font-size: 1.35rem;
-  font-weight: 600;
-  line-height: 1;
-  opacity: 0.92;
-}
-
-/*
- * Swipe-right dismiss: outer sheet uses touch-action: none so horizontal moves reach JS.
- * Vertical scroll uses pan-y on .live-player-slide__body and its descendants (cells default to
- * auto otherwise — iOS then mishandles mid-table horizontal swipes).
- */
-.live-player-slide__sheet--swipeable {
-  touch-action: none;
-}
-
-.live-player-slide__sheet--swipeable .live-player-slide__body {
-  touch-action: pan-y;
-}
-
-/*
- * Hit targets inside the body default to touch-action: auto; on iOS that can fight
- * horizontal pointer tracking when swiping from the middle of the history table.
- */
-.live-player-slide__sheet--swipeable .live-player-slide__body * {
-  touch-action: pan-y;
-}
-
-.live-player-slide__sheet--swiping {
-  touch-action: none;
-}
-
-.live-player-slide__sheet--swiping .live-player-slide__body {
-  touch-action: none;
-}
-
-.live-player-slide__sheet--swiping .live-player-slide__body * {
-  touch-action: none;
-}
-
 .live-player-slide--open .live-player-slide__sheet {
   transform: translateX(0);
-}
-
-.live-player-slide__header {
-  flex-shrink: 0;
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 12px 12px;
-  border-bottom: 1px solid var(--fm-border);
-  background: var(--fm-surface);
-}
-
-.live-player-slide__back {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin: 0;
-  padding: 8px 10px;
-  border: none;
-  border-radius: 8px;
-  background: var(--fm-surface-2);
-  color: var(--fm-text);
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.live-player-slide__back:hover {
-  filter: brightness(0.97);
-}
-
-.live-player-slide__back-icon {
-  font-size: 1.1em;
-  line-height: 1;
-}
-
-.live-player-slide__title-block {
-  min-width: 0;
-  flex: 1;
-  padding-top: 2px;
-}
-
-.live-player-slide__title {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 700;
-  line-height: 1.25;
-  word-break: break-word;
-  color: var(--fm-text-strong);
-}
-
-.live-player-slide__subtitle {
-  margin: 4px 0 0;
-  font-size: 0.78rem;
 }
 
 .player-history-name-btn {
@@ -7648,132 +7502,17 @@ body[data-tclot-theme='dark'] .player-history-name-btn:hover {
   min-width: 0;
 }
 
+/*
+ * Desktop slide body wrapper used by `PlayerDetailOverlay` for loading / error / not-loaded states.
+ * Variant `__body--player-detail-host` (in PlayerDetailOverlay.css) tightens layout for the
+ * `<PlayerDetailView>` host; this base rule covers the small placeholder messages.
+ */
 .live-player-slide__body {
   flex: 1;
   min-width: 0;
-  /* Single scrollport for x+y so thead position:sticky sticks while scrolling (nested .table-scroll breaks sticky) */
   overflow: auto;
-  /* No top padding: padding lets body rows scroll “above” a sticky thead visually */
   padding: 0 12px 12px;
   -webkit-overflow-scrolling: touch;
-}
-
-/* Space below sheet header for loading / error / empty (table is flush to scroll top) */
-.live-player-slide__body > :not(table) {
-  padding-top: 12px;
-}
-
-.live-player-slide__table {
-  width: 100%;
-  /* collapse breaks sticky thead in some browsers (Safari / Chrome) */
-  border-collapse: separate;
-  border-spacing: 0;
-  font-size: 0.78rem;
-}
-
-.live-player-slide__table th,
-.live-player-slide__table td {
-  padding: 7px 6px;
-  border-bottom: 1px solid var(--fm-border, #e5e5e5);
-  text-align: left;
-}
-
-.live-player-slide__table thead th {
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--fm-muted);
-  background-color: var(--fm-table-head);
-  position: sticky;
-  top: 0;
-  z-index: 3;
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.06);
-  /* Paint a solid band so rows don’t show through when sticky */
-  background-clip: padding-box;
-}
-
-body[data-tclot-theme='dark'] .live-player-slide__table thead th {
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.35);
-}
-
-/* Sticky header sits in scrollport of .live-player-slide__body — keep header row above body cells */
-.live-player-slide__body .live-player-slide__table thead th {
-  vertical-align: bottom;
-}
-
-.live-player-slide__table tbody td {
-  color: var(--fm-text);
-}
-
-.live-player-slide__table tbody td strong {
-  color: var(--fm-text-strong);
-}
-
-.live-player-slide__table--stats {
-  min-width: 20rem;
-  font-size: 0.72rem;
-}
-
-.live-player-slide__table--stats .live-player-slide__th-emoji {
-  text-transform: none;
-  font-size: 0.88rem;
-  letter-spacing: 0;
-  text-align: center;
-}
-
-.live-player-slide__stat-badge {
-  display: inline-flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 0.08em;
-  max-width: 100%;
-  white-space: nowrap;
-}
-
-.live-player-slide__stat-badge__mul {
-  font-size: 0.65em;
-  font-weight: 600;
-  line-height: 1;
-  opacity: 0.82;
-  font-variant-numeric: tabular-nums;
-}
-
-.live-player-slide__table--stats th:nth-child(n + 3),
-.live-player-slide__table--stats td:nth-child(n + 3) {
-  text-align: center;
-}
-
-.live-player-slide__table--stats th:nth-child(1),
-.live-player-slide__table--stats td:nth-child(1) {
-  text-align: center;
-  width: 2.5rem;
-  padding-left: 4px;
-  padding-right: 4px;
-  vertical-align: middle;
-}
-
-.live-player-slide__table--stats th:nth-child(2),
-.live-player-slide__table--stats td:nth-child(2) {
-  text-align: left;
-}
-
-.live-player-slide__waiver-wire {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.5rem;
-  font-weight: 800;
-  font-size: 0.72rem;
-  letter-spacing: 0.02em;
-  color: var(--fm-muted, #666);
-  text-decoration: none;
-  cursor: help;
-}
-
-.live-player-slide__owner-placeholder {
-  display: inline-block;
-  min-width: 1.25rem;
-  text-align: center;
 }
 
 body[data-tclot-theme='dark'] .live-player-slide__sheet {
@@ -7781,29 +7520,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   box-shadow: -6px 0 32px rgba(0, 0, 0, 0.45);
 }
 
-body[data-tclot-theme='dark'] .live-player-slide__header {
-  background: var(--fm-surface);
-}
-
-body[data-tclot-theme='dark'] .live-player-slide__back {
-  background: var(--fm-surface-2);
-  color: var(--fm-text);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .live-player-slide__sheet,
   .live-player-slide__scrim {
     transition-duration: 0.01ms;
   }
-}
-
-.live-player-club {
-  font-size: 0.72rem;
-}
-
-.live-player-webalt {
-  font-size: 0.68rem;
-  line-height: 1.2;
 }
 
 /* Lineup tables (Starting XI + bench): portrait phones — web_name + opponent (muted), Mins / DC / ⚽ / 🍑 / Pts */
