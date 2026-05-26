@@ -11710,3 +11710,30 @@ button.live-xp__player-name:focus-visible {
     font-size: 0.8rem;
   }
 }
+
+/* Desktop density bump — slightly larger typography + row padding so the
+   two side-by-side team tables read comfortably for player-vs-player
+   comparison. Mobile (≤720px) keeps the condensed sizing above. */
+@media (min-width: 721px) {
+  .live-xp__table {
+    font-size: 0.82rem;
+  }
+  .live-xp__thead,
+  .live-xp__row {
+    padding: 7px 12px;
+  }
+  .live-xp__thead {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  .live-xp__player-name {
+    font-size: 0.9rem;
+    padding: 2px 8px;
+  }
+  .live-xp__cell--num {
+    font-size: 0.82rem;
+  }
+  .live-xp__cell--pts {
+    font-size: 0.92rem;
+  }
+}

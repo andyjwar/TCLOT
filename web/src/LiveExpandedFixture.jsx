@@ -402,11 +402,14 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
  * PR #5 / 5a.
  *
  * Layout:
- *   - sticky header  : `<` back / LIVE · GW N pill / N/M done counter
- *                      (slim single-row strip — face-off row above already
- *                      shows the team matchup + live score)
- *   - mobile         : tab selector (home / away) then one team's table
- *   - desktop        : two team tables side-by-side
+ *   - mobile         : sticky header (`<` back / LIVE · GW N pill /
+ *                      N/M done counter) → tab selector (home / away) →
+ *                      one team's table. The chevron doubles as the
+ *                      collapse affordance + visual anchor above the tabs.
+ *   - desktop        : two team tables side-by-side. The sticky header
+ *                      is suppressed — the collapsed face-off row above
+ *                      already carries the matchup + status implicitly,
+ *                      and clicking that row toggles collapse.
  *
  * @param {{
  *   homeSquad: object,
@@ -453,20 +456,16 @@ export function LiveExpandedFixture({
     ? (row, squad) => onOpenPlayer(row, squad)
     : undefined;
 
-  const stickyHeader = (
-    <LiveExpandedStickyHeader
-      eventSnapshot={eventSnapshot}
-      gwFixtures={gwFixtures}
-      onCollapse={onCollapse}
-    />
-  );
-
   if (viewport === 'mobile') {
     const activeSquad = tab === 'home' ? homeSquad : awaySquad;
     const activeAutoIn = tab === 'home' ? homeAutoIn : awayAutoIn;
     return (
       <div className="live-xp live-xp--mobile">
-        {stickyHeader}
+        <LiveExpandedStickyHeader
+          eventSnapshot={eventSnapshot}
+          gwFixtures={gwFixtures}
+          onCollapse={onCollapse}
+        />
         <div className="live-xp__tabs" role="tablist">
           <button
             type="button"
@@ -504,7 +503,6 @@ export function LiveExpandedFixture({
 
   return (
     <div className="live-xp live-xp--desktop">
-      {stickyHeader}
       <div className="live-xp__columns">
         <section className="live-xp__column">
           <LiveExpandedTeamTable
