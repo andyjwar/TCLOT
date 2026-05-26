@@ -12122,6 +12122,10 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
+/* Feed is always a fixed-height scrollable container (PR #5e
+   follow-up): the full filtered event list renders inside; the user
+   scrolls in place instead of pushing the rest of the page down.
+   `overflow-y: auto` overrides the previous `overflow: hidden`. */
 .live-contrib__feed {
   display: flex;
   flex-direction: column;
@@ -12129,6 +12133,23 @@ button.live-xp__player-name:focus-visible {
   border-radius: var(--r-md);
   background: var(--surface);
   overflow: hidden;
+  max-height: 480px;
+  overflow-y: auto;
+  scrollbar-color: var(--text-muted) var(--surface);
+  scrollbar-width: thin;
+}
+.live-contrib__feed::-webkit-scrollbar {
+  width: 8px;
+}
+.live-contrib__feed::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+.live-contrib__feed::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--text-muted) 50%, transparent);
+  border-radius: var(--r-circle);
+}
+.live-contrib__feed::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }
 
 .live-contrib__empty {
@@ -12188,6 +12209,11 @@ button.live-xp__player-name:focus-visible {
   line-height: 1;
   flex-shrink: 0;
 }
+/* `flex: 0 1 auto` (not `flex: 1`) so the player name sits at content
+   width with the crest immediately to its right — matches the locked
+   mockup top-line composition: [glyph] [player] [crest] _____ [minute].
+   `min-width: 0` + `overflow: hidden` still allow ellipsis when the
+   name is too long to fit before the crest. */
 .live-contrib-row__player {
   color: var(--text-strong);
   font-weight: 500;
@@ -12195,7 +12221,7 @@ button.live-xp__player-name:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-  flex: 1;
+  flex: 0 1 auto;
 }
 .live-contrib-row__crest {
   display: inline-flex;
@@ -12323,54 +12349,6 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, var(--data-negative) 16%, transparent);
 }
 
-.live-contrib-row--mobile {
-  padding: var(--space-2) var(--space-3);
-}
-
 .live-contrib-row--just-arrived {
   animation: live-contrib-arrive 1.2s ease-out forwards;
-}
-
-/* ----- Mobile collapse / expand chevrons (narrow viewport) ----- */
-.live-contrib__mobile-toggle {
-  appearance: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  width: 100%;
-  padding: 10px var(--space-3);
-  background: transparent;
-  border: 1px solid var(--border);
-  border-top: 0;
-  border-radius: 0 0 var(--r-md) var(--r-md);
-  margin-top: -1px;
-  color: var(--text-muted);
-  font: inherit;
-  font-size: var(--text-xs);
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  cursor: pointer;
-}
-.live-contrib__mobile-toggle:hover {
-  background: var(--surface-2);
-  color: var(--text);
-}
-.live-contrib__mobile-toggle--inline {
-  width: auto;
-  padding: 4px 8px;
-  border: 0;
-  margin-left: auto;
-  border-radius: var(--r-sm);
-  text-transform: none;
-  letter-spacing: 0;
-}
-.live-contrib__mobile-chev {
-  color: var(--text-muted);
-  font-size: 12px;
-  line-height: 1;
-}
-.live-contrib__mobile-chev--up {
-  font-size: 14px;
 }

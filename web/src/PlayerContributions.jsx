@@ -31,7 +31,6 @@ import {
   fplElementWebName,
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
-import { useNarrowViewport } from './usePortraitMobile.js';
 
 /**
  * ESPN supplies real wallclock (epoch-ms) ordering for these. We prefer its ordering when it matches
@@ -318,9 +317,9 @@ export function PlayerContributions({
   const [draftTeams, setDraftTeams] = useState(
     /** @type {Set<number>} */ (new Set())
   );
-  /** Mobile collapsed/expanded — see locked spec PR #5e. */
-  const narrowViewport = useNarrowViewport();
-  const [mobileExpanded, setMobileExpanded] = useState(false);
+  /* Note: there is no expand/collapse state — the full filtered event
+     list always renders inside a scrollable max-height container
+     (`.live-contrib__feed` has overflow-y: auto). See PR #5e follow-up. */
   /**
    * Streaming arrival animation — the topmost row's stableId is
    * stamped onto this state whenever it changes, then cleared after
@@ -428,7 +427,6 @@ export function PlayerContributions({
     setDraftTeams(new Set());
     setTeamsInitialized(false);
     setFilterOpen(false);
-    setMobileExpanded(false);
     setJustArrivedId(null);
   }, [gameweek, leagueId]);
 
@@ -813,17 +811,10 @@ export function PlayerContributions({
     return () => clearTimeout(t);
   }, [topRowId]);
 
-  /**
-   * Mobile collapse — `useNarrowViewport()` is the same ≤880px hook
-   * the LiveExpandedFixture tabs use. Collapsed = latest event only;
-   * expanded = last 5. Above 880px the full feed renders untouched.
-   */
-  const visibleRows = useMemo(() => {
-    if (!narrowViewport) return filteredRows;
-    return mobileExpanded
-      ? filteredRows.slice(0, 5)
-      : filteredRows.slice(0, 1);
-  }, [filteredRows, narrowViewport, mobileExpanded]);
+  /* Full filtered list is always rendered; the feed container
+     applies max-height + overflow-y so the user scrolls in place
+     instead of pushing the rest of the page down. */
+  const visibleRows = filteredRows;
 
   const openFilterPopover = useCallback(() => {
     setDraftKinds(new Set(selectedKinds));
@@ -892,15 +883,6 @@ export function PlayerContributions({
   const filterButtonCount = allFiltersOn
     ? 'All'
     : `${totalSelected} of ${totalChoices}`;
-
-  /**
-   * Locked design (PR #5e): when narrow + expanded, an inline
-   * chevron-up sits at the right end of the head so the user can
-   * collapse back to the single-latest-event view. We compute the
-   * flag here so the `toolbar` JSX below stays declarative.
-   */
-  const showInlineCollapse =
-    narrowViewport && mobileExpanded && filteredRows.length > 1;
 
   const toolbar = (
     <div className="live-contrib__head">
@@ -1022,16 +1004,6 @@ export function PlayerContributions({
           </div>
         ) : null}
       </div>
-      {showInlineCollapse ? (
-        <button
-          type="button"
-          className="live-contrib__mobile-toggle live-contrib__mobile-toggle--inline"
-          onClick={() => setMobileExpanded(false)}
-          aria-label="Collapse to latest event only"
-        >
-          <span className="live-contrib__mobile-chev live-contrib__mobile-chev--up" aria-hidden>▴</span>
-        </button>
-      ) : null}
     </div>
   );
 
@@ -1058,14 +1030,6 @@ export function PlayerContributions({
       </div>
     );
   }
-
-  /**
-   * Mobile collapse — only the latest row by default. When narrow,
-   * show a trailing "Show last 5" chevron when collapsed, and an
-   * inline header collapse chevron when expanded.
-   */
-  const showMobileExpander =
-    narrowViewport && !mobileExpanded && filteredRows.length > 1;
 
   return (
     <div className="live-contrib">
@@ -1115,8 +1079,7 @@ export function PlayerContributions({
                   'live-contrib-row' +
                   ` live-contrib-row--${r.kind}` +
                   (isWaiverSameGw ? ' live-contrib-row--waiver-same-gw' : '') +
-                  (isJustArrived ? ' live-contrib-row--just-arrived' : '') +
-                  (narrowViewport ? ' live-contrib-row--mobile' : '')
+                  (isJustArrived ? ' live-contrib-row--just-arrived' : '')
                 }
                 role="listitem"
                 aria-label={arLabel}
@@ -1234,17 +1197,6 @@ export function PlayerContributions({
             );
           })}
         </div>
-        {showMobileExpander ? (
-          <button
-            type="button"
-            className="live-contrib__mobile-toggle"
-            onClick={() => setMobileExpanded(true)}
-            aria-label={`Show last ${Math.min(5, filteredRows.length)} events`}
-          >
-            <span>Show last {Math.min(5, filteredRows.length)}</span>
-            <span className="live-contrib__mobile-chev" aria-hidden>▾</span>
-          </button>
-        ) : null}
       </div>
     </div>
   );

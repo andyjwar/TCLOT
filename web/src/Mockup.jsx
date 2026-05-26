@@ -366,7 +366,7 @@ const DECISIONS_DECIDED = [
     items: [
       'Density: Variant A (card per event) — top line: event-kind icon + label · player + crest · minute · points pill; second line: team badge + team name. Manager name and relative timestamp removed.',
       'Filter UX: Variant 2 (multi-select dropdown) — popover with checkboxes for event kinds + teams; popover footer has paired "Select all · Clear all" affordances.',
-      'Mobile collapsed: latest event + chevron-to-expand-5 (locked from prior pass).',
+      'Pagination: full event list rendered in a scrollable max-height container. Universal across viewports (replaces the prior mobile-latest-only pattern).',
       'Streaming animation: brand-violet pulse + highlight on row arrival (locked from prior pass).',
     ],
   },
