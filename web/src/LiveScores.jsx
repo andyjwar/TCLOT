@@ -847,8 +847,8 @@ export function LiveScores({
     });
   }, []);
 
-  /** Single “fixtures left” panel for all H2H fixtures — collapsed by default. */
-  const [ltpPanelExpanded, setLtpPanelExpanded] = useState(false);
+  /** Single “players remaining” panel for all H2H fixtures — open by default. */
+  const [ltpPanelExpanded, setLtpPanelExpanded] = useState(true);
 
   /** FPL element id + labels — opens slide-over season history from `element-summary`. */
   const { openPlayerHistory } = usePlayerHistory();
@@ -1275,10 +1275,10 @@ export function LiveScores({
     });
   }, [gwMatches, teams, squadByLeagueEntry, gameweek]);
 
-  // PR #5i: count chip for the "Fixtures left to play" tile header.
-  // Sum across both sides of every H2H matchup; the tile renders only
-  // when this is > 0 (GW done ⇒ hide entirely; the FINAL · GW N strip
-  // already says "Gameweek complete").
+  // Sum of remaining player-fixtures across both sides of every H2H
+  // matchup. Used only to gate the empty-state — when this is 0 the
+  // tile is hidden entirely (GW done ⇒ the FINAL · GW N strip already
+  // says "Gameweek complete").
   const totalRemainingFixtures = useMemo(
     () =>
       leftToPlayByFixture.reduce(
@@ -1713,101 +1713,6 @@ export function LiveScores({
           })
         : null}
 
-      {leftToPlayByFixture.length > 0 && totalRemainingFixtures > 0 ? (
-        <section
-          className="tile tile--compact live-remaining-fixtures"
-          aria-label="Total fixtures left to play in H2H matchups"
-        >
-          <button
-            type="button"
-            className="live-remaining-fixtures__toggle"
-            onClick={() => setLtpPanelExpanded((v) => !v)}
-            aria-expanded={ltpPanelExpanded}
-            aria-controls="live-remaining-fixtures-body"
-          >
-            <span className="live-remaining-fixtures__title">
-              Fixtures left to play
-            </span>
-            <span
-              className="live-remaining-fixtures__count"
-              title="Total remaining fixtures across both sides of every H2H matchup (sum over effective XI)"
-            >
-              {totalRemainingFixtures}{' '}
-              {totalRemainingFixtures === 1 ? 'fixture' : 'fixtures'} left
-            </span>
-            <span
-              className="live-fixture-chevron live-remaining-fixtures__chevron"
-              aria-hidden
-            >
-              {ltpPanelExpanded ? '▼' : '▶'}
-            </span>
-          </button>
-
-          {ltpPanelExpanded ? (
-            <div
-              className="live-remaining-fixtures__body"
-              id="live-remaining-fixtures-body"
-            >
-              {leftToPlayByFixture.map((fx) => (
-                <div key={fx.key} className="live-remaining-fixtures__card">
-                  {[fx.home, fx.away].map((side) => (
-                    <div
-                      key={side.leagueEntryId}
-                      className="live-remaining-fixtures__side"
-                    >
-                      <div className="live-remaining-fixtures__side-head">
-                        <TeamAvatar
-                          entryId={side.leagueEntryId}
-                          name={side.name}
-                          size="sm"
-                          logoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                        <span className="live-remaining-fixtures__name">
-                          {side.name}
-                        </span>
-                        {side.ltpGamesCount > 0 ? (
-                          <span
-                            className="live-remaining-fixtures__pill"
-                            title="Player-fixtures left for the effective XI (double GWs can add >1 per player)"
-                          >
-                            {side.ltpGamesCount} left
-                          </span>
-                        ) : null}
-                        <span className="live-remaining-fixtures__score tabular">
-                          {side.live != null ? side.live : '—'}
-                        </span>
-                      </div>
-                      {side.chips.length ? (
-                        <ul className="live-remaining-fixtures__chips">
-                          {side.chips.map((p, idx) => (
-                            <li
-                              key={`${side.leagueEntryId}-${p.name}-${idx}`}
-                              className="live-remaining-fixtures__chip"
-                            >
-                              <span className="live-remaining-fixtures__chip-name">
-                                {p.name}
-                              </span>
-                              <span className="live-remaining-fixtures__chip-opp tabular">
-                                {p.opp}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="live-remaining-fixtures__done">
-                          All players done
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </section>
-      ) : null}
-
       <section
         className="tile tile--compact tile--live-standings"
         aria-labelledby="live-standings-heading"
@@ -2209,6 +2114,94 @@ export function LiveScores({
           ) : null}
         </p>
       </section>
+
+      {leftToPlayByFixture.length > 0 && totalRemainingFixtures > 0 ? (
+        <section
+          className="tile tile--compact live-remaining-fixtures"
+          aria-label="Players remaining in H2H matchups"
+        >
+          <button
+            type="button"
+            className="live-remaining-fixtures__toggle"
+            onClick={() => setLtpPanelExpanded((v) => !v)}
+            aria-expanded={ltpPanelExpanded}
+            aria-controls="live-remaining-fixtures-body"
+          >
+            <span className="live-remaining-fixtures__title">
+              Players remaining
+            </span>
+            <span
+              className="live-fixture-chevron live-remaining-fixtures__chevron"
+              aria-hidden
+            >
+              {ltpPanelExpanded ? '▼' : '▶'}
+            </span>
+          </button>
+
+          {ltpPanelExpanded ? (
+            <div
+              className="live-remaining-fixtures__body"
+              id="live-remaining-fixtures-body"
+            >
+              {leftToPlayByFixture.map((fx) => (
+                <div key={fx.key} className="live-remaining-fixtures__card">
+                  {[fx.home, fx.away].map((side) => (
+                    <div
+                      key={side.leagueEntryId}
+                      className="live-remaining-fixtures__side"
+                    >
+                      <div className="live-remaining-fixtures__side-head">
+                        <TeamAvatar
+                          entryId={side.leagueEntryId}
+                          name={side.name}
+                          size="sm"
+                          logoMap={teamLogoMap}
+                          kitIndexByEntry={kitIndexByEntry}
+                        />
+                        <span className="live-remaining-fixtures__name">
+                          {side.name}
+                        </span>
+                        {side.ltpGamesCount > 0 ? (
+                          <span
+                            className="live-remaining-fixtures__pill"
+                            title="Player-fixtures left for the effective XI (double GWs can add >1 per player)"
+                          >
+                            {side.ltpGamesCount} left
+                          </span>
+                        ) : null}
+                        <span className="live-remaining-fixtures__score tabular">
+                          {side.live != null ? side.live : '—'}
+                        </span>
+                      </div>
+                      {side.chips.length ? (
+                        <ul className="live-remaining-fixtures__chips">
+                          {side.chips.map((p, idx) => (
+                            <li
+                              key={`${side.leagueEntryId}-${p.name}-${idx}`}
+                              className="live-remaining-fixtures__chip"
+                            >
+                              <span className="live-remaining-fixtures__chip-name">
+                                {p.name}
+                              </span>
+                              <span className="live-remaining-fixtures__chip-opp tabular">
+                                {p.opp}
+                              </span>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <p className="live-remaining-fixtures__done">
+                          All players done
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
 
       {useFixtureLayout ? (
         <LiveFixtureGwPointsChart
