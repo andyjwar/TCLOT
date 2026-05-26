@@ -12,7 +12,6 @@ import {
   LEAGUE_TITLE_ABBR,
   leagueHeaderBrandSrc,
   showDashboardHall,
-  showDashboardPlayoff,
   showDashboardTrades,
 } from './siteFeatures'
 import { gameWeekSelectLabel } from './gwLabel.js'
@@ -32,7 +31,6 @@ import { FplLiveGwTickerBar } from './FplLiveGwTickerBar'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
-import { PlayOffBracket } from './PlayOffBracket'
 import { DraftBoard } from './DraftBoard'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
@@ -993,7 +991,7 @@ function App() {
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
   const [waiverOutGwFilter, setWaiverOutGwFilter] = useState('all')
   const [waiverGwTableMode, setWaiverGwTableMode] = useState('out')
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | playoff | teamSelection | hall | fplLive
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive
   const [teamSelectionTab, setTeamSelectionTab] = useState(
     /** @type {'waivers' | 'trades' | 'draft'} */ ('waivers'),
   )
@@ -1074,7 +1072,7 @@ function App() {
     ) {
       setTeamSelectionTab('waivers')
     }
-    if (dashboardView === 'more' && !showDashboardHall && !showDashboardPlayoff) {
+    if (dashboardView === 'more' && !showDashboardHall) {
       setDashboardView('fplLive')
       return
     }
@@ -1082,15 +1080,11 @@ function App() {
       setDashboardView('fplLive')
       return
     }
-    if (dashboardView === 'playoff' && !showDashboardPlayoff) {
-      setDashboardView('fplLive')
-    }
   }, [
     dashboardView,
     teamSelectionTab,
     showDashboardTrades,
     showDashboardHall,
-    showDashboardPlayoff,
   ])
 
   /** drops-gw-live rows: waivers only (excludes free-agency rows used in All Waivers). */
@@ -2190,16 +2184,6 @@ function App() {
               </div>
             </>
           )}
-
-          {showDashboardPlayoff && dashboardView === 'playoff' ? (
-            <div className="dashboard-stack">
-              <PlayOffBracket
-                tableRows={tableRows}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            </div>
-          ) : null}
 
           {showDashboardHall && dashboardView === 'hall' ? (
             <HallOfChampions

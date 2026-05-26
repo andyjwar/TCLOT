@@ -1,11 +1,8 @@
-import {
-  showDashboardHall,
-  showDashboardPlayoff,
-} from './siteFeatures'
+import { showDashboardHall } from './siteFeatures'
 import { ThemeToggle } from './ThemeToggle'
 import { TeamAvatar } from './TeamAvatar'
 
-/** @typedef {'standings' | 'playoff' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
+/** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
 
 /**
  * @param {{ id: DashboardViewId, label: string, shortLabel: string, emoji?: string, bottomEmoji?: string, logoSrc?: string, bottomOnly?: boolean }} item
@@ -91,16 +88,6 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
 
   const topItems = [
     primaryItems.find((i) => i.id === 'standings'),
-    ...(showDashboardPlayoff
-      ? [
-          {
-            id: /** @type {const} */ ('playoff'),
-            label: 'Play Off',
-            shortLabel: 'Play Off',
-            emoji: '🏅',
-          },
-        ]
-      : []),
     primaryItems.find((i) => i.id === 'teamSelection'),
     ...(showDashboardHall
       ? [
@@ -122,7 +109,7 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
 
   const isActive = (id) => {
     if (id === 'more') {
-      return dashboardView === 'more' || dashboardView === 'playoff' || dashboardView === 'hall'
+      return dashboardView === 'more' || dashboardView === 'hall'
     }
     return dashboardView === id
   }
@@ -156,9 +143,6 @@ export function DashboardMorePanel({
   kitIndexByEntry = {},
 }) {
   const rows = [
-    ...(showDashboardPlayoff
-      ? [{ id: /** @type {const} */ ('playoff'), label: 'Play Off', emoji: '🏅' }]
-      : []),
     ...(showDashboardHall
       ? [{ id: /** @type {const} */ ('hall'), label: 'Hall of Champions', emoji: '🏆' }]
       : []),

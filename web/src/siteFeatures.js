@@ -12,7 +12,6 @@
  *
  * Dashboard toggles:
  * - Trades / Hall: omit = on. EAGalaxy: VITE_SHOW_DASHBOARD_TRADES=false, VITE_SHOW_DASHBOARD_HALL=false
- * - Playoff bracket: omit = off. ExFOS: VITE_SHOW_DASHBOARD_PLAYOFF=true
  */
 const DEFAULT_LEAGUE_TITLE_ABBR = 'TCLOT'
 const DEFAULT_LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
@@ -91,8 +90,4 @@ export const showDashboardTrades = readBoolEnv(
 export const showDashboardHall = readBoolEnv(
   import.meta.env.VITE_SHOW_DASHBOARD_HALL,
   true,
-)
-export const showDashboardPlayoff = readBoolEnv(
-  import.meta.env.VITE_SHOW_DASHBOARD_PLAYOFF,
-  false,
 )
