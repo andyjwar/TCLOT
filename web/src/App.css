@@ -420,6 +420,40 @@
   opacity: 1;
 }
 
+/* Lucide-style line icons replacing the old emoji glyphs. Idle icons render
+   muted (gray); active tab inherits the active button color (white in dark,
+   #111 in light, violet on the bottom-nav variant). pulsing-dot is special:
+   its green fill is set inline so the meaning ("Live") survives any color
+   inheritance. */
+.dashboard-nav__icon {
+  flex-shrink: 0;
+  display: block;
+  color: var(--text-muted);
+}
+
+.dashboard-nav__btn--active .dashboard-nav__icon {
+  color: inherit;
+}
+
+/* Pulse animation for the FPL Live indicator. Targets the inner <g> so the
+   transform-origin sits at the geometric center of the dot rather than the
+   24x24 SVG bounding box. */
+@keyframes dashboard-nav-icon-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%      { transform: scale(1.18); opacity: 0.85; }
+}
+
+.dashboard-nav__icon--pulse .nav-icon__pulse-target {
+  transform-origin: 12px 12px;
+  animation: dashboard-nav-icon-pulse 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-nav__icon--pulse .nav-icon__pulse-target {
+    animation: none;
+  }
+}
+
 /* Premier League wordmark — e.g. legacy Squads tab asset */
 .dashboard-nav__pl-logo {
   display: block;
@@ -568,6 +602,11 @@
   .dashboard-nav__btn--bottom .dashboard-nav__emoji {
     font-size: 1.25rem;
     line-height: 1;
+  }
+
+  .dashboard-nav__btn--bottom .dashboard-nav__icon {
+    width: 22px;
+    height: 22px;
   }
 
   .dashboard-nav__btn--bottom .dashboard-nav__fd-logo {
@@ -2538,6 +2577,11 @@
 
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__emoji {
     font-size: 0.95em;
+  }
+
+  .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__icon {
+    width: 18px;
+    height: 18px;
   }
 
   .dashboard-layout--with-nav > .dashboard-nav .dashboard-nav__pl-logo {

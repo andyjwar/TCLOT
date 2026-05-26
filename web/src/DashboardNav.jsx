@@ -1,13 +1,33 @@
 import { TeamAvatar } from './TeamAvatar'
+import { NavIcon } from './NavIcon'
 
 /** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
 
+/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'trophy' | 'more'} NavIconName */
+
 /**
- * @param {{ id: DashboardViewId, label: string, shortLabel: string, emoji?: string, bottomEmoji?: string, logoSrc?: string, bottomOnly?: boolean }} item
+ * Note: the view ID for the Transactions tab stays `teamSelection` to keep
+ * already-stored Settings default-tab prefs (PR #3) working. Only the
+ * user-visible label changes.
+ *
+ * @param {{
+ *   item: {
+ *     id: DashboardViewId,
+ *     label: string,
+ *     shortLabel: string,
+ *     icon: NavIconName,
+ *     pulse?: boolean,
+ *     bottomOnly?: boolean,
+ *   },
+ *   active: boolean,
+ *   onSelect: (id: DashboardViewId) => void,
+ *   variant: 'top' | 'bottom',
+ * }} props
  */
 function NavButton({ item, active, onSelect, variant }) {
   const isBottom = variant === 'bottom'
-  const emoji = isBottom && item.bottomEmoji != null ? item.bottomEmoji : item.emoji
+  const iconClass =
+    'dashboard-nav__icon' + (item.pulse ? ' dashboard-nav__icon--pulse' : '')
   return (
     <button
       type="button"
@@ -21,20 +41,7 @@ function NavButton({ item, active, onSelect, variant }) {
       aria-label={isBottom ? item.label : undefined}
       title={isBottom ? item.label : undefined}
     >
-      {item.logoSrc ? (
-        <img
-          className="dashboard-nav__fd-logo"
-          src={item.logoSrc}
-          alt=""
-          loading="eager"
-          decoding="async"
-          aria-hidden
-        />
-      ) : (
-        <span className="dashboard-nav__emoji" aria-hidden="true">
-          {emoji}
-        </span>
-      )}
+      <NavIcon name={item.icon} className={iconClass} />
       <span className="dashboard-nav__label">
         {isBottom ? item.shortLabel : item.label}
       </span>
@@ -43,9 +50,12 @@ function NavButton({ item, active, onSelect, variant }) {
 }
 
 /**
- * @param {{ variant: 'top' | 'bottom', dashboardView: DashboardViewId, onSelect: (id: DashboardViewId) => void, fplLogoSrc: string }} props
+ * `fplLogoSrc` is accepted for prop-stability with existing callers but is
+ * no longer rendered — FPL Live now uses the pulsing-dot NavIcon instead.
+ *
+ * @param {{ variant: 'top' | 'bottom', dashboardView: DashboardViewId, onSelect: (id: DashboardViewId) => void, fplLogoSrc?: string }} props
  */
-export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
+export function DashboardNav({ variant, dashboardView, onSelect }) {
   const isBottom = variant === 'bottom'
 
   const primaryItems = [
@@ -53,33 +63,32 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
       id: /** @type {const} */ ('fplLive'),
       label: 'FPL Live',
       shortLabel: 'Live',
-      logoSrc: fplLogoSrc,
+      icon: /** @type {const} */ ('pulsing-dot'),
+      pulse: true,
     },
     {
       id: /** @type {const} */ ('standings'),
       label: 'Standings & Form',
       shortLabel: 'Table',
-      emoji: '📈',
-      bottomEmoji: '🧩',
+      icon: /** @type {const} */ ('bar-chart-3'),
     },
     {
       id: /** @type {const} */ ('teamSelection'),
-      label: 'Team Selection',
+      label: 'Transactions',
       shortLabel: 'Moves',
-      emoji: '👥',
-      bottomEmoji: '🎢',
+      icon: /** @type {const} */ ('users'),
     },
     {
       id: /** @type {const} */ ('players'),
       label: 'Players',
       shortLabel: 'Wire',
-      emoji: '🪂',
+      icon: /** @type {const} */ ('shuffle'),
     },
     {
       id: /** @type {const} */ ('more'),
       label: 'More',
       shortLabel: 'More',
-      emoji: '⋯',
+      icon: /** @type {const} */ ('more'),
       bottomOnly: true,
     },
   ]
@@ -91,7 +100,7 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
       id: /** @type {const} */ ('hall'),
       label: 'Hall of Champions',
       shortLabel: 'Hall',
-      emoji: '🏆',
+      icon: /** @type {const} */ ('trophy'),
     },
     primaryItems.find((i) => i.id === 'players'),
     primaryItems.find((i) => i.id === 'fplLive'),
