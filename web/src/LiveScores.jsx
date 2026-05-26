@@ -18,6 +18,10 @@ import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import { LiveFixtureGwPointsChart } from './LiveFixtureGwPointsChart.jsx';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
+import { LiveSharedStatusHeader } from './LiveSharedStatusHeader.jsx';
+import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
+import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
+import { usePortraitMobile } from './usePortraitMobile.js';
 import {
   bootstrapTeamToPredictionTeam,
   simulateFantasyH2hPercents,
@@ -373,6 +377,16 @@ function formatGwLeaguePtsBonus(h2hBonus) {
 
 function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
+}
+
+/** "David Higman · #1" sub-line for the desktop face-off row. */
+function teamMgrSubLine(teams, leagueEntryId) {
+  const t = teams?.find((x) => x.id === leagueEntryId);
+  if (!t) return null;
+  const mgr = (t.manager ?? '').trim();
+  const rank = Number.isFinite(Number(t.rank)) ? `#${t.rank}` : '';
+  if (mgr && rank) return `${mgr} · ${rank}`;
+  return mgr || rank || null;
 }
 
 /**
@@ -881,6 +895,9 @@ export function LiveScores({
       /** Hook only applies the interval when GW is current and not finished. */
       pollIntervalMs: 90_000,
     });
+
+  /** Portrait-phone breakpoint — drives the mobile compressed face-off / tabbed expanded view. */
+  const portraitMobile = usePortraitMobile();
 
   /** Fixture keys in the set are expanded; default empty = all collapsed. */
   const [expandedFixtures, setExpandedFixtures] = useState(() => new Set());
@@ -1417,312 +1434,152 @@ export function LiveScores({
       </section>
 
       {useFixtureLayout ? (
-        <div
-          className="live-fixtures-scroller"
-          role="region"
+        <section
+          className="tile tile--compact live-banner-group-tile"
           aria-label={`Gameweek ${gameweek} head-to-head fixtures`}
         >
-          <div className="live-fixtures-scroller__track">
+          <LiveSharedStatusHeader
+            eventSnapshot={eventSnapshot}
+            gwFixtures={contributionLiveContext?.gwFixtures ?? null}
+          />
+          <div className="live-banner-group__list">
             {gwMatches.map((m) => {
-            const homeId = Number(m.league_entry_1);
-            const awayId = Number(m.league_entry_2);
-            const homeName = teamNameForEntry(teams, homeId);
-            const awayName = teamNameForEntry(teams, awayId);
-            const homeSquad = squadByLeagueEntry.get(homeId);
-            const awaySquad = squadByLeagueEntry.get(awayId);
-            const homeLive = liveGwDisplayTotal(homeSquad);
-            const awayLive = liveGwDisplayTotal(awaySquad);
-            const homeLead =
-              homeLive != null && awayLive != null && homeLive > awayLive;
-            const awayLead =
-              homeLive != null && awayLive != null && awayLive > homeLive;
+              const homeId = Number(m.league_entry_1);
+              const awayId = Number(m.league_entry_2);
+              const homeName = teamNameForEntry(teams, homeId);
+              const awayName = teamNameForEntry(teams, awayId);
+              const homeSquad = squadByLeagueEntry.get(homeId);
+              const awaySquad = squadByLeagueEntry.get(awayId);
+              const homeLive = liveGwDisplayTotal(homeSquad);
+              const awayLive = liveGwDisplayTotal(awaySquad);
 
-            const homeLtp = homeSquad?.leftToPlayCount;
-            const awayLtp = awaySquad?.leftToPlayCount;
+              const homeVillain = villainVictoryEntryIds.has(homeId);
+              const awayVillain = villainVictoryEntryIds.has(awayId);
+              const homeHero = heroDefeatEntryIds.has(homeId);
+              const awayHero = heroDefeatEntryIds.has(awayId);
 
-            const homeVillain = villainVictoryEntryIds.has(homeId);
-            const awayVillain = villainVictoryEntryIds.has(awayId);
-            const homeHero = heroDefeatEntryIds.has(homeId);
-            const awayHero = heroDefeatEntryIds.has(awayId);
+              const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
+              const winPct = h2hWinPctByKey.get(fixtureKey);
+              const lineupOpen = expandedFixtures.has(fixtureKey);
+              const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
 
-            const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
-            const winPct = h2hWinPctByKey.get(fixtureKey);
-            const lineupOpen = expandedFixtures.has(fixtureKey);
-            const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
+              const bannerExtras = {
+                home: (
+                  <>
+                    {winPct ? (
+                      <span
+                        className={
+                          'live-banner-row__win-pct tabular' +
+                          (winPct.isLive ? ' live-banner-row__win-pct--live' : '')
+                        }
+                        title={winPct.isLive ? 'Home win % (live Proj MC)' : 'Home win % (xPts MC)'}
+                        aria-label={`Home win ${Math.round(winPct.homeWinPct)}%`}
+                      >
+                        {Math.round(winPct.homeWinPct)}%
+                      </span>
+                    ) : null}
+                    {homeVillain ? (
+                      <span className="live-banner-row__edge-badge">
+                        <VillainDetectedBadge variant="compact" />
+                      </span>
+                    ) : homeHero ? (
+                      <span className="live-banner-row__edge-badge">
+                        <HeroDefeatBadge variant="compact" />
+                      </span>
+                    ) : null}
+                  </>
+                ),
+                away: (
+                  <>
+                    {awayVillain ? (
+                      <span className="live-banner-row__edge-badge">
+                        <VillainDetectedBadge variant="compact" />
+                      </span>
+                    ) : awayHero ? (
+                      <span className="live-banner-row__edge-badge">
+                        <HeroDefeatBadge variant="compact" />
+                      </span>
+                    ) : null}
+                    {winPct ? (
+                      <span
+                        className={
+                          'live-banner-row__win-pct tabular' +
+                          (winPct.isLive ? ' live-banner-row__win-pct--live' : '')
+                        }
+                        title={winPct.isLive ? 'Away win % (live Proj MC)' : 'Away win % (xPts MC)'}
+                        aria-label={`Away win ${Math.round(winPct.awayWinPct)}%`}
+                      >
+                        {Math.round(winPct.awayWinPct)}%
+                      </span>
+                    ) : null}
+                  </>
+                ),
+              };
 
-            return (
-              <section
-                key={fixtureKey}
-                className={
-                  'tile tile--compact live-fixture-tile' +
-                  (homeVillain || awayVillain
-                    ? ' live-fixture-tile--villain-victory'
-                    : '') +
-                  (homeHero || awayHero ? ' live-fixture-tile--hero-defeat' : '')
-                }
-                aria-label={
-                  typeof homeLtp === 'number' && typeof awayLtp === 'number'
-                    ? `${homeName}, ${homeLtp} fixtures left, vs ${awayName}, ${awayLtp} fixtures left`
-                    : `${homeName} vs ${awayName}`
-                }
-              >
-                <button
-                  type="button"
-                  className="live-fixture-banner live-fixture-banner--toggle"
-                  onClick={() => toggleFixtureExpanded(fixtureKey)}
-                  aria-expanded={lineupOpen}
-                  aria-controls={fixtureBodyId}
+              return (
+                <div
+                  key={fixtureKey}
+                  className={
+                    'live-banner-group__item' +
+                    (lineupOpen ? ' live-banner-group__item--open' : '') +
+                    (homeVillain || awayVillain ? ' live-banner-group__item--villain-victory' : '') +
+                    (homeHero || awayHero ? ' live-banner-group__item--hero-defeat' : '')
+                  }
                 >
-                  <span className="live-fixture-chevron live-fixture-chevron--desktop" aria-hidden>
-                    {lineupOpen ? '▼' : '▶'}
-                  </span>
-                    <span className="live-fixture-banner__row">
-                    <span className="live-fixture-banner__team live-fixture-banner__team--home">
-                      {homeVillain ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--home">
-                          <VillainDetectedBadge variant="compact" />
-                        </span>
-                      ) : homeHero ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--home">
-                          <HeroDefeatBadge variant="compact" />
-                        </span>
-                      ) : null}
-                      <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--home">
-                        {winPct ? (
-                          <span
-                            className={
-                              'live-fixture-banner__win-pct live-fixture-banner__win-pct--home tabular' +
-                              (winPct.isLive ? ' live-fixture-banner__win-pct--live' : '')
-                            }
-                            title={winPct.isLive ? 'Home win % (live Proj MC)' : 'Home win % (xPts MC)'}
-                            aria-label={`Home win ${Math.round(winPct.homeWinPct)}%`}
-                          >
-                            {Math.round(winPct.homeWinPct)}%
-                          </span>
-                        ) : null}
-                        <span className="live-fixture-banner__team-avatar">
-                        <TeamAvatar
-                          entryId={homeId}
-                          name={homeName}
-                          size="sm"
-                          logoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
+                  <LiveFaceOffRow
+                    homeId={homeId}
+                    awayId={awayId}
+                    homeName={homeName}
+                    awayName={awayName}
+                    homeMgr={teamMgrSubLine(teams, homeId)}
+                    awayMgr={teamMgrSubLine(teams, awayId)}
+                    homeLive={homeLive}
+                    awayLive={awayLive}
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                    compact={portraitMobile}
+                    expanded={lineupOpen}
+                    bannerExtras={bannerExtras}
+                    onToggle={() => toggleFixtureExpanded(fixtureKey)}
+                    ariaControls={fixtureBodyId}
+                    chevronEnd={
+                      <span className="live-banner-row__chev" aria-hidden="true">
+                        {lineupOpen ? '▾' : '▸'}
                       </span>
-                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--home">
-                        <span className="live-fixture-banner__team-inner">
-                          <span className="live-fixture-banner__name-line">
-                            <span
-                              className={`live-fixture-banner__name ${homeLead ? 'live-fixture-banner__name--lead' : ''}`}
-                            >
-                              {homeName}
-                            </span>
-                          </span>
-                          {typeof homeLtp === 'number' ? (
-                            <span className="live-fixture-banner__ltp-line">
-                              <LeftToPlayOutsideAfter count={homeLtp} leadingSpace={false} />
-                            </span>
-                          ) : null}
-                        </span>
-                      </span>
-                      </span>
-                    </span>
-
-                    <span className="live-fixture-banner__vs-sep" aria-hidden="true">
-                      vs
-                    </span>
-
-                    <span className="live-fixture-banner__scorebox" aria-label="Gameweek points comparison">
-                      <span className="live-fixture-banner__score-row">
-                        <span
-                          className="live-fixture-banner__score-avatar live-fixture-banner__score-avatar--home"
-                          aria-hidden="true"
-                        >
-                          <TeamAvatar
-                            entryId={homeId}
-                            name={homeName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                        </span>
-                        {homeLive != null && awayLive != null ? (
-                          <span className="live-fixture-banner__live-score tabular">
-                            <span className={homeLead ? 'live-fixture-pts--lead' : ''}>{homeLive}</span>
-                            <span className="live-fixture-banner__dash">–</span>
-                            <span className={awayLead ? 'live-fixture-pts--lead' : ''}>{awayLive}</span>
-                          </span>
-                        ) : (
-                          <span className="live-fixture-vs">v</span>
-                        )}
-                        <span
-                          className="live-fixture-banner__score-avatar live-fixture-banner__score-avatar--away"
-                          aria-hidden="true"
-                        >
-                          <TeamAvatar
-                            entryId={awayId}
-                            name={awayName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                        </span>
-                      </span>
-                      <span className="muted live-fixture-banner__score-caption">GW pts (live)</span>
-                    </span>
-
-                    <span className="live-fixture-banner__team live-fixture-banner__team--away">
-                      <span className="live-fixture-banner__team-cluster live-fixture-banner__team-cluster--away">
-                      <span className="live-fixture-banner__team-text live-fixture-banner__team-text--away">
-                        <span className="live-fixture-banner__team-inner">
-                          <span className="live-fixture-banner__name-line">
-                            <span
-                              className={`live-fixture-banner__name ${awayLead ? 'live-fixture-banner__name--lead' : ''}`}
-                            >
-                              {awayName}
-                            </span>
-                          </span>
-                          {typeof awayLtp === 'number' ? (
-                            <span className="live-fixture-banner__ltp-line">
-                              <LeftToPlayOutsideAfter count={awayLtp} leadingSpace={false} />
-                            </span>
-                          ) : null}
-                        </span>
-                      </span>
-                      <span className="live-fixture-banner__team-avatar">
-                        <TeamAvatar
-                          entryId={awayId}
-                          name={awayName}
-                          size="sm"
-                          logoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                      </span>
-                      </span>
-                      {winPct ? (
-                        <span
-                          className={
-                            'live-fixture-banner__win-pct live-fixture-banner__win-pct--away tabular' +
-                            (winPct.isLive ? ' live-fixture-banner__win-pct--live' : '')
-                          }
-                          title={winPct.isLive ? 'Away win % (live Proj MC)' : 'Away win % (xPts MC)'}
-                          aria-label={`Away win ${Math.round(winPct.awayWinPct)}%`}
-                        >
-                          {Math.round(winPct.awayWinPct)}%
-                        </span>
-                      ) : null}
-                      {awayVillain ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
-                          <VillainDetectedBadge variant="compact" />
-                        </span>
-                      ) : awayHero ? (
-                        <span className="live-fixture-banner__villain-edge live-fixture-banner__villain-edge--away">
-                          <HeroDefeatBadge variant="compact" />
-                        </span>
-                      ) : null}
-                    </span>
-                  </span>
-                  {/* Mobile: bottom affordance — ▼ = collapsed (lineup below), ▲ = expanded (hide). */}
-                  <span className="live-fixture-banner__expand-foot">
-                    <span className="live-fixture-chevron live-fixture-chevron--mobile" aria-hidden>
-                      {!lineupOpen ? '▼' : '▲'}
-                    </span>
-                  </span>
-                </button>
-
-                {lineupOpen ? (
-                  <div className="live-fixture-expanded-body" id={fixtureBodyId}>
-                    <LiveFixtureSeasonH2h
-                      homeId={homeId}
-                      awayId={awayId}
-                      homeName={homeName}
-                      awayName={awayName}
-                      matches={matches}
-                      gameweek={gameweek}
-                      liveHomePts={homeLive}
-                      liveAwayPts={awayLive}
-                      selectedGwFinished={Boolean(selectedGwOption?.finished)}
-                      teamLogoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                    <div className="live-fixture-split">
-                  <div
-                    className={
-                      'live-fixture-column' +
-                      (homeVillain ? ' live-fixture-column--villain-victory' : '') +
-                      (homeHero ? ' live-fixture-column--hero-defeat' : '')
                     }
-                  >
-                    <div className="live-fixture-column-head">
-                      <h3 className="live-fixture-column-title">
-                        <span className="live-fixture-column-title__row">
-                          <span>
-                            {homeName}
-                            <LeftToPlayOutsideAfter count={homeLtp} />
-                          </span>
-                          {homeVillain ? (
-                            <VillainDetectedBadge />
-                          ) : homeHero ? (
-                            <HeroDefeatBadge />
-                          ) : null}
-                        </span>
-                      </h3>
-                      <div className="live-squad-meta tabular">
-                        {homeLive != null ? (
-                          <span className="live-squad-pts">
-                            <strong>{homeLive}</strong> GW pts
-                          </span>
-                        ) : null}
-                        {homeSquad?.pointsOnBench != null ? (
-                          <span className="muted">Bench: {homeSquad.pointsOnBench} pts</span>
-                        ) : null}
-                      </div>
+                  />
+
+                  {lineupOpen ? (
+                    <div className="live-banner-group__expanded" id={fixtureBodyId}>
+                      <LiveFixtureSeasonH2h
+                        homeId={homeId}
+                        awayId={awayId}
+                        homeName={homeName}
+                        awayName={awayName}
+                        matches={matches}
+                        gameweek={gameweek}
+                        liveHomePts={homeLive}
+                        liveAwayPts={awayLive}
+                        selectedGwFinished={Boolean(selectedGwOption?.finished)}
+                        teamLogoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
+                      <LiveExpandedFixture
+                        homeSquad={homeSquad}
+                        awaySquad={awaySquad}
+                        homeName={homeName}
+                        awayName={awayName}
+                        contributionLiveContext={contributionLiveContext}
+                        viewport={portraitMobile ? 'mobile' : 'desktop'}
+                        onOpenPlayer={openLineupOrHistory}
+                      />
                     </div>
-                    <SquadLineupPanel squad={homeSquad} onPlayerClick={openLineupOrHistory} />
-                  </div>
-                  <div className="live-fixture-divider" aria-hidden="true" />
-                  <div
-                    className={
-                      'live-fixture-column' +
-                      (awayVillain ? ' live-fixture-column--villain-victory' : '') +
-                      (awayHero ? ' live-fixture-column--hero-defeat' : '')
-                    }
-                  >
-                    <div className="live-fixture-column-head">
-                      <h3 className="live-fixture-column-title">
-                        <span className="live-fixture-column-title__row">
-                          <span>
-                            {awayName}
-                            <LeftToPlayOutsideAfter count={awayLtp} />
-                          </span>
-                          {awayVillain ? (
-                            <VillainDetectedBadge />
-                          ) : awayHero ? (
-                            <HeroDefeatBadge />
-                          ) : null}
-                        </span>
-                      </h3>
-                      <div className="live-squad-meta tabular">
-                        {awayLive != null ? (
-                          <span className="live-squad-pts">
-                            <strong>{awayLive}</strong> GW pts
-                          </span>
-                        ) : null}
-                        {awaySquad?.pointsOnBench != null ? (
-                          <span className="muted">Bench: {awaySquad.pointsOnBench} pts</span>
-                        ) : null}
-                      </div>
-                    </div>
-                    <SquadLineupPanel squad={awaySquad} onPlayerClick={openLineupOrHistory} />
-                    </div>
-                  </div>
+                  ) : null}
                 </div>
-                ) : null}
-              </section>
-            );
+              );
             })}
           </div>
-        </div>
+        </section>
       ) : (
         squads.map((squad) => {
           const squadVillain = villainVictoryEntryIds.has(Number(squad.leagueEntryId));

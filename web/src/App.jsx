@@ -3195,7 +3195,16 @@ function App() {
                   Projections
                 </button>
               </div>
-              {fplLiveTab === 'live' ? <FplLiveTripleThreatBanner /> : null}
+              {fplLiveTab === 'live' ? (
+                <FplLiveTripleThreatBanner
+                  teams={teamsForFormSelect}
+                  matches={matches ?? []}
+                  gameweek={liveGameweek}
+                  onBootstrapLiveMeta={onBootstrapLiveMeta}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              ) : null}
               <FplLiveGwTickerBar
                 teams={teamsForFormSelect}
                 matches={matches ?? []}

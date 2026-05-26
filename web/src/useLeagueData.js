@@ -831,6 +831,8 @@ function processLeagueData(raw, extras = {}) {
         entryRow?.entry_id != null ? Number(entryRow.entry_id) : null,
       rank: s.rank,
       teamName: s.teamName,
+      /** Live scores redesign (PR #5) — manager name for face-off `mgr · #rank` sub-line. */
+      manager: s.manager ?? null,
     };
   });
 
