@@ -382,6 +382,78 @@ test('computeManagerForm — 4 finished + 1 live dot, ordered oldest → newest'
   )
 })
 
+test('computeManagerForm — finished entries carry per-dot myScore/oppScore/oppLeagueEntry for tooltips', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 1,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: 67,
+    liveOppPts: 61,
+  })
+  /** GW 33: id 1 was league_entry_2, lost 60-80 to id 6. */
+  assert.deepEqual(
+    { ...out[0], gw: out[0].gw, isLive: out[0].isLive },
+    {
+      gw: 33,
+      result: 'L',
+      isLive: false,
+      myScore: 60,
+      oppScore: 80,
+      oppLeagueEntry: 6,
+    },
+  )
+  /** GW 35: id 1 was league_entry_2, beat id 8 72-50. */
+  assert.deepEqual(out[2], {
+    gw: 35,
+    result: 'W',
+    isLive: false,
+    myScore: 72,
+    oppScore: 50,
+    oppLeagueEntry: 8,
+  })
+})
+
+test('computeManagerForm — live dot carries liveMy/liveOpp scores (oppLeagueEntry left to caller)', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 1,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: 67,
+    liveOppPts: 61,
+  })
+  const live = out[out.length - 1]
+  assert.equal(live.gw, 37)
+  assert.equal(live.myScore, 67)
+  assert.equal(live.oppScore, 61)
+  /** Caller knows current-GW pairing from `gwMatches` — helper leaves it null. */
+  assert.equal(live.oppLeagueEntry, null)
+})
+
+test('computeManagerForm — padded slots have null myScore/oppScore/oppLeagueEntry', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 2,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    includeLive: false,
+  })
+  /** First 3 slots are pad — no match data. */
+  for (const d of out.slice(0, 3)) {
+    assert.equal(d.result, null)
+    assert.equal(d.myScore, null)
+    assert.equal(d.oppScore, null)
+    assert.equal(d.oppLeagueEntry, null)
+  }
+  /** GW 36: id 2 was league_entry_2, lost 55-70 to id 6. */
+  assert.deepEqual(out[4], {
+    gw: 36,
+    result: 'L',
+    isLive: false,
+    myScore: 55,
+    oppScore: 70,
+    oppLeagueEntry: 6,
+  })
+})
+
 test('computeManagerForm — live dot null/isLive when live points missing', () => {
   const out = computeManagerForm({
     leagueEntryId: 1,

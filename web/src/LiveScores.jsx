@@ -931,6 +931,24 @@ export function LiveScores({
   }, [gwMatches, squadByLeagueEntry]);
 
   /**
+   * Opponent's `league_entry` id for this GW, keyed by manager `league_entry`.
+   * Powers the site-wide form-dot tooltip on the `GW` dot column so we can
+   * resolve the opponent's team name via {@link teamNameForEntry}.
+   */
+  const oppEntryByLeagueEntry = useMemo(() => {
+    const m = new Map();
+    for (const fx of gwMatches) {
+      const a = Number(fx.league_entry_1);
+      const b = Number(fx.league_entry_2);
+      if (Number.isFinite(a) && Number.isFinite(b)) {
+        m.set(a, b);
+        m.set(b, a);
+      }
+    }
+    return m;
+  }, [gwMatches]);
+
+  /**
    * Win percentages for each H2H fixture: pre-live uses xPts MC; live uses per-player Proj MC.
    * Keyed by `${homeId}-${awayId}-${gameweek}`.
    */
@@ -1167,6 +1185,7 @@ export function LiveScores({
         formDotsHistoric,
         gwOutcomeDot,
         h2hProj,
+        oppEntryThisGw: oppEntryByLeagueEntry.get(eid) ?? null,
       };
     });
     const sorted = [...enriched].sort((a, b) => {
@@ -1192,6 +1211,7 @@ export function LiveScores({
     tableRows,
     squadByLeagueEntry,
     oppLiveGwByLeagueEntry,
+    oppEntryByLeagueEntry,
     gwStandingsFrozen,
     matches,
     gameweek,
@@ -2071,6 +2091,26 @@ export function LiveScores({
                                     ? 'loss'
                                     : 'none';
                             const cls = `live-form-dot live-form-dot--${kind}`;
+                            /**
+                             * PR #5j — site-wide form-dot tooltip
+                             * (`GW{N} · {my} − {opp} · vs {OppTeam}`).
+                             * Padded slots (`dot.result == null` and no opp
+                             * data) keep just the GW-number label since we
+                             * can't construct the rich line without scores.
+                             */
+                            const oppName =
+                              dot.oppLeagueEntry != null
+                                ? teamNameForEntry(
+                                    teams,
+                                    Number(dot.oppLeagueEntry),
+                                  )
+                                : null;
+                            const hasScores =
+                              dot.myScore != null && dot.oppScore != null;
+                            const tooltip =
+                              hasScores && oppName
+                                ? `GW${dot.gw} · ${dot.myScore} − ${dot.oppScore} · vs ${oppName}`
+                                : null;
                             const label = dot.result
                               ? `GW ${dot.gw} ${dot.result}`
                               : `GW ${dot.gw} — no result`;
@@ -2078,8 +2118,9 @@ export function LiveScores({
                               <span
                                 key={`${row.league_entry}-last5-${i}-${dot.gw}`}
                                 className={cls}
-                                title={label}
-                                aria-label={label}
+                                tabIndex={tooltip ? 0 : -1}
+                                data-tooltip={tooltip || undefined}
+                                aria-label={tooltip ?? label}
                               />
                             );
                           })}
@@ -2111,12 +2152,38 @@ export function LiveScores({
                                 : kind === 'loss'
                                   ? `GW ${gameweek} losing`
                                   : `GW ${gameweek} not started`;
+                          /**
+                           * PR #5j — site-wide form-dot tooltip on the GW dot:
+                           *   live + scored: `GW{N} · {my} − {opp} · vs {Opp} · LIVE`
+                           *   final + scored: `GW{N} · {my} − {opp} · vs {Opp}`
+                           *   pre-kickoff with paired opponent: `GW{N} · vs {Opp}`
+                           *   orphan / no opponent paired: fall back to {@link label}.
+                           */
+                          const oppName =
+                            row.oppEntryThisGw != null
+                              ? teamNameForEntry(
+                                  teams,
+                                  Number(row.oppEntryThisGw),
+                                )
+                              : null;
+                          const hasScores =
+                            row.liveGw != null && row.oppLiveGw != null;
+                          let tooltip = null;
+                          if (oppName) {
+                            if (hasScores) {
+                              const liveTag = isLive ? ' · LIVE' : '';
+                              tooltip = `GW${gameweek} · ${row.liveGw} − ${row.oppLiveGw} · vs ${oppName}${liveTag}`;
+                            } else {
+                              tooltip = `GW${gameweek} · vs ${oppName}`;
+                            }
+                          }
                           return (
                             <span
                               className={cls}
                               role="img"
-                              title={label}
-                              aria-label={label}
+                              tabIndex={tooltip ? 0 : -1}
+                              data-tooltip={tooltip || undefined}
+                              aria-label={tooltip ?? label}
                             />
                           );
                         })()}

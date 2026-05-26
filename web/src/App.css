@@ -10440,9 +10440,29 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   opacity: 0.55;
 }
 
-/* Tooltip bubble */
+/**
+ * PR #5j — site-wide form-dot tooltip. The same dark-bubble +
+ * downward-chevron pattern that shipped on the Standings page (.form-dot)
+ * is now reused on the Live Table's `Last 5` (.live-form-dot) and `GW`
+ * (.live-gw-dot) dots. Driven entirely by `data-tooltip` so no extra
+ * React state is needed; the trigger element gets `position: relative`
+ * (added below for the live dots, already present on .form-dot) so the
+ * absolutely-positioned ::before/::after anchor to it. Visible on hover
+ * **and** keyboard focus (:focus-visible) for a11y — the dots are made
+ * focusable in JSX via `tabIndex={0}` when a tooltip is present.
+ */
+.form-dot[data-tooltip],
+.live-form-dot[data-tooltip],
+.live-gw-dot[data-tooltip] {
+  position: relative;
+}
+
 .form-dot[data-tooltip]::before,
-.form-dot[data-tooltip]::after {
+.form-dot[data-tooltip]::after,
+.live-form-dot[data-tooltip]::before,
+.live-form-dot[data-tooltip]::after,
+.live-gw-dot[data-tooltip]::before,
+.live-gw-dot[data-tooltip]::after {
   position: absolute;
   bottom: calc(100% + 8px);
   left: 50%;
@@ -10453,7 +10473,9 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   z-index: 100;
 }
 
-.form-dot[data-tooltip]::before {
+.form-dot[data-tooltip]::before,
+.live-form-dot[data-tooltip]::before,
+.live-gw-dot[data-tooltip]::before {
   content: attr(data-tooltip);
   white-space: nowrap;
   background: #1a1a1a;
@@ -10467,7 +10489,9 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.form-dot[data-tooltip]::after {
+.form-dot[data-tooltip]::after,
+.live-form-dot[data-tooltip]::after,
+.live-gw-dot[data-tooltip]::after {
   content: '';
   bottom: calc(100% + 2px);
   width: 0;
@@ -10478,8 +10502,30 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 .form-dot[data-tooltip]:hover::before,
-.form-dot[data-tooltip]:hover::after {
+.form-dot[data-tooltip]:hover::after,
+.form-dot[data-tooltip]:focus-visible::before,
+.form-dot[data-tooltip]:focus-visible::after,
+.live-form-dot[data-tooltip]:hover::before,
+.live-form-dot[data-tooltip]:hover::after,
+.live-form-dot[data-tooltip]:focus-visible::before,
+.live-form-dot[data-tooltip]:focus-visible::after,
+.live-gw-dot[data-tooltip]:hover::before,
+.live-gw-dot[data-tooltip]:hover::after,
+.live-gw-dot[data-tooltip]:focus-visible::before,
+.live-gw-dot[data-tooltip]:focus-visible::after {
   opacity: 1;
+}
+
+/**
+ * Keyboard focus ring on the dots themselves — keeps the tooltip a11y
+ * affordance discoverable without making the default :focus outline
+ * leak into mouse interactions.
+ */
+.live-form-dot[data-tooltip]:focus-visible,
+.live-gw-dot[data-tooltip]:focus-visible,
+.form-dot[data-tooltip]:focus-visible {
+  outline: 2px solid var(--brand, #5b8def);
+  outline-offset: 2px;
 }
 
 .table-foot {

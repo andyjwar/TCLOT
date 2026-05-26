@@ -389,7 +389,19 @@ export function minutesTone(minutes, played = true) {
  *   the viewer can tell it's still in flight while keeping the W/D/L
  *   colour visible.
  *
- * @typedef {{ gw: number, result: 'W' | 'D' | 'L' | null, isLive: boolean }} ManagerFormEntry
+ * @typedef {{
+ *   gw: number,
+ *   result: 'W' | 'D' | 'L' | null,
+ *   isLive: boolean,
+ *   myScore: number | null,
+ *   oppScore: number | null,
+ *   oppLeagueEntry: number | null,
+ * }} ManagerFormEntry
+ *
+ * `myScore` / `oppScore` / `oppLeagueEntry` carry the per-dot match meta the
+ * site-wide form-dot tooltip needs (`GW{N} · {my} − {opp} · vs {opp team}`).
+ * They are `null` for padded slots (no match data) and for the live dot when
+ * `liveMyPts` / `liveOppPts` are missing.
  */
 
 /**
@@ -462,7 +474,11 @@ export function computeManagerForm({
   const slots = Math.max(1, Math.floor(Number(count) || 5));
   const historySlots = includeLive ? slots - 1 : slots;
 
-  /** Build per-GW W/D/L history from finished matches involving this manager. */
+  /**
+   * Build per-GW W/D/L history from finished matches involving this manager.
+   * Map value carries the per-dot meta the tooltip needs: `result`,
+   * `myScore`, `oppScore`, `oppLeagueEntry`.
+   */
   const byGw = new Map();
   if (Array.isArray(matches) && Number.isFinite(id)) {
     for (const m of matches) {
@@ -473,24 +489,40 @@ export function computeManagerForm({
       const e2 = Number(m.league_entry_2);
       let mine;
       let opp;
+      let oppEntry;
       if (e1 === id) {
         mine = Number(m.league_entry_1_points);
         opp = Number(m.league_entry_2_points);
+        oppEntry = e2;
       } else if (e2 === id) {
         mine = Number(m.league_entry_2_points);
         opp = Number(m.league_entry_1_points);
+        oppEntry = e1;
       } else {
         continue;
       }
       const result = h2hResult(mine, opp);
-      byGw.set(ev, result);
+      const myScore = Number.isFinite(mine) ? mine : null;
+      const oppScore = Number.isFinite(opp) ? opp : null;
+      const oppLeagueEntry = Number.isFinite(oppEntry) ? oppEntry : null;
+      byGw.set(ev, { result, myScore, oppScore, oppLeagueEntry });
     }
   }
 
   /** Take the most-recent `historySlots` finished GWs, oldest → newest. */
   const finishedGws = [...byGw.keys()].sort((a, b) => a - b);
   const tail = finishedGws.slice(-historySlots);
-  const history = tail.map((gw) => ({ gw, result: byGw.get(gw) ?? null, isLive: false }));
+  const history = tail.map((gw) => {
+    const meta = byGw.get(gw) ?? {};
+    return {
+      gw,
+      result: meta.result ?? null,
+      isLive: false,
+      myScore: meta.myScore ?? null,
+      oppScore: meta.oppScore ?? null,
+      oppLeagueEntry: meta.oppLeagueEntry ?? null,
+    };
+  });
 
   /** Left-pad with null-result entries when we have fewer finished GWs than slots. */
   const pad = historySlots - history.length;
@@ -498,7 +530,14 @@ export function computeManagerForm({
   for (let i = 0; i < pad; i++) {
     /** Best-guess GW numbers for the empty padding so tooltips stay sane. */
     const guess = Number.isFinite(gwNum) ? gwNum - (historySlots - i) : 0;
-    padded.push({ gw: guess > 0 ? guess : 0, result: null, isLive: false });
+    padded.push({
+      gw: guess > 0 ? guess : 0,
+      result: null,
+      isLive: false,
+      myScore: null,
+      oppScore: null,
+      oppLeagueEntry: null,
+    });
   }
 
   if (!includeLive) {
@@ -507,10 +546,15 @@ export function computeManagerForm({
 
   /** Rightmost dot: live (or finalized) current-GW result. */
   const liveResult = h2hResult(liveMyPts, liveOppPts);
+  const liveMy = Number(liveMyPts);
+  const liveOpp = Number(liveOppPts);
   const liveEntry = {
     gw: Number.isFinite(gwNum) ? gwNum : 0,
     result: liveResult,
     isLive: !currentGwFinished,
+    myScore: Number.isFinite(liveMy) ? liveMy : null,
+    oppScore: Number.isFinite(liveOpp) ? liveOpp : null,
+    oppLeagueEntry: null,
   };
 
   return [...padded, ...history, liveEntry];
