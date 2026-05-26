@@ -6000,108 +6000,216 @@ body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true']
   font-size: 0.78rem;
 }
 
-.live-ltp-panel-tile {
+/* ============================================================ */
+/* Fixtures left to play tile (PR #5i)                          */
+/* ============================================================ */
+/*
+ * Replaces the old `.live-ltp-*` flat list (visually a holdover
+ * from the pre-redesign Live page — heavy horizontal rules between
+ * matchup pairs, score · avatar · name · count · "Name (OPP), ..."
+ * comma string per side).
+ *
+ * Aesthetic choices:
+ *  - Each matchup pair sits in its own polished tile (`__card`):
+ *    surface bg (--fm-surface-2 with brand-tinted border), rounded
+ *    --r-md corners, breathable --space-3/--space-4 padding. The
+ *    heavy horizontal rules between pairs are gone — card spacing
+ *    carries the separation.
+ *  - Inside each card the two sides stack vertically separated by a
+ *    single hairline (color-mixed --fm-border, much lighter than the
+ *    old `--fm-border-strong` rule).
+ *  - Per-side head: avatar + team name + small mono "N left" pill +
+ *    right-aligned live score (mono, bold). The pill is hidden when
+ *    a side has 0 fixtures left so it doesn't visually claim that
+ *    side still has chips below.
+ *  - Player chips reuse the small pill treatment from the
+ *    contributions feed (Inter for name, Geist Mono for opponent
+ *    code), wrapping naturally as a flex list. The empty state for
+ *    a finished side reads simply "All players done" in muted text.
+ *  - Section header: bold inline title + a small "(N fixtures left)"
+ *    count chip + chevron, in line with the tile-head treatment used
+ *    on the Live Table tile. The whole tile hides when totalRemaining
+ *    = 0 (LiveScores.jsx gate) — the FINAL · GW N · Gameweek complete
+ *    strip above already conveys "all done".
+ */
+.live-remaining-fixtures {
   margin-top: 0;
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-radius: var(--r-lg, 14px);
 }
 
-.live-ltp-fixture-banner.live-fixture-banner {
-  margin-bottom: 0;
-}
-
-.live-ltp-fixture-banner__text {
-  flex: 1;
-  min-width: 0;
+.live-remaining-fixtures__toggle {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-.live-ltp-fixture-banner__title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--fm-muted, #555);
+.live-remaining-fixtures__toggle:focus-visible {
+  outline: 2px solid var(--brand, #795bfb);
+  outline-offset: 4px;
+  border-radius: var(--r-sm, 6px);
 }
 
-.live-ltp-fixture-banner__title--only {
+.live-remaining-fixtures__title {
+  flex: 0 0 auto;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-size: 1rem;
-  font-weight: 800;
-  text-transform: none;
+  font-weight: 700;
   letter-spacing: -0.01em;
   color: var(--fm-text-strong, #111);
 }
 
-.live-ltp-panel-body {
-  padding: 0 14px 12px;
-  margin-top: -2px;
+.live-remaining-fixtures__count {
+  flex: 1 1 auto;
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs, 11px);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
 }
 
-.live-ltp-fixture-block {
-  padding: 14px 0 16px;
-  border-bottom: 3px solid var(--fm-border-strong, #9ca3af);
+.live-remaining-fixtures__chevron {
+  flex: 0 0 auto;
+  width: 1rem;
+  font-size: 0.7rem;
+  line-height: 1;
+  opacity: 0.55;
+  color: var(--fm-muted);
 }
 
-.live-ltp-fixture-block:last-child {
-  border-bottom: none;
-  padding-bottom: 6px;
-}
-
-.live-ltp-summary-list {
+.live-remaining-fixtures__body {
   display: flex;
   flex-direction: column;
-  gap: 0;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
 }
 
-.live-ltp-summary-row {
+.live-remaining-fixtures__card {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  padding: 10px 0;
-  border-bottom: 1px solid var(--fm-border, #e5e5e5);
-  font-size: 0.82rem;
-  line-height: 1.4;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-3);
+  background: color-mix(in srgb, var(--fm-surface-2, #f4f4f5) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fm-border) 80%, transparent);
+  border-radius: var(--r-md, 10px);
 }
 
-.live-ltp-summary-row:last-child {
-  border-bottom: none;
-  padding-bottom: 2px;
-}
-
-.live-ltp-summary-team {
+.live-remaining-fixtures__side {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid
+    color-mix(in srgb, var(--fm-border) 55%, transparent);
+}
+
+.live-remaining-fixtures__side:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.live-remaining-fixtures__side-head {
+  display: flex;
   align-items: center;
-  gap: 8px;
-  flex: 0 1 auto;
+  gap: var(--space-2);
   min-width: 0;
-  max-width: 100%;
 }
 
-.live-ltp-summary-score-inline {
-  flex-shrink: 0;
-  font-size: 1.05rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
+.live-remaining-fixtures__name {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: var(--text-sm, 13px);
+  font-weight: 700;
   color: var(--fm-text-strong, #111);
-  min-width: 1.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.live-remaining-fixtures__pill {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--r-sm, 6px);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1;
+  color: var(--brand, #795bfb);
+  background: color-mix(in srgb, var(--brand, #795bfb) 14%, transparent);
+}
+
+.live-remaining-fixtures__score {
+  flex: 0 0 auto;
+  min-width: 2.25rem;
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-md, 14px);
+  font-weight: 700;
+  color: var(--fm-text-strong, #111);
   text-align: right;
 }
 
-.live-ltp-summary-team-name {
-  min-width: 0;
-  font-weight: 700;
+.live-remaining-fixtures__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.live-ltp-summary-players {
-  flex: 1 1 12rem;
-  min-width: 0;
+.live-remaining-fixtures__chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: var(--r-sm, 6px);
+  background: color-mix(in srgb, var(--fm-text-strong, #111) 5%, transparent);
+  border: 1px solid color-mix(in srgb, var(--fm-border) 65%, transparent);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.live-remaining-fixtures__chip-name {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
   color: var(--fm-text-strong, #111);
 }
 
-.live-ltp-summary-players-count {
-  font-weight: 600;
+.live-remaining-fixtures__chip-opp {
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--fm-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.live-remaining-fixtures__done {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-size: 0.78rem;
+  color: var(--fm-muted);
+  font-style: italic;
 }
 
 /* H2H fixtures: full-width cards in a vertical stack (mobile + desktop) */
@@ -9794,6 +9902,26 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   font-weight: 600;
   color: var(--fm-text-strong);
+}
+
+/* Column alignment fix (PR #5i):
+ * `.standings-table--sidebar td.col-{for,faced,gd,pts}` reserves
+ *  `calc(7px + var(--standings-sort-arrow-slot))` of padding-right so
+ *  data cells stay flush with the *label* band of a sortable header
+ *  (whose sort-arrow button takes the right-side slot). The Live
+ *  Table's `<th>`s are plain text (no sort buttons), so that
+ *  reservation just pushes td content left of the right-aligned (or
+ *  centered, for PTS) header, producing a visible drift between every
+ *  numeric column header and the digits below it.
+ *
+ *  Selector uses `.--live.--sidebar` (2 classes) to outrank the
+ *  one-class `.--sidebar` rule above without disturbing Hall / historic
+ *  tables that share `.--sidebar` and do render sort buttons. */
+.standings-table--live.standings-table--sidebar td.col-for,
+.standings-table--live.standings-table--sidebar td.col-faced,
+.standings-table--live.standings-table--sidebar td.col-gd,
+.standings-table--live.standings-table--sidebar td.col-num.col-pts {
+  padding-right: var(--space-2);
 }
 
 /* Row tints — soften the leader & 8th bands so they read as part of
