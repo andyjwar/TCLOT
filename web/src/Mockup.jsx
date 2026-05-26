@@ -4561,7 +4561,7 @@ function PdetailFixtures({ rows }) {
 }
 
 function PlayerDetailDesktop({ player = PLAYERS_DATA[0] }) {
-  const tabs = ['Overview', 'Fixtures', 'Form', 'History']
+  const tabs = ['Overview', 'Performance']
   return (
     <div className="mockup-pdetail">
       {/* Hero */}
@@ -4657,7 +4657,7 @@ function PlayerDetailDesktop({ player = PLAYERS_DATA[0] }) {
 /* D · Player detail — portrait                                         */
 /* ------------------------------------------------------------------ */
 function PlayerDetailPortrait({ player = PLAYERS_DATA[0] }) {
-  const tabs = ['Overview', 'Fixtures', 'Form', 'History']
+  const tabs = ['Overview', 'Performance']
   return (
     <div className="mockup-portrait-page">
       <div className="mockup-pdetail-p__h">

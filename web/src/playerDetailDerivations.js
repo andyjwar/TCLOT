@@ -319,3 +319,177 @@ export function formatPerformanceStat(statId, value) {
   if (statId === 'xg' || statId === 'xa') return n.toFixed(2)
   return String(n)
 }
+
+/**
+ * Count of GWs where the player played 60+ minutes (the FPL "appearance"
+ * threshold for full points / clean-sheet eligibility). Drives the
+ * "60+ mins" Overview tile (replaces the old total-minutes tile, which
+ * masked rotation).
+ *
+ * @param {Array<object> | null | undefined} historyRows
+ * @returns {number}
+ */
+export function countGamesPlayedOver60(historyRows) {
+  if (!Array.isArray(historyRows)) return 0
+  let n = 0
+  for (const h of historyRows) {
+    const mins = Number(h?.minutes)
+    if (Number.isFinite(mins) && mins >= 60) n += 1
+  }
+  return n
+}
+
+/**
+ * Count of GWs where the player met or exceeded the
+ * `defensiveContributionPointThreshold` for their position (10 for DEF,
+ * 12 for MID/FWD; GK has no qualifying threshold per FPL scoring rules
+ * — `defensiveContributionPointThreshold(1)` happens to return 10 today,
+ * but goalkeepers don't earn DC points so we explicitly return 0 here).
+ * Drives the "DC" tile — *count of qualifying games*, not season total —
+ * to surface contribution frequency rather than raw volume.
+ *
+ * @param {Array<object> | null | undefined} historyRows
+ * @param {number | null | undefined} elementType
+ * @returns {number}
+ */
+export function countDcThresholdMet(historyRows, elementType) {
+  if (!Array.isArray(historyRows)) return 0
+  const et = Number(elementType)
+  if (!Number.isFinite(et) || et === 1) return 0
+  const t = defensiveContributionPointThreshold(et)
+  if (t == null) return 0
+  let n = 0
+  for (const h of historyRows) {
+    const dc = Number(performanceStatValue('dc', h))
+    if (Number.isFinite(dc) && dc >= t) n += 1
+  }
+  return n
+}
+
+/**
+ * Format a final score (`team_h_score - team_a_score`) from the player's
+ * club's perspective. Returns `null` if the score is missing — the draft
+ * API's `element-summary.history` rows omit score fields, so the caller
+ * should fall back to a `plFixtures` lookup when this returns null.
+ *
+ * @param {object} historyRow FPL `element-summary.history` row
+ * @returns {{ score: string, result: 'W' | 'D' | 'L', wasHome: boolean } | null}
+ */
+export function historyScoreFromPerspective(historyRow) {
+  if (!historyRow) return null
+  const home = Number(historyRow.team_h_score)
+  const away = Number(historyRow.team_a_score)
+  if (!Number.isFinite(home) || !Number.isFinite(away)) return null
+  const wasHome = Boolean(historyRow.was_home)
+  const my = wasHome ? home : away
+  const opp = wasHome ? away : home
+  const result = my > opp ? 'W' : my < opp ? 'L' : 'D'
+  return { score: `${my}-${opp}`, result, wasHome }
+}
+
+/**
+ * Look up final score for a gameweek + player club from the bootstrap
+ * fixtures payload. Used when `historyScoreFromPerspective` returns null
+ * (the draft API omits scores). Skips fixtures that haven't finished.
+ *
+ * @param {Array<object> | null | undefined} plFixtures
+ * @param {number} gw
+ * @param {number} playerTeamId
+ * @returns {{ score: string, result: 'W' | 'D' | 'L', wasHome: boolean } | null}
+ */
+export function fixtureScoreForGw(plFixtures, gw, playerTeamId) {
+  if (!Array.isArray(plFixtures)) return null
+  const event = Number(gw)
+  const club = Number(playerTeamId)
+  if (!Number.isFinite(event) || !Number.isFinite(club)) return null
+  const fx = plFixtures.find((f) => {
+    if (Number(f?.event) !== event) return null
+    return Number(f?.team_h) === club || Number(f?.team_a) === club
+  })
+  if (!fx) return null
+  if (fx.team_h_score == null || fx.team_a_score == null) return null
+  const home = Number(fx.team_h_score)
+  const away = Number(fx.team_a_score)
+  if (!Number.isFinite(home) || !Number.isFinite(away)) return null
+  const wasHome = Number(fx.team_h) === club
+  const my = wasHome ? home : away
+  const opp = wasHome ? away : home
+  const result = my > opp ? 'W' : my < opp ? 'L' : 'D'
+  return { score: `${my}-${opp}`, result, wasHome }
+}
+
+/**
+ * Build the Last-5-GW card model — opponent crest + score + player points,
+ * with DNP rows surfaced as a greyed placeholder. Tone is computed against
+ * the *season* points-per-GW average so a single big haul stays green even
+ * when the running 5-GW window dips low.
+ *
+ * The draft `element-summary.history` rows omit `team_h_score`/`team_a_score`
+ * /`was_home`, so when those fields are missing the function falls back to
+ * looking up the fixture in the bootstrap `plFixtures` payload (`event`
+ * matches the GW, `team_h`/`team_a` matches the player's club). Pass
+ * `plFixtures` and `playerTeamId` via `options` to enable that fallback.
+ *
+ * @param {Array<object> | null | undefined} historyRows Full season history (chronological)
+ * @param {number | null | undefined} _elementType Reserved (kept for future per-position weighting)
+ * @param {number} [count]
+ * @param {{
+ *   plFixtures?: Array<object> | null,
+ *   playerTeamId?: number | null,
+ * }} [options]
+ * @returns {Array<{
+ *   gw: number,
+ *   opponentTeamId: number | null,
+ *   home: boolean,
+ *   score: string | null,
+ *   result: 'W' | 'D' | 'L' | null,
+ *   points: number | null,
+ *   minutes: number,
+ *   dnp: boolean,
+ *   tone: 'pos' | 'neg' | 'neutral',
+ * }>}
+ */
+export function lastFiveGwCards(historyRows, _elementType, count = 5, options = {}) {
+  const rows = lastNHistoryRows(historyRows ?? [], count)
+  if (rows.length === 0) return []
+  const all = Array.isArray(historyRows) ? historyRows : []
+  let totalAll = 0
+  let countAll = 0
+  for (const h of all) {
+    const v = Number(h?.total_points)
+    if (Number.isFinite(v)) {
+      totalAll += v
+      countAll += 1
+    }
+  }
+  const seasonAvg = countAll > 0 ? totalAll / countAll : 0
+  const { plFixtures = null, playerTeamId = null } = options
+  return rows.map((h) => {
+    const gw = Number(h?.round ?? h?.event)
+    const minutes = Number(h?.minutes) || 0
+    const dnp = minutes <= 0
+    const oppId = Number(h?.opponent_team)
+    /** History row first; fall back to bootstrap fixtures when scores are missing. */
+    let score = historyScoreFromPerspective(h)
+    if (!score && Number.isFinite(gw) && playerTeamId != null) {
+      score = fixtureScoreForGw(plFixtures, gw, playerTeamId)
+    }
+    const wasHome = score?.wasHome ?? Boolean(h?.was_home)
+    const pts = Number(h?.total_points)
+    const points = Number.isFinite(pts) ? pts : null
+    const tone = dnp || points == null
+      ? /** @type {'neutral'} */ ('neutral')
+      : miniBarTone(points, seasonAvg)
+    return {
+      gw: Number.isFinite(gw) ? gw : 0,
+      opponentTeamId: Number.isFinite(oppId) ? oppId : null,
+      home: wasHome,
+      score: score?.score ?? null,
+      result: score?.result ?? null,
+      points,
+      minutes,
+      dnp,
+      tone,
+    }
+  })
+}

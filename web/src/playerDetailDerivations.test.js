@@ -1,9 +1,14 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  countDcThresholdMet,
+  countGamesPlayedOver60,
   DEFAULT_PERFORMANCE_COL_IDS,
   fdrTone,
+  fixtureScoreForGw,
   formatPerformanceStat,
+  historyScoreFromPerspective,
+  lastFiveGwCards,
   lastNHistoryRows,
   miniBarTone,
   performanceStatCatalog,
@@ -175,4 +180,159 @@ test('upcomingFixturesNext — first 5, opponent + home flag derived from team i
   assert.equal(upcomingFixturesNext({ fixtures: [] }, 1).length, 0)
   assert.equal(upcomingFixturesNext({}, 1).length, 0)
   assert.equal(upcomingFixturesNext(null, 1).length, 0)
+})
+
+test('countGamesPlayedOver60 — counts GWs with minutes >= 60', () => {
+  const rows = [
+    { round: 1, minutes: 90 },
+    { round: 2, minutes: 60 },
+    { round: 3, minutes: 59 },
+    { round: 4, minutes: 0 },
+    { round: 5, minutes: null },
+    { round: 6, minutes: 73 },
+  ]
+  assert.equal(countGamesPlayedOver60(rows), 3)
+  assert.equal(countGamesPlayedOver60([]), 0)
+  assert.equal(countGamesPlayedOver60(null), 0)
+})
+
+test('countDcThresholdMet — counts qualifying DC games per position', () => {
+  // DEF threshold = 10, MID/FWD threshold = 12, GK has no threshold
+  const rows = [
+    { round: 1, defensive_contribution: 14 },
+    { round: 2, defensive_contribution: 11 },
+    { round: 3, defensive_contribution: 9 },
+    { round: 4, defensive_contribution: 10 },
+    { round: 5, defensive_contribution: 0 },
+  ]
+  assert.equal(countDcThresholdMet(rows, 2 /* DEF; t=10 */), 3) // 14, 11, 10
+  assert.equal(countDcThresholdMet(rows, 3 /* MID; t=12 */), 1) // 14 only
+  assert.equal(countDcThresholdMet(rows, 4 /* FWD; t=12 */), 1)
+  assert.equal(countDcThresholdMet(rows, 1 /* GK; no threshold */), 0)
+  assert.equal(countDcThresholdMet([], 2), 0)
+  assert.equal(countDcThresholdMet(null, 2), 0)
+})
+
+test('historyScoreFromPerspective — formats W/D/L from player club POV', () => {
+  // Home win
+  assert.deepEqual(
+    historyScoreFromPerspective({ was_home: true, team_h_score: 2, team_a_score: 1 }),
+    { score: '2-1', result: 'W', wasHome: true },
+  )
+  // Away win
+  assert.deepEqual(
+    historyScoreFromPerspective({ was_home: false, team_h_score: 1, team_a_score: 3 }),
+    { score: '3-1', result: 'W', wasHome: false },
+  )
+  // Draw
+  assert.deepEqual(
+    historyScoreFromPerspective({ was_home: true, team_h_score: 0, team_a_score: 0 }),
+    { score: '0-0', result: 'D', wasHome: true },
+  )
+  // Away loss
+  assert.deepEqual(
+    historyScoreFromPerspective({ was_home: false, team_h_score: 4, team_a_score: 1 }),
+    { score: '1-4', result: 'L', wasHome: false },
+  )
+  // Missing scores → null (caller should fall back to plFixtures)
+  assert.equal(historyScoreFromPerspective({ was_home: true }), null)
+  assert.equal(historyScoreFromPerspective(null), null)
+})
+
+test('fixtureScoreForGw — derives score from bootstrap plFixtures fallback', () => {
+  const fixtures = [
+    { event: 35, team_h: 12, team_a: 5, team_h_score: 1, team_a_score: 0 }, // LIV home win
+    { event: 36, team_h: 7,  team_a: 12, team_h_score: 2, team_a_score: 2 }, // LIV away draw
+    { event: 37, team_h: 12, team_a: 9, team_h_score: null, team_a_score: null }, // unfinished
+    { event: 38, team_h: 11, team_a: 12, team_h_score: 3, team_a_score: 1 }, // LIV away loss
+  ]
+  // GW35: LIV (12) at home vs 5 → 1-0 W
+  assert.deepEqual(
+    fixtureScoreForGw(fixtures, 35, 12),
+    { score: '1-0', result: 'W', wasHome: true },
+  )
+  // GW36: LIV away vs 7 → 2-2 D from LIV POV
+  assert.deepEqual(
+    fixtureScoreForGw(fixtures, 36, 12),
+    { score: '2-2', result: 'D', wasHome: false },
+  )
+  // GW38: LIV away vs 11 → 1-3 L from LIV POV
+  assert.deepEqual(
+    fixtureScoreForGw(fixtures, 38, 12),
+    { score: '1-3', result: 'L', wasHome: false },
+  )
+  // Unfinished fixture → null
+  assert.equal(fixtureScoreForGw(fixtures, 37, 12), null)
+  // No fixtures
+  assert.equal(fixtureScoreForGw(null, 35, 12), null)
+  assert.equal(fixtureScoreForGw([], 35, 12), null)
+  // Player club not in any fixture for that GW
+  assert.equal(fixtureScoreForGw(fixtures, 35, 99), null)
+})
+
+test('lastFiveGwCards — returns crest-card model with score + tone', () => {
+  // 7 GWs, season avg = (5+6+8+0+10+2+9)/7 ≈ 5.71
+  const history = [
+    { round: 1, opponent_team: 11, was_home: true,  team_h_score: 1, team_a_score: 0, minutes: 90, total_points: 5 },
+    { round: 2, opponent_team: 12, was_home: false, team_h_score: 0, team_a_score: 1, minutes: 88, total_points: 6 },
+    { round: 3, opponent_team: 13, was_home: true,  team_h_score: 3, team_a_score: 1, minutes: 90, total_points: 8 },
+    { round: 4, opponent_team: 14, was_home: false, team_h_score: 2, team_a_score: 0, minutes: 0,  total_points: 0 }, // DNP
+    { round: 5, opponent_team: 15, was_home: true,  team_h_score: 4, team_a_score: 2, minutes: 90, total_points: 10 },
+    { round: 6, opponent_team: 16, was_home: false, team_h_score: 1, team_a_score: 1, minutes: 67, total_points: 2 },
+    { round: 7, opponent_team: 17, was_home: true,  team_h_score: 2, team_a_score: 0, minutes: 90, total_points: 9 },
+  ]
+  const cards = lastFiveGwCards(history, 3 /* MID */, 5)
+  assert.equal(cards.length, 5)
+  // Last 5 = rounds 3..7
+  assert.deepEqual(cards.map((c) => c.gw), [3, 4, 5, 6, 7])
+  // GW3: home win 3-1, 8 pts (above season avg ~5.71 → pos)
+  assert.equal(cards[0].score, '3-1')
+  assert.equal(cards[0].result, 'W')
+  assert.equal(cards[0].tone, 'pos')
+  // GW4: DNP, 0 minutes
+  assert.equal(cards[1].dnp, true)
+  assert.equal(cards[1].minutes, 0)
+  assert.equal(cards[1].tone, 'neutral')
+  // GW5: home win 4-2, 10 pts (well above avg → pos)
+  assert.equal(cards[2].score, '4-2')
+  assert.equal(cards[2].result, 'W')
+  assert.equal(cards[2].tone, 'pos')
+  // GW6: away draw 1-1, 2 pts (below avg → neg)
+  assert.equal(cards[3].score, '1-1')
+  assert.equal(cards[3].result, 'D')
+  assert.equal(cards[3].tone, 'neg')
+  // GW7: home win 2-0, 9 pts → pos
+  assert.equal(cards[4].score, '2-0')
+  assert.equal(cards[4].result, 'W')
+  assert.equal(cards[4].tone, 'pos')
+})
+
+test('lastFiveGwCards — falls back to plFixtures when history rows lack scores', () => {
+  // Draft-API-style history rows: no team_h_score / team_a_score / was_home
+  const history = [
+    { event: 36, opponent_team: 5,  minutes: 90, total_points: 8 },
+    { event: 37, opponent_team: 11, minutes: 73, total_points: 1 },
+    { event: 38, opponent_team: 4,  minutes: 90, total_points: 6 },
+  ]
+  // Player team = 12 (Liverpool)
+  const fixtures = [
+    { event: 36, team_h: 12, team_a: 5,  team_h_score: 3, team_a_score: 1 },
+    { event: 37, team_h: 11, team_a: 12, team_h_score: 1, team_a_score: 1 },
+    { event: 38, team_h: 12, team_a: 4,  team_h_score: 2, team_a_score: 2 },
+  ]
+  const cards = lastFiveGwCards(history, 3, 5, { plFixtures: fixtures, playerTeamId: 12 })
+  assert.equal(cards.length, 3)
+  // GW36: home win 3-1
+  assert.equal(cards[0].gw, 36)
+  assert.equal(cards[0].score, '3-1')
+  assert.equal(cards[0].result, 'W')
+  assert.equal(cards[0].home, true)
+  // GW37: away draw 1-1
+  assert.equal(cards[1].score, '1-1')
+  assert.equal(cards[1].result, 'D')
+  assert.equal(cards[1].home, false)
+  // GW38: home draw 2-2
+  assert.equal(cards[2].score, '2-2')
+  assert.equal(cards[2].result, 'D')
+  assert.equal(cards[2].home, true)
 })

@@ -1012,6 +1012,9 @@ body[data-tclot-theme='dark'] .players-detail__stack-back:hover {
   --pdetail-r-circle: 50%;
   --pdetail-text-xs: 11px;
   --pdetail-text-sm: 12px;
+  --pdetail-text-md: 14px;
+  --pdetail-text-lg: 16px;
+  --pdetail-text-xl: 18px;
   --pdetail-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --pdetail-dur-fast: 120ms;
 
@@ -2081,6 +2084,652 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   margin: 0;
   flex-wrap: nowrap;
 }
+
+/* ------------------------------------------------------------------ */
+/* Upcoming-fixture FDR pip — small numbered chip (1-5 ramp).          */
+/*  Earlier rebuild rendered an opp+H/A chip; user feedback simplified */
+/*  to just the difficulty digit, mirroring the legend-chip treatment. */
+/* ------------------------------------------------------------------ */
+.pdetail-fixrow__fdr.pdetail-fdr {
+  min-width: 24px;
+  height: 20px;
+  padding: 0 6px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* ------------------------------------------------------------------ */
+/* Last 5 GW · opponent-crest cards.                                   */
+/*  Replaces the prior MiniBars chart per user feedback ("show the     */
+/*  badge of who the GW was against and a score, bar graph doesn't     */
+/*  quite work as often it is too small"). Five cards in a row on      */
+/*  desktop (5-column grid); single horizontally-scrollable strip on   */
+/*  portrait so the cards never get squished below ~62px each.         */
+/* ------------------------------------------------------------------ */
+.pdetail-l5 {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.pdetail-l5__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 8px 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--pdetail-r-md);
+  background: var(--surface);
+  min-width: 0;
+}
+.pdetail-l5__card--pos {
+  border-color: color-mix(in srgb, var(--data-positive) 35%, var(--border));
+  background: color-mix(in srgb, var(--data-positive) 7%, var(--surface));
+}
+.pdetail-l5__card--neg {
+  border-color: color-mix(in srgb, var(--data-negative) 35%, var(--border));
+  background: color-mix(in srgb, var(--data-negative) 7%, var(--surface));
+}
+.pdetail-l5__card--dnp {
+  background: color-mix(in srgb, var(--text-muted) 7%, var(--surface));
+  opacity: 0.78;
+}
+.pdetail-l5__gw {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.pdetail-l5__crest {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pdetail-l5__crest img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.pdetail-l5__crest-fallback {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.pdetail-l5__opp {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: 0.04em;
+}
+.pdetail-l5__ha {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.pdetail-l5__score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+  margin-top: 1px;
+}
+.pdetail-l5__score-num {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+.pdetail-l5__result {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  padding: 1px 4px;
+  border-radius: 4px;
+}
+.pdetail-l5__result--w {
+  background: color-mix(in srgb, var(--data-positive) 28%, transparent);
+  color: var(--data-positive);
+}
+.pdetail-l5__result--l {
+  background: color-mix(in srgb, var(--data-negative) 26%, transparent);
+  color: var(--data-negative);
+}
+.pdetail-l5__result--d {
+  background: color-mix(in srgb, var(--text-muted) 22%, transparent);
+  color: var(--text-muted);
+}
+.pdetail-l5__pts {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 22px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong);
+  margin-top: 2px;
+  line-height: 1;
+}
+.pdetail-l5__pts--pos { color: var(--data-positive); }
+.pdetail-l5__pts--neg { color: var(--data-negative); }
+.pdetail-l5__dnp {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-top: 6px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.pdetail-l5__meta {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Portrait: keep 5-column grid but tighten paddings. Mobile sheets are
+   ~360-420 wide → 5 × 56-72 px cards fit cleanly. */
+@media (max-width: 600px) {
+  .pdetail-l5 { gap: 6px; }
+  .pdetail-l5__card { padding: 6px 3px 8px; gap: 3px; }
+  .pdetail-l5__crest, .pdetail-l5__crest-fallback { width: 24px; height: 24px; }
+  .pdetail-l5__pts { font-size: 18px; }
+  .pdetail-l5__opp { font-size: 10px; }
+  .pdetail-l5__score-num { font-size: 11px; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Compare flow — port of locked Mockup ComparePortraitStacked + */
+/* CompareDesktop. Replaces the prior toolbar-style legacy compare UI. */
+/*  - `pcompare__*` shared rules (header, chips, picker pills)         */
+/*  - `pcompare-p__*` portrait/stacked rows + 4-col stat table         */
+/*  - `pcompare-d__*` desktop side-by-side columns                     */
+/* ------------------------------------------------------------------ */
+.pcompare-host {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+.pcompare__h {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--pdetail-space-3);
+  padding: 12px 12px 8px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+}
+.pcompare__back {
+  appearance: none;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--pdetail-r-sm);
+  width: 32px;
+  height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-strong);
+  cursor: pointer;
+  padding: 0;
+}
+.pcompare__back:hover {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.pcompare__h-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+}
+.pcompare__h-meta {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  justify-self: end;
+}
+
+.pcompare__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.pcompare__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 8px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: var(--pdetail-text-sm);
+  font-weight: 500;
+  color: var(--text);
+  max-width: 100%;
+  min-width: 0;
+}
+.pcompare__chip--a {
+  border-color: color-mix(in srgb, var(--brand) 32%, var(--border));
+  background: color-mix(in srgb, var(--brand) 6%, var(--surface-2));
+}
+.pcompare__chip--b {
+  border-color: color-mix(in srgb, var(--text-muted) 30%, var(--border));
+}
+.pcompare__chip--add {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--brand) 38%, var(--border));
+  color: var(--brand);
+  font-weight: 600;
+  cursor: default;
+}
+.pcompare__chip-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pcompare__chip-crest img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.pcompare__chip-name {
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.pcompare__chip-x {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 0;
+  flex-shrink: 0;
+}
+.pcompare__chip-x:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+.pcompare__chip-add-plus {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+}
+
+.pcompare__pickers {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 12px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.pcompare__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pcompare__crest img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+.pcompare__crest-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.pcompare__pos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* ----- Compare · portrait stacked layout ----- */
+.pcompare-p__hero-row {
+  display: grid;
+  grid-template-columns: 18px 32px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.pcompare-p__hero-letter {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pcompare-p__hero-letter--a { background: var(--brand); }
+.pcompare-p__hero-letter--b { background: color-mix(in srgb, var(--text-muted) 70%, var(--text-strong)); }
+.pcompare-p__hero-crest {
+  width: 32px;
+  height: 32px;
+}
+.pcompare-p__hero-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.pcompare-p__hero-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.pcompare-p__hero-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.pcompare-p__empty {
+  padding: 14px 12px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-muted);
+  background: var(--surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.pcompare-p__th {
+  display: grid;
+  grid-template-columns: 1fr 56px 56px 56px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 6px;
+  background: var(--surface-2);
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-align: right;
+}
+.pcompare-p__th > :first-child { text-align: left; }
+.pcompare-p__th-a { color: var(--brand); }
+.pcompare-p__th-b { color: color-mix(in srgb, var(--text-muted) 80%, var(--text-strong)); }
+.pcompare-p__rows { background: var(--surface); }
+.pcompare-p__row {
+  display: grid;
+  grid-template-columns: 1fr 56px 56px 56px;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.pcompare-p__row:last-child { border-bottom: none; }
+.pcompare-p__k {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+}
+.pcompare-p__v {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.pcompare-p__v.is-winner { color: var(--text-strong); font-weight: 700; }
+.pcompare-p__v--a.is-winner { color: var(--brand); }
+.pcompare-p__d {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--text-muted);
+}
+.pcompare-p__d--pos { color: var(--data-positive); }
+.pcompare-p__d--neg { color: var(--data-negative); }
+.pcompare-p__section-h {
+  padding: 10px 12px 4px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+.pcompare-p__form-row {
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 10px;
+  background: var(--surface);
+}
+.pcompare-p__form-letter {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pcompare-p__form-row svg { width: 100%; height: auto; }
+
+/* ----- Compare · desktop side-by-side layout ----- */
+.pcompare-d__cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+/* Collapse the desktop side-by-side compare to a stacked single column
+   only at true phone widths. The PlayersWorkbench panel can render the
+   compare flow at ~640-780 px wide in narrow desktop windows; at those
+   widths a 2-col layout (~320 px each col) still reads cleanly. */
+@media (max-width: 540px) {
+  .pcompare-d__cols { grid-template-columns: 1fr; }
+}
+.pcompare-d__col {
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
+.pcompare-d__col:last-child { border-right: none; }
+.pcompare-d__col--empty {
+  align-items: center;
+  justify-content: center;
+  padding: var(--pdetail-space-5);
+  min-height: 180px;
+}
+.pcompare-d__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--pdetail-text-sm);
+  color: var(--text-muted);
+  text-align: center;
+}
+.pcompare-d__empty-plus {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed color-mix(in srgb, var(--brand) 38%, var(--border));
+  border-radius: 50%;
+  color: var(--brand);
+  font-weight: 700;
+  font-size: 18px;
+}
+.pcompare-d__player {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: var(--pdetail-space-4);
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, var(--brand) 8%, var(--surface)),
+    var(--surface) 75%
+  );
+  border-bottom: 1px solid var(--border);
+}
+.pcompare-d__player-crest {
+  width: 48px;
+  height: 48px;
+}
+.pcompare-d__player-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.pcompare-d__player-name {
+  font-size: var(--pdetail-text-lg);
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.pcompare-d__player-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--pdetail-text-sm);
+  color: var(--text-muted);
+}
+.pcompare-d__player-letter {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.pcompare-d__player-letter--a { background: var(--brand); }
+.pcompare-d__player-letter--b { background: color-mix(in srgb, var(--text-muted) 70%, var(--text-strong)); }
+.pcompare-d__stats {
+  display: flex;
+  flex-direction: column;
+}
+.pcompare-d__stat {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px var(--pdetail-space-4);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.pcompare-d__stat:last-child { border-bottom: none; }
+.pcompare-d__stat-k {
+  font-size: var(--pdetail-text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.pcompare-d__stat-v {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.pcompare-d__stat--winner {
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
+}
+.pcompare-d__stat--winner .pcompare-d__stat-k {
+  color: color-mix(in srgb, var(--brand) 70%, var(--text));
+}
+.pcompare-d__stat-up {
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 700;
+}
+.pcompare-d__stat--form .pcompare-d__stat-bars { display: inline-flex; }
 
 /* ------------------------------------------------------------------ */
 /* Overlay portals — desktop slide width is wider with the new hero    */
