@@ -374,6 +374,174 @@ export function minutesTone(minutes, played = true) {
 }
 
 /**
+ * Per-gameweek H2H form entry used by the Live Table form dots column.
+ *
+ * - `gw` is the gameweek number the dot represents (e.g. 33, 34, 35, 36, 37
+ *   for the rightmost-is-current ordering).
+ * - `result` is the manager's W/D/L for that GW from the H2H scoring rule
+ *   (higher FPL points = win, equal = draw, lower = loss). `null` means
+ *   there's no data — typically because the manager had no scheduled match
+ *   in that GW (bye, or the schedule didn't include them yet) or the GW
+ *   isn't finished and no live points are available to compare against.
+ * - `isLive` is `true` for the in-flight current-GW dot whose result is
+ *   derived from live FPL points (not the finalized `matches[].finished`
+ *   payload). The renderer overlays a pulsing animation on this dot so
+ *   the viewer can tell it's still in flight while keeping the W/D/L
+ *   colour visible.
+ *
+ * @typedef {{ gw: number, result: 'W' | 'D' | 'L' | null, isLive: boolean }} ManagerFormEntry
+ */
+
+/**
+ * H2H W/D/L for one manager from a pair of FPL totals.
+ *
+ * Returns `null` when either side is missing or non-numeric so callers can
+ * render a muted ring instead of guessing a result.
+ *
+ * @param {number | null | undefined} mine
+ * @param {number | null | undefined} opp
+ * @returns {'W' | 'D' | 'L' | null}
+ */
+function h2hResult(mine, opp) {
+  if (mine == null || opp == null) return null;
+  const m = Number(mine);
+  const o = Number(opp);
+  if (!Number.isFinite(m) || !Number.isFinite(o)) return null;
+  if (m > o) return 'W';
+  if (m < o) return 'L';
+  return 'D';
+}
+
+/**
+ * Compute the 5-dot form (last 4 finished GWs + current live GW) for one
+ * manager in the Live Table form column.
+ *
+ * Returns an array of {@link ManagerFormEntry} sorted oldest → newest, so
+ * callers can render left-to-right and the in-flight live dot lands at the
+ * rightmost position. Length is always equal to `count` (default 5) so the
+ * column width is stable across rows — when a manager has fewer than
+ * `count - 1` finished GWs we left-pad with `result: null` entries (gw
+ * numbers are still set when known).
+ *
+ * Finished history (the first `count - 1` slots) comes from `matches`:
+ * entries with `event < gameweek` and `finished === true` involving the
+ * manager. The most recent `count - 1` are kept; remaining gaps are filled
+ * with null-result entries for the missing GW numbers (or just synthetic
+ * placeholder GW numbers if there aren't enough). The last slot is the
+ * current GW from `liveMyPts` / `liveOppPts`. When `currentGwFinished` is
+ * true the live dot still renders but with `isLive: false` (the FT result
+ * is finalized, no pulse needed).
+ *
+ * @param {{
+ *   leagueEntryId: number | string | null,
+ *   matches: object[] | null | undefined,
+ *   gameweek: number,
+ *   liveMyPts?: number | null,
+ *   liveOppPts?: number | null,
+ *   currentGwFinished?: boolean,
+ *   count?: number,
+ * }} input
+ * @returns {ManagerFormEntry[]}
+ */
+export function computeManagerForm({
+  leagueEntryId,
+  matches,
+  gameweek,
+  liveMyPts = null,
+  liveOppPts = null,
+  currentGwFinished = false,
+  count = 5,
+} = {}) {
+  const id = Number(leagueEntryId);
+  const gwNum = Number(gameweek);
+  const slots = Math.max(1, Math.floor(Number(count) || 5));
+  const historySlots = slots - 1;
+
+  /** Build per-GW W/D/L history from finished matches involving this manager. */
+  const byGw = new Map();
+  if (Array.isArray(matches) && Number.isFinite(id)) {
+    for (const m of matches) {
+      if (!m || m.finished !== true) continue;
+      const ev = Number(m.event);
+      if (!Number.isFinite(ev) || ev >= gwNum) continue;
+      const e1 = Number(m.league_entry_1);
+      const e2 = Number(m.league_entry_2);
+      let mine;
+      let opp;
+      if (e1 === id) {
+        mine = Number(m.league_entry_1_points);
+        opp = Number(m.league_entry_2_points);
+      } else if (e2 === id) {
+        mine = Number(m.league_entry_2_points);
+        opp = Number(m.league_entry_1_points);
+      } else {
+        continue;
+      }
+      const result = h2hResult(mine, opp);
+      byGw.set(ev, result);
+    }
+  }
+
+  /** Take the most-recent `historySlots` finished GWs, oldest → newest. */
+  const finishedGws = [...byGw.keys()].sort((a, b) => a - b);
+  const tail = finishedGws.slice(-historySlots);
+  const history = tail.map((gw) => ({ gw, result: byGw.get(gw) ?? null, isLive: false }));
+
+  /** Left-pad with null-result entries when we have fewer finished GWs than slots. */
+  const pad = historySlots - history.length;
+  const padded = [];
+  for (let i = 0; i < pad; i++) {
+    /** Best-guess GW numbers for the empty padding so tooltips stay sane. */
+    const guess = Number.isFinite(gwNum) ? gwNum - (historySlots - i) : 0;
+    padded.push({ gw: guess > 0 ? guess : 0, result: null, isLive: false });
+  }
+
+  /** 5th dot: live (or finalized) current-GW result. */
+  const liveResult = h2hResult(liveMyPts, liveOppPts);
+  const liveEntry = {
+    gw: Number.isFinite(gwNum) ? gwNum : 0,
+    result: liveResult,
+    isLive: !currentGwFinished,
+  };
+
+  return [...padded, ...history, liveEntry];
+}
+
+/**
+ * Live FPL points margin for one manager — `liveMyPts - liveOppPts`.
+ *
+ * Used by the mobile "+For" indicator on the Live Table. Returns `null`
+ * when either side is missing so callers can render nothing rather than
+ * a misleading `0` (no fixture / pre-kickoff state).
+ *
+ * @param {number | null | undefined} liveMyPts
+ * @param {number | null | undefined} liveOppPts
+ * @returns {number | null}
+ */
+export function liveMatchupMargin(liveMyPts, liveOppPts) {
+  if (liveMyPts == null || liveOppPts == null) return null;
+  const m = Number(liveMyPts);
+  const o = Number(liveOppPts);
+  if (!Number.isFinite(m) || !Number.isFinite(o)) return null;
+  return m - o;
+}
+
+/**
+ * Format a live matchup margin as a signed string. Positive margins get
+ * a `+` prefix; negative margins keep their `-` sign; zero renders as
+ * `"0"`. Null returns `null` so callers can omit the chip entirely.
+ *
+ * @param {number | null | undefined} margin
+ * @returns {string | null}
+ */
+export function formatLiveMatchupMargin(margin) {
+  if (margin == null || !Number.isFinite(Number(margin))) return null;
+  const n = Number(margin);
+  if (n > 0) return `+${n}`;
+  return String(n);
+}
+
+/**
  * Tiny initials helper for the team-crest fallback used in the compressed
  * face-off row. Two-letter (first letter of first two words) or first two
  * letters of a single-word name.

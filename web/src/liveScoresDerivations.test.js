@@ -1,12 +1,15 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  computeManagerForm,
   dcThresholdReached,
   formatKickoffLabel,
+  formatLiveMatchupMargin,
   isCleanSheetEligible,
   liveFixtureLead,
   liveGroupStatus,
   liveGwProgress,
+  liveMatchupMargin,
   minutesTone,
   playerLiveState,
   playerXiPillKind,
@@ -332,4 +335,143 @@ test('sortStartingXIByPosition — case-insensitive position label', () => {
     [1, 2],
     'lowercase def should sort before lowercase fwd',
   )
+})
+
+/** Shared schedule fixture used by the `computeManagerForm` tests below.
+ * Manager 1 (`leagueEntryId: 1`) has finished W/L/D/W/L across GW 32-36 and
+ * is paired against id 9 in the live GW 37. Manager 2 (`leagueEntryId: 2`)
+ * only has 2 finished GWs to exercise the left-padding behaviour. */
+const FORM_FIXTURE_MATCHES = [
+  // GW 32 — id 1 beats id 5 (W)
+  { event: 32, finished: true, league_entry_1: 1, league_entry_2: 5, league_entry_1_points: 70, league_entry_2_points: 55 },
+  // GW 33 — id 1 loses to id 6 (L)
+  { event: 33, finished: true, league_entry_1: 6, league_entry_2: 1, league_entry_1_points: 80, league_entry_2_points: 60 },
+  // GW 34 — id 1 draws id 7 (D)
+  { event: 34, finished: true, league_entry_1: 1, league_entry_2: 7, league_entry_1_points: 65, league_entry_2_points: 65 },
+  // GW 35 — id 1 beats id 8 (W)
+  { event: 35, finished: true, league_entry_1: 8, league_entry_2: 1, league_entry_1_points: 50, league_entry_2_points: 72 },
+  // GW 36 — id 1 loses to id 9 (L)
+  { event: 36, finished: true, league_entry_1: 1, league_entry_2: 9, league_entry_1_points: 40, league_entry_2_points: 61 },
+  // GW 37 — live, both sides; we'll pass liveMy/liveOpp explicitly
+  { event: 37, finished: false, league_entry_1: 1, league_entry_2: 9, league_entry_1_points: 0, league_entry_2_points: 0 },
+  // Manager 2 — only 2 finished GWs (34 win, 36 loss); the helper should pad on the left
+  { event: 34, finished: true, league_entry_1: 2, league_entry_2: 5, league_entry_1_points: 72, league_entry_2_points: 50 },
+  { event: 36, finished: true, league_entry_1: 6, league_entry_2: 2, league_entry_1_points: 70, league_entry_2_points: 55 },
+]
+
+test('computeManagerForm — 4 finished + 1 live dot, ordered oldest → newest', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 1,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: 67,
+    liveOppPts: 61,
+  })
+  assert.equal(out.length, 5, 'always 5 dots by default')
+  assert.deepEqual(
+    out.map((d) => ({ gw: d.gw, result: d.result, isLive: d.isLive })),
+    [
+      { gw: 33, result: 'L', isLive: false },
+      { gw: 34, result: 'D', isLive: false },
+      { gw: 35, result: 'W', isLive: false },
+      { gw: 36, result: 'L', isLive: false },
+      { gw: 37, result: 'W', isLive: true },
+    ],
+  )
+})
+
+test('computeManagerForm — live dot null/isLive when live points missing', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 1,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: null,
+    liveOppPts: null,
+  })
+  const live = out[out.length - 1]
+  assert.equal(live.gw, 37)
+  assert.equal(live.result, null, 'no live points → muted ring on the live dot')
+  assert.equal(live.isLive, true, 'still flagged as in-flight while gw not finished')
+})
+
+test('computeManagerForm — currentGwFinished collapses pulse on the 5th dot', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 1,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: 67,
+    liveOppPts: 61,
+    currentGwFinished: true,
+  })
+  const last = out[out.length - 1]
+  assert.equal(last.result, 'W')
+  assert.equal(last.isLive, false, 'FT result is finalized → no pulse')
+})
+
+test('computeManagerForm — pads on the left when fewer than 4 finished GWs', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 2,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: 50,
+    liveOppPts: 50,
+  })
+  assert.equal(out.length, 5)
+  assert.deepEqual(
+    out.map((d) => d.result),
+    [null, null, 'W', 'L', 'D'],
+    '2 finished GWs (W, L) tail-padded into the last 2 history slots + draw live',
+  )
+  assert.equal(out[0].gw, 33, 'first padding slot guesses gw=33 from gameweek-4')
+  assert.equal(out[1].gw, 34, 'second padding slot guesses gw=34 from gameweek-3')
+  assert.equal(out[4].isLive, true, 'live dot still flagged')
+})
+
+test('computeManagerForm — ignores matches without this manager and unfinished history', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 999, // not in fixtures
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: 60,
+    liveOppPts: 58,
+  })
+  assert.deepEqual(
+    out.map((d) => d.result),
+    [null, null, null, null, 'W'],
+    'no history slots have results, but live dot is computed from live points',
+  )
+})
+
+test('computeManagerForm — handles missing matches array / non-numeric id', () => {
+  const out = computeManagerForm({
+    leagueEntryId: null,
+    matches: null,
+    gameweek: 37,
+    liveMyPts: 70,
+    liveOppPts: 60,
+  })
+  assert.equal(out.length, 5)
+  assert.equal(out[4].result, 'W', 'live dot still works even without history data')
+  assert.deepEqual(
+    out.slice(0, 4).map((d) => d.result),
+    [null, null, null, null],
+  )
+})
+
+test('liveMatchupMargin — signed live score margin or null', () => {
+  assert.equal(liveMatchupMargin(67, 61), 6)
+  assert.equal(liveMatchupMargin(40, 65), -25)
+  assert.equal(liveMatchupMargin(50, 50), 0)
+  assert.equal(liveMatchupMargin(null, 4), null)
+  assert.equal(liveMatchupMargin(4, undefined), null)
+  assert.equal(liveMatchupMargin('not-a-number', 4), null)
+})
+
+test('formatLiveMatchupMargin — `+N` for positive, signed for negative, `0`, or null', () => {
+  assert.equal(formatLiveMatchupMargin(6), '+6')
+  assert.equal(formatLiveMatchupMargin(0), '0')
+  assert.equal(formatLiveMatchupMargin(-3), '-3')
+  assert.equal(formatLiveMatchupMargin(null), null)
+  assert.equal(formatLiveMatchupMargin(undefined), null)
+  assert.equal(formatLiveMatchupMargin('abc'), null)
 })

@@ -9714,6 +9714,253 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   color: #dc2626;
 }
 
+/* ============================================================ */
+/* Live Table — redesign Phase 2                                */
+/* ============================================================ */
+/*
+ * Re-tunes the standings sidebar to share typography, spacing, and
+ * surface chrome with the rest of the FPL Live redesign (face-off
+ * rows, expanded fixtures, hero/villain bands). Inter for labels,
+ * Geist Mono for the tabular numbers that scan vertically, and the
+ * --space-* token scale for paddings so it reads as part of the same
+ * visual system instead of FotMob-era inherited treatment.
+ *
+ * Scope: targeted at `.tile--live-standings` (the wrapper tile JSX
+ * sets) and `.standings-table--live` (only present on the FPL Live
+ * tab — the Hall historic tables share `.standings-table--sidebar`
+ * but not `--live`, so they aren't pulled into these overrides).
+ */
+.tile.tile--live-standings {
+  padding: var(--space-4) var(--space-4) var(--space-3);
+  border-radius: var(--r-lg, 14px);
+}
+.tile.tile--live-standings > .tile-head-row {
+  margin-bottom: var(--space-3);
+}
+.tile.tile--live-standings .tile-title--sm {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.01em;
+}
+
+.standings-table--live {
+  font-size: var(--text-sm, 13px);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  /* Tabular figures site-wide on this table so columns line up; per-cell
+   * `.tabular` already exists, but spelling it on the table avoids drift
+   * when new columns land. */
+  font-variant-numeric: tabular-nums;
+}
+.standings-table--live thead th {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs, 11px);
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+  background: transparent;
+  border-bottom: 1px solid var(--fm-border);
+}
+.standings-table--live th,
+.standings-table--live td {
+  padding: var(--space-2) var(--space-2);
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
+}
+.standings-table--live tbody tr:last-child td {
+  border-bottom: none;
+}
+.standings-table--live tbody td {
+  /* Slightly tighter line-height than the global standings table so
+   * the row reads closer to the face-off row vertical rhythm. */
+  line-height: var(--lh-snug, 1.3);
+}
+.standings-table--live .col-rank {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-muted);
+  width: 28px;
+}
+.standings-table--live tbody tr.row-highlight .col-rank {
+  color: var(--fm-text-strong);
+}
+.standings-table--live .col-num.col-pts,
+.standings-table--live td.col-num.col-pts {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+}
+.standings-table--live .col-num.col-for,
+.standings-table--live .col-num.col-faced,
+.standings-table--live .col-num.col-gd,
+.standings-table--live .col-num.col-pl,
+.standings-table--live .col-num.col-wdl,
+.standings-table--live .col-num.col-live-gw {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+}
+.standings-table--live .live-standings-team-name {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+/* Row tints — soften the leader & 8th bands so they read as part of
+ * the new low-contrast aesthetic. The hero-defeat / villain-victory
+ * row tints are intentionally untouched (preserved from PR #5e). */
+.standings-table--live tbody tr.row-highlight td {
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+}
+.standings-table--live tbody tr.standings-row--8th td {
+  background: color-mix(in srgb, var(--data-negative, #ef4444) 7%, transparent);
+}
+
+/* ============================================================ */
+/* Form dots column (5 dots: 4 finished + 1 live)               */
+/* ============================================================ */
+/*
+ * Rendering: `<span class="live-form-dots"><span class="live-form-dot
+ * live-form-dot--{win|draw|loss|none}[ live-form-dot--live]"/>…</span>`.
+ *
+ * The live (5th) dot keeps its W/D/L colour so the result stays
+ * visible at a glance, with a pulsing ring overlay so the viewer
+ * can tell it's in flight. When a manager has no live result yet
+ * (data not loaded / pre-kickoff), the dot falls into `--none` which
+ * renders as a muted ring without a fill.
+ */
+.col-live-form {
+  text-align: center;
+  width: 1%;
+  white-space: nowrap;
+}
+.live-form-dots {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  vertical-align: middle;
+}
+.live-form-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--data-neutral, #9ca3af);
+  /* Faint hairline for contrast on tinted rows (hero/villain). */
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fm-text-strong) 12%, transparent);
+}
+.live-form-dot--win {
+  background: var(--data-positive, #12a15a);
+}
+.live-form-dot--draw {
+  background: var(--data-neutral, #9ca3af);
+}
+.live-form-dot--loss {
+  background: var(--data-negative, #ef4444);
+}
+.live-form-dot--none {
+  /* Muted ring placeholder for pre-data state — slot still occupies
+   * the same width so dots stay column-aligned across rows. */
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--fm-muted) 65%, transparent);
+}
+/* Live (5th) dot — pulsing ring on top of the W/D/L fill so the
+ * result is still visible. Skip the pulse when prefers-reduced-motion
+ * is set so motion-averse viewers still get the colour signal. */
+.live-form-dot--live {
+  position: relative;
+  /* Slightly larger so the pulse ring doesn't look cramped, but
+   * still aligned with the row baseline via the flex container. */
+  width: 9px;
+  height: 9px;
+  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--brand) 65%, transparent);
+}
+.live-form-dot--live::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--brand) 75%, transparent);
+  animation: live-form-dot-pulse 1.8s ease-out infinite;
+  pointer-events: none;
+}
+.live-form-dot--live.live-form-dot--none {
+  /* No fill → make the pulse ring itself the visual element. */
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--brand) 70%, transparent);
+}
+@keyframes live-form-dot-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.9;
+  }
+  70% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.55);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-form-dot--live::after {
+    animation: none;
+    opacity: 0.5;
+    transform: scale(1);
+  }
+}
+
+/* ============================================================ */
+/* Mobile +For chip — narrow viewport (<=880px) only            */
+/* ============================================================ */
+/*
+ * Renders next to the team name on narrow viewports as a compact
+ * mono caps chip with the signed live FPL points margin (manager's
+ * live GW points minus opponent's). Positive = brand-green, zero =
+ * muted, negative = brand-red. Hidden on desktop where the existing
+ * For/Faced/GD columns already convey the same information.
+ *
+ * Rendering is gated by `useNarrowViewport()` in JSX so this CSS
+ * just has to style what's already conditionally there.
+ */
+.live-form-margin {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: var(--r-sm, 6px);
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.live-form-margin--pos {
+  color: var(--data-positive, #12a15a);
+  background: color-mix(in srgb, var(--data-positive, #12a15a) 12%, transparent);
+}
+.live-form-margin--neg {
+  color: var(--data-negative, #ef4444);
+  background: color-mix(in srgb, var(--data-negative, #ef4444) 12%, transparent);
+}
+.live-form-margin--zero {
+  color: var(--fm-muted);
+  background: color-mix(in srgb, var(--fm-muted) 12%, transparent);
+}
+
+/* Hide the form column on narrow phones (portrait) — the +For chip
+ * under the team name carries the live-status story there and the
+ * extra column makes the table feel cramped. Keep it on tablets
+ * (601–880px) where there's still room. */
+@media (orientation: portrait) and (max-width: 600px) {
+  .standings-table--live .col-live-form {
+    display: none;
+  }
+}
+
 .standings-table .col-form {
   text-align: center;
   padding-left: 12px;

@@ -24,6 +24,11 @@ import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { useNarrowViewport } from './usePortraitMobile.js';
 import {
+  computeManagerForm,
+  formatLiveMatchupMargin,
+  liveMatchupMargin,
+} from './liveScoresDerivations.js';
+import {
   bootstrapTeamToPredictionTeam,
   simulateFantasyH2hPercents,
   simulateFantasyH2hPercentsFromProjBlends,
@@ -1122,6 +1127,24 @@ export function LiveScores({
           : 0;
       const projectedPts = gwStandingsFrozen ? total : total + h2hBonus;
 
+      /**
+       * 5-dot H2H form for the standings form column: 4 finished GWs +
+       * 1 live (in-flight) dot pulsing the current GW's live W/D/L.
+       * Pure helper from `liveScoresDerivations.js` — see tests there.
+       */
+      const formDots = computeManagerForm({
+        leagueEntryId: eid,
+        matches,
+        gameweek,
+        liveMyPts: liveGw,
+        liveOppPts: inFixture ? oppLiveGw : null,
+        currentGwFinished: gwStandingsFrozen,
+      });
+      const liveMargin = liveMatchupMargin(
+        liveGw,
+        inFixture ? oppLiveGw : null,
+      );
+
       return {
         ...row,
         liveGw,
@@ -1131,6 +1154,8 @@ export function LiveScores({
         projectedGd,
         h2hBonus,
         projectedPts,
+        formDots,
+        liveMargin,
       };
     });
     const sorted = [...enriched].sort((a, b) => {
@@ -1152,7 +1177,14 @@ export function LiveScores({
       const rankMove = (row.rank ?? 999) - ordinalLive;
       return { ...row, liveRank, ordinalLive, rankMove };
     });
-  }, [tableRows, squadByLeagueEntry, oppLiveGwByLeagueEntry, gwStandingsFrozen]);
+  }, [
+    tableRows,
+    squadByLeagueEntry,
+    oppLiveGwByLeagueEntry,
+    gwStandingsFrozen,
+    matches,
+    gameweek,
+  ]);
 
   const liveRankByEntry = useMemo(() => {
     const o = {};
@@ -1732,6 +1764,12 @@ export function LiveScores({
                     #
                   </th>
                   <th className="col-team">Team</th>
+                  <th
+                    className="col-live-form"
+                    title="Last 4 finished GWs + this GW's live result (pulsing)"
+                  >
+                    Form
+                  </th>
                   <th className="col-num col-pl">PL</th>
                   <th className="col-num col-wdl">W</th>
                   <th className="col-num col-wdl">D</th>
@@ -1866,6 +1904,59 @@ export function LiveScores({
                               </span>
                             ) : null}
                           </span>
+                          {/* Mobile-only "+For" indicator: signed live FPL points
+                             margin vs the manager's GW opponent. Narrow viewport
+                             (<=880px) only — replaces a dedicated column at narrow
+                             widths so the table doesn't get denser there. */}
+                          {narrowViewport && row.liveMargin != null ? (
+                            <span
+                              className={
+                                'live-form-margin' +
+                                (row.liveMargin > 0
+                                  ? ' live-form-margin--pos'
+                                  : row.liveMargin < 0
+                                    ? ' live-form-margin--neg'
+                                    : ' live-form-margin--zero')
+                              }
+                              title={`Live GW margin vs opponent: ${formatLiveMatchupMargin(row.liveMargin)} For`}
+                              aria-label={`Live matchup margin ${formatLiveMatchupMargin(row.liveMargin)} For`}
+                            >
+                              {formatLiveMatchupMargin(row.liveMargin)} For
+                            </span>
+                          ) : null}
+                        </span>
+                      </td>
+                      <td className="col-live-form">
+                        <span className="live-form-dots" role="img" aria-label="Form (oldest to newest, last dot is live)">
+                          {row.formDots.map((dot, i) => {
+                            const kind = dot.result === 'W'
+                              ? 'win'
+                              : dot.result === 'D'
+                                ? 'draw'
+                                : dot.result === 'L'
+                                  ? 'loss'
+                                  : 'none';
+                            const cls = [
+                              'live-form-dot',
+                              `live-form-dot--${kind}`,
+                              dot.isLive ? 'live-form-dot--live' : '',
+                            ]
+                              .filter(Boolean)
+                              .join(' ');
+                            const label = dot.isLive
+                              ? `GW ${dot.gw} live${dot.result ? ` (${dot.result})` : ''}`
+                              : dot.result
+                                ? `GW ${dot.gw} ${dot.result}`
+                                : `GW ${dot.gw} — no result`;
+                            return (
+                              <span
+                                key={`${row.league_entry}-form-${i}-${dot.gw}`}
+                                className={cls}
+                                title={label}
+                                aria-label={label}
+                              />
+                            );
+                          })}
                         </span>
                       </td>
                       <td className="col-num col-pl">{row.pl}</td>
