@@ -50,10 +50,7 @@ function NavButton({ item, active, onSelect, variant }) {
 }
 
 /**
- * `fplLogoSrc` is accepted for prop-stability with existing callers but is
- * no longer rendered — FPL Live now uses the pulsing-dot NavIcon instead.
- *
- * @param {{ variant: 'top' | 'bottom', dashboardView: DashboardViewId, onSelect: (id: DashboardViewId) => void, fplLogoSrc?: string }} props
+ * @param {{ variant: 'top' | 'bottom', dashboardView: DashboardViewId, onSelect: (id: DashboardViewId) => void }} props
  */
 export function DashboardNav({ variant, dashboardView, onSelect }) {
   const isBottom = variant === 'bottom'
@@ -68,7 +65,7 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
     },
     {
       id: /** @type {const} */ ('standings'),
-      label: 'Standings & Form',
+      label: 'Standings',
       shortLabel: 'Table',
       icon: /** @type {const} */ ('bar-chart-3'),
     },

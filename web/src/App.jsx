@@ -1077,8 +1077,6 @@ function App() {
       !playerDetailOverlayOpen,
   })
 
-  const fplLogoSrc = `${import.meta.env.BASE_URL}fpl-fantasy-draft-logo.png`
-
   const selectDashboardView = useCallback((view) => {
     setDashboardView(view)
     setPlayerDetailOverlayOpen(false)
@@ -1674,7 +1672,6 @@ function App() {
           variant="top"
           dashboardView={dashboardView}
           onSelect={selectDashboardView}
-          fplLogoSrc={fplLogoSrc}
         />
         <div className="dashboard-content">
           {dashboardView === 'standings' && (
@@ -2173,13 +2170,13 @@ function App() {
           {dashboardView === 'teamSelection' && (
             <section
               className="tile tile--compact tile--team-selection"
-              aria-label="Team selection"
+              aria-label="Transactions"
             >
               <div className="section-chrome section-chrome--sticky">
               <div
                 className="team-selection-submenu"
                 role="tablist"
-                aria-label="Team selection views"
+                aria-label="Transactions views"
               >
                 <button
                   type="button"
@@ -3056,7 +3053,6 @@ function App() {
         variant="bottom"
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
-        fplLogoSrc={fplLogoSrc}
       />
       <footer className="page-footer--script">Tery is a Racist</footer>
     </div>

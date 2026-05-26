@@ -6,7 +6,7 @@
  * Phase 2 lands. Six cases cover the live nav set:
  *
  *   - pulsing-dot  : FPL Live (filled #16a34a circle, no stroke; animated by CSS)
- *   - bar-chart-3  : Standings & Form
+ *   - bar-chart-3  : Standings
  *   - users        : Transactions (formerly "Team Selection")
  *   - shuffle      : Players
  *   - trophy       : Hall of Champions
