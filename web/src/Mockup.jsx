@@ -415,7 +415,7 @@ const DECISIONS_OPEN = [
     surface: 'OPEN VARIANTS · NEEDS PICK BEFORE PR #4',
     items: [
       'FPL Live sub-nav: text-only (A) vs PL-crest-on-Lineups-only (B) vs icons-everywhere (C). See SUB-NAV · FPL LIVE showcase.',
-      'Header polish details (post status-strip): 2025/26 caps-mono replaces "FPL DRAFT H2H" meta + 8 fantasy team crests right-aligned in standings order. See variant 4 PROPOSED in the HEADER · POST-PR-#2 EVOLUTION showcase.',
+      'Header tile chrome: variant 4 with tile chrome (currently shipped in PR #3.7) vs full-bleed combos 5a/5b/5c. See HEADER · FULL-BLEED + STATUS STRIP COMBOS showcase.',
     ],
   },
 ]
@@ -702,10 +702,18 @@ const HEADER_LEAGUE_STRIP_TEAMS = [
   { code: 'MUN', rank: 8 },
 ]
 
-function HeroVariantBStatusStrip({ state }) {
+function HeroVariantBStatusStrip({ state, treatment }) {
+  /* `treatment` swaps the strip's chrome for one of the variants 5a/5b/5c
+   * (plain / pill / band) when the parent tile chrome is removed. Default
+   * (undefined) keeps the variant-4 tile-bound look. */
+  const treatmentCls = treatment
+    ? ` mockup-hero-status-strip--${treatment}`
+    : ''
   if (state === 'live') {
     return (
-      <div className="mockup-hero-status-strip mockup-hero-status-strip--live">
+      <div
+        className={`mockup-hero-status-strip mockup-hero-status-strip--live${treatmentCls}`}
+      >
         <span className="mockup-hero-status-strip__dot" aria-hidden />
         <span className="mockup-hero-status-strip__strong">GW 28</span>
         <span className="mockup-hero-status-strip__sep">—</span>
@@ -716,7 +724,9 @@ function HeroVariantBStatusStrip({ state }) {
     )
   }
   return (
-    <div className="mockup-hero-status-strip mockup-hero-status-strip--idle">
+    <div
+      className={`mockup-hero-status-strip mockup-hero-status-strip--idle${treatmentCls}`}
+    >
       <span className="mockup-hero-status-strip__strong">GW 38 complete</span>
       <span className="mockup-hero-status-strip__sep">·</span>
       <span>GW 1 of 26/27 starts Aug 16</span>
@@ -896,6 +906,75 @@ function HeaderVariantsShowcase({
           />
           <HeroVariantBStatusStrip state="idle" />
         </div>
+      </div>
+    </div>
+  )
+}
+
+/* Variants 5a/5b/5c — variant 4 content rendered full-bleed (no tile
+ * chrome). The brand row sits directly on the page background; only
+ * the status strip's treatment changes between the three sub-variants.
+ *
+ *   5a (plain)  — text-only, no container, aligns to brand pill edge.
+ *   5b (pill)   — centered shrink-wrapped pill, surface-2 + 1px border.
+ *   5c (band)   — thin edge-to-edge surface-2 band, square corners.
+ *
+ * All three reuse `HeroVariantBSeasonAndCrests` for the brand row and
+ * render both the live + idle status states so the user can compare
+ * how each treatment reads with and without the pulsing dot. */
+function HeaderFullBleedComboShowcase({
+  tableRows,
+  leagueEntries,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
+  const renderPair = (treatment) => (
+    <>
+      <div className="mockup-hero-tile mockup-hero-tile--bleed">
+        <HeroVariantBSeasonAndCrests
+          rows={tableRows}
+          entries={leagueEntries}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+        <HeroVariantBStatusStrip state="live" treatment={treatment} />
+      </div>
+      <div
+        className="mockup-hero-tile mockup-hero-tile--bleed"
+        style={{ marginTop: 'var(--space-3)' }}
+      >
+        <HeroVariantBSeasonAndCrests
+          rows={tableRows}
+          entries={leagueEntries}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+        <HeroVariantBStatusStrip state="idle" treatment={treatment} />
+      </div>
+    </>
+  )
+
+  return (
+    <div className="mockup-header-variants">
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">
+          5a — Plain text (no container; status sits on page background)
+        </div>
+        {renderPair('plain')}
+      </div>
+
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">
+          5b — Floating pill (centered, surface-2 + 1px border)
+        </div>
+        {renderPair('pill')}
+      </div>
+
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">
+          5c — Thin band (edge-to-edge surface-2 strip)
+        </div>
+        {renderPair('band')}
       </div>
     </div>
   )
@@ -4687,6 +4766,27 @@ export function Mockup() {
             the current PR #2 baseline (0).
           </p>
           <HeaderVariantsShowcase
+            tableRows={tableRows}
+            leagueEntries={leagueEntries}
+            teamLogoMap={data?.teamLogoMap ?? {}}
+            kitIndexByEntry={data?.defaultKitIndexByLeagueEntry ?? {}}
+          />
+        </section>
+
+        {/* 1c. Header — full-bleed + status strip combos */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">
+            HEADER · FULL-BLEED + STATUS STRIP COMBOS
+          </div>
+          <h2 className="mockup__section-h">
+            Variant 4 content without the tile chrome
+          </h2>
+          <p className="mockup__section-sub">
+            Currently variant 4 lives inside a tile container. Dropping the
+            tile chrome (full-bleed) could look cleaner — but the status
+            strip needs a new treatment. Compare three approaches.
+          </p>
+          <HeaderFullBleedComboShowcase
             tableRows={tableRows}
             leagueEntries={leagueEntries}
             teamLogoMap={data?.teamLogoMap ?? {}}

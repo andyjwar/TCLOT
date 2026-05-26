@@ -6901,3 +6901,48 @@
   }
 }
 
+/* --- Variants 5a/5b/5c — variant 4 content rendered full-bleed.
+ *
+ * Each variant pairs `HeroVariantBSeasonAndCrests` (the variant-4 brand
+ * row) with a different status-strip treatment, inside a
+ * `.mockup-hero-tile--bleed` parent (no border / radius / background).
+ * The three treatments only override the strip's chrome — base layout
+ * (flex, gap, font, dot animation) is inherited from
+ * `.mockup-hero-status-strip`. */
+
+/* 5a — Plain text, no container.
+ * Strip drops its surface-2 bg, border-top, and side padding so the
+ * text sits directly on the page background and aligns with the
+ * full-bleed brand pill edge. */
+.mockup-hero-status-strip--plain {
+  border-top: 0;
+  background: transparent;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* 5b — Centered floating pill.
+ * Strip shrink-wraps its content (`width: max-content`) and centers
+ * via auto horizontal margins. Surface-2 + 1px border + full radius
+ * give it the look of a status badge floating below the title. */
+.mockup-hero-status-strip--pill {
+  border-top: 0;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface-2);
+  padding: var(--space-1) var(--space-3);
+  width: max-content;
+  max-width: calc(100% - var(--space-6));
+  margin: var(--space-3) auto;
+}
+
+/* 5c — Thin edge-to-edge band.
+ * Visually identical to the default tile-bound strip (surface-2 +
+ * border-top + side padding) — but with the parent tile chrome gone
+ * the band spans the full width with square corners. Explicit
+ * modifier kept so the showcase markup reads symmetrically with
+ * `--plain` and `--pill`. */
+.mockup-hero-status-strip--band {
+  /* Inherits all styles from the base `.mockup-hero-status-strip`. */
+}
+
