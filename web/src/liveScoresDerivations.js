@@ -255,6 +255,52 @@ export function rowsByPointsContributed(rows) {
 }
 
 /**
+ * Compact "N/M done" progress label for the expanded-fixture sticky header.
+ *
+ * Reads the same finished/finished-provisional flags as `liveGroupStatus`
+ * but renders a short slash-separated string the table-style header uses
+ * (the long form "N of M fixtures complete" would wrap on mobile).
+ *
+ * Returns null when there are no fixtures (blank week / data not yet
+ * loaded) so the caller can omit the label entirely.
+ *
+ * @param {object[] | null | undefined} gwFixtures
+ * @returns {{ done: number, total: number, label: string } | null}
+ */
+export function liveGwProgress(gwFixtures) {
+  if (!Array.isArray(gwFixtures) || gwFixtures.length === 0) return null;
+  const total = gwFixtures.length;
+  let done = 0;
+  for (const f of gwFixtures) {
+    if (f && (f.finished === true || f.finished_provisional === true)) {
+      done += 1;
+    }
+  }
+  return { done, total, label: `${done}/${total} done` };
+}
+
+/**
+ * Tone bucket for the minute cell in the expanded-fixture table.
+ *
+ * Mirrors the `minTone` helper from the OPTION 2 table mockup. The tints
+ * are applied via classes `.live-xp__cell--min-{none,low,partial,good,full}`
+ * — full (≥89), good (≥60), partial (≥30), low (>0), none (0 or DNP).
+ *
+ * @param {number | null | undefined} minutes
+ * @param {boolean} [played] — gates rendering; pass false to force `'none'`
+ * @returns {'none' | 'low' | 'partial' | 'good' | 'full'}
+ */
+export function minutesTone(minutes, played = true) {
+  if (!played) return 'none';
+  const m = Number(minutes);
+  if (!Number.isFinite(m) || m <= 0) return 'none';
+  if (m >= 89) return 'full';
+  if (m >= 60) return 'good';
+  if (m >= 30) return 'partial';
+  return 'low';
+}
+
+/**
  * Tiny initials helper for the team-crest fallback used in the compressed
  * face-off row. Two-letter (first letter of first two words) or first two
  * letters of a single-word name.

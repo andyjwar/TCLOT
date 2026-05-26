@@ -2,12 +2,17 @@ import { Fragment, useMemo, useState } from 'react';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
-  formatKickoffLabel,
+  liveFixtureLead,
+  liveGroupStatus,
+  liveGwProgress,
+  minutesTone,
   playerLiveState,
   playerXiPillKind,
   rowsByPointsContributed,
 } from './liveScoresDerivations.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
+import { TeamAvatar } from './TeamAvatar';
+import { deriveLiveSummary } from './useFplFixtureLiveSummary.js';
 
 /**
  * Effective starters/bench (post-autosub when available) — mirror of the
@@ -38,426 +43,7 @@ function effectiveBench(squad) {
   return squad.bench ?? [];
 }
 
-/**
- * Build `element id → kickoff_time` from the live context. We use the
- * element's team to find that team's earliest GW fixture and grab its
- * `kickoff_time` (single kickoff for a player without a fixture-explain
- * trail, which is fine for the pre-kickoff DNP label).
- */
-function kickoffLabelByElementId(ctx) {
-  const out = new Map();
-  if (!ctx) return out;
-  const elementById = ctx.elementById || {};
-  const fixtures = Array.isArray(ctx.gwFixtures) ? ctx.gwFixtures : [];
-  if (!fixtures.length) return out;
-  const earliestByTeam = new Map();
-  for (const f of fixtures) {
-    const ko = typeof f?.kickoff_time === 'string' ? f.kickoff_time : null;
-    if (!ko) continue;
-    const t = new Date(ko).getTime();
-    if (Number.isNaN(t)) continue;
-    for (const tid of [Number(f.team_h), Number(f.team_a)]) {
-      if (!Number.isFinite(tid)) continue;
-      const prev = earliestByTeam.get(tid);
-      if (prev == null || t < prev.t) earliestByTeam.set(tid, { t, ko });
-    }
-  }
-  for (const [idStr, el] of Object.entries(elementById)) {
-    const id = Number(idStr);
-    if (!Number.isFinite(id) || !el) continue;
-    const tid = Number(el.team);
-    const slot = earliestByTeam.get(tid);
-    if (slot) {
-      const label = formatKickoffLabel(slot.ko);
-      if (label) out.set(id, label);
-    }
-  }
-  return out;
-}
-
-/**
- * Goals or assists indicator dots — small filled circles like the mockup
- * `mockup-expanded__stat-dot--goal/--assist`. Renders nothing for 0.
- */
-function StatDots({ count, kind, ariaLabel }) {
-  const n = Number(count) || 0;
-  if (n <= 0) return null;
-  return (
-    <span className={`live-xp-stat live-xp-stat--${kind}`} aria-label={ariaLabel ?? `${n}`}>
-      {Array.from({ length: n }).map((_, i) => (
-        <span key={i} className={`live-xp-stat__dot live-xp-stat__dot--${kind}`} />
-      ))}
-    </span>
-  );
-}
-
-/**
- * Compute clean-sheet for GK/DEF in this GW: minutes ≥ 60 and the club's
- * fixtures this GW had 0 against. Without per-fixture conceded data
- * accessible from a row we fall back on the FPL live `clean_sheets` count
- * from the player's live stats row — same data the official site uses.
- */
-function isCleanSheet(row, liveByEl) {
-  const pos = String(row?.posSingular ?? '').toUpperCase();
-  if (pos !== 'GK' && pos !== 'GKP' && pos !== 'DEF') return false;
-  const mins = Number(row?.minutes) || 0;
-  if (mins < 60) return false;
-  if (!liveByEl) return false;
-  const stats = liveByEl[row.element]?.stats ?? liveByEl[row.element] ?? {};
-  const cs = Number(stats?.clean_sheets);
-  return Number.isFinite(cs) && cs >= 1;
-}
-
-/**
- * One player row in the redesigned expanded view (mockup
- * `mockup-expanded__player`). Two-line grid:
- *   line 1: crest · status-pill(name) · pos · vs OPP · pts
- *   line 2: G dots · A dots · CS dot · DC · +Bonus · live-state
- *
- * @param {{
- *   row: object,
- *   bench?: boolean,
- *   kickoffByEl: Map<number, string>,
- *   liveByEl: Record<number, object>,
- *   onOpenPlayer?: (row: object) => void,
- *   autosubbed?: boolean,
- * }} props
- */
-function LiveExpandedPlayerRow({
-  row,
-  bench = false,
-  kickoffByEl,
-  liveByEl,
-  onOpenPlayer,
-  autosubbed = false,
-}) {
-  const pillKind = playerXiPillKind(row);
-  const kickoffLabel = kickoffByEl?.get(row.element) ?? null;
-  const state = playerLiveState({ ...row, kickoffLabel });
-  const dc = Number(row.dcCount) || 0;
-  const dcOn = dcThresholdReached(row.posSingular, dc);
-  const oppLabel = row.opponentShortLabel ?? '—';
-  const pts = Number(row.total_points) || 0;
-  const goals = Number(row.goalsScored) || 0;
-  const assists = Number(row.assists) || 0;
-  const bonus = Number(row.bonus) || 0;
-  const showCs = isCleanSheet(row, liveByEl);
-  const showStatsStrip = state.kind === 'live' || state.kind === 'ft';
-  const displayName = row.displayName ?? row.web_name ?? `#${row.element}`;
-
-  return (
-    <div className={'live-xp-player' + (bench ? ' live-xp-player--bench' : '')}>
-      <span className="live-xp-player__pl-crest" aria-hidden="true">
-        {row.teamShort?.slice(0, 3) ?? '—'}
-      </span>
-
-      <span className="live-xp-player__name-wrap">
-        {onOpenPlayer ? (
-          <button
-            type="button"
-            className={`live-xp-player__pill live-xp-player__pill--${pillKind}`}
-            onClick={() => onOpenPlayer(row)}
-            title={`${displayName} — view season history`}
-          >
-            <span className="live-xp-player__name">{displayName}</span>
-          </button>
-        ) : (
-          <span className={`live-xp-player__pill live-xp-player__pill--${pillKind}`}>
-            <span className="live-xp-player__name">{displayName}</span>
-          </span>
-        )}
-        {row.availabilityStatus === 'i' ? (
-          <span
-            className="live-xp-player__icon"
-            title={row.availabilityNews?.trim() || 'Injured'}
-            aria-label="Injured"
-            role="img"
-          >
-            🚑
-          </span>
-        ) : null}
-        {autosubbed ? (
-          <span
-            className="live-xp-player__icon"
-            title="Autosubbed in from the bench"
-            aria-label="Autosubbed in from the bench"
-            role="img"
-          >
-            🔄
-          </span>
-        ) : null}
-      </span>
-
-      <span className="live-xp-player__pos">{row.posSingular}</span>
-
-      <span className="live-xp-player__opp">
-        <span className="live-xp-player__opp-vs">vs</span>
-        <span className="live-xp-player__opp-crest">{oppLabel}</span>
-      </span>
-
-      <span
-        className={
-          'live-xp-player__pts tabular' +
-          (pts === 0 ? ' live-xp-player__pts--zero' : '')
-        }
-      >
-        {pts}
-      </span>
-
-      <div className="live-xp-player__stats">
-        <StatDots count={goals} kind="goal" ariaLabel={`${goals} goals`} />
-        <StatDots count={assists} kind="assist" ariaLabel={`${assists} assists`} />
-        {showCs ? (
-          <span className="live-xp-stat" aria-label="Clean sheet">
-            <span className="live-xp-stat__dot live-xp-stat__dot--cs" />
-          </span>
-        ) : null}
-        {showStatsStrip ? (
-          <span className="live-xp-stat">
-            <span className="live-xp-stat__label">DC</span>
-            <span
-              className={
-                'live-xp-stat__num' +
-                (dcOn ? ' live-xp-stat__num--on' : ' live-xp-stat__num--off')
-              }
-            >
-              {dc}
-            </span>
-          </span>
-        ) : null}
-        {bonus > 0 ? (
-          <span className="live-xp-stat">
-            <span className="live-xp-stat__num live-xp-stat__num--bonus">
-              +{bonus}
-            </span>
-          </span>
-        ) : null}
-        <span className={`live-xp-stat live-xp-stat--state live-xp-stat--state-${state.kind}`}>
-          {state.text}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/**
- * The legend strip — small G / A / CS / DC · B reminders.
- */
-function GroupLegend() {
-  return (
-    <span className="live-xp-legend" aria-hidden="true">
-      <span className="live-xp-legend__item">
-        <span className="live-xp-stat__dot live-xp-stat__dot--goal" /> G
-      </span>
-      <span className="live-xp-legend__item">
-        <span className="live-xp-stat__dot live-xp-stat__dot--assist" /> A
-      </span>
-      <span className="live-xp-legend__item">DC · B</span>
-    </span>
-  );
-}
-
-/**
- * Single team's player list — Starting XI then Bench, both sorted by
- * points contributed (mockup spec). Auto-sub IDs are passed so the swap
- * emoji renders next to the player that came on.
- */
-function LivePlayerList({
-  squad,
-  kickoffByEl,
-  liveByEl,
-  onOpenPlayer,
-  autosubInIds,
-}) {
-  const startersSorted = useMemo(
-    () => rowsByPointsContributed(effectiveStarters(squad)),
-    [squad],
-  );
-  const benchSorted = useMemo(
-    () => rowsByPointsContributed(effectiveBench(squad)),
-    [squad],
-  );
-
-  if (!squad) {
-    return <p className="muted muted--tight">No squad data for this team.</p>;
-  }
-  if (squad.error) {
-    return <p className="muted">{squad.error}</p>;
-  }
-
-  return (
-    <div className="live-xp-team">
-      <div className="live-xp-group-h">
-        <span>Starting XI</span>
-        <GroupLegend />
-      </div>
-      {startersSorted.map((r) => (
-        <LiveExpandedPlayerRow
-          key={`s-${r.element}-${r.pickPosition}`}
-          row={r}
-          kickoffByEl={kickoffByEl}
-          liveByEl={liveByEl}
-          onOpenPlayer={onOpenPlayer}
-          autosubbed={autosubInIds?.has(Number(r.element))}
-        />
-      ))}
-      {benchSorted.length ? (
-        <>
-          <div className="live-xp-group-h live-xp-group-h--bench">
-            <span>Bench</span>
-          </div>
-          {benchSorted.map((r) => (
-            <LiveExpandedPlayerRow
-              key={`b-${r.element}-${r.pickPosition}`}
-              row={r}
-              bench
-              kickoffByEl={kickoffByEl}
-              liveByEl={liveByEl}
-              onOpenPlayer={onOpenPlayer}
-            />
-          ))}
-        </>
-      ) : null}
-    </div>
-  );
-}
-
-/**
- * The expanded fixture body — both teams' players visible in the new
- * column system. Renders the auto-sub strip at the top per squad (when
- * present), then the player list.
- *
- *  - `viewport === 'mobile'`: tabs at top (default home), one team at a time.
- *  - `viewport === 'desktop'`: both teams side-by-side (or stacked on narrow
- *                              desktop).
- *
- * @param {{
- *   homeSquad: object,
- *   awaySquad: object,
- *   homeName: string,
- *   awayName: string,
- *   contributionLiveContext: object | null,
- *   viewport?: 'desktop' | 'mobile',
- *   onOpenPlayer?: (row: object, squad: object) => void,
- * }} props
- */
-export function LiveExpandedFixture({
-  homeSquad,
-  awaySquad,
-  homeName,
-  awayName,
-  contributionLiveContext,
-  viewport = 'desktop',
-  onOpenPlayer,
-}) {
-  const kickoffByEl = useMemo(
-    () => kickoffLabelByElementId(contributionLiveContext),
-    [contributionLiveContext],
-  );
-  const liveByEl = contributionLiveContext?.liveFullByElementId ?? null;
-
-  const homeAutoSubs = pickAutoSubs(homeSquad);
-  const awayAutoSubs = pickAutoSubs(awaySquad);
-  const homeAutoIn = new Set((homeAutoSubs?.subs || []).map((a) => Number(a.element_in)));
-  const awayAutoIn = new Set((awayAutoSubs?.subs || []).map((a) => Number(a.element_in)));
-
-  const [tab, setTab] = useState('home');
-
-  const homeTotal = liveGwDisplayTotal(homeSquad);
-  const awayTotal = liveGwDisplayTotal(awaySquad);
-
-  const onPick = onOpenPlayer
-    ? (row, squad) => onOpenPlayer(row, squad)
-    : undefined;
-
-  if (viewport === 'mobile') {
-    return (
-      <div className="live-xp live-xp--mobile">
-        <div className="live-xp__tabs" role="tablist">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'home'}
-            className={
-              'live-xp__tab' + (tab === 'home' ? ' is-active' : '')
-            }
-            onClick={() => setTab('home')}
-          >
-            <span>{homeName}</span>
-            <span className="live-xp__tab-pts tabular">
-              {homeTotal != null ? `${homeTotal} pts` : '—'}
-            </span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={tab === 'away'}
-            className={
-              'live-xp__tab' + (tab === 'away' ? ' is-active' : '')
-            }
-            onClick={() => setTab('away')}
-          >
-            <span>{awayName}</span>
-            <span className="live-xp__tab-pts tabular">
-              {awayTotal != null ? `${awayTotal} pts` : '—'}
-            </span>
-          </button>
-        </div>
-        <AutoSubStrip squad={tab === 'home' ? homeSquad : awaySquad} />
-        <LivePlayerList
-          squad={tab === 'home' ? homeSquad : awaySquad}
-          kickoffByEl={kickoffByEl}
-          liveByEl={liveByEl}
-          onOpenPlayer={
-            onPick ? (r) => onPick(r, tab === 'home' ? homeSquad : awaySquad) : undefined
-          }
-          autosubInIds={tab === 'home' ? homeAutoIn : awayAutoIn}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div className="live-xp live-xp--desktop">
-      <div className="live-xp__columns">
-        <section className="live-xp__column">
-          <header className="live-xp__column-h">
-            <h4 className="live-xp__column-title">{homeName}</h4>
-            <span className="live-xp__column-pts tabular">
-              {homeTotal != null ? <strong>{homeTotal}</strong> : '—'} GW pts
-            </span>
-          </header>
-          <AutoSubStrip squad={homeSquad} />
-          <LivePlayerList
-            squad={homeSquad}
-            kickoffByEl={kickoffByEl}
-            liveByEl={liveByEl}
-            onOpenPlayer={onPick ? (r) => onPick(r, homeSquad) : undefined}
-            autosubInIds={homeAutoIn}
-          />
-        </section>
-        <section className="live-xp__column">
-          <header className="live-xp__column-h">
-            <h4 className="live-xp__column-title">{awayName}</h4>
-            <span className="live-xp__column-pts tabular">
-              {awayTotal != null ? <strong>{awayTotal}</strong> : '—'} GW pts
-            </span>
-          </header>
-          <AutoSubStrip squad={awaySquad} />
-          <LivePlayerList
-            squad={awaySquad}
-            kickoffByEl={kickoffByEl}
-            liveByEl={liveByEl}
-            onOpenPlayer={onPick ? (r) => onPick(r, awaySquad) : undefined}
-            autosubInIds={awayAutoIn}
-          />
-        </section>
-      </div>
-    </div>
-  );
-}
-
-/** Picks the active auto-sub list off a squad. */
+/** Picks the active auto-sub list off a squad (official preferred, then projected). */
 function pickAutoSubs(squad) {
   if (!squad) return null;
   const subs =
@@ -470,7 +56,159 @@ function pickAutoSubs(squad) {
   return { subs, source: squad.autosubSource };
 }
 
-function AutoSubStrip({ squad }) {
+/**
+ * Sticky header that sits at the very top of the expanded body. Shows
+ * `< back` chevron · `LIVE · GW N` pill · matchup mini-header · `N/M done`.
+ *
+ * Matches OPTION 2 · TABLE (STAT TRACKING) — mockup `mockup-expanded__head`.
+ *
+ * @param {{
+ *   homeId: number,
+ *   awayId: number,
+ *   homeName: string,
+ *   awayName: string,
+ *   homeTotal: number | null,
+ *   awayTotal: number | null,
+ *   teamLogoMap: object,
+ *   kitIndexByEntry?: object,
+ *   eventSnapshot: object | null,
+ *   gwFixtures: object[] | null,
+ *   onCollapse?: () => void,
+ * }} props
+ */
+function LiveExpandedStickyHeader({
+  homeId,
+  awayId,
+  homeName,
+  awayName,
+  homeTotal,
+  awayTotal,
+  teamLogoMap,
+  kitIndexByEntry,
+  eventSnapshot,
+  gwFixtures,
+  onCollapse,
+}) {
+  const summary = useMemo(
+    () => deriveLiveSummary(gwFixtures ?? []),
+    [gwFixtures],
+  );
+  const status = useMemo(
+    () =>
+      liveGroupStatus({
+        eventSnapshot,
+        gwFixtures,
+        liveFixtureCount: summary.liveFixtureCount,
+        minute: summary.minute,
+      }),
+    [eventSnapshot, gwFixtures, summary.liveFixtureCount, summary.minute],
+  );
+  const progress = useMemo(() => liveGwProgress(gwFixtures), [gwFixtures]);
+  const lead = liveFixtureLead(homeTotal, awayTotal);
+  const homeWinner = lead === 'home';
+  const awayWinner = lead === 'away';
+
+  return (
+    <div className={`live-xp__head live-xp__head--${status.kind}`}>
+      <div className="live-xp__head-top">
+        {onCollapse ? (
+          <button
+            type="button"
+            className="live-xp__back"
+            onClick={onCollapse}
+            aria-label="Collapse fixture"
+            title="Collapse"
+          >
+            ‹
+          </button>
+        ) : null}
+        <span
+          className={`live-xp__chip live-xp__chip--${status.kind}`}
+          aria-label={status.chipLabel}
+        >
+          {status.kind === 'live' ? (
+            <span className="live-xp__chip-dot" aria-hidden="true" />
+          ) : null}
+          <span className="live-xp__chip-label">{status.chipLabel}</span>
+        </span>
+        {progress ? (
+          <span className="live-xp__head-progress tabular" aria-label={`${progress.done} of ${progress.total} fixtures complete`}>
+            {progress.label}
+          </span>
+        ) : null}
+      </div>
+      <div className="live-xp__matchup">
+        <div className="live-xp__matchup-side live-xp__matchup-side--home">
+          <span className="live-xp__matchup-crest">
+            <TeamAvatar
+              entryId={homeId}
+              name={homeName}
+              size="sm"
+              logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+          </span>
+          <span
+            className={
+              'live-xp__matchup-name' +
+              (homeWinner ? ' live-xp__matchup-name--winner' : '') +
+              (awayWinner ? ' live-xp__matchup-name--loser' : '')
+            }
+          >
+            {homeName}
+          </span>
+        </div>
+        <div className="live-xp__matchup-score tabular">
+          <span
+            className={
+              'live-xp__matchup-score-half' +
+              (homeWinner ? ' live-xp__matchup-score-half--winner' : '') +
+              (awayWinner ? ' live-xp__matchup-score-half--loser' : '')
+            }
+          >
+            {homeTotal != null ? homeTotal : '—'}
+          </span>
+          <span className="live-xp__matchup-score-sep">–</span>
+          <span
+            className={
+              'live-xp__matchup-score-half' +
+              (awayWinner ? ' live-xp__matchup-score-half--winner' : '') +
+              (homeWinner ? ' live-xp__matchup-score-half--loser' : '')
+            }
+          >
+            {awayTotal != null ? awayTotal : '—'}
+          </span>
+        </div>
+        <div className="live-xp__matchup-side live-xp__matchup-side--away">
+          <span
+            className={
+              'live-xp__matchup-name' +
+              (awayWinner ? ' live-xp__matchup-name--winner' : '') +
+              (homeWinner ? ' live-xp__matchup-name--loser' : '')
+            }
+          >
+            {awayName}
+          </span>
+          <span className="live-xp__matchup-crest">
+            <TeamAvatar
+              entryId={awayId}
+              name={awayName}
+              size="sm"
+              logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Auto-subs note line — small inline text below the team header. Only
+ * renders when there are auto-subs for that team this GW.
+ */
+function AutoSubsNote({ squad }) {
   const auto = pickAutoSubs(squad);
   if (!auto) return null;
   const allRows = [...(squad?.starters ?? []), ...(squad?.bench ?? [])];
@@ -522,6 +260,355 @@ function AutoSubStrip({ squad }) {
           Provisional until FPL posts official autosubs.
         </span>
       ) : null}
+    </div>
+  );
+}
+
+/**
+ * A single player row inside the per-team table. Mirrors the OPTION 2
+ * mockup `mockup-table__row` — columns: PLAYER · POS · MIN · DC · G · A · B · PTS.
+ */
+function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
+  const pillKind = playerXiPillKind(row);
+  const state = playerLiveState(row);
+  const mins = Number(row.minutes) || 0;
+  const played = mins > 0;
+  const tone = minutesTone(mins, played);
+  const dc = Number(row.dcCount) || 0;
+  const dcOn = played && dcThresholdReached(row.posSingular, dc);
+  const goals = Number(row.goalsScored) || 0;
+  const assists = Number(row.assists) || 0;
+  const bonus = Number(row.bonus) || 0;
+  const pts = Number(row.total_points) || 0;
+  const isLivePlayer = state.kind === 'live';
+  const displayName = row.displayName ?? row.web_name ?? `#${row.element}`;
+  const numOrDash = (n, accentClass) => {
+    if (!played) return <span className="live-xp__zero">—</span>;
+    if (n > 0) {
+      return (
+        <span className={`live-xp__cell-num ${accentClass}`}>{n}</span>
+      );
+    }
+    return <span className="live-xp__zero">0</span>;
+  };
+
+  return (
+    <div className={'live-xp__row' + (bench ? ' live-xp__row--bench' : '')}>
+      <div className="live-xp__cell live-xp__cell--player">
+        {row.badgeUrl ? (
+          <img
+            className="live-xp__player-crest"
+            src={row.badgeUrl}
+            alt=""
+            loading="lazy"
+          />
+        ) : (
+          <span className="live-xp__player-crest live-xp__player-crest--fallback" aria-hidden="true">
+            {row.teamShort?.slice(0, 3) ?? '—'}
+          </span>
+        )}
+        {onOpenPlayer ? (
+          <button
+            type="button"
+            className={`live-xp__player-name live-xp__player-name--${pillKind}`}
+            onClick={() => onOpenPlayer(row)}
+            title={`${displayName} — view season history`}
+          >
+            <span className="live-xp__player-name-text">{displayName}</span>
+            {isLivePlayer ? (
+              <span
+                className="live-xp__player-dot"
+                aria-label="On pitch"
+                title="On pitch"
+              />
+            ) : null}
+            {row.availabilityStatus === 'i' ? (
+              <span
+                className="live-xp__player-icon"
+                title={row.availabilityNews?.trim() || 'Injured'}
+                aria-label="Injured"
+                role="img"
+              >
+                🚑
+              </span>
+            ) : null}
+            {autosubbed ? (
+              <span
+                className="live-xp__player-icon"
+                title="Autosubbed in from the bench"
+                aria-label="Autosubbed in from the bench"
+                role="img"
+              >
+                🔄
+              </span>
+            ) : null}
+          </button>
+        ) : (
+          <span className={`live-xp__player-name live-xp__player-name--${pillKind}`}>
+            <span className="live-xp__player-name-text">{displayName}</span>
+            {isLivePlayer ? (
+              <span className="live-xp__player-dot" aria-label="On pitch" />
+            ) : null}
+            {row.availabilityStatus === 'i' ? (
+              <span className="live-xp__player-icon" aria-label="Injured" role="img">🚑</span>
+            ) : null}
+            {autosubbed ? (
+              <span className="live-xp__player-icon" aria-label="Autosubbed in" role="img">🔄</span>
+            ) : null}
+          </span>
+        )}
+      </div>
+      <div className="live-xp__cell live-xp__cell--pos">{row.posSingular}</div>
+      <div className={`live-xp__cell live-xp__cell--min live-xp__cell--min-${tone}`}>
+        {played ? mins : '—'}
+      </div>
+      <div
+        className={
+          'live-xp__cell live-xp__cell--num live-xp__cell--dc' +
+          (!played ? ' live-xp__cell--mute' : '') +
+          (dcOn ? ' live-xp__cell--dc-on' : '')
+        }
+      >
+        {played ? dc : '—'}
+      </div>
+      <div className="live-xp__cell live-xp__cell--num live-xp__cell--g">
+        {numOrDash(goals, 'live-xp__cell-num--g')}
+      </div>
+      <div className="live-xp__cell live-xp__cell--num live-xp__cell--a">
+        {numOrDash(assists, 'live-xp__cell-num--a')}
+      </div>
+      <div className="live-xp__cell live-xp__cell--num live-xp__cell--b">
+        {numOrDash(bonus, 'live-xp__cell-num--b')}
+      </div>
+      <div
+        className={
+          'live-xp__cell live-xp__cell--num live-xp__cell--pts' +
+          (pts === 0 ? ' live-xp__cell--pts-zero' : '')
+        }
+      >
+        {pts}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * Column header row above each team's table. Matches mockup
+ * `mockup-table__head`. Tiny dots before G / A hint at the colored
+ * accent the matching stat columns use.
+ */
+function LiveExpandedTableHead() {
+  return (
+    <div className="live-xp__thead" role="row">
+      <div className="live-xp__th live-xp__th--player">Player</div>
+      <div className="live-xp__th live-xp__th--pos">Pos</div>
+      <div className="live-xp__th">Min</div>
+      <div className="live-xp__th">DC</div>
+      <div className="live-xp__th live-xp__th--g" title="Goals">
+        <span className="live-xp__th-dot live-xp__th-dot--g" />G
+      </div>
+      <div className="live-xp__th live-xp__th--a" title="Assists">
+        <span className="live-xp__th-dot live-xp__th-dot--a" />A
+      </div>
+      <div className="live-xp__th">B</div>
+      <div className="live-xp__th live-xp__th--pts">Pts</div>
+    </div>
+  );
+}
+
+/**
+ * One team's player table: optional auto-subs note, column header, then
+ * STARTING XI rows and BENCH rows sorted by points contributed.
+ */
+function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
+  const startersSorted = useMemo(
+    () => rowsByPointsContributed(effectiveStarters(squad)),
+    [squad],
+  );
+  const benchSorted = useMemo(
+    () => rowsByPointsContributed(effectiveBench(squad)),
+    [squad],
+  );
+
+  if (!squad) {
+    return <p className="muted muted--tight">No squad data for this team.</p>;
+  }
+  if (squad.error) {
+    return <p className="muted">{squad.error}</p>;
+  }
+
+  return (
+    <div className="live-xp__team">
+      <AutoSubsNote squad={squad} />
+      <div className="live-xp__table" role="table">
+        <LiveExpandedTableHead />
+        <div className="live-xp__group" role="row">Starting XI</div>
+        {startersSorted.map((r) => (
+          <LiveExpandedTableRow
+            key={`s-${r.element}-${r.pickPosition}`}
+            row={r}
+            onOpenPlayer={onOpenPlayer}
+            autosubbed={autosubInIds?.has(Number(r.element))}
+          />
+        ))}
+        {benchSorted.length ? (
+          <>
+            <div className="live-xp__group" role="row">Bench</div>
+            {benchSorted.map((r) => (
+              <LiveExpandedTableRow
+                key={`b-${r.element}-${r.pickPosition}`}
+                row={r}
+                bench
+                onOpenPlayer={onOpenPlayer}
+              />
+            ))}
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The expanded fixture body — restyled to match OPTION 2 · TABLE (STAT
+ * TRACKING). User rejected the FotMob-derived row layout shipped in
+ * PR #5 / 5a.
+ *
+ * Layout:
+ *   - sticky header  : `<` back / LIVE · GW N pill / matchup mini-header
+ *                      with avatars + live score / N/M done counter
+ *   - mobile         : tab selector (home / away) then one team's table
+ *   - desktop        : two team tables side-by-side
+ *
+ * @param {{
+ *   homeSquad: object,
+ *   awaySquad: object,
+ *   homeName: string,
+ *   awayName: string,
+ *   homeId: number,
+ *   awayId: number,
+ *   teamLogoMap: object,
+ *   kitIndexByEntry?: object,
+ *   eventSnapshot: object | null,
+ *   contributionLiveContext: object | null,
+ *   viewport?: 'desktop' | 'mobile',
+ *   onOpenPlayer?: (row: object, squad: object) => void,
+ *   onCollapse?: () => void,
+ * }} props
+ */
+export function LiveExpandedFixture({
+  homeSquad,
+  awaySquad,
+  homeName,
+  awayName,
+  homeId,
+  awayId,
+  teamLogoMap,
+  kitIndexByEntry,
+  eventSnapshot,
+  contributionLiveContext,
+  viewport = 'desktop',
+  onOpenPlayer,
+  onCollapse,
+}) {
+  const homeAutoSubs = pickAutoSubs(homeSquad);
+  const awayAutoSubs = pickAutoSubs(awaySquad);
+  const homeAutoIn = useMemo(
+    () => new Set((homeAutoSubs?.subs || []).map((a) => Number(a.element_in))),
+    [homeAutoSubs],
+  );
+  const awayAutoIn = useMemo(
+    () => new Set((awayAutoSubs?.subs || []).map((a) => Number(a.element_in))),
+    [awayAutoSubs],
+  );
+
+  const [tab, setTab] = useState('home');
+
+  const homeTotal = liveGwDisplayTotal(homeSquad);
+  const awayTotal = liveGwDisplayTotal(awaySquad);
+
+  const gwFixtures = contributionLiveContext?.gwFixtures ?? null;
+
+  const onPick = onOpenPlayer
+    ? (row, squad) => onOpenPlayer(row, squad)
+    : undefined;
+
+  const stickyHeader = (
+    <LiveExpandedStickyHeader
+      homeId={homeId}
+      awayId={awayId}
+      homeName={homeName}
+      awayName={awayName}
+      homeTotal={homeTotal}
+      awayTotal={awayTotal}
+      teamLogoMap={teamLogoMap}
+      kitIndexByEntry={kitIndexByEntry}
+      eventSnapshot={eventSnapshot}
+      gwFixtures={gwFixtures}
+      onCollapse={onCollapse}
+    />
+  );
+
+  if (viewport === 'mobile') {
+    const activeSquad = tab === 'home' ? homeSquad : awaySquad;
+    const activeAutoIn = tab === 'home' ? homeAutoIn : awayAutoIn;
+    return (
+      <div className="live-xp live-xp--mobile">
+        {stickyHeader}
+        <div className="live-xp__tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'home'}
+            className={'live-xp__tab' + (tab === 'home' ? ' is-active' : '')}
+            onClick={() => setTab('home')}
+          >
+            <span className="live-xp__tab-name">{homeName}</span>
+            <span className="live-xp__tab-pts tabular">
+              {homeTotal != null ? `${homeTotal} pts` : '—'}
+            </span>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={tab === 'away'}
+            className={'live-xp__tab' + (tab === 'away' ? ' is-active' : '')}
+            onClick={() => setTab('away')}
+          >
+            <span className="live-xp__tab-name">{awayName}</span>
+            <span className="live-xp__tab-pts tabular">
+              {awayTotal != null ? `${awayTotal} pts` : '—'}
+            </span>
+          </button>
+        </div>
+        <LiveExpandedTeamTable
+          squad={activeSquad}
+          onOpenPlayer={onPick ? (r) => onPick(r, activeSquad) : undefined}
+          autosubInIds={activeAutoIn}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="live-xp live-xp--desktop">
+      {stickyHeader}
+      <div className="live-xp__columns">
+        <section className="live-xp__column">
+          <LiveExpandedTeamTable
+            squad={homeSquad}
+            onOpenPlayer={onPick ? (r) => onPick(r, homeSquad) : undefined}
+            autosubInIds={homeAutoIn}
+          />
+        </section>
+        <section className="live-xp__column">
+          <LiveExpandedTeamTable
+            squad={awaySquad}
+            onOpenPlayer={onPick ? (r) => onPick(r, awaySquad) : undefined}
+            autosubInIds={awayAutoIn}
+          />
+        </section>
+      </div>
     </div>
   );
 }

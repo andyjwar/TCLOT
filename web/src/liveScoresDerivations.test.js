@@ -5,6 +5,8 @@ import {
   formatKickoffLabel,
   liveFixtureLead,
   liveGroupStatus,
+  liveGwProgress,
+  minutesTone,
   playerLiveState,
   playerXiPillKind,
   rowsByPointsContributed,
@@ -208,6 +210,41 @@ test('rowsByPointsContributed — descending by points; ties broken by mins/pick
   ]
   const sorted = rowsByPointsContributed(rows).map((r) => r.pickPosition)
   assert.deepEqual(sorted, [2, 1, 4, 3])
+})
+
+test('liveGwProgress — counts finished + finished_provisional, slash label', () => {
+  const out = liveGwProgress([
+    { finished: true },
+    { finished: false, finished_provisional: true },
+    { finished: false },
+    { finished: false },
+  ])
+  assert.deepEqual(out, { done: 2, total: 4, label: '2/4 done' })
+})
+
+test('liveGwProgress — 0 done renders 0/N', () => {
+  const out = liveGwProgress([{ finished: false }, { finished: false }])
+  assert.deepEqual(out, { done: 0, total: 2, label: '0/2 done' })
+})
+
+test('liveGwProgress — empty / null returns null', () => {
+  assert.equal(liveGwProgress([]), null)
+  assert.equal(liveGwProgress(null), null)
+  assert.equal(liveGwProgress(undefined), null)
+})
+
+test('minutesTone — 5-bucket tinting matches mockup minTone', () => {
+  assert.equal(minutesTone(90), 'full')
+  assert.equal(minutesTone(89), 'full')
+  assert.equal(minutesTone(88), 'good')
+  assert.equal(minutesTone(60), 'good')
+  assert.equal(minutesTone(59), 'partial')
+  assert.equal(minutesTone(30), 'partial')
+  assert.equal(minutesTone(29), 'low')
+  assert.equal(minutesTone(1), 'low')
+  assert.equal(minutesTone(0), 'none')
+  assert.equal(minutesTone(null), 'none')
+  assert.equal(minutesTone(45, false), 'none', 'played=false forces none')
 })
 
 test('teamInitials — words → first letters; single word → first 2', () => {
