@@ -149,9 +149,17 @@ body[data-tclot-theme='dark'] .player-detail-overlay-shell {
   cursor: pointer;
 }
 
-/* Desktop: wider right sheet hosting wire detail (mirror .live-player-slide in App.css) */
+/* Desktop: wider right sheet hosting redesign-phase-2 player detail
+   (120 px hero crest + side-by-side Overview body needs more breathing room
+   than the legacy 42rem sheet). */
 .live-player-slide__sheet.live-player-slide__sheet--player-detail {
-  width: min(100vw, 42rem);
+  width: min(100vw, 52.5rem);
+}
+
+@media (min-width: 1280px) {
+  .live-player-slide__sheet.live-player-slide__sheet--player-detail {
+    width: min(100vw, 56rem);
+  }
 }
 
 .live-player-slide__body--player-detail-host {

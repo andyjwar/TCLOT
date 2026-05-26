@@ -1,0 +1,178 @@
+import assert from 'node:assert/strict'
+import test from 'node:test'
+import {
+  DEFAULT_PERFORMANCE_COL_IDS,
+  fdrTone,
+  formatPerformanceStat,
+  lastNHistoryRows,
+  miniBarTone,
+  performanceStatCatalog,
+  performanceStatValue,
+  performanceTableRows,
+  statCellTone,
+  summarizeRecentPoints,
+  upcomingFixturesNext,
+} from './playerDetailDerivations.js'
+
+test('fdrTone — clamps inputs to the 1..5 ramp tokens', () => {
+  assert.equal(fdrTone(1), 1)
+  assert.equal(fdrTone(2), 2)
+  assert.equal(fdrTone(3), 3)
+  assert.equal(fdrTone(4), 4)
+  assert.equal(fdrTone(5), 5)
+  assert.equal(fdrTone(0), 1)
+  assert.equal(fdrTone(-1), 1)
+  assert.equal(fdrTone(7), 5)
+  assert.equal(fdrTone(null), 3)
+  assert.equal(fdrTone(undefined), 3)
+  assert.equal(fdrTone('not-a-number'), 3)
+})
+
+test('lastNHistoryRows — returns trailing rows in order', () => {
+  const rows = [
+    { round: 1 },
+    { round: 2 },
+    { round: 3 },
+    { round: 4 },
+    { round: 5 },
+    { round: 6 },
+    { round: 7 },
+  ]
+  assert.deepEqual(lastNHistoryRows(rows, 5).map((r) => r.round), [3, 4, 5, 6, 7])
+  assert.deepEqual(lastNHistoryRows(rows, 2).map((r) => r.round), [6, 7])
+  assert.equal(lastNHistoryRows([], 5).length, 0)
+  assert.equal(lastNHistoryRows(null, 5).length, 0)
+  assert.equal(lastNHistoryRows(rows, 0).length, 0)
+})
+
+test('summarizeRecentPoints — avg / last / total', () => {
+  assert.deepEqual(summarizeRecentPoints([2, 4, 6, 8, 10]), { avg: 6, last: 10, total: 30 })
+  assert.deepEqual(summarizeRecentPoints([]), { avg: 0, last: 0, total: 0 })
+  assert.deepEqual(summarizeRecentPoints([5]), { avg: 5, last: 5, total: 5 })
+  assert.deepEqual(summarizeRecentPoints([null, 2, 'x']), { avg: 2 / 3, last: 0, total: 2 })
+})
+
+test('miniBarTone — pos / neg / neutral around the running average', () => {
+  assert.equal(miniBarTone(10, 5), 'pos')
+  assert.equal(miniBarTone(2, 6), 'neg')
+  assert.equal(miniBarTone(5, 5), 'neutral')
+  assert.equal(miniBarTone(5.4, 5), 'neutral')
+  assert.equal(miniBarTone(5.6, 5), 'pos')
+})
+
+test('statCellTone — LiveScores-style colouring rules', () => {
+  // G / A / BNS — green when > 0
+  assert.equal(statCellTone('g', 1, 3), 'good')
+  assert.equal(statCellTone('g', 0, 3), 'neutral')
+  assert.equal(statCellTone('a', 2, 3), 'good')
+  assert.equal(statCellTone('bns', 3, 3), 'good')
+  assert.equal(statCellTone('bns', 0, 3), 'neutral')
+
+  // CS — green only when position-eligible (GK/DEF/MID); FWD always neutral
+  assert.equal(statCellTone('cs', 1, 1 /* GK */), 'good')
+  assert.equal(statCellTone('cs', 1, 2 /* DEF */), 'good')
+  assert.equal(statCellTone('cs', 1, 3 /* MID */), 'good')
+  assert.equal(statCellTone('cs', 1, 4 /* FWD */), 'neutral')
+  assert.equal(statCellTone('cs', 0, 2), 'neutral')
+
+  // DC — green at/above defensive-contribution threshold for the position
+  assert.equal(statCellTone('dc', 9,  2 /* DEF; t=10 */), 'neutral')
+  assert.equal(statCellTone('dc', 10, 2 /* DEF; t=10 */), 'good')
+  assert.equal(statCellTone('dc', 11, 3 /* MID; t=12 */), 'neutral')
+  assert.equal(statCellTone('dc', 12, 3 /* MID; t=12 */), 'good')
+  assert.equal(statCellTone('dc', 12, 4 /* FWD; t=12 */), 'good')
+
+  // Other stats — always neutral
+  assert.equal(statCellTone('pts', 99, 3), 'neutral')
+  assert.equal(statCellTone('min', 90, 3), 'neutral')
+  assert.equal(statCellTone('xg', 1.5, 3), 'neutral')
+})
+
+test('performanceStatCatalog — 15 ids, defaults are 7 of them', () => {
+  const cat = performanceStatCatalog()
+  assert.equal(cat.length, 15)
+  const ids = cat.map((c) => c.id)
+  for (const id of DEFAULT_PERFORMANCE_COL_IDS) {
+    assert.ok(ids.includes(id), `default id ${id} missing from catalog`)
+  }
+  assert.equal(DEFAULT_PERFORMANCE_COL_IDS.length, 7)
+})
+
+test('performanceStatValue / formatPerformanceStat — pulls + formats', () => {
+  const h = {
+    total_points: 12,
+    minutes: 90,
+    goals_scored: 1,
+    assists: 0,
+    clean_sheets: 1,
+    defensive_contribution: 14,
+    bonus: 3,
+    bps: 38,
+    expected_goals: '0.65',
+    expected_assists: '0.12',
+    saves: 0,
+    goals_conceded: 1,
+    yellow_cards: 0,
+    red_cards: 0,
+  }
+  assert.equal(performanceStatValue('pts', h), 12)
+  assert.equal(performanceStatValue('min', h), 90)
+  assert.equal(performanceStatValue('g',   h), 1)
+  assert.equal(performanceStatValue('xg',  h), 0.65)
+  assert.equal(performanceStatValue('xa',  h), 0.12)
+  assert.equal(performanceStatValue('fdr', h), null)
+  assert.equal(performanceStatValue('pts', null), null)
+
+  assert.equal(formatPerformanceStat('pts', 12), '12')
+  assert.equal(formatPerformanceStat('xg',  0.65), '0.65')
+  assert.equal(formatPerformanceStat('xa',  0.1), '0.10')
+  assert.equal(formatPerformanceStat('pts', null), '—')
+})
+
+test('performanceTableRows — past + future merged, DGW collapsed into extras', () => {
+  const summary = {
+    history: [
+      { round: 1, total_points: 6 },
+      { round: 2, total_points: 9 },
+      { round: 4, total_points: 7 }, // DGW slot a
+      { round: 4, total_points: 2 }, // DGW slot b
+    ],
+    fixtures: [
+      { event: 5, team_h: 1, team_a: 2, is_home: true, difficulty: 3 },
+      { event: 6, team_h: 1, team_a: 2, is_home: true, difficulty: 4 },
+    ],
+  }
+  const rows = performanceTableRows(summary)
+  assert.deepEqual(
+    rows.map((r) => ({ gw: r.gw, kind: r.kind, extras: r.extras.length })),
+    [
+      { gw: 1, kind: 'past',   extras: 0 },
+      { gw: 2, kind: 'past',   extras: 0 },
+      { gw: 4, kind: 'past',   extras: 1 }, // second leg of DGW captured
+      { gw: 5, kind: 'future', extras: 0 },
+      { gw: 6, kind: 'future', extras: 0 },
+    ],
+  )
+})
+
+test('upcomingFixturesNext — first 5, opponent + home flag derived from team ids', () => {
+  const summary = {
+    fixtures: [
+      { event: 5, team_h: 1, team_a: 2, is_home: true,  difficulty: 2 },
+      { event: 6, team_h: 3, team_a: 1, is_home: false, difficulty: 4 },
+      { event: 7, team_h: 1, team_a: 4, is_home: true,  difficulty: 1 },
+      { event: 8, team_h: 5, team_a: 1, is_home: false, difficulty: 3 },
+      { event: 9, team_h: 6, team_a: 1, is_home: false, difficulty: 5 },
+      { event: 10, team_h: 1, team_a: 7, is_home: true, difficulty: 2 },
+    ],
+  }
+  const next = upcomingFixturesNext(summary, 1, 5)
+  assert.equal(next.length, 5)
+  assert.deepEqual(next[0], { gw: 5, teamId: 2, home: true,  difficulty: 2 })
+  assert.deepEqual(next[1], { gw: 6, teamId: 3, home: false, difficulty: 4 })
+  assert.deepEqual(next[2], { gw: 7, teamId: 4, home: true,  difficulty: 1 })
+
+  assert.equal(upcomingFixturesNext({ fixtures: [] }, 1).length, 0)
+  assert.equal(upcomingFixturesNext({}, 1).length, 0)
+  assert.equal(upcomingFixturesNext(null, 1).length, 0)
+})
