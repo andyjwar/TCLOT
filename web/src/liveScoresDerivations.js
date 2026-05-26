@@ -232,6 +232,29 @@ export function liveGroupStatus({
 }
 
 /**
+ * Whether a given FPL position is eligible to score clean-sheet points:
+ *
+ *   - `'GK'` / `'GKP'`  → +4 CS points
+ *   - `'DEF'`           → +4 CS points
+ *   - `'MID'`           → +1 CS point
+ *   - `'FWD'`           → 0 (never eligible)
+ *
+ * Used to gate the yellow "clean sheet locked in" status dot — it must
+ * never render on a FWD even when their club has a clean sheet, because
+ * the FWD scores 0 from it (misleading badge). Pure helper — no side
+ * effects; safe to call on undefined / null / unexpected strings (those
+ * fall through to `false`).
+ *
+ * @param {string | null | undefined} pos — singular position label
+ *   (`'GK'` / `'GKP'` / `'DEF'` / `'MID'` / `'FWD'`); case-insensitive
+ * @returns {boolean}
+ */
+export function isCleanSheetEligible(pos) {
+  const p = String(pos ?? '').toUpperCase();
+  return p === 'GK' || p === 'GKP' || p === 'DEF' || p === 'MID';
+}
+
+/**
  * Sort a squad's effective starting XI / bench rows by **points contributed
  * this gameweek** (descending). Stable tiebreakers: minutes desc, then the
  * original pickPosition ascending so equal rows stay deterministic across
@@ -250,6 +273,56 @@ export function rowsByPointsContributed(rows) {
     const ma = Number(a?.minutes) || 0;
     const mb = Number(b?.minutes) || 0;
     if (mb !== ma) return mb - ma;
+    return (Number(a?.pickPosition) || 0) - (Number(b?.pickPosition) || 0);
+  });
+}
+
+/**
+ * Position priority for the Starting XI sort: GK → DEF → MID → FWD.
+ * Unknown / missing positions sort to the tail so they don't break the
+ * spine of the table.
+ */
+const STARTING_XI_POSITION_RANK = {
+  GK: 0,
+  GKP: 0,
+  DEF: 1,
+  MID: 2,
+  FWD: 3,
+};
+
+/**
+ * Sort a squad's effective STARTING XI by FPL position
+ * (GK → DEF → MID → FWD), with a points-contributed-descending secondary
+ * sort within each position group (so the "best player at this position"
+ * lands at the top of its group). Final tiebreak: original pickPosition
+ * ascending so equal rows stay deterministic across polls.
+ *
+ * The bench is intentionally NOT sorted by this helper — bench order is
+ * already meaningful (1st sub, 2nd sub, …) and should be preserved by
+ * the caller via `pickPosition`.
+ *
+ * Position field read: `posSingular` (mirror of FPL bootstrap
+ * `element_types[*].singular_name_short` — `'GKP'` / `'DEF'` / `'MID'` /
+ * `'FWD'`). Case-insensitive; unknown labels sort to the tail.
+ *
+ * @template T
+ * @param {T[]} players
+ * @returns {T[]}
+ */
+export function sortStartingXIByPosition(players) {
+  if (!Array.isArray(players) || players.length === 0) return [];
+  const rankOf = (row) => {
+    const p = String(row?.posSingular ?? '').toUpperCase();
+    const r = STARTING_XI_POSITION_RANK[p];
+    return Number.isFinite(r) ? r : 99;
+  };
+  return [...players].sort((a, b) => {
+    const ra = rankOf(a);
+    const rb = rankOf(b);
+    if (ra !== rb) return ra - rb;
+    const pa = Number(a?.total_points) || 0;
+    const pb = Number(b?.total_points) || 0;
+    if (pb !== pa) return pb - pa;
     return (Number(a?.pickPosition) || 0) - (Number(b?.pickPosition) || 0);
   });
 }

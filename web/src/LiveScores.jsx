@@ -1569,10 +1569,6 @@ export function LiveScores({
                         awaySquad={awaySquad}
                         homeName={homeName}
                         awayName={awayName}
-                        homeId={homeId}
-                        awayId={awayId}
-                        teamLogoMap={teamLogoMap}
-                        kitIndexByEntry={kitIndexByEntry}
                         eventSnapshot={eventSnapshot}
                         contributionLiveContext={contributionLiveContext}
                         viewport={portraitMobile ? 'mobile' : 'desktop'}

@@ -2,16 +2,15 @@ import { Fragment, useMemo, useState } from 'react';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
-  liveFixtureLead,
   liveGroupStatus,
   liveGwProgress,
   minutesTone,
   playerLiveState,
   playerXiPillKind,
   rowsByPointsContributed,
+  sortStartingXIByPosition,
 } from './liveScoresDerivations.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
-import { TeamAvatar } from './TeamAvatar';
 import { deriveLiveSummary } from './useFplFixtureLiveSummary.js';
 
 /**
@@ -57,38 +56,20 @@ function pickAutoSubs(squad) {
 }
 
 /**
- * Sticky header that sits at the very top of the expanded body. Shows
- * `< back` chevron · `LIVE · GW N` pill · matchup mini-header · `N/M done`.
+ * Sticky header that sits at the very top of the expanded body. Shows a
+ * slim single-row strip: `< back` chevron · `LIVE · GW N` pill · `N/M done`.
  *
- * Matches OPTION 2 · TABLE (STAT TRACKING) — mockup `mockup-expanded__head`.
+ * The duplicate matchup mini-header (team names + live score) was dropped
+ * because the collapsed face-off row directly above the expanded view
+ * already shows the same matchup + score.
  *
  * @param {{
- *   homeId: number,
- *   awayId: number,
- *   homeName: string,
- *   awayName: string,
- *   homeTotal: number | null,
- *   awayTotal: number | null,
- *   teamLogoMap: object,
- *   kitIndexByEntry?: object,
  *   eventSnapshot: object | null,
  *   gwFixtures: object[] | null,
  *   onCollapse?: () => void,
  * }} props
  */
-function LiveExpandedStickyHeader({
-  homeId,
-  awayId,
-  homeName,
-  awayName,
-  homeTotal,
-  awayTotal,
-  teamLogoMap,
-  kitIndexByEntry,
-  eventSnapshot,
-  gwFixtures,
-  onCollapse,
-}) {
+function LiveExpandedStickyHeader({ eventSnapshot, gwFixtures, onCollapse }) {
   const summary = useMemo(
     () => deriveLiveSummary(gwFixtures ?? []),
     [gwFixtures],
@@ -104,109 +85,46 @@ function LiveExpandedStickyHeader({
     [eventSnapshot, gwFixtures, summary.liveFixtureCount, summary.minute],
   );
   const progress = useMemo(() => liveGwProgress(gwFixtures), [gwFixtures]);
-  const lead = liveFixtureLead(homeTotal, awayTotal);
-  const homeWinner = lead === 'home';
-  const awayWinner = lead === 'away';
 
   return (
     <div className={`live-xp__head live-xp__head--${status.kind}`}>
-      <div className="live-xp__head-top">
-        {onCollapse ? (
-          <button
-            type="button"
-            className="live-xp__back"
-            onClick={onCollapse}
-            aria-label="Collapse fixture"
-            title="Collapse"
-          >
-            ‹
-          </button>
-        ) : null}
-        <span
-          className={`live-xp__chip live-xp__chip--${status.kind}`}
-          aria-label={status.chipLabel}
+      {onCollapse ? (
+        <button
+          type="button"
+          className="live-xp__back"
+          onClick={onCollapse}
+          aria-label="Collapse fixture"
+          title="Collapse"
         >
-          {status.kind === 'live' ? (
-            <span className="live-xp__chip-dot" aria-hidden="true" />
-          ) : null}
-          <span className="live-xp__chip-label">{status.chipLabel}</span>
-        </span>
-        {progress ? (
-          <span className="live-xp__head-progress tabular" aria-label={`${progress.done} of ${progress.total} fixtures complete`}>
-            {progress.label}
-          </span>
+          ‹
+        </button>
+      ) : null}
+      <span
+        className={`live-xp__chip live-xp__chip--${status.kind}`}
+        aria-label={status.chipLabel}
+      >
+        {status.kind === 'live' ? (
+          <span className="live-xp__chip-dot" aria-hidden="true" />
         ) : null}
-      </div>
-      <div className="live-xp__matchup">
-        <div className="live-xp__matchup-side live-xp__matchup-side--home">
-          <span className="live-xp__matchup-crest">
-            <TeamAvatar
-              entryId={homeId}
-              name={homeName}
-              size="sm"
-              logoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          </span>
-          <span
-            className={
-              'live-xp__matchup-name' +
-              (homeWinner ? ' live-xp__matchup-name--winner' : '') +
-              (awayWinner ? ' live-xp__matchup-name--loser' : '')
-            }
-          >
-            {homeName}
-          </span>
-        </div>
-        <div className="live-xp__matchup-score tabular">
-          <span
-            className={
-              'live-xp__matchup-score-half' +
-              (homeWinner ? ' live-xp__matchup-score-half--winner' : '') +
-              (awayWinner ? ' live-xp__matchup-score-half--loser' : '')
-            }
-          >
-            {homeTotal != null ? homeTotal : '—'}
-          </span>
-          <span className="live-xp__matchup-score-sep">–</span>
-          <span
-            className={
-              'live-xp__matchup-score-half' +
-              (awayWinner ? ' live-xp__matchup-score-half--winner' : '') +
-              (homeWinner ? ' live-xp__matchup-score-half--loser' : '')
-            }
-          >
-            {awayTotal != null ? awayTotal : '—'}
-          </span>
-        </div>
-        <div className="live-xp__matchup-side live-xp__matchup-side--away">
-          <span
-            className={
-              'live-xp__matchup-name' +
-              (awayWinner ? ' live-xp__matchup-name--winner' : '') +
-              (homeWinner ? ' live-xp__matchup-name--loser' : '')
-            }
-          >
-            {awayName}
-          </span>
-          <span className="live-xp__matchup-crest">
-            <TeamAvatar
-              entryId={awayId}
-              name={awayName}
-              size="sm"
-              logoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          </span>
-        </div>
-      </div>
+        <span className="live-xp__chip-label">{status.chipLabel}</span>
+      </span>
+      {progress ? (
+        <span
+          className="live-xp__head-progress tabular"
+          aria-label={`${progress.done} of ${progress.total} fixtures complete`}
+        >
+          {progress.label}
+        </span>
+      ) : null}
     </div>
   );
 }
 
 /**
- * Auto-subs note line — small inline text below the team header. Only
- * renders when there are auto-subs for that team this GW.
+ * Auto-subs note line — small inline text at the bottom of the team's
+ * table (after BENCH). Only renders when there are auto-subs for that
+ * team this GW. Placing it at the tail keeps mid-table rows vertically
+ * aligned across the desktop two-column layout.
  */
 function AutoSubsNote({ squad }) {
   const auto = pickAutoSubs(squad);
@@ -421,8 +339,11 @@ function LiveExpandedTableHead() {
  * STARTING XI rows and BENCH rows sorted by points contributed.
  */
 function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
+  // Starting XI is sorted by FPL position (GK → DEF → MID → FWD) so the
+  // user can scan "best players at each position" across the two team
+  // columns. Bench keeps points-contributed sort — order is independent.
   const startersSorted = useMemo(
-    () => rowsByPointsContributed(effectiveStarters(squad)),
+    () => sortStartingXIByPosition(effectiveStarters(squad)),
     [squad],
   );
   const benchSorted = useMemo(
@@ -439,7 +360,6 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
 
   return (
     <div className="live-xp__team">
-      <AutoSubsNote squad={squad} />
       <div className="live-xp__table" role="table">
         <LiveExpandedTableHead />
         <div className="live-xp__group" role="row">Starting XI</div>
@@ -465,6 +385,13 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
           </>
         ) : null}
       </div>
+      {/*
+       * Auto-subs note renders AFTER the bench so both teams' starting XI
+       * and bench rows line up vertically in the desktop side-by-side
+       * layout — only the trailing autosub note adds tail height to one
+       * column when the other team has no autosubs.
+       */}
+      <AutoSubsNote squad={squad} />
     </div>
   );
 }
@@ -475,8 +402,9 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
  * PR #5 / 5a.
  *
  * Layout:
- *   - sticky header  : `<` back / LIVE · GW N pill / matchup mini-header
- *                      with avatars + live score / N/M done counter
+ *   - sticky header  : `<` back / LIVE · GW N pill / N/M done counter
+ *                      (slim single-row strip — face-off row above already
+ *                      shows the team matchup + live score)
  *   - mobile         : tab selector (home / away) then one team's table
  *   - desktop        : two team tables side-by-side
  *
@@ -485,10 +413,6 @@ function LiveExpandedTeamTable({ squad, onOpenPlayer, autosubInIds }) {
  *   awaySquad: object,
  *   homeName: string,
  *   awayName: string,
- *   homeId: number,
- *   awayId: number,
- *   teamLogoMap: object,
- *   kitIndexByEntry?: object,
  *   eventSnapshot: object | null,
  *   contributionLiveContext: object | null,
  *   viewport?: 'desktop' | 'mobile',
@@ -501,10 +425,6 @@ export function LiveExpandedFixture({
   awaySquad,
   homeName,
   awayName,
-  homeId,
-  awayId,
-  teamLogoMap,
-  kitIndexByEntry,
   eventSnapshot,
   contributionLiveContext,
   viewport = 'desktop',
@@ -535,14 +455,6 @@ export function LiveExpandedFixture({
 
   const stickyHeader = (
     <LiveExpandedStickyHeader
-      homeId={homeId}
-      awayId={awayId}
-      homeName={homeName}
-      awayName={awayName}
-      homeTotal={homeTotal}
-      awayTotal={awayTotal}
-      teamLogoMap={teamLogoMap}
-      kitIndexByEntry={kitIndexByEntry}
       eventSnapshot={eventSnapshot}
       gwFixtures={gwFixtures}
       onCollapse={onCollapse}

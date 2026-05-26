@@ -3,6 +3,7 @@ import test from 'node:test'
 import {
   dcThresholdReached,
   formatKickoffLabel,
+  isCleanSheetEligible,
   liveFixtureLead,
   liveGroupStatus,
   liveGwProgress,
@@ -10,6 +11,7 @@ import {
   playerLiveState,
   playerXiPillKind,
   rowsByPointsContributed,
+  sortStartingXIByPosition,
   teamInitials,
 } from './liveScoresDerivations.js'
 
@@ -252,4 +254,82 @@ test('teamInitials — words → first letters; single word → first 2', () => 
   assert.equal(teamInitials('Toronto'), 'TO')
   assert.equal(teamInitials(''), '?')
   assert.equal(teamInitials(null), '?')
+})
+
+test('isCleanSheetEligible — GK/DEF/MID true; FWD / unknown false', () => {
+  assert.equal(isCleanSheetEligible('GK'), true)
+  assert.equal(isCleanSheetEligible('GKP'), true)
+  assert.equal(isCleanSheetEligible('DEF'), true)
+  assert.equal(isCleanSheetEligible('MID'), true)
+  assert.equal(isCleanSheetEligible('FWD'), false, 'FWDs score 0 CS pts')
+  assert.equal(isCleanSheetEligible('def'), true, 'case-insensitive position')
+  assert.equal(isCleanSheetEligible('MNG'), false, 'manager position has no CS dot')
+  assert.equal(isCleanSheetEligible(''), false)
+  assert.equal(isCleanSheetEligible(null), false)
+  assert.equal(isCleanSheetEligible(undefined), false)
+})
+
+test('sortStartingXIByPosition — GK→DEF→MID→FWD, points desc within group', () => {
+  // Mixed XI: GK + 4 DEFs + 4 MIDs + 2 FWDs, intentionally shuffled.
+  const xi = [
+    { pickPosition: 8, posSingular: 'MID', total_points: 14, minutes: 90 },
+    { pickPosition: 11, posSingular: 'FWD', total_points: 12, minutes: 90 },
+    { pickPosition: 2, posSingular: 'DEF', total_points: 6, minutes: 90 },
+    { pickPosition: 1, posSingular: 'GKP', total_points: 7, minutes: 90 },
+    { pickPosition: 10, posSingular: 'FWD', total_points: 2, minutes: 90 },
+    { pickPosition: 3, posSingular: 'DEF', total_points: 4, minutes: 90 },
+    { pickPosition: 5, posSingular: 'DEF', total_points: 1, minutes: 88 },
+    { pickPosition: 6, posSingular: 'MID', total_points: 6, minutes: 90 },
+    { pickPosition: 7, posSingular: 'MID', total_points: 2, minutes: 84 },
+    { pickPosition: 9, posSingular: 'MID', total_points: 2, minutes: 17 },
+    { pickPosition: 4, posSingular: 'DEF', total_points: 6, minutes: 90 },
+  ]
+  const ordered = sortStartingXIByPosition(xi)
+  // 1 GK, then 4 DEFs, then 4 MIDs, then 2 FWDs — positions in order.
+  const positionsOrdered = ordered.map((r) => r.posSingular)
+  assert.deepEqual(
+    positionsOrdered,
+    ['GKP', 'DEF', 'DEF', 'DEF', 'DEF', 'MID', 'MID', 'MID', 'MID', 'FWD', 'FWD'],
+  )
+  // Within DEF: points desc, then pickPosition asc for the two 6-pt rows.
+  const defs = ordered.filter((r) => r.posSingular === 'DEF')
+  assert.deepEqual(
+    defs.map((r) => r.pickPosition),
+    [2, 4, 3, 5],
+    'DEF order: 6pts (pick 2) → 6pts (pick 4) → 4pts → 1pt',
+  )
+  // Within MID: 14 → 6 → 2 (pick 7) → 2 (pick 9).
+  const mids = ordered.filter((r) => r.posSingular === 'MID')
+  assert.deepEqual(
+    mids.map((r) => r.pickPosition),
+    [8, 6, 7, 9],
+    'MID order: 14pts → 6pts → 2pts (pick 7) → 2pts (pick 9)',
+  )
+})
+
+test('sortStartingXIByPosition — empty / null / unknown positions tolerated', () => {
+  assert.deepEqual(sortStartingXIByPosition([]), [])
+  assert.deepEqual(sortStartingXIByPosition(null), [])
+  assert.deepEqual(sortStartingXIByPosition(undefined), [])
+  // Unknown positions sort to the tail rather than break the spine.
+  const out = sortStartingXIByPosition([
+    { pickPosition: 2, posSingular: 'MNG', total_points: 99 },
+    { pickPosition: 1, posSingular: 'FWD', total_points: 1 },
+  ])
+  assert.deepEqual(
+    out.map((r) => r.posSingular),
+    ['FWD', 'MNG'],
+  )
+})
+
+test('sortStartingXIByPosition — case-insensitive position label', () => {
+  const out = sortStartingXIByPosition([
+    { pickPosition: 2, posSingular: 'fwd', total_points: 3 },
+    { pickPosition: 1, posSingular: 'def', total_points: 1 },
+  ])
+  assert.deepEqual(
+    out.map((r) => r.pickPosition),
+    [1, 2],
+    'lowercase def should sort before lowercase fwd',
+  )
 })
