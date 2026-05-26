@@ -96,12 +96,12 @@
   --data-negative: #ef4444;
   --data-neutral: #9ca3af;
 
-  /* Hero defeat / Villain victory narrative colour tokens. Values match the
-   * hex literals previously inlined in `.live-hero-defeat` / `.live-villain-detected`
-   * (kept intentionally theme-agnostic — same hue on light + dark). Used by
-   * the LiveFaceOffRow Variant 1 avatar treatment (ring + badge dot + caption
-   * pill) and the legacy rectangular tiles still rendered in squad heads /
-   * expanded-fixture standings. */
+  /* Hero defeat / Villain victory narrative colour tokens. Kept intentionally
+   * theme-agnostic — same hue on light + dark. Used by the shared Variant 1
+   * `HeroVillainAvatarFrame` (avatar ring + emoji badge dot + caption pill),
+   * the row/tile background tints (`.standings-row--hero-defeat td`,
+   * `.live-squad-tile--hero-defeat`, etc.), and the face-off row background
+   * wash. */
   --live-hero-color: #d97706;
   --live-hero-strong: #b45309;
   --live-hero-tint: color-mix(in srgb, #d97706 14%, transparent);
@@ -6841,55 +6841,11 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
   justify-content: flex-start;
 }
 
-/* Villain’s victory: winning H2H on live GW pts while only 7th raw GW total in the league */
-.live-villain-detected {
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  background: var(--live-villain-tint);
-  border: 1px solid color-mix(in srgb, var(--live-villain-color) 35%, var(--fm-border));
-}
-
-.live-villain-detected--compact {
-  padding: 3px 6px;
-  gap: 4px 6px;
-  border-radius: 6px;
-}
-
-.live-villain-detected__img {
-  display: block;
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-.live-villain-detected--compact .live-villain-detected__img {
-  width: 32px;
-  height: 32px;
-  border-radius: 5px;
-}
-
-.live-villain-detected__label {
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--live-villain-strong);
-  line-height: 1.2;
-  max-width: 8.5rem;
-}
-
-.live-villain-detected--compact .live-villain-detected__label {
-  font-size: 0.65rem;
-  max-width: 7rem;
-}
-
+/* Villain’s victory / Hero defeat narrative — the rectangular badge components
+ * have been retired in favour of the locked Variant 1 avatar treatment
+ * (ring + emoji dot + caption pill) rendered by `HeroVillainAvatarFrame`.
+ * Color tokens (`--live-hero-*` / `--live-villain-*`) live in `:root` and are
+ * shared by `HeroVillainAvatarFrame` and the row/tile tints below. */
 .live-fixture-tile--villain-victory {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--live-villain-color) 28%, transparent);
 }
@@ -6907,94 +6863,6 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
 
 .standings-row--villain-victory td {
   background: color-mix(in srgb, var(--live-villain-color) 8%, transparent);
-}
-
-/* Hero defeat: 2nd-highest raw GW in the league but losing this H2H on live GW pts */
-.live-hero-defeat {
-  display: inline-flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 8px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  background: var(--live-hero-tint);
-  border: 1px solid color-mix(in srgb, var(--live-hero-color) 38%, var(--fm-border));
-}
-
-.live-hero-defeat--compact {
-  padding: 2px 5px;
-  gap: 4px 5px;
-  border-radius: 6px;
-  flex-wrap: nowrap;
-}
-
-/* Full-body / tall cutouts: contain so the figure stays visible in the chip */
-.live-hero-defeat__img {
-  display: block;
-  width: 38px;
-  height: 52px;
-  object-fit: contain;
-  object-position: center bottom;
-  border-radius: 6px;
-  flex-shrink: 0;
-}
-
-.live-hero-defeat--compact .live-hero-defeat__img {
-  width: 32px;
-  height: 46px;
-  border-radius: 5px;
-}
-
-.live-hero-defeat__label {
-  font-size: 0.68rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-  color: var(--live-hero-strong);
-  line-height: 1.15;
-  max-width: 8.5rem;
-}
-
-.live-hero-defeat--compact .live-hero-defeat__label {
-  font-size: 0.52rem;
-  letter-spacing: 0.02em;
-  line-height: 1.1;
-  max-width: 4.75rem;
-  white-space: nowrap;
-}
-
-/* Narrow portrait: icon-only chip (parent keeps role="img" + aria-label for a11y) */
-@media (max-width: 1080px) and (orientation: portrait) {
-  .live-villain-detected__label {
-    display: none;
-  }
-
-  .live-villain-detected {
-    gap: 0;
-    padding: 2px 4px;
-    flex-wrap: nowrap;
-  }
-
-  .live-villain-detected--compact {
-    gap: 0;
-    padding: 2px 3px;
-    flex-wrap: nowrap;
-  }
-
-  .live-hero-defeat__label {
-    display: none;
-  }
-
-  .live-hero-defeat {
-    gap: 0;
-    padding: 2px 4px;
-  }
-
-  .live-hero-defeat--compact {
-    gap: 0;
-    padding: 2px 3px;
-  }
 }
 
 .live-fixture-tile--hero-defeat {
@@ -11087,7 +10955,12 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 }
 /* Avatar wrapper — wraps the existing TeamAvatar so the V1 ring is applied
    to a rounded container around the avatar (the avatar itself is unchanged)
-   and the badge dot can absolutely position against this wrapper. */
+   and the badge dot can absolutely position against this wrapper. Class
+   prefix preserved (originally co-located with LiveFaceOffRow) but the
+   shared `HeroVillainAvatarFrame` component now reuses these styles across
+   every production HERO/VILLAIN surface (face-off rows, squad-tile heads,
+   live standings rows). `--size-compact` and `--size-tiny` modifiers shrink
+   the ring + dot for tighter host contexts. */
 .live-banner-row__avatar-wrap {
   position: relative;
   display: inline-flex;
@@ -11099,6 +10972,18 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 }
 .live-banner-row__avatar-wrap--villain {
   box-shadow: 0 0 0 2px var(--live-villain-color);
+}
+/* Tiny variant: thinner ring for tight cells (live standings table). */
+.live-banner-row__avatar-wrap--size-tiny.live-banner-row__avatar-wrap--hero,
+.live-banner-row__avatar-wrap--size-tiny.live-banner-row__avatar-wrap--villain {
+  box-shadow: 0 0 0 1.5px currentColor;
+  color: transparent;
+}
+.live-banner-row__avatar-wrap--size-tiny.live-banner-row__avatar-wrap--hero {
+  box-shadow: 0 0 0 1.5px var(--live-hero-color);
+}
+.live-banner-row__avatar-wrap--size-tiny.live-banner-row__avatar-wrap--villain {
+  box-shadow: 0 0 0 1.5px var(--live-villain-color);
 }
 /* 16px floating badge dot at the avatar's bottom-right with hero/villain
    emoji glyph. Border matches the tile surface so it reads as a separate
@@ -11118,6 +11003,17 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   color: #fff;
   border: 1.5px solid var(--fm-card);
   pointer-events: none;
+}
+/* Compact variant: shrink the dot proportionally for smaller avatars (28px
+   `team-badge--sm` used by squad-tile heads — a 16px dot covers >55% of the
+   avatar there and reads as an overlay rather than a pip). */
+.live-banner-row__avatar-wrap--size-compact .live-banner-row__badge-dot {
+  width: 13px;
+  height: 13px;
+  font-size: 7px;
+  bottom: -1px;
+  right: -3px;
+  border-width: 1px;
 }
 .live-banner-row__badge-dot--hero {
   background: var(--live-hero-color);

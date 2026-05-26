@@ -20,6 +20,7 @@ import { LiveFixtureGwPointsChart } from './LiveFixtureGwPointsChart.jsx';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { LiveSharedStatusHeader } from './LiveSharedStatusHeader.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
+import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { useNarrowViewport, usePortraitMobile } from './usePortraitMobile.js';
 import {
@@ -642,66 +643,6 @@ function sumProjectedGwForStarters(picks, ctx, teamsById, gw, blendCtx, liveByEl
   return sum;
 }
 
-
-/** Joker + “Villain Detected” for live tiles (image in `public/villain-detected.png`). */
-function VillainDetectedBadge({ variant = 'default' }) {
-  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-  const src = `${base}villain-detected.png`;
-  const compact = variant === 'compact';
-  return (
-    <span
-      className={
-        'live-villain-detected' +
-        (compact ? ' live-villain-detected--compact' : '')
-      }
-      role="img"
-      aria-label="Villain detected: winning this head-to-head gameweek on live points while ranked 7th in the league for raw gameweek total"
-    >
-      <img
-        className="live-villain-detected__img"
-        src={src}
-        alt=""
-        width={compact ? 32 : 40}
-        height={compact ? 32 : 40}
-        decoding="async"
-        loading="lazy"
-      />
-      <span className="live-villain-detected__label" aria-hidden="true">
-        Villain Detected
-      </span>
-    </span>
-  );
-}
-
-/** Bonnie Tyler cover + “Hero Defeat” (`public/hero-defeat.png`). */
-function HeroDefeatBadge({ variant = 'default' }) {
-  const base = (import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
-  const src = `${base}hero-defeat.png`;
-  const compact = variant === 'compact';
-  return (
-    <span
-      className={
-        'live-hero-defeat' +
-        (compact ? ' live-hero-defeat--compact' : '')
-      }
-      role="img"
-      aria-label="Hero defeat: 2nd-highest raw gameweek score in the league but losing this head-to-head on live points"
-    >
-      <img
-        className="live-hero-defeat__img"
-        src={src}
-        alt=""
-        width={compact ? 32 : 38}
-        height={compact ? 46 : 52}
-        decoding="async"
-        loading="lazy"
-      />
-      <span className="live-hero-defeat__label" aria-hidden="true">
-        Hero Defeat
-      </span>
-    </span>
-  );
-}
 
 /** Effective XI rows (post-autosub when available). */
 function startersForEffectiveXi(squad) {
@@ -1596,23 +1537,23 @@ export function LiveScores({
                       : undefined
                   }
                 >
-                  <TeamAvatar
-                    entryId={squad.leagueEntryId}
-                    name={squad.teamName}
-                    size="sm"
-                    logoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                  />
+                  <HeroVillainAvatarFrame
+                    status={squadVillain ? 'villain' : squadHero ? 'hero' : null}
+                    size="compact"
+                  >
+                    <TeamAvatar
+                      entryId={squad.leagueEntryId}
+                      name={squad.teamName}
+                      size="sm"
+                      logoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  </HeroVillainAvatarFrame>
                   <span className="live-squad-title__text">
                     <span>
                       {squad.teamName}
                       <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
                     </span>
-                    {squadVillain ? (
-                      <VillainDetectedBadge variant="compact" />
-                    ) : squadHero ? (
-                      <HeroDefeatBadge variant="compact" />
-                    ) : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1659,23 +1600,23 @@ export function LiveScores({
                       : undefined
                   }
                 >
-                  <TeamAvatar
-                    entryId={squad.leagueEntryId}
-                    name={squad.teamName}
-                    size="sm"
-                    logoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                  />
+                  <HeroVillainAvatarFrame
+                    status={squadVillain ? 'villain' : squadHero ? 'hero' : null}
+                    size="compact"
+                  >
+                    <TeamAvatar
+                      entryId={squad.leagueEntryId}
+                      name={squad.teamName}
+                      size="sm"
+                      logoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                    />
+                  </HeroVillainAvatarFrame>
                   <span className="live-squad-title__text">
                     <span>
                       {squad.teamName}
                       <LeftToPlayOutsideAfter count={squad.leftToPlayCount} />
                     </span>
-                    {squadVillain ? (
-                      <VillainDetectedBadge variant="compact" />
-                    ) : squadHero ? (
-                      <HeroDefeatBadge variant="compact" />
-                    ) : null}
                   </span>
                 </h3>
                 <div className="live-squad-meta tabular">
@@ -1890,20 +1831,26 @@ export function LiveScores({
                       </td>
                       <td className="col-team">
                         <span className="team-cell">
-                          <TeamAvatar
-                            entryId={row.league_entry}
-                            name={row.teamName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
+                          <HeroVillainAvatarFrame
+                            status={
+                              isVillainVictory
+                                ? 'villain'
+                                : isHeroDefeat
+                                  ? 'hero'
+                                  : null
+                            }
+                            size="tiny"
+                          >
+                            <TeamAvatar
+                              entryId={row.league_entry}
+                              name={row.teamName}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
+                          </HeroVillainAvatarFrame>
                           <span className="team-name team-name--sidebar live-standings-team-name">
                             {row.teamName}
-                            {isVillainVictory ? (
-                              <VillainDetectedBadge variant="compact" />
-                            ) : isHeroDefeat ? (
-                              <HeroDefeatBadge variant="compact" />
-                            ) : null}
                             {moveUp ? (
                               <span
                                 className="live-standings-move live-standings-move--up"

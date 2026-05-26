@@ -7636,7 +7636,8 @@
 /* HERO DEFEAT / VILLAIN VICTORY · circular treatments (mockup only)    */
 /* ------------------------------------------------------------------ */
 /* Color tokens scoped to the showcase. Values match the production
- * tile (App.css `live-hero-defeat` / `live-villain-detected`) so the
+ * production HeroVillainAvatarFrame tokens (App.css `--live-hero-*` /
+ * `--live-villain-*`) so the
  * mockup reads true; no new global tokens introduced. */
 .mockup-hv-showcase {
   --mockup-hv-hero: #d97706;

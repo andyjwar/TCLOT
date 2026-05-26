@@ -1,76 +1,6 @@
 import { TeamAvatar } from './TeamAvatar';
+import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame';
 import { liveFixtureLead } from './liveScoresDerivations.js';
-
-const HERO_VILLAIN_GLYPH = {
-  hero: '🦸',
-  villain: '🦹',
-};
-
-const HERO_VILLAIN_LABEL = {
-  hero: 'HERO DEFEAT',
-  villain: 'VILLAIN VICTORY',
-};
-
-const HERO_VILLAIN_ARIA = {
-  hero: 'Hero defeat: 2nd-highest raw gameweek score in the league but losing this head-to-head on live points',
-  villain: 'Villain detected: winning this head-to-head gameweek on live points while ranked 7th in the league for raw gameweek total',
-};
-
-/**
- * Hero/villain narrative badge wrapping the manager avatar — mockup Variant 1
- * (locked decision, see `Mockup.jsx` HERO/VILLAIN BADGE showcase + DECISIONS
- * tracker). 2px tinted ring around the existing avatar + a 16px emoji dot at
- * its bottom-right + a caption pill rendered below in the shared crest column.
- *
- * `captionSlotVisible` controls whether an (empty or filled) caption slot is
- * rendered. It is forced visible on BOTH sides when EITHER side has a status,
- * so the two crest columns stay the same height and both avatars share a Y
- * baseline regardless of which side carries the narrative.
- *
- * @param {{
- *   status: 'hero' | 'villain' | null,
- *   captionSlotVisible: boolean,
- *   children: React.ReactNode,
- * }} props
- */
-function HeroVillainAvatarFrame({ status, captionSlotVisible, children }) {
-  return (
-    <>
-      <span
-        className={
-          'live-banner-row__avatar-wrap' +
-          (status ? ' live-banner-row__avatar-wrap--' + status : '')
-        }
-        role={status ? 'img' : undefined}
-        aria-label={status ? HERO_VILLAIN_ARIA[status] : undefined}
-      >
-        {children}
-        {status ? (
-          <span
-            className={'live-banner-row__badge-dot live-banner-row__badge-dot--' + status}
-            aria-hidden="true"
-          >
-            {HERO_VILLAIN_GLYPH[status]}
-          </span>
-        ) : null}
-      </span>
-      {captionSlotVisible ? (
-        <span className="live-banner-row__caption-slot">
-          {status ? (
-            <span
-              className={
-                'live-banner-row__caption-pill live-banner-row__caption-pill--' + status
-              }
-              aria-hidden="true"
-            >
-              {HERO_VILLAIN_LABEL[status]}
-            </span>
-          ) : null}
-        </span>
-      ) : null}
-    </>
-  );
-}
 
 /**
  * Compact face-off row (desktop wide grid, or mobile compressed) — both
@@ -163,6 +93,7 @@ export function LiveFaceOffRow({
         <span className="live-banner-row__crest">
           <HeroVillainAvatarFrame
             status={homeStatus}
+            size="default"
             captionSlotVisible={captionSlotVisible}
           >
             <TeamAvatar
@@ -238,6 +169,7 @@ export function LiveFaceOffRow({
         <span className="live-banner-row__crest">
           <HeroVillainAvatarFrame
             status={awayStatus}
+            size="default"
             captionSlotVisible={captionSlotVisible}
           >
             <TeamAvatar
