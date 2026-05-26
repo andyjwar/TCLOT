@@ -12405,27 +12405,32 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
-/* Feed is always a fixed-height scrollable container (PR #5e
-   follow-up): the full filtered event list renders inside; the user
-   scrolls in place instead of pushing the rest of the page down.
-   `overflow-y: auto` overrides the previous `overflow: hidden`. */
+/* Feed is a fixed-height scrollable container (PR #5e follow-up):
+   the full filtered event list renders inside; the user scrolls in
+   place instead of pushing the rest of the page down.
+
+   PR #5k: dropped the redundant inner chrome (border + radius +
+   background) so only the outer tile carries visual containment —
+   double-outline read as "wonky". The feed inherits the parent's
+   background; `overflow-y: auto` retains the scroll behaviour. The
+   `max-height` is sized to exactly 5 cards (measured row height =
+   68px: var(--space-3)×2 padding + 20px row 1 + 2px row-gap + 20px
+   row 2 + 1px bottom border → 5 × 68 = 340px), applied universally
+   so the 6th card sits cleanly below the scroll fold on desktop and
+   mobile. */
 .live-contrib__feed {
   display: flex;
   flex-direction: column;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  background: var(--surface);
-  overflow: hidden;
-  max-height: 480px;
+  max-height: 340px;
   overflow-y: auto;
-  scrollbar-color: var(--text-muted) var(--surface);
+  scrollbar-color: var(--text-muted) transparent;
   scrollbar-width: thin;
 }
 .live-contrib__feed::-webkit-scrollbar {
   width: 8px;
 }
 .live-contrib__feed::-webkit-scrollbar-track {
-  background: var(--surface);
+  background: transparent;
 }
 .live-contrib__feed::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--text-muted) 50%, transparent);
@@ -12433,15 +12438,6 @@ button.live-xp__player-name:focus-visible {
 }
 .live-contrib__feed::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
-}
-/* Mobile: cap the feed at ~5 cards instead of ~6-7. Each row is
-   ~70px (var(--space-3) padding × 2 + two ~20px text rows + 2px
-   row-gap + 1px border) so 5 cards × ~70px ≈ 350px; 360px leaves
-   a small peek at the 6th card to hint at scrollability. */
-@media (max-width: 880px) {
-  .live-contrib__feed {
-    max-height: 360px;
-  }
 }
 
 .live-contrib__empty {
