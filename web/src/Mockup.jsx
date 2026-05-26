@@ -324,6 +324,14 @@ const DECISIONS_DECIDED = [
     ],
   },
   {
+    surface: 'LIVE FACE-OFF · HERO/VILLAIN BADGE',
+    items: [
+      'Variant 1 — avatar status ring (2px) + tiny floating badge dot (🦸 / 🦹 emoji) + caption pill below.',
+      'Hero defeat: orange/amber #d97706. Villain victory: violet #7c3aed. Reused as production CSS vars (--live-hero-color / --live-villain-color in App.css).',
+      'Wired into LiveFaceOffRow on redesign-phase-2; legacy rectangular tile retained in squad-tile heads + expanded-fixture standings (out of scope for this lock).',
+    ],
+  },
+  {
     surface: 'SCHEDULE',
     items: [
       'Mobile: single-team mode (pick a team, see their season)',
@@ -425,14 +433,6 @@ const DECISIONS_OPEN = [
     items: [
       'FPL Live sub-nav: text-only (A) vs PL-crest-on-Lineups-only (B) vs icons-everywhere (C). See SUB-NAV · FPL LIVE showcase.',
       'Header tile chrome: variant 4 with tile chrome (currently shipped in PR #3.7) vs full-bleed combos 5a/5b/5c. See HEADER · FULL-BLEED + STATUS STRIP COMBOS showcase.',
-    ],
-  },
-  {
-    surface: 'LIVE FACE-OFF · HERO/VILLAIN BADGE',
-    items: [
-      'Pick a circular treatment: Variant 1 (avatar status ring + badge dot), Variant 2 (standalone medallion next to avatar), or Variant 3 (horizontal pill = circle + caption).',
-      'Confirm color tokens: orange/red for HERO DEFEAT, purple/violet for VILLAIN VICTORY.',
-      'Confirm whether the badge text label is required or whether the visual cue alone is enough (Variant 1 has both; Variant 1 minimal could drop the caption pill).',
     ],
   },
 ]
@@ -2089,24 +2089,28 @@ function HeroVillainBadgeShowcase() {
       label: 'Current — for comparison',
       caption: 'Production rectangular tile · image cutout + caps text · orange (HERO) / purple (VILLAIN) tint.',
       Render: HvReferenceRender,
+      tag: 'reference',
     },
     {
       key: 'v1',
       label: 'Variant 1 — Status ring + badge dot',
       caption: 'Avatar gets a 2px tinted ring + a 16px glyph dot at the bottom-right. Caption pill below in caps mono.',
       Render: HvVariant1Render,
+      tag: 'locked',
     },
     {
       key: 'v2',
       label: 'Variant 2 — Standalone medallion',
       caption: 'Discrete 56px circle next to the manager avatar. Image cropped to circle + faint gradient tint + stacked HERO / DEFEAT text under it.',
       Render: HvVariant2Render,
+      tag: 'reference',
     },
     {
       key: 'v3',
       label: 'Variant 3 — Horizontal pill (circle + caption)',
       caption: 'Same image + text composition as today, reshaped into a rounded-pill capsule.',
       Render: HvVariant3Render,
+      tag: 'reference',
     },
   ]
   return (
@@ -2114,7 +2118,14 @@ function HeroVillainBadgeShowcase() {
       {variants.map((v) => (
         <div className="mockup-hv-variant" key={v.key}>
           <div className="mockup-hv-variant__head">
-            <span className="mockup-hv-variant__label">{v.label}</span>
+            <span className="mockup-hv-variant__label">
+              {v.label}
+              {v.tag === 'locked' ? (
+                <span className="mockup-variant-picked" aria-label="Locked option">LOCKED</span>
+              ) : (
+                <span className="mockup-variant-ref" aria-label="Reference only">Reference only</span>
+              )}
+            </span>
             <span className="mockup-hv-variant__caption">{v.caption}</span>
           </div>
           <div className="mockup-hv-variant__pair">

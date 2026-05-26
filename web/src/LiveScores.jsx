@@ -1469,57 +1469,39 @@ export function LiveScores({
               const lineupOpen = expandedFixtures.has(fixtureKey);
               const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
 
+              // Hero defeat / villain victory narrative status is passed
+              // through to LiveFaceOffRow as `homeStatus`/`awayStatus` so the
+              // Variant 1 avatar treatment (ring + dot + caption pill) wraps
+              // the manager avatar directly. The rectangular tile is no
+              // longer injected via `bannerExtras` in this face-off row.
+              const homeStatus = homeVillain ? 'villain' : homeHero ? 'hero' : null;
+              const awayStatus = awayVillain ? 'villain' : awayHero ? 'hero' : null;
+
               const bannerExtras = {
-                home: (
-                  <>
-                    {winPct ? (
-                      <span
-                        className={
-                          'live-banner-row__win-pct tabular' +
-                          (winPct.isLive ? ' live-banner-row__win-pct--live' : '')
-                        }
-                        title={winPct.isLive ? 'Home win % (live Proj MC)' : 'Home win % (xPts MC)'}
-                        aria-label={`Home win ${Math.round(winPct.homeWinPct)}%`}
-                      >
-                        {Math.round(winPct.homeWinPct)}%
-                      </span>
-                    ) : null}
-                    {homeVillain ? (
-                      <span className="live-banner-row__edge-badge">
-                        <VillainDetectedBadge variant="compact" />
-                      </span>
-                    ) : homeHero ? (
-                      <span className="live-banner-row__edge-badge">
-                        <HeroDefeatBadge variant="compact" />
-                      </span>
-                    ) : null}
-                  </>
-                ),
-                away: (
-                  <>
-                    {awayVillain ? (
-                      <span className="live-banner-row__edge-badge">
-                        <VillainDetectedBadge variant="compact" />
-                      </span>
-                    ) : awayHero ? (
-                      <span className="live-banner-row__edge-badge">
-                        <HeroDefeatBadge variant="compact" />
-                      </span>
-                    ) : null}
-                    {winPct ? (
-                      <span
-                        className={
-                          'live-banner-row__win-pct tabular' +
-                          (winPct.isLive ? ' live-banner-row__win-pct--live' : '')
-                        }
-                        title={winPct.isLive ? 'Away win % (live Proj MC)' : 'Away win % (xPts MC)'}
-                        aria-label={`Away win ${Math.round(winPct.awayWinPct)}%`}
-                      >
-                        {Math.round(winPct.awayWinPct)}%
-                      </span>
-                    ) : null}
-                  </>
-                ),
+                home: winPct ? (
+                  <span
+                    className={
+                      'live-banner-row__win-pct tabular' +
+                      (winPct.isLive ? ' live-banner-row__win-pct--live' : '')
+                    }
+                    title={winPct.isLive ? 'Home win % (live Proj MC)' : 'Home win % (xPts MC)'}
+                    aria-label={`Home win ${Math.round(winPct.homeWinPct)}%`}
+                  >
+                    {Math.round(winPct.homeWinPct)}%
+                  </span>
+                ) : null,
+                away: winPct ? (
+                  <span
+                    className={
+                      'live-banner-row__win-pct tabular' +
+                      (winPct.isLive ? ' live-banner-row__win-pct--live' : '')
+                    }
+                    title={winPct.isLive ? 'Away win % (live Proj MC)' : 'Away win % (xPts MC)'}
+                    aria-label={`Away win ${Math.round(winPct.awayWinPct)}%`}
+                  >
+                    {Math.round(winPct.awayWinPct)}%
+                  </span>
+                ) : null,
               };
 
               return (
@@ -1546,6 +1528,8 @@ export function LiveScores({
                     compact={portraitMobile}
                     expanded={lineupOpen}
                     bannerExtras={bannerExtras}
+                    homeStatus={homeStatus}
+                    awayStatus={awayStatus}
                     onToggle={() => toggleFixtureExpanded(fixtureKey)}
                     ariaControls={fixtureBodyId}
                     chevronEnd={

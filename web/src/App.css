@@ -96,6 +96,19 @@
   --data-negative: #ef4444;
   --data-neutral: #9ca3af;
 
+  /* Hero defeat / Villain victory narrative colour tokens. Values match the
+   * hex literals previously inlined in `.live-hero-defeat` / `.live-villain-detected`
+   * (kept intentionally theme-agnostic — same hue on light + dark). Used by
+   * the LiveFaceOffRow Variant 1 avatar treatment (ring + badge dot + caption
+   * pill) and the legacy rectangular tiles still rendered in squad heads /
+   * expanded-fixture standings. */
+  --live-hero-color: #d97706;
+  --live-hero-strong: #b45309;
+  --live-hero-tint: color-mix(in srgb, #d97706 14%, transparent);
+  --live-villain-color: #7c3aed;
+  --live-villain-strong: #5b21b6;
+  --live-villain-tint: color-mix(in srgb, #7c3aed 12%, transparent);
+
   /* Surface stack — DARK defaults */
   --bg: #0a0a0d;
   --surface: #14141a;
@@ -6837,8 +6850,8 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
   gap: 6px 8px;
   padding: 4px 8px;
   border-radius: 8px;
-  background: color-mix(in srgb, #7c3aed 12%, transparent);
-  border: 1px solid color-mix(in srgb, #7c3aed 35%, var(--fm-border));
+  background: var(--live-villain-tint);
+  border: 1px solid color-mix(in srgb, var(--live-villain-color) 35%, var(--fm-border));
 }
 
 .live-villain-detected--compact {
@@ -6867,7 +6880,7 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: #5b21b6;
+  color: var(--live-villain-strong);
   line-height: 1.2;
   max-width: 8.5rem;
 }
@@ -6878,22 +6891,22 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
 }
 
 .live-fixture-tile--villain-victory {
-  box-shadow: 0 0 0 1px color-mix(in srgb, #7c3aed 28%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--live-villain-color) 28%, transparent);
 }
 
 .live-fixture-column--villain-victory {
-  background: color-mix(in srgb, #7c3aed 6%, transparent);
+  background: color-mix(in srgb, var(--live-villain-color) 6%, transparent);
   border-radius: 8px;
   padding: 6px 8px 0;
   margin: -6px -8px 0;
 }
 
 .live-squad-tile--villain-victory {
-  box-shadow: 0 0 0 1px color-mix(in srgb, #7c3aed 28%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--live-villain-color) 28%, transparent);
 }
 
 .standings-row--villain-victory td {
-  background: color-mix(in srgb, #7c3aed 8%, transparent);
+  background: color-mix(in srgb, var(--live-villain-color) 8%, transparent);
 }
 
 /* Hero defeat: 2nd-highest raw GW in the league but losing this H2H on live GW pts */
@@ -6905,8 +6918,8 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
   gap: 6px 8px;
   padding: 4px 8px;
   border-radius: 8px;
-  background: color-mix(in srgb, #d97706 14%, transparent);
-  border: 1px solid color-mix(in srgb, #d97706 38%, var(--fm-border));
+  background: var(--live-hero-tint);
+  border: 1px solid color-mix(in srgb, var(--live-hero-color) 38%, var(--fm-border));
 }
 
 .live-hero-defeat--compact {
@@ -6938,7 +6951,7 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
   font-weight: 800;
   letter-spacing: 0.03em;
   text-transform: uppercase;
-  color: #b45309;
+  color: var(--live-hero-strong);
   line-height: 1.15;
   max-width: 8.5rem;
 }
@@ -6985,29 +6998,29 @@ body[data-tclot-theme='dark'] .live-h2h-chip--draw {
 }
 
 .live-fixture-tile--hero-defeat {
-  box-shadow: 0 0 0 1px color-mix(in srgb, #d97706 30%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--live-hero-color) 30%, transparent);
 }
 
 /* One side villain, other hero — show both accent rings */
 .live-fixture-tile--villain-victory.live-fixture-tile--hero-defeat {
   box-shadow:
-    0 0 0 1px color-mix(in srgb, #7c3aed 28%, transparent),
-    0 0 0 3px color-mix(in srgb, #d97706 26%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--live-villain-color) 28%, transparent),
+    0 0 0 3px color-mix(in srgb, var(--live-hero-color) 26%, transparent);
 }
 
 .live-fixture-column--hero-defeat {
-  background: color-mix(in srgb, #d97706 7%, transparent);
+  background: color-mix(in srgb, var(--live-hero-color) 7%, transparent);
   border-radius: 8px;
   padding: 6px 8px 0;
   margin: -6px -8px 0;
 }
 
 .live-squad-tile--hero-defeat {
-  box-shadow: 0 0 0 1px color-mix(in srgb, #d97706 30%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--live-hero-color) 30%, transparent);
 }
 
 .standings-row--hero-defeat td {
-  background: color-mix(in srgb, #d97706 9%, transparent);
+  background: color-mix(in srgb, var(--live-hero-color) 9%, transparent);
 }
 
 .live-squad-meta {
@@ -11067,6 +11080,83 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row__crest {
   flex-shrink: 0;
   line-height: 0;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+/* Avatar wrapper — wraps the existing TeamAvatar so the V1 ring is applied
+   to a rounded container around the avatar (the avatar itself is unchanged)
+   and the badge dot can absolutely position against this wrapper. */
+.live-banner-row__avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  border-radius: 50%;
+  line-height: 0;
+}
+.live-banner-row__avatar-wrap--hero {
+  box-shadow: 0 0 0 2px var(--live-hero-color);
+}
+.live-banner-row__avatar-wrap--villain {
+  box-shadow: 0 0 0 2px var(--live-villain-color);
+}
+/* 16px floating badge dot at the avatar's bottom-right with hero/villain
+   emoji glyph. Border matches the tile surface so it reads as a separate
+   pip rather than merging into the ring. */
+.live-banner-row__badge-dot {
+  position: absolute;
+  bottom: -2px;
+  right: -4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  line-height: 1;
+  color: #fff;
+  border: 1.5px solid var(--fm-card);
+  pointer-events: none;
+}
+.live-banner-row__badge-dot--hero {
+  background: var(--live-hero-color);
+}
+.live-banner-row__badge-dot--villain {
+  background: var(--live-villain-color);
+}
+/* Caption slot — ALWAYS rendered when EITHER side has a status badge so
+   both crest columns are the same height, keeping the two avatars on a
+   shared Y baseline. The slot is empty on the side without a status. */
+.live-banner-row__caption-slot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 14px;
+}
+.live-banner-row__caption-pill {
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 2px 5px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+.live-banner-row__caption-pill--hero {
+  background: var(--live-hero-tint);
+  color: var(--live-hero-strong);
+}
+.live-banner-row__caption-pill--villain {
+  background: var(--live-villain-tint);
+  color: var(--live-villain-strong);
+}
+.live-banner-row--compact .live-banner-row__caption-pill {
+  font-size: 8px;
+  padding: 1px 4px;
+  letter-spacing: 0.05em;
 }
 .live-banner-row__names {
   display: flex;
