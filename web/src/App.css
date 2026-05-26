@@ -8171,27 +8171,41 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 /* ------------------------------------------------------------------ */
-/* Global brand header — Variant B (gradient pill + meta + season)      */
-/* Spec: Mockup.jsx HeroVariantB / .mockup-brand-b / .mockup-brand-pill. */
+/* Global brand header — variant 4 (PR #3.7)                            */
+/* Brand pill + '2025/26' meta + top-8 crests on the brand row;         */
+/* status strip (live / idle / pre-season) inside the same tile.        */
+/* Spec: Mockup.jsx HeroVariantBSeasonAndCrests + HeroVariantBStatusStrip
+ * (`.mockup-brand-b--crests`, `.mockup-hero-team-crests`,
+ *  `.mockup-hero-status-strip`).                                       */
 /* Header-only — the brand pill never appears on other surfaces.        */
 /* ------------------------------------------------------------------ */
 .tile--brand-header {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: var(--space-3);
-  height: 68px;
-  padding: 0 var(--space-4);
+  display: flex;
+  flex-direction: column;
   margin: 0;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r-md);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
   color: var(--text);
+  overflow: hidden;
 }
 
 .fotmob[data-theme='light'] .tile--brand-header {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* Brand row — `auto 1fr auto` grid: pill left, '2025/26' meta center,
+ * 8 crests right-justified. Height matches the pre-PR-#3.7 tile so the
+ * page header stays the same total height when the status strip is not
+ * rendered (e.g. bootstrap still loading). */
+.brand-header__row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  height: 68px;
+  padding: 0 var(--space-4);
 }
 
 /* Gradient pill carrying the inline lion icon + TCLOT wordmark — the
@@ -8220,6 +8234,8 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   line-height: 1;
 }
 
+/* Meta slot — Geist Mono / caps / muted treatment lifted from the old
+ * `.brand-header__season` styling. The `2025/26` label now lives here. */
 .brand-header__meta {
   font-size: var(--text-xs);
   color: var(--text-muted);
@@ -8229,26 +8245,98 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
-.brand-header__season {
+.brand-header__meta--season {
   font-family: 'Geist Mono', monospace;
-  font-size: var(--text-xs);
   font-weight: 600;
-  color: var(--text-muted);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   font-variant-numeric: tabular-nums;
-  white-space: nowrap;
+}
+
+/* Crest row — 8 fantasy team crests in current standings order
+ * (rank 1 leftmost → rank 8 rightmost). 24px each, 4px flat gap (no
+ * overlap — the shirt-silhouette fallback used for fantasy teams
+ * without a custom PNG has visible outlines that overlap awkwardly). */
+.brand-header__crests {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   justify-self: end;
+  white-space: nowrap;
+}
+.brand-header__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+/* Force the production crest atom to 24px regardless of its `size` prop;
+ * `team-avatar-frame--sm` is normally 28px — we shrink it locally so 8
+ * crests fit cleanly inside the 68px brand row. */
+.brand-header__crests .team-avatar-frame {
+  width: 24px;
+  height: 24px;
+}
+.brand-header__crests .team-shirt {
+  width: 24px;
+  height: 24px;
+}
+
+/* Status strip — thin row inside the same header tile carrying GW state.
+ * Pulled in from `.mockup-hero-status-strip` (Mockup.css). The
+ * `--live` modifier renders a small pulsing brand-tinted dot; `--idle`
+ * and `--pre-season` are plain text. */
+.brand-header__status-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+  min-height: 28px;
+}
+.brand-header__status-strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.brand-header__status-sep {
+  opacity: 0.5;
+}
+.brand-header__status-mono {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+/* Live state pulsing dot — wraps `NavIcon name="pulsing-dot"` (12px) so
+ * it inherits the same pulse animation as the bottom-nav FPL Live icon.
+ * The wrapper exists so we can size the icon independently of the
+ * nav button's color inheritance. */
+.brand-header__status-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+.brand-header__status-dot-svg .nav-icon__pulse-target {
+  transform-origin: 12px 12px;
+  animation: dashboard-nav-icon-pulse 2.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .brand-header__status-dot-svg .nav-icon__pulse-target {
+    animation: none;
+  }
 }
 
 @media (max-width: 720px) {
-  .tile--brand-header {
+  .brand-header__row {
     height: 56px;
     padding: 0 var(--space-3);
     gap: var(--space-3);
-    /* Drop the meta slot on narrow screens — pill + season keeps the
-     * row legible at 375px. */
+    /* Drop the crest row on narrow screens — pill + season keeps the
+     * row legible at 375px. Status strip remains visible below. */
     grid-template-columns: auto auto;
   }
   .brand-header__pill {
@@ -8260,10 +8348,14 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
     font-size: 12px;
   }
   .brand-header__meta {
+    font-size: 10px;
+    justify-self: end;
+  }
+  .brand-header__crests {
     display: none;
   }
-  .brand-header__season {
-    font-size: 10px;
+  .brand-header__status-strip {
+    padding: var(--space-2) var(--space-3);
   }
 }
 

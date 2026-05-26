@@ -8,11 +8,16 @@ import {
   useSyncExternalStore,
 } from 'react'
 import { gameWeekSelectLabel } from './gwLabel.js'
+import { NavIcon } from './NavIcon.jsx'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
 const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
-const BRAND_HEADER_META = 'FPL Draft H2H'
+/** Single source of truth for the header season label. Hardcoded for now — when we
+ * introduce dynamic season detection (driven off `events.data[0].deadline_time` or a
+ * build-time constant), update this and `brandHeaderStatus.deriveBrandHeaderStatus`'s
+ * `season` arg in lockstep. */
 const BRAND_HEADER_SEASON = '2025/26'
+const BRAND_HEADER_TOP_N = 8
 
 // Lion silhouette extracted verbatim from public/tclot-fantasy-style-banner.svg.
 // Kept inline so it inherits currentColor (no second network fetch, themable).
@@ -35,18 +40,177 @@ function TclotLionIcon({ size = 22 }) {
   )
 }
 
-function BrandHeader() {
+/** Renders the status strip body inside `.brand-header__status-strip`. Branches per
+ * `liveStatus.status` ('live' | 'idle' | 'pre-season'). Returns `null` when state is
+ * unknown (bootstrap not loaded yet) so the strip collapses rather than flashing
+ * placeholder copy. */
+function BrandHeaderStatusBody({ liveStatus }) {
+  if (!liveStatus || liveStatus.status === 'unknown') return null
+  const { status, liveGw, lastFinishedGw, nextGw, nextDeadlineLabel, seasonShort } =
+    liveStatus
+
+  if (status === 'live') {
+    const liveCount = Number.isFinite(liveStatus.liveFixtureCount)
+      ? liveStatus.liveFixtureCount
+      : null
+    const minute = Number.isFinite(liveStatus.minute) ? liveStatus.minute : null
+    return (
+      <>
+        <span className="brand-header__status-dot" aria-hidden>
+          <NavIcon name="pulsing-dot" size={12} className="brand-header__status-dot-svg" />
+        </span>
+        <span className="brand-header__status-strong">GW {liveGw}</span>
+        {liveCount != null ? (
+          <>
+            <span className="brand-header__status-sep">—</span>
+            <span>{liveCount} fixtures live</span>
+          </>
+        ) : null}
+        {minute != null ? (
+          <>
+            <span className="brand-header__status-sep">·</span>
+            <span className="brand-header__status-mono">{minute}&apos;</span>
+          </>
+        ) : null}
+        {liveCount == null && minute == null ? (
+          <>
+            <span className="brand-header__status-sep">·</span>
+            <span>Live</span>
+          </>
+        ) : null}
+      </>
+    )
+  }
+
+  if (status === 'idle') {
+    // Post-season: between FPL seasons, bootstrap reports `events.next` as null.
+    // Surface that explicitly instead of leaking a placeholder `GW ?`. Pre-PR-#3.7
+    // showcased this as "Season {seasonShort} complete" to keep the strip honest
+    // while the new season's deadlines populate.
+    if (nextGw == null) {
+      return (
+        <>
+          <span className="brand-header__status-strong">
+            GW {lastFinishedGw} complete
+          </span>
+          <span className="brand-header__status-sep">·</span>
+          <span>Season {seasonShort} complete</span>
+        </>
+      )
+    }
+    return (
+      <>
+        <span className="brand-header__status-strong">
+          GW {lastFinishedGw} complete
+        </span>
+        <span className="brand-header__status-sep">·</span>
+        <span>
+          GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
+        </span>
+      </>
+    )
+  }
+
+  // pre-season
+  return (
+    <>
+      <span className="brand-header__status-strong">Pre-season</span>
+      <span className="brand-header__status-sep">·</span>
+      <span>
+        GW {nextGw ?? 1} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
+      </span>
+    </>
+  )
+}
+
+/**
+ * Header tile carrying the brand pill + season meta + top-8 fantasy crests
+ * (rank 1 leftmost → rank 8 rightmost), with the status strip beneath. Spec:
+ * variant 4 of HEADER · POST-PR-#2 EVOLUTION (Mockup.jsx `HeroVariantBSeasonAndCrests`).
+ *
+ * @param {{
+ *   tableRows?: object[],
+ *   leagueEntries?: object[],
+ *   teamLogoMap?: Record<string, string>,
+ *   kitIndexByEntry?: Record<string, number>,
+ *   liveStatus?: object | null,
+ * }} props
+ */
+function BrandHeader({
+  tableRows,
+  leagueEntries,
+  teamLogoMap,
+  kitIndexByEntry,
+  liveStatus,
+}) {
+  const entryById = useMemo(() => {
+    const m = new Map()
+    for (const e of leagueEntries ?? []) {
+      if (e?.id != null) m.set(e.id, e)
+    }
+    return m
+  }, [leagueEntries])
+
+  const topRows = useMemo(() => {
+    const list = Array.isArray(tableRows) ? tableRows : []
+    const sorted = [...list].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
+    return sorted.slice(0, BRAND_HEADER_TOP_N)
+  }, [tableRows])
+
+  const showStatusStrip = !!liveStatus && liveStatus.status !== 'unknown'
+
   return (
     <section
       className="tile tile--brand-header"
       aria-label={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
     >
-      <span className="brand-header__pill" aria-label={LEAGUE_TITLE_ABBR}>
-        <TclotLionIcon size={22} />
-        <span className="brand-header__wordmark">{LEAGUE_TITLE_ABBR}</span>
-      </span>
-      <span className="brand-header__meta">{BRAND_HEADER_META}</span>
-      <span className="brand-header__season">{BRAND_HEADER_SEASON}</span>
+      <div className="brand-header__row">
+        <span className="brand-header__pill" aria-label={LEAGUE_TITLE_ABBR}>
+          <TclotLionIcon size={22} />
+          <span className="brand-header__wordmark">{LEAGUE_TITLE_ABBR}</span>
+        </span>
+        <span className="brand-header__meta brand-header__meta--season">
+          {BRAND_HEADER_SEASON}
+        </span>
+        <span
+          className="brand-header__crests"
+          aria-label="League standings — top 8"
+        >
+          {topRows.map((r) => {
+            const e = entryById.get(r.league_entry) ?? {}
+            const teamName = e.entry_name ?? '—'
+            const mgr = `${e.player_first_name ?? ''} ${e.player_last_name ?? ''}`.trim()
+            const title = mgr
+              ? `${r.rank}. ${teamName} — ${mgr}`
+              : `${r.rank}. ${teamName}`
+            return (
+              <span
+                className="brand-header__crest"
+                key={r.league_entry ?? `${r.rank}-${teamName}`}
+                title={title}
+              >
+                <TeamAvatar
+                  entryId={e.id}
+                  name={teamName}
+                  size="sm"
+                  logoMap={teamLogoMap ?? {}}
+                  kitIndexByEntry={kitIndexByEntry}
+                  badgeFallback
+                />
+              </span>
+            )
+          })}
+        </span>
+      </div>
+      {showStatusStrip ? (
+        <div
+          className={`brand-header__status-strip brand-header__status-strip--${liveStatus.status}`}
+          role="status"
+          aria-live="polite"
+        >
+          <BrandHeaderStatusBody liveStatus={liveStatus} />
+        </div>
+      ) : null}
     </section>
   )
 }
@@ -59,6 +223,7 @@ import {
 import { TeamAvatar } from './TeamAvatar'
 import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
+import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
 import { FplLiveTripleThreatBanner } from './FplLiveTripleThreatBanner.jsx'
@@ -1143,6 +1308,32 @@ function App() {
   /** FPL draft calendar — fetched on mount so Waivers tab does not depend on opening Live first. */
   const draftBootstrapEvents = useDraftBootstrapEvents()
 
+  /**
+   * Brand-header status strip state. Derived purely from bootstrap data so it
+   * doesn't add a network call beyond what `useDraftBootstrapEvents` already
+   * fetches. Re-derives every render (cheap object construction) so the strip
+   * stays correct after the bootstrap auto-refetches across the GW deadline.
+   *
+   * Per-fixture `liveFixtureCount` and `minute` are intentionally absent in
+   * #3.7 — that data lives behind `useLiveScores` (FPL Live tab only) and
+   * piping it up here would add a poll loop to every page. The live strip
+   * degrades to `● GW {N} · Live` until a thinner fixtures hook lands.
+   */
+  const brandHeaderStatus = useMemo(
+    () =>
+      deriveBrandHeaderStatus({
+        currentEvent: draftBootstrapEvents.currentEvent,
+        nextEvent: draftBootstrapEvents.nextEvent,
+        lastFinishedEvent: draftBootstrapEvents.lastFinishedEvent,
+        season: BRAND_HEADER_SEASON,
+      }),
+    [
+      draftBootstrapEvents.currentEvent,
+      draftBootstrapEvents.nextEvent,
+      draftBootstrapEvents.lastFinishedEvent,
+    ],
+  )
+
   /** drops-gw-live rows: waivers only (excludes free-agency rows used in All Waivers). */
   const waiverOutRowsWaiverOnly = useMemo(
     () => (data?.waiverOutGwRows ?? []).filter((r) => r.transactionKind !== 'f'),
@@ -1548,7 +1739,7 @@ function App() {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
         <header className="page-header">
-          <BrandHeader />
+          <BrandHeader liveStatus={brandHeaderStatus} />
         </header>
         <main className="main-tiles">
           <section className="tile error-tile">
@@ -1648,7 +1839,13 @@ function App() {
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
           <header className="page-header">
-            <BrandHeader />
+            <BrandHeader
+              tableRows={tableRows}
+              leagueEntries={leagueEntries}
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+              liveStatus={brandHeaderStatus}
+            />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
                 <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}
