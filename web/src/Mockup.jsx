@@ -2892,41 +2892,45 @@ function ContribPointsPill({ pts }) {
   )
 }
 
-/* Variant A — card per event. 2x2 grid: left column is two stacked
- * rows (event line over team subtitle), right column is two stacked
- * meta cells (minute marker over KIND + points pill). The leading
- * glyphs (event icon and team avatar) share a fixed 20px lead lane so
- * they vertically align across the two rows. Manager name and
- * relative timestamp are omitted — the minute marker already conveys
- * timing. */
+/* Canonical 2x2 contrib card. Shared by the Variant A showcase, the
+ * mobile collapsed pattern, and the streaming animation showcase so
+ * every PlayerContributions surface mirrors the same locked layout.
+ * Accepts an optional `modifier` class for surface-specific tweaks
+ * (e.g. tighter mobile padding, brand-violet arrival pulse). */
+function ContribCard({ e, modifier = '' }) {
+  const kindLabel = contribKindLabel(e.kind).toUpperCase()
+  const kindToneClass =
+    e.kind === 'red'    ? ' mockup-contrib-card__kind--red'
+    : e.kind === 'yellow' ? ' mockup-contrib-card__kind--yellow'
+    : ''
+  const className = 'mockup-contrib-card' + (modifier ? ' ' + modifier : '')
+  return (
+    <article className={className}>
+      <div className="mockup-contrib-card__top">
+        <span className="mockup-contrib-card__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
+        <span className="mockup-contrib-card__player">{e.player}</span>
+        <ContribMonogram code={e.club} size="sm" />
+      </div>
+      <div className="mockup-contrib-card__minute">{e.minute}</div>
+      <div className="mockup-contrib-card__sub">
+        <ContribMonogram code={e.teamCode} size="sm" />
+        <span className="mockup-contrib-card__team">{e.teamName}</span>
+      </div>
+      <div className="mockup-contrib-card__meta-bottom">
+        <span className={'mockup-contrib-card__kind' + kindToneClass}>{kindLabel}</span>
+        <ContribPointsPill pts={e.pts} />
+      </div>
+    </article>
+  )
+}
+
+/* Variant A showcase — the canonical 2x2 card wrapped in card-list
+ * chrome (outer border + rounded corners). Visual reference for the
+ * locked density pick on PR #5b. */
 function ContribCardsVariant({ events }) {
   return (
     <div className="mockup-contrib-card-list">
-      {events.map((e) => {
-        const kindLabel = contribKindLabel(e.kind).toUpperCase()
-        const kindToneClass =
-          e.kind === 'red'    ? ' mockup-contrib-card__kind--red'
-          : e.kind === 'yellow' ? ' mockup-contrib-card__kind--yellow'
-          : ''
-        return (
-          <article className="mockup-contrib-card" key={e.id}>
-            <div className="mockup-contrib-card__top">
-              <span className="mockup-contrib-card__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
-              <span className="mockup-contrib-card__player">{e.player}</span>
-              <ContribMonogram code={e.club} size="sm" />
-            </div>
-            <div className="mockup-contrib-card__minute">{e.minute}</div>
-            <div className="mockup-contrib-card__sub">
-              <ContribMonogram code={e.teamCode} size="sm" />
-              <span className="mockup-contrib-card__team">{e.teamName}</span>
-            </div>
-            <div className="mockup-contrib-card__meta-bottom">
-              <span className={'mockup-contrib-card__kind' + kindToneClass}>{kindLabel}</span>
-              <ContribPointsPill pts={e.pts} />
-            </div>
-          </article>
-        )
-      })}
+      {events.map((e) => <ContribCard key={e.id} e={e} />)}
     </div>
   )
 }
@@ -3137,29 +3141,12 @@ function ContribFilterIconToggle() {
 
 /* Mobile collapsed: shows ONLY the latest event by default with a
  * chevron-down to expand. Expanded shows the latest 5 with a
- * chevron-up to collapse. Both states stacked in a 375px frame. */
+ * chevron-up to collapse. Both states stacked in a 375px frame.
+ * Each event is rendered as the canonical 2x2 card with the
+ * `--mobile` modifier (slightly tighter padding for narrow widths). */
 function ContribMobileCollapsed() {
   const collapsed = CONTRIB_SAMPLE_EVENTS.slice(0, 1)
   const expanded = CONTRIB_SAMPLE_EVENTS.slice(0, 5)
-  function ContribMobileRow({ e }) {
-    return (
-      <div className="mockup-contrib-mobile-row">
-        <ContribMonogram code={e.teamCode} size="sm" />
-        <div className="mockup-contrib-mobile-row__body">
-          <div className="mockup-contrib-mobile-row__top">
-            <span className="mockup-contrib-mobile-row__manager">{e.manager}</span>
-            <span className="mockup-contrib-mobile-row__time">{e.rel}</span>
-          </div>
-          <div className="mockup-contrib-mobile-row__bottom">
-            <span aria-hidden>{contribKindGlyph(e.kind)}</span>
-            <span className="mockup-contrib-mobile-row__player">{e.player}</span>
-            <span className="mockup-contrib-mobile-row__kind">{contribKindLabel(e.kind)}</span>
-            <ContribPointsPill pts={e.pts} />
-          </div>
-        </div>
-      </div>
-    )
-  }
   return (
     <div className="mockup-contrib-mobile-row-row">
       <div className="mockup-portrait-col">
@@ -3171,7 +3158,9 @@ function ContribMobileCollapsed() {
               <span className="mockup-contrib-mobile__sub">GW 28 · 1 of 8</span>
             </div>
             <div className="mockup-contrib-mobile-collapsed">
-              {collapsed.map((e) => <ContribMobileRow key={e.id} e={e} />)}
+              {collapsed.map((e) => (
+                <ContribCard key={e.id} e={e} modifier="mockup-contrib-card--mobile" />
+              ))}
               <button type="button" className="mockup-contrib-mobile__toggle" aria-label="Expand to last 5 events">
                 <span>Show last 5</span>
                 <span className="mockup-contrib-mobile__chev" aria-hidden>▾</span>
@@ -3192,7 +3181,9 @@ function ContribMobileCollapsed() {
               </button>
             </div>
             <div className="mockup-contrib-mobile-expanded">
-              {expanded.map((e) => <ContribMobileRow key={e.id} e={e} />)}
+              {expanded.map((e) => (
+                <ContribCard key={e.id} e={e} modifier="mockup-contrib-card--mobile" />
+              ))}
             </div>
           </div>
         </PortraitFrame>
@@ -3201,35 +3192,27 @@ function ContribMobileCollapsed() {
   )
 }
 
-/* Streaming animation showcase. The top row has the `--just-arrived`
- * modifier permanently applied so the brand-violet entrance pulse
- * keeps replaying. */
+/* Streaming animation showcase. Each event renders as the canonical
+ * 2x2 card; the top card gets the `--just-arrived` modifier so the
+ * brand-violet entrance pulse keeps replaying in the mockup. In
+ * production the modifier is added on row arrival and removed when
+ * the animation finishes. */
 function ContribStreamingShowcase() {
   const events = CONTRIB_SAMPLE_EVENTS.slice(0, 4)
   return (
     <div className="mockup-contrib-streaming">
-      <ul className="mockup-contrib-row-list">
+      <div className="mockup-contrib-card-list">
         {events.map((e, idx) => (
-          <li
+          <ContribCard
             key={e.id}
-            className={'mockup-contrib-row' + (idx === 0 ? ' mockup-contrib-row--just-arrived' : '')}
-          >
-            <ContribMonogram code={e.teamCode} size="xs" />
-            <span className="mockup-contrib-row__manager">{e.manager}</span>
-            <span className="mockup-contrib-row__sep" aria-hidden>·</span>
-            <span className="mockup-contrib-row__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
-            <span className="mockup-contrib-row__player">{e.player}</span>
-            <span className="mockup-contrib-row__club">{e.club}</span>
-            <span className="mockup-contrib-row__kind">{contribKindLabel(e.kind)}</span>
-            <ContribPointsPill pts={e.pts} />
-            <span className="mockup-contrib-row__minute">{e.minute}</span>
-            <span className="mockup-contrib-row__time">{e.rel}</span>
-          </li>
+            e={e}
+            modifier={idx === 0 ? 'mockup-contrib-card--just-arrived' : ''}
+          />
         ))}
-      </ul>
+      </div>
       <div className="mockup-contrib-streaming__note">
-        Top row = newly arrived; animation triggers on first paint and
-        again when a new event lands.
+        Top card = newly arrived; animation triggers on first paint
+        and again when a new event lands.
       </div>
     </div>
   )
