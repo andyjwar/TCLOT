@@ -8264,28 +8264,37 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 /* ------------------------------------------------------------------ */
-/* Global brand header — variant 4 (PR #3.7)                            */
+/* Global brand header — variant 5c (PR #4.5, on top of PR #3.7)        */
 /* Brand pill + '2025/26' meta + top-8 crests on the brand row;         */
-/* status strip (live / idle / pre-season) inside the same tile.        */
-/* Spec: Mockup.jsx HeroVariantBSeasonAndCrests + HeroVariantBStatusStrip
- * (`.mockup-brand-b--crests`, `.mockup-hero-team-crests`,
- *  `.mockup-hero-status-strip`).                                       */
+/* status strip (live / idle / pre-season) as a thin edge-to-edge band  */
+/* directly below — no tile chrome wrapping the two.                    */
+/* Spec: Mockup.jsx HeroVariant5c — `.mockup-hero-tile--bleed` +        */
+/* `.mockup-hero-status-strip--band` (Mockup.css).                      */
 /* Header-only — the brand pill never appears on other surfaces.        */
 /* ------------------------------------------------------------------ */
-.tile--brand-header {
+/* Full-bleed: drop all tile chrome (border, radius, surface bg, shadow)
+ * and the base `.tile` padding so the brand row sits flush against the
+ * page background and the status strip can bleed edge-to-edge. The
+ * brand row + status strip carry their own horizontal padding so
+ * content still aligns with the rest of the page below.
+ *
+ * Specificity note: the base `.tile` rule is defined LATER in this
+ * file (search for `^.tile {`) and sets the standard card chrome —
+ * background, border, border-radius, padding, box-shadow. With equal
+ * single-class specificity, source order would let `.tile` win, so we
+ * use `.tile.tile--brand-header` here to bump specificity to (0,0,2,0)
+ * and guarantee these resets take effect regardless of source order. */
+.tile.tile--brand-header {
   display: flex;
   flex-direction: column;
   margin: 0;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   color: var(--text);
-  overflow: hidden;
-}
-
-.fotmob[data-theme='light'] .tile--brand-header {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  overflow: visible;
 }
 
 /* Brand row — `auto 1fr auto` grid: pill left, '2025/26' meta center,
@@ -8345,13 +8354,15 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 /* Crest row — 8 fantasy team crests in current standings order
- * (rank 1 leftmost → rank 8 rightmost). 24px each, 4px flat gap (no
+ * (rank 1 leftmost → rank 8 rightmost). 32px each, 6px flat gap (no
  * overlap — the shirt-silhouette fallback used for fantasy teams
- * without a custom PNG has visible outlines that overlap awkwardly). */
+ * without a custom PNG has visible outlines that overlap awkwardly).
+ * Sized up from 24/4 (PR #3.7) to 32/6 (PR #4.5) for more visual
+ * presence in the right slot now that the tile chrome is gone. */
 .brand-header__crests {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   justify-self: end;
   white-space: nowrap;
 }
@@ -8361,20 +8372,25 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   justify-content: center;
   flex: 0 0 auto;
 }
-/* Force the production crest atom to 24px regardless of its `size` prop;
- * `team-avatar-frame--sm` is normally 28px — we shrink it locally so 8
- * crests fit cleanly inside the 68px brand row. */
+/* Force the production crest atom to 32px regardless of its `size` prop;
+ * `team-avatar-frame--sm` is normally 28px — we resize it locally so 8
+ * crests render at the brand-row size we want (still fits cleanly in
+ * the 68px brand row). */
 .brand-header__crests .team-avatar-frame {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
 }
 .brand-header__crests .team-shirt {
-  width: 24px;
-  height: 24px;
+  width: 32px;
+  height: 32px;
 }
 
-/* Status strip — thin row inside the same header tile carrying GW state.
- * Pulled in from `.mockup-hero-status-strip` (Mockup.css). The
+/* Status strip — thin edge-to-edge band sitting directly below the
+ * brand row. With the tile chrome gone (PR #4.5), the strip is no
+ * longer clipped to a rounded tile; it spans the full available width
+ * with square corners. Surface-2 background + top border separate it
+ * visually from the brand row above and the content below.
+ * Pulled in from `.mockup-hero-status-strip--band` (Mockup.css). The
  * `--live` modifier renders a small pulsing brand-tinted dot; `--idle`
  * and `--pre-season` are plain text. */
 .brand-header__status-strip {
@@ -8383,6 +8399,7 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
   border-top: 1px solid var(--border);
+  border-radius: 0;
   background: var(--surface-2);
   font-size: var(--text-xs);
   color: var(--text-muted);
