@@ -21,7 +21,7 @@ import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { LiveSharedStatusHeader } from './LiveSharedStatusHeader.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
-import { usePortraitMobile } from './usePortraitMobile.js';
+import { useNarrowViewport, usePortraitMobile } from './usePortraitMobile.js';
 import {
   bootstrapTeamToPredictionTeam,
   simulateFantasyH2hPercents,
@@ -896,8 +896,14 @@ export function LiveScores({
       pollIntervalMs: 90_000,
     });
 
-  /** Portrait-phone breakpoint — drives the mobile compressed face-off / tabbed expanded view. */
+  /** Portrait-phone breakpoint (≤600px) — drives the mobile compressed face-off banner. */
   const portraitMobile = usePortraitMobile();
+  /**
+   * Below-desktop breakpoint (≤880px) — drives `LiveExpandedFixture` into
+   * its tab-selector layout across the full phone+tablet range, replacing
+   * the prior 601–880px vertical-stacking behavior of the two-column grid.
+   */
+  const narrowExpandedFixture = useNarrowViewport();
 
   /** Fixture keys in the set are expanded; default empty = all collapsed. */
   const [expandedFixtures, setExpandedFixtures] = useState(() => new Set());
@@ -1571,7 +1577,7 @@ export function LiveScores({
                         awayName={awayName}
                         eventSnapshot={eventSnapshot}
                         contributionLiveContext={contributionLiveContext}
-                        viewport={portraitMobile ? 'mobile' : 'desktop'}
+                        viewport={narrowExpandedFixture ? 'mobile' : 'desktop'}
                         onOpenPlayer={openLineupOrHistory}
                         onCollapse={() => toggleFixtureExpanded(fixtureKey)}
                       />

@@ -11338,16 +11338,15 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   font-family: 'Geist Mono', monospace;
 }
 
-/* Desktop side-by-side columns */
+/* Desktop side-by-side columns. The desktop JSX branch only renders at
+   >880px (LiveScores.jsx swaps LiveExpandedFixture to its tabbed mobile
+   layout at <=880px via `useNarrowViewport`), so no `(max-width: 880px)`
+   single-column fallback is needed — the DOM no longer mounts here in
+   that range. */
 .live-xp__columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
-}
-@media (max-width: 880px) {
-  .live-xp__columns {
-    grid-template-columns: 1fr;
-  }
 }
 .live-xp__column {
   display: flex;
@@ -11713,8 +11712,10 @@ button.live-xp__player-name:focus-visible {
 
 /* Desktop density bump — slightly larger typography + row padding so the
    two side-by-side team tables read comfortably for player-vs-player
-   comparison. Mobile (≤720px) keeps the condensed sizing above. */
-@media (min-width: 721px) {
+   comparison. Below-desktop (≤880px) renders LiveExpandedFixture's
+   tabbed mobile layout instead and never mounts these classes, so the
+   media-query lower bound is aligned with the JS threshold for clarity. */
+@media (min-width: 881px) {
   .live-xp__table {
     font-size: 0.82rem;
   }
