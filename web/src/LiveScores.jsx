@@ -7,9 +7,8 @@ import {
 import { TeamAvatar } from './TeamAvatar';
 import { PlayerContributions } from './PlayerContributions';
 import { useLiveScores } from './useLiveScores';
-import { eventNameToGameWeekLabel, gameWeekSelectLabel } from './gwLabel.js';
-import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
-import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
+import { eventNameToGameWeekLabel } from './gwLabel.js';
+import { GameWeekNavigator } from './GameWeekNavigator.jsx';
 import { usePlayerHistory, ClickablePlayerName } from './PlayerHistoryContext.jsx';
 import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx';
 import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSeason.js';
@@ -818,7 +817,7 @@ export function LiveScores({
   /** Mobile app shell: hide tile h2; GW toolbar sticks below section sub-pills. */
   compactMobileChrome = false,
 }) {
-  const { loading, error, fixturesDegradedNotice, refresh, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
+  const { error, fixturesDegradedNotice, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
       teams,
       gameweek,
@@ -1358,46 +1357,12 @@ export function LiveScores({
           </div>
         ) : null}
 
-        <div
-          className={
-            'live-toolbar' +
-            (compactMobileChrome ? ' live-toolbar--section-sticky' : '')
-          }
-        >
-          <div className="live-gw-field">
-            <div className="live-gw-input-row">
-              <label className="live-gw-label">
-                <select
-                  className="live-gw-select"
-                  aria-label="Game week"
-                  value={gameweek}
-                  onChange={(e) => onGameweekChange(Number(e.target.value))}
-                >
-                  {gwOptions.length ? (
-                    <GameWeekSelectOptgroups options={gwOptions} />
-                  ) : (
-                    <option value={gameweek}>{gameWeekSelectLabel(gameweek)}</option>
-                  )}
-                </select>
-              </label>
-              {selectedGwOption?.finished ? (
-                <span
-                  className="live-gw-pill"
-                  title="This game week is complete (all fixtures finished)"
-                  aria-label="This game week is complete"
-                >
-                  FT
-                </span>
-              ) : null}
-            </div>
-          </div>
-          <LiveRefreshIconButton
-            title="Refresh from FPL"
-            loading={Boolean(loading)}
-            disabled={Boolean(loading)}
-            onClick={() => void refresh()}
-          />
-        </div>
+        <GameWeekNavigator
+          gameweek={gameweek}
+          gwOptions={gwOptions}
+          onGameweekChange={onGameweekChange}
+          sticky={compactMobileChrome}
+        />
 
         {error ? (
           <div className="data-banner data-banner--error" role="alert">

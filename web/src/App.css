@@ -12663,3 +12663,142 @@ button.live-xp__player-name:focus-visible {
 .live-contrib-row--just-arrived {
   animation: live-contrib-arrive 1.2s ease-out forwards;
 }
+
+/* ===================================================================
+ * GameWeekNavigator (FPL Live page): chevrons + clickable center pill
+ * + popover grid of GWs. Component lives in
+ * `web/src/GameWeekNavigator.jsx`. Visual reference: Variant 3 of the
+ * GW navigation mockup (`Mockup.jsx` / `Mockup.css`, `.gw-nav-v3*`).
+ * Tokens: neutral grays only (`--text`, `--text-muted`, `--surface*`,
+ * `--border`). No brand accent.
+ * =================================================================== */
+.gw-nav {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.gw-nav__chev {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--r-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.gw-nav__chev:hover:not(:disabled) {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.gw-nav__chev:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.gw-nav__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--text);
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+.gw-nav__label:hover {
+  background: var(--surface-2);
+  color: var(--text-strong);
+}
+.gw-nav__caret {
+  color: var(--text-muted);
+}
+
+/* Popover anchored under the center label (offset past the prev chevron). */
+.gw-nav__popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 28px;
+  z-index: 30;
+  width: 240px;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.35),
+    0 2px 6px rgba(0, 0, 0, 0.18);
+}
+.fotmob[data-theme='light'] .gw-nav__popover {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.10),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+}
+
+.gw-nav__grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 4px;
+}
+.gw-nav__cell {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  border-radius: var(--r-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+.gw-nav__cell:hover {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.gw-nav__cell.is-past {
+  opacity: 0.7;
+}
+.gw-nav__cell.is-past:hover {
+  opacity: 1;
+}
+.gw-nav__cell.is-active {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text-strong);
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Sticky modifier: keeps the GW navigator pinned beneath the section
+ * chrome while scrolling the live page on mobile. Mirrors the legacy
+ * `.live-toolbar--section-sticky` behaviour. */
+@media (max-width: 1080px) {
+  .gw-nav--sticky {
+    position: sticky;
+    top: var(--mobile-section-chrome-h);
+    z-index: 30;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background: transparent;
+  }
+}
