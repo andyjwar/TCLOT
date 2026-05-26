@@ -6588,3 +6588,233 @@
   opacity: 0.6;
 }
 
+/* ------------------------------------------------------------------ */
+/* Sub-nav variants showcase — FPL Live (mockup-only candidates)        */
+/* ------------------------------------------------------------------ */
+/* The 16px icon size is intentional: smaller than the main nav (20px)
+ * to mark hierarchy. `currentColor` keeps the icon colour in lockstep
+ * with the tab's text colour — muted when idle, strong when active. */
+.mockup-subnav__icon {
+  width: 16px;
+  height: 16px;
+  color: currentColor;
+  flex: 0 0 auto;
+}
+.mockup-subnav__pl-crest {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.mockup-subnav-variants {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.mockup-subnav-variant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mockup-subnav-variant__label {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Mini stub preview rendered under each sub-nav variant so the user
+ * can see the sub-nav in context. Compact on purpose — sub-nav is the
+ * focus of the section. */
+.mockup-subnav-variant__preview {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mockup-subnav-variant__bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.mockup-subnav-variant__bar-gw {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mockup-subnav-variant__bar-sep { opacity: 0.5; }
+.mockup-subnav-variant__bar-status { color: var(--text); }
+
+.mockup-subnav-variant__cards {
+  display: flex;
+  flex-direction: column;
+}
+.mockup-subnav-variant__card {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+.mockup-subnav-variant__card:last-child { border-bottom: none; }
+.mockup-subnav-variant__card-team {
+  color: var(--text-strong);
+  font-weight: 500;
+  text-align: left;
+}
+.mockup-subnav-variant__card-team--away { text-align: right; }
+.mockup-subnav-variant__card-score {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.mockup-subnav-variant__card-state {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  min-width: 56px;
+  text-align: right;
+}
+
+/* ------------------------------------------------------------------ */
+/* Header variants showcase — post-PR-#2 evolution                      */
+/* ------------------------------------------------------------------ */
+.mockup-header-variants {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+.mockup-header-variant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.mockup-header-variant__label {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* `mockup-hero-tile` hosts the header chrome (border, surface, radius)
+ * and lets us stack the existing brand row + a strip beneath it as
+ * one tile. Nested `.mockup-hero` drops its own chrome so we don't
+ * double-stack borders. */
+.mockup-hero-tile {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mockup-hero-tile .mockup-hero {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+/* Full-bleed modifier: drops the entire tile chrome — the brand pill
+ * is left as the only visual anchor. */
+.mockup-hero-tile--bleed {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+}
+.mockup-hero-tile--bleed .mockup-hero {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+/* Status strip — thin row inside the hero tile carrying GW state. */
+.mockup-hero-status-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
+}
+.mockup-hero-status-strip__strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mockup-hero-status-strip__sep {
+  opacity: 0.5;
+}
+.mockup-hero-status-strip__mono {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+/* Live state gets a small pulsing brand-tinted dot. */
+.mockup-hero-status-strip__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--r-circle);
+  background: var(--brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 18%, transparent);
+  animation: mockup-hero-status-pulse 2.4s ease-in-out infinite;
+  flex: 0 0 auto;
+}
+@keyframes mockup-hero-status-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.55; }
+}
+
+/* League strip — row of small PL crests under the brand row, with a
+ * small rank caption beneath each. Uses the same `plCrestUrl` source
+ * the rest of the mockup uses, so the visuals match standings rows. */
+.mockup-hero-league-strip {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--border);
+  background: var(--surface-2);
+  flex-wrap: wrap;
+}
+.mockup-hero-league-strip__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+}
+.mockup-hero-league-strip__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+.mockup-hero-league-strip__crest img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.mockup-hero-league-strip__rank {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+

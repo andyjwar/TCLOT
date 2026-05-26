@@ -409,6 +409,13 @@ const DECISIONS_OPEN = [
       'Phase 2 not started — locked design decisions need to be applied to production code',
     ],
   },
+  {
+    surface: 'OPEN VARIANTS · NEEDS PICK BEFORE PR #4',
+    items: [
+      'FPL Live sub-nav: text-only (A) vs PL-crest-on-Lineups-only (B) vs icons-everywhere (C). See SUB-NAV · FPL LIVE showcase.',
+      'Header evolution after PR #2: keep current (0) vs status strip (1) vs league strip (2) vs full-bleed (3). See HEADER · POST-PR-#2 EVOLUTION showcase.',
+    ],
+  },
 ]
 
 function DecisionsColumn({ tone, label, groups }) {
@@ -666,6 +673,117 @@ function HeroVariantCMobile() {
           <span className="mockup-hero__theme-thumb" />
         </span>
       </span>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Header variants showcase — post-PR-#2 evolution                      */
+/* ------------------------------------------------------------------ */
+/* Four candidates the user is choosing between to fill the white-tile
+ * space on the post-PR-#2 header. Variant 0 is the current production
+ * baseline; 1–3 explore status density, league richness, and dropping
+ * the tile chrome entirely. Mockup-only — none of these are wired to
+ * production yet. */
+
+/* 8 PL clubs to populate the league-strip variant. We intentionally
+ * pick clubs already mapped in PL_CODE so the existing `plCrestUrl`
+ * helper resolves a real crest. Ranks 1–8 are illustrative. */
+const HEADER_LEAGUE_STRIP_TEAMS = [
+  { code: 'LIV', rank: 1 },
+  { code: 'ARS', rank: 2 },
+  { code: 'MCI', rank: 3 },
+  { code: 'CHE', rank: 4 },
+  { code: 'NEW', rank: 5 },
+  { code: 'AVL', rank: 6 },
+  { code: 'TOT', rank: 7 },
+  { code: 'MUN', rank: 8 },
+]
+
+function HeroVariantBStatusStrip({ state }) {
+  if (state === 'live') {
+    return (
+      <div className="mockup-hero-status-strip mockup-hero-status-strip--live">
+        <span className="mockup-hero-status-strip__dot" aria-hidden />
+        <span className="mockup-hero-status-strip__strong">GW 28</span>
+        <span className="mockup-hero-status-strip__sep">—</span>
+        <span>4 fixtures live</span>
+        <span className="mockup-hero-status-strip__sep">·</span>
+        <span className="mockup-hero-status-strip__mono">47&apos;</span>
+      </div>
+    )
+  }
+  return (
+    <div className="mockup-hero-status-strip mockup-hero-status-strip--idle">
+      <span className="mockup-hero-status-strip__strong">GW 38 complete</span>
+      <span className="mockup-hero-status-strip__sep">·</span>
+      <span>GW 1 of 26/27 starts Aug 16</span>
+    </div>
+  )
+}
+
+function HeroVariantBLeagueStrip() {
+  return (
+    <div className="mockup-hero-league-strip">
+      {HEADER_LEAGUE_STRIP_TEAMS.map((t) => {
+        const code = PL_CODE[t.code]
+        return (
+          <div className="mockup-hero-league-strip__cell" key={t.code}>
+            <span className="mockup-hero-league-strip__crest">
+              {code ? <img src={plCrestUrl(code)} alt={t.code} loading="lazy" decoding="async" /> : null}
+            </span>
+            <span className="mockup-hero-league-strip__rank">{t.rank}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function HeaderVariantsShowcase() {
+  return (
+    <div className="mockup-header-variants">
+      {/* 0. Baseline — current PR #2 */}
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">0 — Current (PR #2)</div>
+        <HeroVariantB />
+      </div>
+
+      {/* 1. Status strip below the brand */}
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">
+          1 — Status strip below brand (live + idle states)
+        </div>
+        <div className="mockup-hero-tile">
+          <HeroVariantB />
+          <HeroVariantBStatusStrip state="live" />
+        </div>
+        <div className="mockup-hero-tile" style={{ marginTop: 'var(--space-3)' }}>
+          <HeroVariantB />
+          <HeroVariantBStatusStrip state="idle" />
+        </div>
+      </div>
+
+      {/* 2. League strip below the brand */}
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">
+          2 — League strip below brand (8 club crests)
+        </div>
+        <div className="mockup-hero-tile">
+          <HeroVariantB />
+          <HeroVariantBLeagueStrip />
+        </div>
+      </div>
+
+      {/* 3. Full-bleed — drop tile chrome */}
+      <div className="mockup-header-variant">
+        <div className="mockup-header-variant__label">
+          3 — Full-bleed (no tile chrome)
+        </div>
+        <div className="mockup-hero-tile mockup-hero-tile--bleed">
+          <HeroVariantB />
+        </div>
+      </div>
     </div>
   )
 }
@@ -2478,6 +2596,112 @@ function SubNav() {
           {t.label}
           <span className="mockup-subnav__count">{t.count}</span>
         </button>
+      ))}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Sub-nav variants showcase — FPL Live sub-tab row                     */
+/* ------------------------------------------------------------------ */
+/* Three candidates for the FPL Live sub-tab row: text-only (mockup
+ * spec baseline), PL-crest-on-Lineups-only (preserves "real PL data"
+ * semantic), and icons-everywhere (consistent prefix). Each variant
+ * gets a compact mini-page preview underneath so the user can see the
+ * sub-nav in context. Mockup-only. */
+
+/* PL crest URL for the mockup. Mirrors production's `${BASE_URL}premier-league-logo.svg`
+ * — root-relative is fine for the mockup preview at /?mockup=1. */
+const MOCKUP_PL_LOGO_URL = '/premier-league-logo.svg'
+
+function FplLiveSubNav({ variant }) {
+  const [active, setActive] = useState('live')
+  const tabs = [
+    { id: 'live',        label: 'Live GW',     icon: 'football' },
+    { id: 'lineups',     label: 'Lineups',     icon: 'pl-crest' },
+    { id: 'projections', label: 'Projections', icon: 'bar-chart-3' },
+  ]
+  return (
+    <div className="mockup-subnav" role="tablist" aria-label="FPL Live views">
+      {tabs.map((t) => {
+        const showIcon =
+          variant === 'icons' || (variant === 'lineups-crest' && t.id === 'lineups')
+        return (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={active === t.id}
+            className={'mockup-subnav__tab' + (active === t.id ? ' is-active' : '')}
+            onClick={() => setActive(t.id)}
+          >
+            {showIcon && t.icon === 'pl-crest' && (
+              <img
+                className="mockup-subnav__pl-crest"
+                src={MOCKUP_PL_LOGO_URL}
+                alt=""
+                aria-hidden
+              />
+            )}
+            {showIcon && t.icon !== 'pl-crest' && (
+              <LucideIcon
+                name={t.icon}
+                className="mockup-subnav__icon"
+                width={16}
+                height={16}
+              />
+            )}
+            {t.label}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function FplLiveStubPreview() {
+  const fixtures = [
+    { home: 'Cornershop',  away: 'York',       score: '62 – 38', state: "Live · 47'" },
+    { home: 'Loaf',        away: 'Jamiroquai', score: '21 – 28', state: "Live · 47'" },
+    { home: 'Seoul 7',     away: 'Brampton',   score: '49 – 33', state: "Live · 47'" },
+  ]
+  return (
+    <div className="mockup-subnav-variant__preview">
+      <div className="mockup-subnav-variant__bar">
+        <span className="mockup-subnav-variant__bar-gw">GW 28</span>
+        <span className="mockup-subnav-variant__bar-sep">·</span>
+        <span className="mockup-subnav-variant__bar-status">4 fixtures live · 47&apos;</span>
+      </div>
+      <div className="mockup-subnav-variant__cards">
+        {fixtures.map((f, i) => (
+          <div className="mockup-subnav-variant__card" key={i}>
+            <span className="mockup-subnav-variant__card-team">{f.home}</span>
+            <span className="mockup-subnav-variant__card-score">{f.score}</span>
+            <span className="mockup-subnav-variant__card-team mockup-subnav-variant__card-team--away">
+              {f.away}
+            </span>
+            <span className="mockup-subnav-variant__card-state">{f.state}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SubNavVariantsShowcase() {
+  const variants = [
+    { key: 'text',           label: 'A — Text-only (mockup spec)' },
+    { key: 'lineups-crest',  label: 'B — PL crest on Lineups only' },
+    { key: 'icons',          label: 'C — Icons everywhere (16px)' },
+  ]
+  return (
+    <div className="mockup-subnav-variants">
+      {variants.map((v) => (
+        <div className="mockup-subnav-variant" key={v.key}>
+          <div className="mockup-subnav-variant__label">{v.label}</div>
+          <FplLiveSubNav variant={v.key} />
+          <FplLiveStubPreview />
+        </div>
       ))}
     </div>
   )
@@ -4336,6 +4560,19 @@ export function Mockup() {
           </div>
         </section>
 
+        {/* 1b. Header variant showcase — post-PR-#2 evolution */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">HEADER · POST-PR-#2 EVOLUTION</div>
+          <h2 className="mockup__section-h">Three ideas to fill the white-tile space</h2>
+          <p className="mockup__section-sub">
+            User flagged the current header reads as one large white tile.
+            These three options add informational density (status strip),
+            visual richness (league strip), or reduce tile-on-tile stacking
+            (full-bleed). Compare against the current PR #2 baseline.
+          </p>
+          <HeaderVariantsShowcase />
+        </section>
+
         {/* 2. Accent compare */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Accent comparison</div>
@@ -4729,6 +4966,21 @@ export function Mockup() {
             pill gets surface elevation; idle pills are transparent. Optional count chips.
           </p>
           <SubNav />
+        </section>
+
+        {/* 13a. Sub-nav variants showcase — FPL Live */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">SUB-NAV · FPL LIVE</div>
+          <h2 className="mockup__section-h">
+            Three options for the Live GW / Lineups / Projections row
+          </h2>
+          <p className="mockup__section-sub">
+            Mockup spec defaults to text-only. The PL crest on Lineups carries
+            semantic weight (&ldquo;real Premier League data&rdquo; vs
+            &ldquo;draft-league data&rdquo;). Compare three directions before
+            PR #4.
+          </p>
+          <SubNavVariantsShowcase />
         </section>
 
         {/* 13b. Dropdowns */}
