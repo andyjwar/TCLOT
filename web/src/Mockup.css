@@ -6879,6 +6879,24 @@
   font-weight: 600;
 }
 
+/* Muted reference-only tag — used on showcase variants that lost the
+ * pick but stay visible in the showcase as context. Quieter than the
+ * picked / proposed chips: no fill, no glyph, just small caps-mono. */
+.mockup-variant-ref {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  line-height: 1;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 /* Mobile collapse — keep the brand pill + season meta, drop the crest
  * row down to the first 3 + '+5' overflow chip. The status strip stays
  * as-is. Quick spec-only sketch; production mobile is iterated later. */
@@ -7018,7 +7036,10 @@
   background: color-mix(in srgb, var(--data-negative) 16%, transparent);
 }
 
-/* ----- Variant A — card per event ----- */
+/* ----- Variant A — card per event -----
+ * Two-line card. Top line is the event (icon-led: kind + player + crest
+ * with minute + points pill anchored right). Second line is a muted
+ * subtitle naming the fantasy team. */
 .mockup-contrib-card-list {
   display: flex;
   flex-direction: column;
@@ -7030,38 +7051,12 @@
 .mockup-contrib-card {
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: 2px;
   padding: var(--space-3) var(--space-3);
   border-bottom: 1px solid var(--border);
 }
 .mockup-contrib-card:last-child { border-bottom: 0; }
-.mockup-contrib-card__head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  line-height: var(--lh-sm);
-  min-width: 0;
-}
-.mockup-contrib-card__manager {
-  color: var(--text-strong);
-  font-weight: 600;
-}
-.mockup-contrib-card__team {
-  color: var(--text-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.mockup-contrib-card__time {
-  margin-left: auto;
-  color: var(--text-muted);
-  font-family: 'Geist Mono', monospace;
-  font-size: var(--text-xs);
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
-}
-.mockup-contrib-card__action {
+.mockup-contrib-card__top {
   display: flex;
   align-items: center;
   gap: var(--space-2);
@@ -7074,6 +7069,16 @@
   line-height: 1;
   flex-shrink: 0;
 }
+.mockup-contrib-card__kind {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  flex-shrink: 0;
+}
+.mockup-contrib-card__sep {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  margin: 0 -2px;
+}
 .mockup-contrib-card__player {
   color: var(--text-strong);
   font-weight: 500;
@@ -7082,10 +7087,6 @@
   text-overflow: ellipsis;
   min-width: 0;
 }
-.mockup-contrib-card__kind {
-  color: var(--text-muted);
-  font-size: var(--text-sm);
-}
 .mockup-contrib-card__minute {
   margin-left: auto;
   color: var(--text-muted);
@@ -7093,6 +7094,21 @@
   font-size: var(--text-xs);
   letter-spacing: 0.02em;
   flex-shrink: 0;
+}
+.mockup-contrib-card__sub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  min-width: 0;
+  padding-left: 2px;
+}
+.mockup-contrib-card__team {
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* ----- Variant B — single-line list ----- */
@@ -7361,11 +7377,21 @@
 .mockup-contrib-filter-popover__foot {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
+  justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-1) 0;
   border-top: 1px solid var(--border);
   margin-top: var(--space-1);
+}
+.mockup-contrib-filter-popover__bulk {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.mockup-contrib-filter-popover__bulk-sep {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: 1;
 }
 .mockup-contrib-filter-popover__clear {
   appearance: none;
@@ -7377,6 +7403,7 @@
   cursor: pointer;
   padding: 4px 6px;
 }
+.mockup-contrib-filter-popover__clear:hover { color: var(--text); }
 .mockup-contrib-filter-popover__apply {
   appearance: none;
   background: var(--brand);

@@ -354,6 +354,15 @@ const DECISIONS_DECIDED = [
     ],
   },
   {
+    surface: 'PLAYER CONTRIBUTIONS · LOCKED',
+    items: [
+      'Density: Variant A (card per event) — top line: event-kind icon + label · player + crest · minute · points pill; second line: team badge + team name. Manager name and relative timestamp removed.',
+      'Filter UX: Variant 2 (multi-select dropdown) — popover with checkboxes for event kinds + teams; popover footer has paired "Select all · Clear all" affordances.',
+      'Mobile collapsed: latest event + chevron-to-expand-5 (locked from prior pass).',
+      'Streaming animation: brand-violet pulse + highlight on row arrival (locked from prior pass).',
+    ],
+  },
+  {
     surface: 'SCOPE',
     items: [
       'Records page: scrapped — data discoverable elsewhere',
@@ -416,14 +425,6 @@ const DECISIONS_OPEN = [
     items: [
       'FPL Live sub-nav: text-only (A) vs PL-crest-on-Lineups-only (B) vs icons-everywhere (C). See SUB-NAV · FPL LIVE showcase.',
       'Header tile chrome: variant 4 with tile chrome (currently shipped in PR #3.7) vs full-bleed combos 5a/5b/5c. See HEADER · FULL-BLEED + STATUS STRIP COMBOS showcase.',
-    ],
-  },
-  {
-    surface: 'PLAYER CONTRIBUTIONS · NEEDS PICK',
-    items: [
-      'Row density: card per event (A) vs single-line list (B). See ROW DENSITY showcase.',
-      'Filter UX: chip pills (1) vs multi-select dropdown (2) vs icon-toggle row (3). See FILTER UX showcase.',
-      'Mobile collapsed pattern (latest + expand-to-5): locked, but worth eyeballing for tap-target sizing.',
     ],
   },
 ]
@@ -2891,27 +2892,29 @@ function ContribPointsPill({ pts }) {
   )
 }
 
-/* Variant A — card per event. surface-1 cards in a vertical stack;
- * the manager identity row sits above the action row so the eye sees
- * "who scored points" before "how". */
+/* Variant A — card per event. Two-line surface-1 cards in a vertical
+ * stack. The top line is the event itself (icon-led: kind word, player
+ * + club crest, minute, points pill on the right). The second line is
+ * a subordinate subtitle that names the fantasy team that benefited.
+ * Manager name and relative timestamp are intentionally omitted — the
+ * minute marker already conveys timing. */
 function ContribCardsVariant({ events }) {
   return (
     <div className="mockup-contrib-card-list">
       {events.map((e) => (
         <article className="mockup-contrib-card" key={e.id}>
-          <header className="mockup-contrib-card__head">
-            <ContribMonogram code={e.teamCode} size="md" />
-            <span className="mockup-contrib-card__manager">{e.manager}</span>
-            <span className="mockup-contrib-card__team">· {e.teamName}</span>
-            <span className="mockup-contrib-card__time">{e.rel}</span>
-          </header>
-          <div className="mockup-contrib-card__action">
+          <div className="mockup-contrib-card__top">
             <span className="mockup-contrib-card__glyph" aria-hidden>{contribKindGlyph(e.kind)}</span>
+            <span className="mockup-contrib-card__kind">{contribKindLabel(e.kind)}</span>
+            <span className="mockup-contrib-card__sep" aria-hidden>·</span>
             <span className="mockup-contrib-card__player">{e.player}</span>
             <ContribMonogram code={e.club} size="sm" />
-            <span className="mockup-contrib-card__kind">{contribKindLabel(e.kind)}</span>
             <span className="mockup-contrib-card__minute">{e.minute}</span>
             <ContribPointsPill pts={e.pts} />
+          </div>
+          <div className="mockup-contrib-card__sub">
+            <ContribMonogram code={e.teamCode} size="sm" />
+            <span className="mockup-contrib-card__team">{e.teamName}</span>
           </div>
         </article>
       ))}
@@ -3038,7 +3041,11 @@ function ContribFilterDropdown() {
             ))}
           </div>
           <div className="mockup-contrib-filter-popover__foot">
-            <button type="button" className="mockup-contrib-filter-popover__clear">Clear all</button>
+            <span className="mockup-contrib-filter-popover__bulk">
+              <button type="button" className="mockup-contrib-filter-popover__clear">Select all</button>
+              <span className="mockup-contrib-filter-popover__bulk-sep" aria-hidden>·</span>
+              <button type="button" className="mockup-contrib-filter-popover__clear">Clear all</button>
+            </span>
             <button type="button" className="mockup-contrib-filter-popover__apply">Apply</button>
           </div>
         </div>
@@ -5507,11 +5514,17 @@ export function Mockup() {
           </p>
           <div className="mockup-portrait-row mockup-contrib-density-row">
             <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">Variant A — Card per event</div>
+              <div className="mockup-portrait-col__h">
+                Variant A — Card per event
+                <span className="mockup-variant-picked" aria-label="Locked option">LOCKED</span>
+              </div>
               <ContribCardsVariant events={CONTRIB_SAMPLE_EVENTS} />
             </div>
             <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">Variant B — Single-line list</div>
+              <div className="mockup-portrait-col__h">
+                Variant B — Single-line list
+                <span className="mockup-variant-ref" aria-label="Reference only">Reference only</span>
+              </div>
               <ContribListVariant events={CONTRIB_SAMPLE_EVENTS} />
             </div>
           </div>
@@ -5531,18 +5544,22 @@ export function Mockup() {
             <div className="mockup-portrait-col">
               <div className="mockup-portrait-col__h">
                 Variant 1 — Restyled chip pills
+                <span className="mockup-variant-ref" aria-label="Reference only">Reference only</span>
               </div>
               <ContribFilterChipPills />
             </div>
             <div className="mockup-portrait-col">
               <div className="mockup-portrait-col__h">
                 Variant 2 — Multi-select dropdown
-                <span className="mockup-variant-picked mockup-variant-picked--proposed" aria-label="Proposed option">PROPOSED</span>
+                <span className="mockup-variant-picked" aria-label="Locked option">LOCKED</span>
               </div>
               <ContribFilterDropdown />
             </div>
             <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">Variant 3 — Icon-toggle row</div>
+              <div className="mockup-portrait-col__h">
+                Variant 3 — Icon-toggle row
+                <span className="mockup-variant-ref" aria-label="Reference only">Reference only</span>
+              </div>
               <ContribFilterIconToggle />
             </div>
           </div>
