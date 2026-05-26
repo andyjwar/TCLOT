@@ -1741,30 +1741,21 @@ export function LiveScores({
                     #
                   </th>
                   <th className="col-team">Team</th>
-                  {/* PR #5h — `LIVE` is the mobile-only column (renamed from
-                     PR #5g’s `PL` to avoid conflating with the standings
-                     `P` = matches played column the desktop layout adds).
-                     `.col-pl` class kept to minimise CSS churn — see
-                     `.standings-table--live .col-pl` rules in App.css. */}
-                  <th
-                    className="col-num col-pl"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Live played score: final FPL points this GW'
-                        : 'Live played score: FPL points this GW so far (0 pre-kickoff)'
-                    }
-                  >
-                    LIVE
-                  </th>
-                  {/* PR #5h — desktop-only standings columns. Hidden on
-                     mobile (≤880px) via App.css media query so the
-                     condensed PR #5g layout shows there. */}
+                  {/* PR #5j — matches-played column rendered on both
+                     desktop and mobile (previously the mobile slot showed
+                     live FPL points under the header `LIVE`; collapsed
+                     into the single `P` column since the live signal is
+                     already carried by the inline +3/+1 chip, the GW
+                     dot, and the live-cumulative FOR value). */}
                   <th
                     className="col-num col-played"
                     title="Season H2H matches played"
                   >
                     P
                   </th>
+                  {/* PR #5h — desktop-only standings columns. Hidden on
+                     mobile (≤880px) via App.css media query so the
+                     condensed PR #5g layout shows there. */}
                   <th
                     className="col-num col-wdl"
                     title="Season H2H wins"
@@ -1944,16 +1935,6 @@ export function LiveScores({
                             </span>
                           ) : null}
                         </span>
-                      </td>
-                      <td
-                        className="col-num col-pl tabular"
-                        title={
-                          row.liveGw != null
-                            ? `Live GW played score: ${row.liveGw} FPL pts`
-                            : 'Live GW played score (no data yet)'
-                        }
-                      >
-                        {row.liveGw != null ? row.liveGw : 0}
                       </td>
                       <td className="col-num col-played tabular">
                         {(row.matches_won ?? 0) +

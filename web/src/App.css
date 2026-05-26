@@ -9880,7 +9880,6 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   color: var(--fm-text-strong);
 }
 .standings-table--live .col-num.col-for,
-.standings-table--live .col-num.col-pl,
 .standings-table--live .col-num.col-played,
 .standings-table--live .col-num.col-wdl,
 .standings-table--live .col-num.col-against,
@@ -9912,6 +9911,52 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 .standings-table--live.standings-table--sidebar td.col-gd,
 .standings-table--live.standings-table--sidebar td.col-num.col-pts {
   padding-right: var(--space-2);
+}
+
+/* ============================================================ */
+/* FOR / AGT / GD visual grouping — desktop only (PR #5j)        */
+/* ============================================================ */
+/*
+ * Treat the three "season-points" columns as one visual unit so
+ * they read distinctly from the W/D/L block on the left and the
+ * Last 5 / GW / PTS block on the right. Two ingredients:
+ *
+ *   1. Tighten interior padding within the group (4px between
+ *      FOR↔AGT and AGT↔GD instead of the table's default 8px).
+ *   2. Subtle hairline dividers on the *outer* edges of the group
+ *      (left edge of `.col-for`, right edge of `.col-gd`). Colour
+ *      is `--fm-border` mixed to ~55% so the line reads as a hint
+ *      rather than a hard rule, on both light and dark themes.
+ *
+ * Mobile (<=880px) hides AGT and GD entirely (see column visibility
+ * block below), so the grouping treatment is desktop-only.
+ *
+ * Specificity: the existing column-alignment-fix block above uses
+ * `.standings-table--live.standings-table--sidebar td.col-{for,gd}`
+ * (0,3,1) to override the sidebar's padding-right reservation. The
+ * rules below match that specificity for the data cells and reach
+ * `<th>`s with the same chained classes.
+ */
+@media (min-width: 881px) {
+  .standings-table--live.standings-table--sidebar th.col-for,
+  .standings-table--live.standings-table--sidebar td.col-for {
+    border-left: 1px solid
+      color-mix(in srgb, var(--fm-border) 55%, transparent);
+    padding-left: var(--space-3);
+    padding-right: var(--space-1);
+  }
+  .standings-table--live.standings-table--sidebar th.col-against,
+  .standings-table--live.standings-table--sidebar td.col-against {
+    padding-left: var(--space-1);
+    padding-right: var(--space-1);
+  }
+  .standings-table--live.standings-table--sidebar th.col-gd,
+  .standings-table--live.standings-table--sidebar td.col-gd {
+    border-right: 1px solid
+      color-mix(in srgb, var(--fm-border) 55%, transparent);
+    padding-left: var(--space-1);
+    padding-right: var(--space-3);
+  }
 }
 
 /* Row tints — soften the leader & 8th bands so they read as part of
@@ -10113,52 +10158,43 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 /* ============================================================ */
-/* Desktop / mobile column visibility (PR #5h)                  */
+/* Desktop / mobile column visibility (PR #5j)                  */
 /* ============================================================ */
 /*
  * The Live Table renders the full standings column set on desktop
- * (>880px) and the condensed PR #5g column set on mobile
- * (≤880px). Both layouts share the same `<thead>` / `<tbody>`
- * markup; CSS toggles cell visibility per breakpoint.
+ * (>880px) and a condensed column set on mobile (≤880px). Both
+ * layouts share the same `<thead>` / `<tbody>` markup; CSS toggles
+ * cell visibility per breakpoint.
  *
  * Render order in JSX is:
- *   # · TEAM · LIVE · P · W · D · L · FOR · AGT · GD · Last 5 · GW · PTS
- *
- * On desktop the `LIVE` column hides, leaving:
  *   # · TEAM · P · W · D · L · FOR · AGT · GD · Last 5 · GW · PTS
  *
+ * On desktop the full set renders.
+ *
  * On mobile (≤880px) the desktop-only columns hide, leaving:
- *   # · TEAM · LIVE · FOR · Last 5 · GW · PTS
+ *   # · TEAM · P · FOR · Last 5 · GW · PTS
  *
- * `display: table-cell` is used to re-enable cells the default rule
- * hid, since `th` / `td` default to `table-cell`. We choose CSS
- * toggling over `useNarrowViewport()`-gated JSX because CSS responds
- * reliably to viewport resizes (the matchMedia hook has had
- * embedded-browser flakiness on this project) and the JSX stays
- * single-source-of-truth.
+ * History (PR #5j): the mobile slot previously labelled `LIVE`
+ * (showing live FPL GW points; class `.col-pl`) was collapsed into
+ * the single `P` (matches-played) column shown on both viewports.
+ * The live signal is still carried on mobile by the inline +3/+1
+ * chip next to the team name, the GW dot, and the live-cumulative
+ * FOR value, so a dedicated `LIVE` cell was redundant. The `.col-pl`
+ * class is gone from the Live Table; the matches-played column is
+ * `.col-played` everywhere.
  *
- * Naming choice (PR #5h): mobile `PL` was renamed to `LIVE` to
- * disambiguate from desktop’s `P` (matches played). The CSS class
- * `.col-pl` is kept (only the header text changed) to minimise
- * churn elsewhere in the codebase.
+ * We use CSS toggling rather than `useNarrowViewport()`-gated JSX
+ * because CSS responds reliably to viewport resizes (the matchMedia
+ * hook has had embedded-browser flakiness on this project) and the
+ * JSX stays single-source-of-truth.
  */
-
-/* Desktop default: hide the mobile-only LIVE column. */
-.standings-table--live .col-pl {
-  display: none;
-}
 
 @media (max-width: 880px) {
   /* Mobile: hide the desktop-only standings columns. */
-  .standings-table--live .col-played,
   .standings-table--live .col-wdl,
   .standings-table--live .col-against,
   .standings-table--live .col-gd {
     display: none;
-  }
-  /* Mobile: re-show the LIVE column hidden by the desktop default. */
-  .standings-table--live .col-pl {
-    display: table-cell;
   }
 }
 
@@ -12397,6 +12433,15 @@ button.live-xp__player-name:focus-visible {
 }
 .live-contrib__feed::-webkit-scrollbar-thumb:hover {
   background: var(--text-muted);
+}
+/* Mobile: cap the feed at ~5 cards instead of ~6-7. Each row is
+   ~70px (var(--space-3) padding × 2 + two ~20px text rows + 2px
+   row-gap + 1px border) so 5 cards × ~70px ≈ 350px; 360px leaves
+   a small peek at the 6th card to hint at scrollability. */
+@media (max-width: 880px) {
+  .live-contrib__feed {
+    max-height: 360px;
+  }
 }
 
 .live-contrib__empty {
