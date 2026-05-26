@@ -95,6 +95,10 @@
   --data-positive: #12a15a;
   --data-negative: #ef4444;
   --data-neutral: #9ca3af;
+  /* Amber used by the PR #5g `GW` dot for the "drawing" outcome — distinct
+   * from `--data-neutral` so a drawn matchup reads differently from a
+   * pre-kickoff / no-data row. */
+  --data-warning: #f59e0b;
 
   /* Hero defeat / Villain victory narrative colour tokens. Kept intentionally
    * theme-agnostic — same hue on light + dark. Used by the shared Variant 1
@@ -9674,22 +9678,9 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   font-size: 0.78rem;
 }
 
-/* Live tab: projected standings + GW league pts (+3/+1/0) */
-.standings-table--live .col-live-gw {
-  text-align: right;
-}
-
-.standings-table--live .live-standings-gw-val--win {
-  color: var(--fm-win, #34d399);
-}
-
-.standings-table--live .live-standings-gw-val--draw {
-  color: var(--fm-draw, #9ca3af);
-}
-
-.standings-table--live .live-standings-gw-val--loss {
-  color: var(--fm-muted, rgba(255, 255, 255, 0.55));
-}
+/* Live tab: projected standings — see PR #5g GW dot column below for
+ * the per-row live outcome dot (the old text-based `+3 / +1 / 0` cell
+ * was replaced by a single coloured dot to read at a glance). */
 
 .live-standings-team-name {
   display: inline-flex;
@@ -9791,11 +9782,7 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   color: var(--fm-text-strong);
 }
 .standings-table--live .col-num.col-for,
-.standings-table--live .col-num.col-faced,
-.standings-table--live .col-num.col-gd,
-.standings-table--live .col-num.col-pl,
-.standings-table--live .col-num.col-wdl,
-.standings-table--live .col-num.col-live-gw {
+.standings-table--live .col-num.col-pl {
   font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
 }
@@ -9816,19 +9803,27 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 /* ============================================================ */
-/* Form dots column (5 dots: 4 finished + 1 live)               */
+/* Last 5 / GW dot columns (PR #5g)                              */
 /* ============================================================ */
 /*
  * Rendering: `<span class="live-form-dots"><span class="live-form-dot
- * live-form-dot--{win|draw|loss|none}[ live-form-dot--live]"/>…</span>`.
+ * live-form-dot--{win|draw|loss|none}"/>…</span>` for the `Last 5`
+ * column (5 most-recently-finished GW dots, no live one), and
+ * `<span class="live-gw-dot live-gw-dot--{win|draw|loss|none}
+ * [live-gw-dot--live]"/>` for the new `GW` column (single dot whose
+ * pulse signals an in-flight live result).
  *
- * The live (5th) dot keeps its W/D/L colour so the result stays
- * visible at a glance, with a pulsing ring overlay so the viewer
- * can tell it's in flight. When a manager has no live result yet
- * (data not loaded / pre-kickoff), the dot falls into `--none` which
- * renders as a muted ring without a fill.
+ * History: PR #5f used a single column ("Form") mixing 4 historic +
+ * 1 live dot. PR #5g splits that into `Last 5` (5 historic) and `GW`
+ * (1 live) so the in-flight signal has its own dedicated column —
+ * making losing rows still readable at a glance without a chip.
  */
 .col-live-form {
+  text-align: center;
+  width: 1%;
+  white-space: nowrap;
+}
+.col-live-gw-dot {
   text-align: center;
   width: 1%;
   white-space: nowrap;
@@ -9863,29 +9858,59 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   background: transparent;
   box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--fm-muted) 65%, transparent);
 }
-/* Live (5th) dot — pulsing ring on top of the W/D/L fill so the
- * result is still visible. Skip the pulse when prefers-reduced-motion
- * is set so motion-averse viewers still get the colour signal. */
-.live-form-dot--live {
-  position: relative;
-  /* Slightly larger so the pulse ring doesn't look cramped, but
-   * still aligned with the row baseline via the flex container. */
-  width: 9px;
-  height: 9px;
-  box-shadow: 0 0 0 1.5px color-mix(in srgb, var(--brand) 65%, transparent);
+
+/* GW column (PR #5g): single coloured dot per row signaling this GW's
+ * live H2H result. Visibly bigger than the Last-5 dots so it reads as
+ * a separate, more prominent signal, and pulses while live (frozen
+ * GWs and prefers-reduced-motion skip the pulse but keep the colour). */
+.live-gw-dot {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--data-neutral, #9ca3af);
+  vertical-align: middle;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--fm-text-strong) 12%, transparent);
 }
-.live-form-dot--live::after {
+.live-gw-dot--win {
+  background: var(--data-positive, #12a15a);
+}
+.live-gw-dot--draw {
+  /* Amber/yellow — distinct from the grey "no data" muted ring so the
+   * viewer can tell a level matchup apart from a pre-kickoff row. */
+  background: var(--data-warning, #f59e0b);
+}
+.live-gw-dot--loss {
+  background: var(--data-negative, #ef4444);
+}
+.live-gw-dot--none {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--fm-muted) 65%, transparent);
+}
+/* Pulse: only added while the GW is live (started but not frozen) and
+ * we have a coloured result. The pulse uses the dot's current fill
+ * colour so the ring reads as part of the same signal. */
+.live-gw-dot--live {
+  position: relative;
+}
+.live-gw-dot--live::after {
   content: '';
   position: absolute;
   inset: -3px;
   border-radius: 50%;
-  border: 1.5px solid color-mix(in srgb, var(--brand) 75%, transparent);
+  border: 1.5px solid currentColor;
+  color: color-mix(in srgb, var(--brand) 70%, transparent);
   animation: live-form-dot-pulse 1.8s ease-out infinite;
   pointer-events: none;
 }
-.live-form-dot--live.live-form-dot--none {
-  /* No fill → make the pulse ring itself the visual element. */
-  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--brand) 70%, transparent);
+.live-gw-dot--live.live-gw-dot--win::after {
+  color: color-mix(in srgb, var(--data-positive, #12a15a) 75%, transparent);
+}
+.live-gw-dot--live.live-gw-dot--draw::after {
+  color: color-mix(in srgb, var(--data-warning, #f59e0b) 75%, transparent);
+}
+.live-gw-dot--live.live-gw-dot--loss::after {
+  color: color-mix(in srgb, var(--data-negative, #ef4444) 75%, transparent);
 }
 @keyframes live-form-dot-pulse {
   0% {
@@ -9902,7 +9927,7 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  .live-form-dot--live::after {
+  .live-gw-dot--live::after {
     animation: none;
     opacity: 0.5;
     transform: scale(1);
@@ -9910,14 +9935,22 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 }
 
 /* ============================================================ */
-/* Mobile +For chip — narrow viewport (<=880px) only            */
+/* Projected-H2H chip — narrow viewport (<=880px) only          */
 /* ============================================================ */
 /*
  * Renders next to the team name on narrow viewports as a compact
- * mono caps chip with the signed live FPL points margin (manager's
- * live GW points minus opponent's). Positive = brand-green, zero =
- * muted, negative = brand-red. Hidden on desktop where the existing
- * For/Faced/GD columns already convey the same information.
+ * mono caps chip with the manager's *projected* H2H points for this
+ * GW: `+3` when winning, `+1` when drawing. Hidden on losing rows
+ * and pre-kickoff (caller passes `null` value) — the dedicated GW
+ * dot column carries the loss signal so the team-name cell stays
+ * uncluttered. Hidden on desktop entirely where the GW dot column
+ * is always visible.
+ *
+ * Class history: `.live-form-margin` predates PR #5g (was the mobile
+ * `+N FOR` chip showing signed live FPL points margin). The class
+ * name is kept to minimize CSS churn; only the kind modifiers
+ * changed (`--pos/--neg/--zero` → `--win/--draw`). Losing rows
+ * never receive a chip so no `--loss` style exists.
  *
  * Rendering is gated by `useNarrowViewport()` in JSX so this CSS
  * just has to style what's already conditionally there.
@@ -9938,15 +9971,11 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   line-height: 1;
   flex-shrink: 0;
 }
-.live-form-margin--pos {
+.live-form-margin--win {
   color: var(--data-positive, #12a15a);
   background: color-mix(in srgb, var(--data-positive, #12a15a) 12%, transparent);
 }
-.live-form-margin--neg {
-  color: var(--data-negative, #ef4444);
-  background: color-mix(in srgb, var(--data-negative, #ef4444) 12%, transparent);
-}
-.live-form-margin--zero {
+.live-form-margin--draw {
   color: var(--fm-muted);
   background: color-mix(in srgb, var(--fm-muted) 12%, transparent);
 }

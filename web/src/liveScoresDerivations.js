@@ -413,24 +413,27 @@ function h2hResult(mine, opp) {
 }
 
 /**
- * Compute the 5-dot form (last 4 finished GWs + current live GW) for one
- * manager in the Live Table form column.
+ * Compute the dot form for one manager in the Live Table.
  *
- * Returns an array of {@link ManagerFormEntry} sorted oldest → newest, so
- * callers can render left-to-right and the in-flight live dot lands at the
- * rightmost position. Length is always equal to `count` (default 5) so the
- * column width is stable across rows — when a manager has fewer than
- * `count - 1` finished GWs we left-pad with `result: null` entries (gw
- * numbers are still set when known).
+ * By default returns 5 dots: 4 finished GWs + 1 live (in-flight) current GW.
+ * Pass `includeLive: false` to get `count` purely historic dots (used by
+ * PR #5g's `Last 5` column where the live result is rendered separately in
+ * the new `GW` dot column).
  *
- * Finished history (the first `count - 1` slots) comes from `matches`:
- * entries with `event < gameweek` and `finished === true` involving the
- * manager. The most recent `count - 1` are kept; remaining gaps are filled
- * with null-result entries for the missing GW numbers (or just synthetic
- * placeholder GW numbers if there aren't enough). The last slot is the
- * current GW from `liveMyPts` / `liveOppPts`. When `currentGwFinished` is
- * true the live dot still renders but with `isLive: false` (the FT result
- * is finalized, no pulse needed).
+ * Result array is sorted oldest → newest, so callers render left-to-right
+ * and the live dot (when included) lands at the rightmost position. Length
+ * is always equal to `count` (default 5) so the column width is stable
+ * across rows — when a manager has fewer than the required finished GWs we
+ * left-pad with `result: null` entries (gw numbers are still set when known).
+ *
+ * Finished history comes from `matches`: entries with `event < gameweek` and
+ * `finished === true` involving the manager. The most recent finished GWs
+ * are kept; remaining gaps are filled with null-result entries for the
+ * missing GW numbers (or just synthetic placeholder GW numbers if there
+ * aren't enough). When `includeLive` is true the last slot is the current
+ * GW from `liveMyPts` / `liveOppPts`; when `currentGwFinished` is true the
+ * live dot still renders but with `isLive: false` (the FT result is
+ * finalized, no pulse needed).
  *
  * @param {{
  *   leagueEntryId: number | string | null,
@@ -440,6 +443,7 @@ function h2hResult(mine, opp) {
  *   liveOppPts?: number | null,
  *   currentGwFinished?: boolean,
  *   count?: number,
+ *   includeLive?: boolean,
  * }} input
  * @returns {ManagerFormEntry[]}
  */
@@ -451,11 +455,12 @@ export function computeManagerForm({
   liveOppPts = null,
   currentGwFinished = false,
   count = 5,
+  includeLive = true,
 } = {}) {
   const id = Number(leagueEntryId);
   const gwNum = Number(gameweek);
   const slots = Math.max(1, Math.floor(Number(count) || 5));
-  const historySlots = slots - 1;
+  const historySlots = includeLive ? slots - 1 : slots;
 
   /** Build per-GW W/D/L history from finished matches involving this manager. */
   const byGw = new Map();
@@ -496,7 +501,11 @@ export function computeManagerForm({
     padded.push({ gw: guess > 0 ? guess : 0, result: null, isLive: false });
   }
 
-  /** 5th dot: live (or finalized) current-GW result. */
+  if (!includeLive) {
+    return [...padded, ...history];
+  }
+
+  /** Rightmost dot: live (or finalized) current-GW result. */
   const liveResult = h2hResult(liveMyPts, liveOppPts);
   const liveEntry = {
     gw: Number.isFinite(gwNum) ? gwNum : 0,
@@ -539,6 +548,65 @@ export function formatLiveMatchupMargin(margin) {
   const n = Number(margin);
   if (n > 0) return `+${n}`;
   return String(n);
+}
+
+/**
+ * Projected H2H league points for one manager based on the current live
+ * matchup margin. Used by the PR #5g inline "+3 / +1" chip next to the
+ * team name in the Live Table.
+ *
+ * Mapping (FPL Draft H2H scoring):
+ *   - margin > 0 (winning) → `{ value: 3, kind: 'win' }`
+ *   - margin === 0 (drawing) → `{ value: 1, kind: 'draw' }`
+ *   - margin < 0 (losing)    → `{ value: null, kind: 'loss' }`
+ *   - either side missing    → `null` (caller hides the chip)
+ *
+ * Losing intentionally returns a null `value` so the caller can hide the
+ * chip entirely on a losing row — the row's GW dot column carries the loss
+ * signal, no `+0` placeholder needed.
+ *
+ * @param {number | null | undefined} liveMyPts
+ * @param {number | null | undefined} liveOppPts
+ * @returns {{ value: 3 | 1 | null, kind: 'win' | 'draw' | 'loss' } | null}
+ */
+export function projectedH2HPoints(liveMyPts, liveOppPts) {
+  if (liveMyPts == null || liveOppPts == null) return null;
+  const m = Number(liveMyPts);
+  const o = Number(liveOppPts);
+  if (!Number.isFinite(m) || !Number.isFinite(o)) return null;
+  if (m > o) return { value: 3, kind: 'win' };
+  if (m < o) return { value: null, kind: 'loss' };
+  return { value: 1, kind: 'draw' };
+}
+
+/**
+ * Single-dot live GW outcome kind for the PR #5g `GW` column.
+ *
+ * Returns one of:
+ *   - `'win'`   — manager is ahead in the live matchup
+ *   - `'draw'`  — scores level (or 0-0 at kickoff)
+ *   - `'loss'`  — manager is behind in the live matchup
+ *   - `'none'`  — GW not started yet, or no opponent score to compare
+ *                 (missing data / orphan squad / blank week)
+ *
+ * `hasGwStarted` short-circuits to `'none'` before consulting points so
+ * the pre-kickoff state always renders a muted placeholder even when both
+ * sides have zeroed-out totals loaded.
+ *
+ * @param {number | null | undefined} liveMyPts
+ * @param {number | null | undefined} liveOppPts
+ * @param {boolean} [hasGwStarted=true]
+ * @returns {'win' | 'draw' | 'loss' | 'none'}
+ */
+export function liveGwOutcomeDot(liveMyPts, liveOppPts, hasGwStarted = true) {
+  if (!hasGwStarted) return 'none';
+  if (liveMyPts == null || liveOppPts == null) return 'none';
+  const m = Number(liveMyPts);
+  const o = Number(liveOppPts);
+  if (!Number.isFinite(m) || !Number.isFinite(o)) return 'none';
+  if (m > o) return 'win';
+  if (m < o) return 'loss';
+  return 'draw';
 }
 
 /**

@@ -8,11 +8,13 @@ import {
   isCleanSheetEligible,
   liveFixtureLead,
   liveGroupStatus,
+  liveGwOutcomeDot,
   liveGwProgress,
   liveMatchupMargin,
   minutesTone,
   playerLiveState,
   playerXiPillKind,
+  projectedH2HPoints,
   rowsByPointsContributed,
   sortStartingXIByPosition,
   teamInitials,
@@ -474,4 +476,82 @@ test('formatLiveMatchupMargin — `+N` for positive, signed for negative, `0`, o
   assert.equal(formatLiveMatchupMargin(null), null)
   assert.equal(formatLiveMatchupMargin(undefined), null)
   assert.equal(formatLiveMatchupMargin('abc'), null)
+})
+
+test('computeManagerForm — includeLive:false returns 5 historic dots, no live entry', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 1,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    liveMyPts: 67,
+    liveOppPts: 61,
+    includeLive: false,
+  })
+  assert.equal(out.length, 5, '5 dots, all historic')
+  assert.equal(
+    out.every((d) => d.isLive === false),
+    true,
+    'no live dot when includeLive:false',
+  )
+  assert.deepEqual(
+    out.map((d) => ({ gw: d.gw, result: d.result })),
+    [
+      { gw: 32, result: 'W' },
+      { gw: 33, result: 'L' },
+      { gw: 34, result: 'D' },
+      { gw: 35, result: 'W' },
+      { gw: 36, result: 'L' },
+    ],
+    'returns the 5 most-recently-finished GWs (oldest → newest), excludes live GW 37',
+  )
+})
+
+test('computeManagerForm — includeLive:false pads on the left when fewer than 5 finished GWs', () => {
+  const out = computeManagerForm({
+    leagueEntryId: 2,
+    matches: FORM_FIXTURE_MATCHES,
+    gameweek: 37,
+    includeLive: false,
+  })
+  assert.equal(out.length, 5)
+  assert.deepEqual(
+    out.map((d) => d.result),
+    [null, null, null, 'W', 'L'],
+    '2 finished GWs (W on 34, L on 36) tail-padded into the last 2 slots',
+  )
+  assert.equal(out[4].gw, 36, 'final dot is the most recent finished GW')
+})
+
+test('projectedH2HPoints — win/draw/loss/null mapping', () => {
+  assert.deepEqual(projectedH2HPoints(67, 61), { value: 3, kind: 'win' })
+  assert.deepEqual(projectedH2HPoints(50, 50), { value: 1, kind: 'draw' })
+  assert.deepEqual(
+    projectedH2HPoints(40, 65),
+    { value: null, kind: 'loss' },
+    'losing returns null value so caller hides the chip',
+  )
+  assert.equal(projectedH2HPoints(null, 4), null)
+  assert.equal(projectedH2HPoints(4, undefined), null)
+  assert.equal(projectedH2HPoints('not-a-number', 4), null)
+})
+
+test('liveGwOutcomeDot — kind by margin; hasGwStarted=false → none', () => {
+  assert.equal(liveGwOutcomeDot(67, 61, true), 'win')
+  assert.equal(liveGwOutcomeDot(40, 65, true), 'loss')
+  assert.equal(liveGwOutcomeDot(50, 50, true), 'draw')
+  assert.equal(liveGwOutcomeDot(0, 0, true), 'draw', '0-0 mid-GW is a draw')
+  assert.equal(
+    liveGwOutcomeDot(67, 61, false),
+    'none',
+    'hasGwStarted=false forces none even with live points loaded',
+  )
+  assert.equal(liveGwOutcomeDot(null, 61, true), 'none')
+  assert.equal(liveGwOutcomeDot(67, null, true), 'none')
+  assert.equal(liveGwOutcomeDot(undefined, undefined, true), 'none')
+  assert.equal(liveGwOutcomeDot('abc', 61, true), 'none')
+  assert.equal(
+    liveGwOutcomeDot(67, 61),
+    'win',
+    'hasGwStarted defaults to true',
+  )
 })

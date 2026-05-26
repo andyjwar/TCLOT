@@ -25,8 +25,8 @@ import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { useNarrowViewport } from './usePortraitMobile.js';
 import {
   computeManagerForm,
-  formatLiveMatchupMargin,
-  liveMatchupMargin,
+  liveGwOutcomeDot,
+  projectedH2HPoints,
 } from './liveScoresDerivations.js';
 import {
   bootstrapTeamToPredictionTeam,
@@ -372,13 +372,6 @@ function liveH2hBonusPts(myLive, oppLive) {
   if (myLive > oppLive) return 3;
   if (myLive < oppLive) return 0;
   return 1;
-}
-
-/** GW column: league points from the live fixture (+3 / +1 / 0). */
-function formatGwLeaguePtsBonus(h2hBonus) {
-  if (h2hBonus === 3) return '+3';
-  if (h2hBonus === 1) return '+1';
-  return '0';
 }
 
 function teamNameForEntry(teams, leagueEntryId) {
@@ -1098,6 +1091,14 @@ export function LiveScores({
    */
   const liveStandingsRows = useMemo(() => {
     if (!Array.isArray(tableRows) || tableRows.length === 0) return [];
+    /**
+     * PR #5g — `gwHasStarted` is the signal the new `GW` dot column uses to
+     * differentiate "pre-kickoff" (muted placeholder dot) from "live"
+     * (W/D/L coloured dot, pulsing if not frozen). Frozen GWs are
+     * always considered started so the FT dot still renders coloured.
+     */
+    const gwHasStarted =
+      gwStandingsFrozen || gwMatches.some((m) => m?.started === true);
     const enriched = tableRows.map((row) => {
       const eid = row.league_entry;
       const squad = squadByLeagueEntry.get(eid);
@@ -1118,6 +1119,13 @@ export function LiveScores({
           ? 0
           : Number(oppLiveGw);
 
+      /**
+       * PR #5g — `projectedFor` is the live-cumulative For (season points
+       * for + this GW's live FPL points). When `gwStandingsFrozen` is true
+       * the league `gf` already includes this GW so we add 0 to avoid
+       * double-counting. This is the same value rendered in the new `FOR`
+       * column post-restructure — no separate helper needed.
+       */
       const projectedFor = gf + addMine;
       const projectedGa = ga + addOpp;
       const projectedGd = projectedFor - projectedGa;
@@ -1128,19 +1136,28 @@ export function LiveScores({
       const projectedPts = gwStandingsFrozen ? total : total + h2hBonus;
 
       /**
-       * 5-dot H2H form for the standings form column: 4 finished GWs +
-       * 1 live (in-flight) dot pulsing the current GW's live W/D/L.
-       * Pure helper from `liveScoresDerivations.js` — see tests there.
+       * PR #5g — `formDotsHistoric` powers the new `Last 5` column: 5
+       * most-recently-finished GW dots, no live dot (the live result moved
+       * to the separate `GW` dot column).
        */
-      const formDots = computeManagerForm({
+      const formDotsHistoric = computeManagerForm({
         leagueEntryId: eid,
         matches,
         gameweek,
-        liveMyPts: liveGw,
-        liveOppPts: inFixture ? oppLiveGw : null,
-        currentGwFinished: gwStandingsFrozen,
+        includeLive: false,
+        count: 5,
       });
-      const liveMargin = liveMatchupMargin(
+      /**
+       * PR #5g — `gwOutcomeDot` drives the new `GW` column (single
+       * coloured dot). `h2hProj` drives the inline `+3 / +1` chip in the
+       * team-name cell (hidden on losing rows; `value === null` then).
+       */
+      const gwOutcomeDot = liveGwOutcomeDot(
+        liveGw,
+        inFixture ? oppLiveGw : null,
+        gwHasStarted,
+      );
+      const h2hProj = projectedH2HPoints(
         liveGw,
         inFixture ? oppLiveGw : null,
       );
@@ -1154,8 +1171,9 @@ export function LiveScores({
         projectedGd,
         h2hBonus,
         projectedPts,
-        formDots,
-        liveMargin,
+        formDotsHistoric,
+        gwOutcomeDot,
+        h2hProj,
       };
     });
     const sorted = [...enriched].sort((a, b) => {
@@ -1184,6 +1202,7 @@ export function LiveScores({
     gwStandingsFrozen,
     matches,
     gameweek,
+    gwMatches,
   ]);
 
   const liveRankByEntry = useMemo(() => {
@@ -1765,51 +1784,37 @@ export function LiveScores({
                   </th>
                   <th className="col-team">Team</th>
                   <th
-                    className="col-live-form"
-                    title="Last 4 finished GWs + this GW's live result (pulsing)"
+                    className="col-num col-pl"
+                    title={
+                      gwStandingsFrozen
+                        ? 'Live played score: final FPL points this GW'
+                        : 'Live played score: FPL points this GW so far (0 pre-kickoff)'
+                    }
                   >
-                    Form
+                    PL
                   </th>
-                  <th className="col-num col-pl">PL</th>
-                  <th className="col-num col-wdl">W</th>
-                  <th className="col-num col-wdl">D</th>
-                  <th className="col-num col-wdl">L</th>
                   <th
                     className="col-num col-for"
                     title={
                       gwStandingsFrozen
                         ? 'Season points for (includes this GW)'
-                        : 'Season points for, plus this GW’s live score vs your opponent'
+                        : 'Season points for, plus this GW’s live FPL points'
                     }
                   >
-                    For
+                    FOR
                   </th>
                   <th
-                    className="col-num col-faced"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Season points against (includes this GW)'
-                        : 'Season points against, plus your opponent’s live GW score vs you (when paired)'
-                    }
+                    className="col-live-form"
+                    title="Last 5 finished GWs (oldest to newest)"
                   >
-                    Faced
+                    Last 5
                   </th>
                   <th
-                    className="col-num col-gd"
+                    className="col-live-gw-dot"
                     title={
                       gwStandingsFrozen
-                        ? 'Goal difference: For minus Faced'
-                        : 'Projected GD: projected For minus projected Faced'
-                    }
-                  >
-                    GD
-                  </th>
-                  <th
-                    className="col-num col-live-gw"
-                    title={
-                      gwStandingsFrozen
-                        ? 'League points from this GW’s result: +3 win, +1 draw, 0 loss'
-                        : 'League points from this GW’s live fixture: +3 win, +1 draw, 0 loss'
+                        ? 'This GW’s H2H result: green win, amber draw, red loss'
+                        : 'Live H2H result vs opponent: green winning, amber drawing, red losing, muted pre-kickoff'
                     }
                   >
                     GW
@@ -1904,53 +1909,69 @@ export function LiveScores({
                               </span>
                             ) : null}
                           </span>
-                          {/* Mobile-only "+For" indicator: signed live FPL points
-                             margin vs the manager's GW opponent. Narrow viewport
-                             (<=880px) only — replaces a dedicated column at narrow
-                             widths so the table doesn't get denser there. */}
-                          {narrowViewport && row.liveMargin != null ? (
+                          {/* PR #5g — inline projected-H2H chip next to the
+                             team name. Renders `+3` (winning) or `+1`
+                             (drawing); hidden on losing rows and pre-kickoff
+                             so the row's GW dot column carries the loss
+                             signal. Narrow viewport (≤880px) only — desktop
+                             uses the dedicated GW dot column instead. */}
+                          {narrowViewport && row.h2hProj && row.h2hProj.value != null ? (
                             <span
-                              className={
-                                'live-form-margin' +
-                                (row.liveMargin > 0
-                                  ? ' live-form-margin--pos'
-                                  : row.liveMargin < 0
-                                    ? ' live-form-margin--neg'
-                                    : ' live-form-margin--zero')
+                              className={`live-form-margin live-form-margin--${row.h2hProj.kind}`}
+                              title={
+                                row.h2hProj.kind === 'win'
+                                  ? `Projected H2H points: +${row.h2hProj.value} (winning this GW)`
+                                  : `Projected H2H points: +${row.h2hProj.value} (drawing this GW)`
                               }
-                              title={`Live GW margin vs opponent: ${formatLiveMatchupMargin(row.liveMargin)} For`}
-                              aria-label={`Live matchup margin ${formatLiveMatchupMargin(row.liveMargin)} For`}
+                              aria-label={
+                                row.h2hProj.kind === 'win'
+                                  ? `Projected H2H points plus ${row.h2hProj.value} (winning)`
+                                  : `Projected H2H points plus ${row.h2hProj.value} (drawing)`
+                              }
                             >
-                              {formatLiveMatchupMargin(row.liveMargin)} For
+                              +{row.h2hProj.value}
                             </span>
                           ) : null}
                         </span>
                       </td>
+                      <td
+                        className="col-num col-pl tabular"
+                        title={
+                          row.liveGw != null
+                            ? `Live GW played score: ${row.liveGw} FPL pts`
+                            : 'Live GW played score (no data yet)'
+                        }
+                      >
+                        {row.liveGw != null ? row.liveGw : 0}
+                      </td>
+                      <td
+                        className="col-num col-for tabular"
+                        title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
+                      >
+                        {row.projectedFor}
+                      </td>
                       <td className="col-live-form">
-                        <span className="live-form-dots" role="img" aria-label="Form (oldest to newest, last dot is live)">
-                          {row.formDots.map((dot, i) => {
-                            const kind = dot.result === 'W'
-                              ? 'win'
-                              : dot.result === 'D'
-                                ? 'draw'
-                                : dot.result === 'L'
-                                  ? 'loss'
-                                  : 'none';
-                            const cls = [
-                              'live-form-dot',
-                              `live-form-dot--${kind}`,
-                              dot.isLive ? 'live-form-dot--live' : '',
-                            ]
-                              .filter(Boolean)
-                              .join(' ');
-                            const label = dot.isLive
-                              ? `GW ${dot.gw} live${dot.result ? ` (${dot.result})` : ''}`
-                              : dot.result
-                                ? `GW ${dot.gw} ${dot.result}`
-                                : `GW ${dot.gw} — no result`;
+                        <span
+                          className="live-form-dots"
+                          role="img"
+                          aria-label="Last 5 finished GWs (oldest to newest)"
+                        >
+                          {row.formDotsHistoric.map((dot, i) => {
+                            const kind =
+                              dot.result === 'W'
+                                ? 'win'
+                                : dot.result === 'D'
+                                  ? 'draw'
+                                  : dot.result === 'L'
+                                    ? 'loss'
+                                    : 'none';
+                            const cls = `live-form-dot live-form-dot--${kind}`;
+                            const label = dot.result
+                              ? `GW ${dot.gw} ${dot.result}`
+                              : `GW ${dot.gw} — no result`;
                             return (
                               <span
-                                key={`${row.league_entry}-form-${i}-${dot.gw}`}
+                                key={`${row.league_entry}-last5-${i}-${dot.gw}`}
                                 className={cls}
                                 title={label}
                                 aria-label={label}
@@ -1959,39 +1980,41 @@ export function LiveScores({
                           })}
                         </span>
                       </td>
-                      <td className="col-num col-pl">{row.pl}</td>
-                      <td className="col-num col-wdl">{row.matches_won}</td>
-                      <td className="col-num col-wdl">{row.matches_drawn}</td>
-                      <td className="col-num col-wdl">{row.matches_lost}</td>
-                      <td
-                        className="col-num col-for tabular"
-                        title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
-                      >
-                        {row.projectedFor}
-                      </td>
-                      <td
-                        className="col-num col-faced tabular"
-                        title={`Season ${row.ga} + opponent GW${row.oppLiveGw != null ? ` (${row.oppLiveGw})` : ''}`}
-                      >
-                        {row.projectedGa}
-                      </td>
-                      <td className="col-num col-gd tabular">
-                        {row.projectedGd > 0
-                          ? `+${row.projectedGd}`
-                          : row.projectedGd}
-                      </td>
-                      <td className="col-num col-live-gw tabular">
-                        <strong
-                          className={
-                            row.h2hBonus === 3
-                              ? 'live-standings-gw-val live-standings-gw-val--win'
-                              : row.h2hBonus === 1
-                                ? 'live-standings-gw-val live-standings-gw-val--draw'
-                                : 'live-standings-gw-val live-standings-gw-val--loss'
-                          }
-                        >
-                          {formatGwLeaguePtsBonus(row.h2hBonus)}
-                        </strong>
+                      <td className="col-live-gw-dot">
+                        {(() => {
+                          const kind = row.gwOutcomeDot; // 'win' | 'draw' | 'loss' | 'none'
+                          /**
+                           * Pulse only when the GW is live (started but not
+                           * frozen) AND we have a coloured result. Frozen
+                           * dots keep their colour but skip the pulse — the
+                           * @keyframes rule also collapses for
+                           * prefers-reduced-motion via the live-form-dot CSS.
+                           */
+                          const isLive = !gwStandingsFrozen && kind !== 'none';
+                          const cls = [
+                            'live-gw-dot',
+                            `live-gw-dot--${kind}`,
+                            isLive ? 'live-gw-dot--live' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ');
+                          const label =
+                            kind === 'win'
+                              ? `GW ${gameweek} winning`
+                              : kind === 'draw'
+                                ? `GW ${gameweek} drawing`
+                                : kind === 'loss'
+                                  ? `GW ${gameweek} losing`
+                                  : `GW ${gameweek} not started`;
+                          return (
+                            <span
+                              className={cls}
+                              role="img"
+                              title={label}
+                              aria-label={label}
+                            />
+                          );
+                        })()}
                       </td>
                       <td className="col-num col-pts tabular">
                         <strong>{row.projectedPts}</strong>
