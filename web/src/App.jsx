@@ -35,7 +35,7 @@ function TclotLionIcon({ size = 22 }) {
   )
 }
 
-function BrandHeader({ colorTheme, onChangeColorTheme }) {
+function BrandHeader() {
   return (
     <section
       className="tile tile--brand-header"
@@ -47,11 +47,6 @@ function BrandHeader({ colorTheme, onChangeColorTheme }) {
       </span>
       <span className="brand-header__meta">{BRAND_HEADER_META}</span>
       <span className="brand-header__season">{BRAND_HEADER_SEASON}</span>
-      {onChangeColorTheme ? (
-        <div className="brand-header__toolbar">
-          <ThemeToggle value={colorTheme} onChange={onChangeColorTheme} />
-        </div>
-      ) : null}
     </section>
   )
 }
@@ -74,6 +69,11 @@ import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
+import { SettingsPage } from './SettingsPage'
+import {
+  DEFAULT_TAB_STORAGE_KEY,
+  readStoredDefaultTab,
+} from './settingsStorage'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
 import {
@@ -909,11 +909,14 @@ function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
   )
 }
 
-/** Match `max-width: 1080px` nav breakpoint — phones / narrow tablets default to Live. */
+/** Resolve initial dashboard view: players hash > stored default-tab pref > Standings.
+ * Standings is the new global default (PR #3 deliberate change). The viewport-based
+ * mobile-defaults-to-Live behaviour from PR #1 is intentionally dropped — users who
+ * want Live as their landing page can pick it in Settings. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'standings'
   if (parsePlayersHash()) return /** @type {const} */ ('players')
-  return window.matchMedia('(max-width: 1080px)').matches ? 'fplLive' : 'standings'
+  return readStoredDefaultTab()
 }
 
 /** Match `max-width: 600px` mobile layout — default waivers tab to compact Waiver summary. */
@@ -987,17 +990,29 @@ function StandingsSortTh({ columnKey, sortState, onSort, label, title, className
 const EMPTY_LEAGUE_ENTRIES = []
 const EMPTY_TEAM_LOGO_MAP = {}
 
+/** localStorage key for the user's theme preference. Key name preserved
+ * across the PR #3 ThemeToggle redesign so existing users who already
+ * picked light/dark keep their choice. */
 const THEME_STORAGE_KEY = 'tclot-theme'
 
-function readStoredTheme() {
+/** Possible values: 'light' | 'dark' | 'system'. 'system' is new in PR #3
+ * and means "follow `prefers-color-scheme`". Older stored values
+ * ('light'/'dark') remain valid prefs — no migration needed. */
+function readStoredThemePref() {
   if (typeof window === 'undefined') return 'light'
   try {
     const s = window.localStorage.getItem(THEME_STORAGE_KEY)
-    if (s === 'light' || s === 'dark') return s
+    if (s === 'light' || s === 'dark' || s === 'system') return s
   } catch {
     /* ignore */
   }
   return 'light'
+}
+
+/** Resolve `'system'` to a concrete 'light' | 'dark' via prefers-color-scheme. */
+function resolveSystemTheme() {
+  if (typeof window === 'undefined' || !window.matchMedia) return 'light'
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }
 
 function App() {
@@ -1049,7 +1064,9 @@ function App() {
   const [completeGwView, setCompleteGwView] = useState(null)
   const [futureGwView, setFutureGwView] = useState(null)
   const formStripDisplayCount = useFormStripDisplayCount()
-  const [colorTheme, setColorTheme] = useState(() => readStoredTheme())
+  const [themePref, setThemePref] = useState(() => readStoredThemePref())
+  const [systemTheme, setSystemTheme] = useState(() => resolveSystemTheme())
+  const colorTheme = themePref === 'system' ? systemTheme : themePref
   const [wireDetailOpen, setWireDetailOpen] = useState(false)
   const [playerDetailOverlayOpen, setPlayerDetailOverlayOpen] = useState(false)
 
@@ -1091,11 +1108,35 @@ function App() {
 
   useEffect(() => {
     try {
-      window.localStorage.setItem(THEME_STORAGE_KEY, colorTheme)
+      window.localStorage.setItem(THEME_STORAGE_KEY, themePref)
     } catch {
       /* ignore */
     }
-  }, [colorTheme])
+  }, [themePref])
+
+  /** Listen for OS-level prefers-color-scheme flips so 'system' mode
+   * tracks the OS without a reload. No-op when the user picked an
+   * explicit light/dark pref. */
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined
+    const mql = window.matchMedia('(prefers-color-scheme: dark)')
+    const handler = (e) => setSystemTheme(e.matches ? 'dark' : 'light')
+    mql.addEventListener('change', handler)
+    return () => mql.removeEventListener('change', handler)
+  }, [])
+
+  /** Default landing tab (Settings → Default landing tab). Stored in
+   * localStorage (key DEFAULT_TAB_STORAGE_KEY); state is mirrored in
+   * React so the Settings page's <select> reflects changes immediately. */
+  const [defaultTabPref, setDefaultTabPrefState] = useState(() => readStoredDefaultTab())
+  const setDefaultTabPref = useCallback((tabId) => {
+    setDefaultTabPrefState(tabId)
+    try {
+      window.localStorage.setItem(DEFAULT_TAB_STORAGE_KEY, tabId)
+    } catch {
+      /* ignore */
+    }
+  }, [])
 
   const onBootstrapLiveMeta = useCallback((meta) => {
     setFplLiveLandingGw(meta?.currentGw ?? null)
@@ -1497,7 +1538,7 @@ function App() {
       <div className="app fotmob" data-theme={colorTheme}>
         <div className="load-screen">
           <div className="load-screen__toolbar">
-            <ThemeToggle value={colorTheme} onChange={setColorTheme} />
+            <ThemeToggle value={themePref} onChange={setThemePref} />
           </div>
           Loading league…
         </div>
@@ -1509,10 +1550,7 @@ function App() {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
         <header className="page-header">
-          <BrandHeader
-            colorTheme={colorTheme}
-            onChangeColorTheme={setColorTheme}
-          />
+          <BrandHeader />
         </header>
         <main className="main-tiles">
           <section className="tile error-tile">
@@ -1612,10 +1650,7 @@ function App() {
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
           <header className="page-header">
-            <BrandHeader
-              colorTheme={colorTheme}
-              onChangeColorTheme={setColorTheme}
-            />
+            <BrandHeader />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
                 <strong>League file didn’t load</strong> (wrong URL or deploy). Showing demo only.{' '}
@@ -2879,11 +2914,18 @@ function App() {
           {dashboardView === 'more' ? (
             <DashboardMorePanel
               onNavigate={selectDashboardView}
-              colorTheme={colorTheme}
-              onThemeChange={setColorTheme}
               badgeTeams={teamsForFormSelect}
               teamLogoMap={teamLogoMap}
               kitIndexByEntry={kitIndexByEntry}
+            />
+          ) : null}
+
+          {dashboardView === 'settings' ? (
+            <SettingsPage
+              themePref={themePref}
+              onThemePrefChange={setThemePref}
+              defaultTab={defaultTabPref}
+              onDefaultTabChange={setDefaultTabPref}
             />
           ) : null}
 

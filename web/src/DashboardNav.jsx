@@ -1,7 +1,6 @@
-import { ThemeToggle } from './ThemeToggle'
 import { TeamAvatar } from './TeamAvatar'
 
-/** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more'} DashboardViewId */
+/** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
 
 /**
  * @param {{ id: DashboardViewId, label: string, shortLabel: string, emoji?: string, bottomEmoji?: string, logoSrc?: string, bottomOnly?: boolean }} item
@@ -104,7 +103,11 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
 
   const isActive = (id) => {
     if (id === 'more') {
-      return dashboardView === 'more' || dashboardView === 'hall'
+      return (
+        dashboardView === 'more' ||
+        dashboardView === 'hall' ||
+        dashboardView === 'settings'
+      )
     }
     return dashboardView === id
   }
@@ -131,14 +134,13 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
 
 export function DashboardMorePanel({
   onNavigate,
-  colorTheme,
-  onThemeChange,
   badgeTeams = [],
   teamLogoMap = {},
   kitIndexByEntry = {},
 }) {
   const rows = [
     { id: /** @type {const} */ ('hall'), label: 'Hall of Champions', emoji: '🏆' },
+    { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },
   ]
 
   return (
@@ -181,10 +183,6 @@ export function DashboardMorePanel({
             </button>
           </li>
         ))}
-        <li className="dashboard-more__theme-row">
-          <span className="dashboard-more__theme-label">Theme</span>
-          <ThemeToggle value={colorTheme} onChange={onThemeChange} />
-        </li>
       </ul>
     </section>
   )

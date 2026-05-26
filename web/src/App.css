@@ -224,8 +224,9 @@
 }
 
 /* Theme toggle slot inside the load-screen — kept here for the pre-data
- * splash. Header (data-loaded + error) places its toggle inline via
- * .brand-header__toolbar instead. */
+ * splash. The full Theme picker (including System) lives in Settings;
+ * the load screen keeps the binary light/dark control because Settings
+ * is unreachable until data has loaded. */
 .load-screen__toolbar {
   position: absolute;
   top: 16px;
@@ -514,13 +515,6 @@
     padding-bottom: calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
   }
 
-  /* Mobile: hide the in-header theme toggle for now. The toggle moves
-   * to a Settings page in PR #3; until then, mobile users keep the
-   * default theme from localStorage. */
-  .brand-header__toolbar {
-    display: none;
-  }
-
   .dashboard-nav--bottom {
     position: fixed;
     left: 0;
@@ -711,20 +705,6 @@
     color: var(--fm-muted);
     font-size: 1.25rem;
     line-height: 1;
-  }
-
-  .dashboard-more__theme-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 14px 4px;
-  }
-
-  .dashboard-more__theme-label {
-    font-size: 0.9375rem;
-    font-weight: 600;
-    color: var(--fm-text-strong);
   }
 
   .dashboard-more__empty {
@@ -8153,7 +8133,7 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
 /* ------------------------------------------------------------------ */
 .tile--brand-header {
   display: grid;
-  grid-template-columns: auto 1fr auto auto;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--space-3);
   height: 68px;
@@ -8218,20 +8198,14 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   justify-self: end;
 }
 
-.brand-header__toolbar {
-  display: inline-flex;
-  align-items: center;
-  justify-self: end;
-}
-
 @media (max-width: 720px) {
   .tile--brand-header {
     height: 56px;
     padding: 0 var(--space-3);
     gap: var(--space-3);
-    /* Drop the meta slot on narrow screens — pill + season + toolbar
-     * keeps the row legible at 375px. */
-    grid-template-columns: auto auto auto;
+    /* Drop the meta slot on narrow screens — pill + season keeps the
+     * row legible at 375px. */
+    grid-template-columns: auto auto;
   }
   .brand-header__pill {
     height: 30px;
@@ -10555,5 +10529,91 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   .standings-table .form-circles {
     gap: 6px;
     justify-content: center;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Settings page (PR #3)                                                */
+/* Spec: Mockup.jsx SettingsShowcase + Mockup.css .mockup-settings-*    */
+/* rules. Two-row card with Theme segmented + Default landing tab.      */
+/* ------------------------------------------------------------------ */
+.settings-page {
+  max-width: 560px;
+}
+
+.settings-card {
+  background: var(--surface, var(--fm-card));
+  border: 1px solid var(--border, var(--fm-border));
+  border-radius: var(--r-md, 12px);
+  padding: var(--space-5, 20px);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4, 16px);
+  padding: var(--space-3, 12px) 0;
+}
+
+.settings-row + .settings-row {
+  border-top: 1px solid var(--border, var(--fm-border));
+}
+
+.settings-row:first-child { padding-top: 0; }
+.settings-row:last-child  { padding-bottom: 0; }
+
+.settings-row__label {
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--text-strong, var(--fm-text-strong));
+}
+
+/* Default-landing-tab native <select> styled to match the mockup's
+ * mockup-settings-select pill (caret-on-the-right, mono font). The
+ * native arrow is suppressed so we can paint our own via background-image. */
+.settings-select {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 32px 6px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border, var(--fm-border));
+  background-color: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a7a7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  background-size: 12px 12px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-strong, var(--fm-text-strong));
+  cursor: pointer;
+  transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.settings-select:hover {
+  border-color: color-mix(in srgb, currentColor 22%, var(--border, var(--fm-border)));
+}
+
+.settings-select:focus-visible {
+  outline: 2px solid var(--brand, #795bfb);
+  outline-offset: 2px;
+}
+
+/* Mobile: stack the two halves of each row so the segmented control
+ * and the select don't get squeezed against the label on a 375px screen. */
+@media (max-width: 560px) {
+  .settings-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .settings-select {
+    width: 100%;
+    box-sizing: border-box;
   }
 }
