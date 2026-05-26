@@ -7,14 +7,11 @@ import {
   useRef,
   useSyncExternalStore,
 } from 'react'
-import {
-  LEAGUE_TITLE,
-  LEAGUE_TITLE_ABBR,
-  leagueHeaderBrandSrc,
-  showDashboardHall,
-  showDashboardTrades,
-} from './siteFeatures'
 import { gameWeekSelectLabel } from './gwLabel.js'
+
+const LEAGUE_TITLE_ABBR = 'TCLOT'
+const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
+const TCLOT_HEADER_BRAND_SRC = `${(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/')}tclot-header-brand.png`
 import {
   useLeagueData,
   FORM_LAST_N,
@@ -1064,29 +1061,6 @@ function App() {
   /** FPL draft calendar — fetched on mount so Waivers tab does not depend on opening Live first. */
   const draftBootstrapEvents = useDraftBootstrapEvents()
 
-  useEffect(() => {
-    if (
-      dashboardView === 'teamSelection' &&
-      teamSelectionTab === 'trades' &&
-      !showDashboardTrades
-    ) {
-      setTeamSelectionTab('waivers')
-    }
-    if (dashboardView === 'more' && !showDashboardHall) {
-      setDashboardView('fplLive')
-      return
-    }
-    if (dashboardView === 'hall' && !showDashboardHall) {
-      setDashboardView('fplLive')
-      return
-    }
-  }, [
-    dashboardView,
-    teamSelectionTab,
-    showDashboardTrades,
-    showDashboardHall,
-  ])
-
   /** drops-gw-live rows: waivers only (excludes free-agency rows used in All Waivers). */
   const waiverOutRowsWaiverOnly = useMemo(
     () => (data?.waiverOutGwRows ?? []).filter((r) => r.transactionKind !== 'f'),
@@ -1505,23 +1479,14 @@ function App() {
             <div className="title-banner__toolbar">
               <ThemeToggle value={colorTheme} onChange={setColorTheme} />
             </div>
-            {leagueHeaderBrandSrc ? (
-              <div className="title-banner__brand">
-                <img
-                  className="title-hero-brand-img"
-                  src={leagueHeaderBrandSrc}
-                  alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
-                  decoding="async"
-                />
-              </div>
-            ) : (
-              <>
-                <h1 className="page-title-main">
-                  <span className="page-title-main__abbr">{LEAGUE_TITLE_ABBR}</span>
-                </h1>
-                <p className="page-title-sub">{LEAGUE_TITLE}</p>
-              </>
-            )}
+            <div className="title-banner__brand">
+              <img
+                className="title-hero-brand-img"
+                src={TCLOT_HEADER_BRAND_SRC}
+                alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
+                decoding="async"
+              />
+            </div>
             <p className="brand-sub brand-sub--in-title-tile">FPL Draft · Head-to-head</p>
           </section>
         </header>
@@ -1648,27 +1613,13 @@ function App() {
                     </div>
                   ))}
                 </div>
-                <div
-                  className={
-                    'title-hero-row__title' +
-                    (leagueHeaderBrandSrc ? ' title-hero-row__title--brand' : '')
-                  }
-                >
-                  {leagueHeaderBrandSrc ? (
-                    <img
-                      className="title-hero-brand-img"
-                      src={leagueHeaderBrandSrc}
-                      alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
-                      decoding="async"
-                    />
-                  ) : (
-                    <>
-                      <h1 className="page-title-main">
-                        <span className="page-title-main__abbr">{LEAGUE_TITLE_ABBR}</span>
-                      </h1>
-                      <p className="page-title-sub">{LEAGUE_TITLE}</p>
-                    </>
-                  )}
+                <div className="title-hero-row__title title-hero-row__title--brand">
+                  <img
+                    className="title-hero-brand-img"
+                    src={TCLOT_HEADER_BRAND_SRC}
+                    alt={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
+                    decoding="async"
+                  />
                 </div>
                 <div className="title-hero-row__logos title-hero-row__logos--right">
                   {heroLogoSides.right.map((t) => (
@@ -2185,7 +2136,7 @@ function App() {
             </>
           )}
 
-          {showDashboardHall && dashboardView === 'hall' ? (
+          {dashboardView === 'hall' ? (
             <HallOfChampions
               logoMap={teamLogoMap}
               kitIndexByEntry={kitIndexByEntry}
@@ -2235,24 +2186,22 @@ function App() {
                   </span>
                   Waivers
                 </button>
-                {showDashboardTrades ? (
-                  <button
-                    type="button"
-                    role="tab"
-                    id="tab-team-selection-trades"
-                    aria-selected={teamSelectionTab === 'trades'}
-                    className={
-                      'team-selection-submenu__btn' +
-                      (teamSelectionTab === 'trades' ? ' team-selection-submenu__btn--active' : '')
-                    }
-                    onClick={() => setTeamSelectionTab('trades')}
-                  >
-                    <span className="team-selection-submenu__emoji" aria-hidden="true">
-                      🤝
-                    </span>
-                    Trades
-                  </button>
-                ) : null}
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-team-selection-trades"
+                  aria-selected={teamSelectionTab === 'trades'}
+                  className={
+                    'team-selection-submenu__btn' +
+                    (teamSelectionTab === 'trades' ? ' team-selection-submenu__btn--active' : '')
+                  }
+                  onClick={() => setTeamSelectionTab('trades')}
+                >
+                  <span className="team-selection-submenu__emoji" aria-hidden="true">
+                    🤝
+                  </span>
+                  Trades
+                </button>
                 <button
                   type="button"
                   role="tab"
@@ -2908,7 +2857,7 @@ function App() {
             </div>
               )}
 
-              {teamSelectionTab === 'trades' && showDashboardTrades && (
+              {teamSelectionTab === 'trades' && (
             <div className="dashboard-stack">
               <section className="tile tile--compact" aria-labelledby="trades-heading">
                 <h2 id="trades-heading" className="tile-title tile-title--sm">

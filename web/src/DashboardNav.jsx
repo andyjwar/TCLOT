@@ -1,4 +1,3 @@
-import { showDashboardHall } from './siteFeatures'
 import { ThemeToggle } from './ThemeToggle'
 import { TeamAvatar } from './TeamAvatar'
 
@@ -89,16 +88,12 @@ export function DashboardNav({ variant, dashboardView, onSelect, fplLogoSrc }) {
   const topItems = [
     primaryItems.find((i) => i.id === 'standings'),
     primaryItems.find((i) => i.id === 'teamSelection'),
-    ...(showDashboardHall
-      ? [
-          {
-            id: /** @type {const} */ ('hall'),
-            label: 'Hall of Champions',
-            shortLabel: 'Hall',
-            emoji: '🏆',
-          },
-        ]
-      : []),
+    {
+      id: /** @type {const} */ ('hall'),
+      label: 'Hall of Champions',
+      shortLabel: 'Hall',
+      emoji: '🏆',
+    },
     primaryItems.find((i) => i.id === 'players'),
     primaryItems.find((i) => i.id === 'fplLive'),
   ].filter(Boolean)
@@ -143,9 +138,7 @@ export function DashboardMorePanel({
   kitIndexByEntry = {},
 }) {
   const rows = [
-    ...(showDashboardHall
-      ? [{ id: /** @type {const} */ ('hall'), label: 'Hall of Champions', emoji: '🏆' }]
-      : []),
+    { id: /** @type {const} */ ('hall'), label: 'Hall of Champions', emoji: '🏆' },
   ]
 
   return (
@@ -193,9 +186,6 @@ export function DashboardMorePanel({
           <ThemeToggle value={colorTheme} onChange={onThemeChange} />
         </li>
       </ul>
-      {rows.length === 0 ? (
-        <p className="muted dashboard-more__empty">Use the tabs above for league sections.</p>
-      ) : null}
     </section>
   )
 }
