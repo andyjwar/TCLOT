@@ -227,7 +227,6 @@ import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
-import { FplLiveTripleThreatBanner } from './FplLiveTripleThreatBanner.jsx'
 import { FplLiveGwTickerBar } from './FplLiveGwTickerBar'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
@@ -3195,8 +3194,16 @@ function App() {
                   Projections
                 </button>
               </div>
-              {fplLiveTab === 'live' ? (
-                <FplLiveTripleThreatBanner
+              {/* The generative hero banner (LiveBannerConcept) was removed
+                  in PR #5 cleanup — user confirmed the slot is no longer
+                  needed. The horizontal H2H mini-ticker (FplLiveGwTickerBar)
+                  is now scoped to the Lineups + Projections sub-tabs only;
+                  on the Live GW sub-tab, the new 4-fixture grid below
+                  (LiveScores → live-banner-group-tile) plus its
+                  LiveSharedStatusHeader already cover the same job at
+                  full size, so the mini-ticker is redundant there. */}
+              {fplLiveTab !== 'live' ? (
+                <FplLiveGwTickerBar
                   teams={teamsForFormSelect}
                   matches={matches ?? []}
                   gameweek={liveGameweek}
@@ -3205,14 +3212,6 @@ function App() {
                   kitIndexByEntry={kitIndexByEntry}
                 />
               ) : null}
-              <FplLiveGwTickerBar
-                teams={teamsForFormSelect}
-                matches={matches ?? []}
-                gameweek={liveGameweek}
-                onBootstrapLiveMeta={onBootstrapLiveMeta}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
               </div>
               <div className="section-body">
               {fplLiveTab === 'squads' ? (

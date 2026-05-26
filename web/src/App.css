@@ -10868,184 +10868,9 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* Live scores redesign (PR #5 Phase 2 — desktop + mobile + expanded) */
 /* ============================================================ */
 
-/* Featured-fixture hero banner (replaces Triple Threat PNG promo).
-   Generative single-fixture render — mockup `LiveBannerConcept`. */
-.live-banner-hero-slot {
-  flex-shrink: 0;
-  margin-top: clamp(0.42rem, 1.25vw, 0.72rem);
-  margin-bottom: clamp(0.5rem, 1.65vw, 0.82rem);
-  padding: 0 clamp(0.2rem, 1.75vw, 0.42rem);
-}
-.live-banner-hero {
-  max-width: min(640px, 100%);
-  margin-inline: auto;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: linear-gradient(180deg, var(--fm-surface-2), var(--fm-card));
-  border: 1px solid var(--fm-border);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-.live-banner-hero__top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-.live-banner-hero__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 3px 9px;
-  border-radius: 999px;
-  border: 1px solid var(--fm-border);
-  background: var(--fm-card);
-  color: var(--fm-muted);
-}
-.live-banner-hero--live .live-banner-hero__chip {
-  background: rgba(239, 68, 68, 0.14);
-  color: #fca5a5;
-  border-color: rgba(239, 68, 68, 0.32);
-}
-.fotmob[data-theme='light'] .live-banner-hero--live .live-banner-hero__chip {
-  background: rgba(220, 38, 38, 0.10);
-  color: #b91c1c;
-  border-color: rgba(220, 38, 38, 0.24);
-}
-.live-banner-hero--ft .live-banner-hero__chip {
-  background: var(--fm-surface-2);
-  color: var(--fm-text);
-}
-.live-banner-hero__dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
-}
-.live-banner-hero__gw {
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.78rem;
-  color: var(--fm-text);
-}
-.live-banner-hero__matchup {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 14px;
-}
-.live-banner-hero__side {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-}
-.live-banner-hero__side--away {
-  justify-content: flex-end;
-}
-.live-banner-hero__crest {
-  flex-shrink: 0;
-  line-height: 0;
-}
-.live-banner-hero__names {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.live-banner-hero__names--away {
-  text-align: right;
-  align-items: flex-end;
-}
-.live-banner-hero__name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: var(--fm-text-strong);
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 100%;
-}
-.live-banner-hero__sub {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fm-muted);
-  margin-top: 2px;
-}
-.live-banner-hero__score {
-  font-size: 1.85rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--fm-text-strong);
-  font-variant-numeric: tabular-nums;
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.live-banner-hero__score-sep {
-  color: var(--fm-muted);
-  font-weight: 500;
-}
-.live-banner-hero__score-half--winner {
-  color: var(--tclot-logo-purple);
-  font-weight: 700;
-}
-.live-banner-hero__score-half--loser {
-  color: var(--fm-muted);
-  font-weight: 500;
-}
-.live-banner-hero__score-pending {
-  font-size: 1rem;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-}
-
-@media (max-width: 480px) {
-  .live-banner-hero {
-    padding: 10px 10px;
-  }
-  .live-banner-hero__matchup {
-    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-    gap: 6px;
-  }
-  .live-banner-hero__name {
-    font-size: 0.82rem;
-    line-height: 1.15;
-  }
-  .live-banner-hero__sub {
-    /* Sub-label adds clutter on a 375px viewport — hide and let the
-       score do the work. */
-    display: none;
-  }
-  .live-banner-hero__score {
-    font-size: 1.55rem;
-    gap: 4px;
-  }
-  .live-banner-hero__side {
-    gap: 6px;
-    min-width: 0;
-  }
-  .live-banner-hero__names {
-    min-width: 0;
-    flex: 1 1 0;
-  }
-  .live-banner-hero__crest {
-    flex-shrink: 0;
-    transform: scale(0.75);
-    transform-origin: center;
-    margin: -4px -2px;
-  }
-  .live-banner-hero__top {
-    margin-bottom: 8px;
-  }
-  .live-banner-hero__gw {
-    font-size: 0.66rem;
-  }
-}
+/* Note: the featured-fixture hero banner (LiveBannerConcept /
+   FplLiveTripleThreatBanner / .live-banner-hero*) was removed in the
+   PR #5 cleanup — user confirmed the slot is no longer needed. */
 
 /* ============================================================ */
 /* Live banner group — shared header above all 4 face-off rows  */
@@ -11124,18 +10949,54 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   }
 }
 
+/* 2×2 grid on desktop for the four face-off tiles.
+   gap: 0 keeps the cards visually fused inside the parent tile; inner
+   T-cross is drawn with per-item border-right + border-bottom and
+   :nth-child selectors remove the outer-edge borders. Opening a tile
+   promotes it to a full-width row (grid-column: 1 / -1) so the
+   expanded side-by-side desktop view gets the full horizontal space. */
 .live-banner-group__list {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
 }
 .live-banner-group__item {
+  border-right: 1px solid var(--fm-border);
   border-bottom: 1px solid var(--fm-border);
+  min-width: 0;
 }
-.live-banner-group__item:last-child {
+.live-banner-group__item:nth-child(2n) {
+  border-right: none;
+}
+/* Bottom row in a static 4-tile 2×2 — drop the trailing border so the
+   tile’s own bottom edge is the last horizontal line. */
+.live-banner-group__item:nth-last-child(-n + 2):not(.live-banner-group__item--open) {
   border-bottom: none;
 }
 .live-banner-group__item--open {
+  grid-column: 1 / -1;
+  border-right: none;
   background: color-mix(in srgb, var(--fm-surface-2) 30%, transparent);
+}
+@media (max-width: 720px) {
+  /* Mobile fallback: stack one per row, restore the original
+     vertical-list border treatment. */
+  .live-banner-group__list {
+    grid-template-columns: 1fr;
+  }
+  .live-banner-group__item {
+    border-right: none;
+    border-bottom: 1px solid var(--fm-border);
+  }
+  .live-banner-group__item:nth-last-child(-n + 2):not(.live-banner-group__item--open) {
+    border-bottom: 1px solid var(--fm-border);
+  }
+  .live-banner-group__item:last-child {
+    border-bottom: none;
+  }
+  .live-banner-group__item--open {
+    grid-column: auto;
+  }
 }
 .live-banner-group__item--villain-victory {
   background: linear-gradient(
