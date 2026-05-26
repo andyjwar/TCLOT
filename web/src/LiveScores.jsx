@@ -2049,16 +2049,6 @@ export function LiveScores({
             </table>
           </div>
         )}
-        <p className="table-foot muted standings-landscape-hint">
-          On mobile, turn your device to landscape for the full table.
-          {gwStandingsFrozen ? (
-            <>
-              {' '}
-              Frozen standings use league totals from the last loaded league file; refresh ingest /
-              deploy so <code>details.json</code> matches FPL if PTS look stale.
-            </>
-          ) : null}
-        </p>
       </section>
 
       {leftToPlayByFixture.length > 0 && totalRemainingFixtures > 0 ? (

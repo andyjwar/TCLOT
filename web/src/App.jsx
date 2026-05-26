@@ -575,9 +575,6 @@ function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
           </tbody>
         </table>
       </div>
-      <p className="table-foot muted standings-landscape-hint">
-        On mobile, turn your device to landscape for the full table.
-      </p>
     </section>
   )
 }
@@ -735,9 +732,6 @@ function HistoricStandingsSection() {
           </tbody>
         </table>
       </div>
-      <p className="table-foot muted standings-landscape-hint">
-        On mobile, turn your device to landscape for the full table.
-      </p>
     </section>
   )
 }
@@ -2015,9 +2009,6 @@ function App() {
                 </tbody>
               </table>
             </div>
-            <p className="table-foot muted standings-landscape-hint">
-              On mobile, turn your device to landscape for the full table.
-            </p>
           </section>
 
               <div className="dashboard-stack">

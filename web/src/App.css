@@ -10268,17 +10268,6 @@ body[data-tclot-theme='dark'] .live-player-slide__back {
   border-bottom: none;
 }
 
-/* Shown only when standings columns are collapsed (portrait) */
-.standings-landscape-hint {
-  display: none;
-}
-
-@media (orientation: portrait) {
-  .standings-landscape-hint {
-    display: block;
-  }
-}
-
 /* Portrait phones: compact standings (#, Team, PL, For, PTS) — landscape & desktop keep full table */
 @media (orientation: portrait) {
   .standings-table .col-wdl,
