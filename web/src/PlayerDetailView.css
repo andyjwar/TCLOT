@@ -1288,13 +1288,25 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
 }
 
 /* ------------------------------------------------------------------ */
-/* Overview body — desktop                                              */
+/* Overview body — desktop. Round-2 polish: single-column stacked       */
+/* layout (Season tiles → Last 5 → Next 5). Drops the prior right-side  */
+/* sidebar grid so both card strips share the same visual rhythm and    */
+/* the wider slide-from-right gets a clean top-to-bottom flow.          */
 /* ------------------------------------------------------------------ */
 .pdetail__body {
-  display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr);
+  display: flex;
+  flex-direction: column;
   gap: var(--pdetail-space-5);
   padding: var(--pdetail-space-5);
+}
+.pdetail__body--stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pdetail-space-5);
+}
+.pdetail__section {
+  display: block;
+  min-width: 0;
 }
 .pdetail__col {
   min-width: 0;
@@ -1309,25 +1321,36 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
 }
 .pdetail__section-h + .pdetail__tiles,
 .pdetail__section-h + .pdetail__chart-wrap,
-.pdetail__section-h + .pdetail-fixrows {
-  margin-bottom: var(--pdetail-space-5);
+.pdetail__section-h + .pdetail-fixrows,
+.pdetail__section-h + .pdetail-l5 {
+  margin-bottom: 0;
 }
 .pdetail__tiles {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* 7 tiles flow side-by-side once the slide width can fit them; below
+     ~700 px they wrap into 4 / 3 / 2 columns automatically. */
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
   gap: 8px;
 }
 @media (max-width: 800px) {
-  .pdetail__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .pdetail__tiles {
+    grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  }
 }
+/*
+ * Tiles all carry a subtle brand-violet tint so the seven-tile row reads
+ * as a coherent "stat block" instead of grey-with-one-purple. Points
+ * keeps the strongest treatment (deeper background + brand-coloured
+ * value) so it stays the visual anchor.
+ */
 .pdetail-tile {
   display: flex;
   flex-direction: column;
   gap: 4px;
   padding: 12px 14px;
-  border: 1px solid var(--border);
+  border: 1px solid color-mix(in srgb, var(--brand) 14%, var(--border));
   border-radius: var(--pdetail-r-md);
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--brand) 6%, var(--surface-2));
 }
 .pdetail-tile__v {
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
@@ -1345,9 +1368,14 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
   font-weight: 600;
   color: var(--text-muted);
 }
+.pdetail-tile--tinted {
+  /* Tinted tiles inherit the base brand-tint background; override here only
+     if a different surface mix is wanted later. Kept as an explicit modifier
+     so the JSX reads symmetrically with `--brand`. */
+}
 .pdetail-tile--brand {
-  border-color: color-mix(in srgb, var(--brand) 36%, var(--border));
-  background: linear-gradient(180deg, var(--brand-tint), var(--surface-2));
+  border-color: color-mix(in srgb, var(--brand) 42%, var(--border));
+  background: linear-gradient(180deg, var(--brand-tint), color-mix(in srgb, var(--brand) 10%, var(--surface-2)));
 }
 .pdetail-tile--brand .pdetail-tile__v { color: var(--brand); }
 
@@ -1506,7 +1534,6 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
     flex-wrap: wrap;
   }
   .pdetail__body {
-    grid-template-columns: 1fr;
     padding: var(--pdetail-space-4);
   }
 }
@@ -1736,6 +1763,18 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   border-left: none;
   border-right: none;
 }
+.pdetail-p__body .pdetail__section {
+  padding: 0 12px 14px;
+}
+.pdetail-p__body .pdetail__section .pdetail-p__section-h {
+  padding: 0 0 6px;
+}
+.pdetail-p__body .pdetail__section .pdetail-p__tiles {
+  padding: 0;
+}
+.pdetail-p__body .pdetail-l5 {
+  margin-bottom: 0;
+}
 
 .pdetail__footer-back {
   display: flex;
@@ -1925,16 +1964,21 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  font-size: 12px;
+  /*
+   * Round-2 readability bump: base table font 14px (up from 12px), more
+   * row breathing room, and PTS column rendered visibly larger / bolder /
+   * brand-violet so it works as the visual anchor stat at a glance.
+   */
+  font-size: 14px;
   font-variant-numeric: tabular-nums;
 }
 .pperf__th {
   position: sticky;
   top: 0;
   z-index: 1;
-  padding: 8px 10px;
-  font-size: 9px;
-  font-weight: 700;
+  padding: 10px 10px;
+  font-size: 10px;
+  font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
@@ -1945,10 +1989,14 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 }
 .pperf__th--gw,
 .pperf__th--opp { text-align: left; }
-.pperf__th--pts { color: var(--brand); background: color-mix(in srgb, var(--brand) 8%, var(--surface-2)); }
+.pperf__th--pts {
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 14%, var(--surface-2));
+  font-size: 11px;
+}
 .pperf__th--fdr { text-align: center; }
 .pperf__cell {
-  padding: 8px 10px;
+  padding: 11px 10px;
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   text-align: right;
   white-space: nowrap;
@@ -1956,7 +2004,7 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 }
 .pperf__row:last-child .pperf__cell { border-bottom: none; }
 .pperf__cell--gw {
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -1969,12 +2017,12 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 .pperf__opp {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
 }
 .pperf__opp-crest {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1986,16 +2034,32 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 }
 .pperf__opp-short {
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text);
   letter-spacing: 0.04em;
 }
-.pperf__opp-ha {
-  font-size: 10px;
-  color: var(--text-muted);
+/*
+ * H/A indicator inside the OPP column — green dot (home) / red dot (away).
+ * Replaces the prior `H` / `A` letter so we save horizontal space and the
+ * indicator parses as colour/state rather than mono text.
+ */
+.pperf__opp-ha-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.pperf__opp-ha-dot--home {
+  background: var(--data-positive);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--data-positive) 45%, transparent);
+}
+.pperf__opp-ha-dot--away {
+  background: var(--data-negative);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--data-negative) 45%, transparent);
 }
 .pperf__opp-extra {
-  font-size: 9px;
+  font-size: 10px;
   color: var(--text-muted);
   background: var(--surface-2);
   border-radius: 3px;
@@ -2004,6 +2068,7 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 .pperf__cell--num {
   font-weight: 600;
   color: var(--text);
+  font-size: 14px;
 }
 .pperf__cell--mute { color: var(--text-muted); font-weight: 500; }
 .pperf__cell--good {
@@ -2015,9 +2080,12 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 .pperf__cell--dc-good  { color: var(--data-positive); }
 .pperf__cell--bns-good { color: var(--text-strong); }
 .pperf__cell--pts {
-  font-weight: 700;
-  color: var(--text-strong);
-  background: color-mix(in srgb, var(--brand) 5%, transparent);
+  /* Anchor stat: noticeably larger + bolder + brand-violet so PTS is the
+     first thing the eye lands on per row. */
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 8%, transparent);
 }
 .pperf__cell--fdr { text-align: center; }
 .pperf__fdr-pip {
@@ -2050,15 +2118,18 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 }
 
 @media (max-width: 600px) {
+  .pperf__table { font-size: 13px; }
   .pperf__th,
   .pperf__cell {
-    padding: 6px 6px;
-    font-size: 11px;
+    padding: 8px 6px;
   }
   .pperf__th { font-size: 9px; }
-  .pperf__cell--gw { font-size: 9px; }
-  .pperf__opp-short { font-size: 10px; }
-  .pperf__cell--opp { padding: 4px 6px; }
+  .pperf__th--pts { font-size: 10px; }
+  .pperf__cell--num { font-size: 13px; }
+  .pperf__cell--pts { font-size: 15px; }
+  .pperf__cell--gw { font-size: 10px; }
+  .pperf__opp-short { font-size: 11px; }
+  .pperf__cell--opp { padding: 6px 6px; }
 }
 
 /* ------------------------------------------------------------------ */
@@ -2110,7 +2181,7 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 0;
 }
 .pdetail-l5__card {
   display: flex;
@@ -2118,19 +2189,12 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   align-items: center;
   justify-content: flex-start;
   gap: 4px;
-  padding: 8px 6px 10px;
+  padding: 10px 6px 12px;
   border: 1px solid var(--border);
   border-radius: var(--pdetail-r-md);
   background: var(--surface);
   min-width: 0;
-}
-.pdetail-l5__card--pos {
-  border-color: color-mix(in srgb, var(--data-positive) 35%, var(--border));
-  background: color-mix(in srgb, var(--data-positive) 7%, var(--surface));
-}
-.pdetail-l5__card--neg {
-  border-color: color-mix(in srgb, var(--data-negative) 35%, var(--border));
-  background: color-mix(in srgb, var(--data-negative) 7%, var(--surface));
+  min-height: 96px;
 }
 .pdetail-l5__card--dnp {
   background: color-mix(in srgb, var(--text-muted) 7%, var(--surface));
@@ -2172,63 +2236,47 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 }
 .pdetail-l5__opp {
   display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
+  align-items: center;
+  gap: 5px;
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   font-weight: 700;
   color: var(--text-strong);
   letter-spacing: 0.04em;
 }
-.pdetail-l5__ha {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--text-muted);
+/*
+ * Home / away dot — replaces the prior `H` / `A` letter. Green = home,
+ * red = away. Token: `--data-positive` / `--data-negative` (same family
+ * the live page uses for hero/villain accents).
+ */
+.pdetail-l5__ha-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
 }
-.pdetail-l5__score {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-  margin-top: 1px;
+.pdetail-l5__ha-dot--home {
+  background: var(--data-positive);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--data-positive) 50%, transparent);
 }
-.pdetail-l5__score-num {
-  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 12px;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-  color: var(--text);
-}
-.pdetail-l5__result {
-  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  padding: 1px 4px;
-  border-radius: 4px;
-}
-.pdetail-l5__result--w {
-  background: color-mix(in srgb, var(--data-positive) 28%, transparent);
-  color: var(--data-positive);
-}
-.pdetail-l5__result--l {
-  background: color-mix(in srgb, var(--data-negative) 26%, transparent);
-  color: var(--data-negative);
-}
-.pdetail-l5__result--d {
-  background: color-mix(in srgb, var(--text-muted) 22%, transparent);
-  color: var(--text-muted);
+.pdetail-l5__ha-dot--away {
+  background: var(--data-negative);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--data-negative) 50%, transparent);
 }
 .pdetail-l5__pts {
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 22px;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
-  color: var(--text-strong);
-  margin-top: 2px;
+  /* Uniform brand-violet for all completed-GW points (not pos/neg green/red).
+     User feedback round 2: "uniform purple/brand color for all fantasy
+     points numbers". DNP rows use `--text-muted` via the host card. */
+  color: var(--brand);
+  margin-top: 4px;
   line-height: 1;
 }
-.pdetail-l5__pts--pos { color: var(--data-positive); }
-.pdetail-l5__pts--neg { color: var(--data-negative); }
+.pdetail-l5__card--dnp .pdetail-l5__pts { color: var(--text-muted); }
 .pdetail-l5__dnp {
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
@@ -2241,19 +2289,26 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   background: var(--surface-2);
   border: 1px solid var(--border);
 }
-.pdetail-l5__meta {
-  font-variant-numeric: tabular-nums;
+
+/* Next-5 cards — sized identically to Last 5 so the two strips align,
+   but with a blank lower half (no points) since future fixtures haven't
+   been played. The spacer keeps card height parity. */
+.pdetail-n5__card {
+  background: color-mix(in srgb, var(--surface-2) 60%, var(--surface));
+}
+.pdetail-n5__spacer {
+  height: 22px;
 }
 
 /* Portrait: keep 5-column grid but tighten paddings. Mobile sheets are
    ~360-420 wide → 5 × 56-72 px cards fit cleanly. */
 @media (max-width: 600px) {
   .pdetail-l5 { gap: 6px; }
-  .pdetail-l5__card { padding: 6px 3px 8px; gap: 3px; }
+  .pdetail-l5__card { padding: 8px 3px 10px; gap: 3px; min-height: 86px; }
   .pdetail-l5__crest, .pdetail-l5__crest-fallback { width: 24px; height: 24px; }
   .pdetail-l5__pts { font-size: 18px; }
   .pdetail-l5__opp { font-size: 10px; }
-  .pdetail-l5__score-num { font-size: 11px; }
+  .pdetail-n5__spacer { height: 18px; }
 }
 
 /* ------------------------------------------------------------------ */

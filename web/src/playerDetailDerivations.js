@@ -94,9 +94,16 @@ export function miniBarTone(value, average) {
  * @returns {{ id: string, label: string, title: string }[]}
  */
 export function performanceStatCatalog() {
+  /*
+   * Catalog order drives the rendered column order in the Performance
+   * table — `visibleColumns = catalog.filter(c => visibleIds.includes(c.id))`
+   * preserves catalog index. Round-2 polish puts MIN ahead of PTS so the
+   * default reads `GW · OPP · MIN · PTS · G · A · DC · BNS` per user spec
+   * (MIN sits next to OPP, then PTS lands as the visual anchor stat).
+   */
   return [
-    { id: 'pts', label: 'PTS', title: 'Total points' },
     { id: 'min', label: 'MIN', title: 'Minutes' },
+    { id: 'pts', label: 'PTS', title: 'Total points' },
     { id: 'g',   label: 'G',   title: 'Goals' },
     { id: 'a',   label: 'A',   title: 'Assists' },
     { id: 'cs',  label: 'CS',  title: 'Clean sheets' },
@@ -113,15 +120,20 @@ export function performanceStatCatalog() {
   ]
 }
 
-/** Default visible columns (7 of 15). */
+/**
+ * Default visible columns. Order = `MIN · PTS · G · A · DC · BNS`
+ * (PTS sits second, immediately after MIN, so the eye lands on it
+ * directly after reading the GW + opponent column). FDR is intentionally
+ * excluded from the default set per round-2 user feedback ("FDR isn't
+ * needed as a default") — it's still selectable via the columns picker.
+ */
 export const DEFAULT_PERFORMANCE_COL_IDS = [
-  'pts',
   'min',
+  'pts',
   'g',
   'a',
   'dc',
   'bns',
-  'fdr',
 ]
 
 /**

@@ -324,7 +324,14 @@ function OppBadge({ teamCode, short, home, extras }) {
         {badge ? <img src={badge} alt="" loading="lazy" decoding="async" /> : null}
       </span>
       <span className="pperf__opp-short">{short}</span>
-      <span className="pperf__opp-ha">{home ? 'H' : 'A'}</span>
+      <span
+        className={
+          'pperf__opp-ha-dot' +
+          (home ? ' pperf__opp-ha-dot--home' : ' pperf__opp-ha-dot--away')
+        }
+        aria-label={home ? 'Home' : 'Away'}
+        title={home ? 'Home' : 'Away'}
+      />
       {extras && extras.length > 0 ? (
         <span className="pperf__opp-extra">+{extras.length}</span>
       ) : null}

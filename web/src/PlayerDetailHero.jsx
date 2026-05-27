@@ -236,12 +236,11 @@ function PlayerDetailHeroPortrait({
               {ownerCode ?? '?'}
             </span>
             <span className="pdetail-p__owner-name">{ownerName}</span>
-            <span className="pdetail-p__owner-status">· Starting XI</span>
           </>
         ) : (
           <>
             <span className="pdetail-p__owner-free-dot" aria-hidden />
-            <span>Free agent · available on waivers</span>
+            <span>Free agent</span>
           </>
         )}
       </div>

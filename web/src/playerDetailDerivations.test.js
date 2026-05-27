@@ -93,14 +93,15 @@ test('statCellTone — LiveScores-style colouring rules', () => {
   assert.equal(statCellTone('xg', 1.5, 3), 'neutral')
 })
 
-test('performanceStatCatalog — 15 ids, defaults are 7 of them', () => {
+test('performanceStatCatalog — 15 ids; default visible set is 6 (MIN PTS G A DC BNS, no FDR)', () => {
   const cat = performanceStatCatalog()
   assert.equal(cat.length, 15)
   const ids = cat.map((c) => c.id)
   for (const id of DEFAULT_PERFORMANCE_COL_IDS) {
     assert.ok(ids.includes(id), `default id ${id} missing from catalog`)
   }
-  assert.equal(DEFAULT_PERFORMANCE_COL_IDS.length, 7)
+  assert.deepEqual(DEFAULT_PERFORMANCE_COL_IDS, ['min', 'pts', 'g', 'a', 'dc', 'bns'])
+  assert.ok(!DEFAULT_PERFORMANCE_COL_IDS.includes('fdr'), 'FDR must NOT be in defaults')
 })
 
 test('performanceStatValue / formatPerformanceStat — pulls + formats', () => {

@@ -4687,7 +4687,7 @@ function PlayerDetailPortrait({ player = PLAYERS_DATA[0] }) {
           </>
         ) : (
           <>
-            <span className="mockup-pdetail-p__owner-free-dot" /> Free agent · available on waivers
+            <span className="mockup-pdetail-p__owner-free-dot" /> Free agent
           </>
         )}
       </div>

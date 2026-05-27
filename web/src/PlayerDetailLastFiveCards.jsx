@@ -1,16 +1,20 @@
 /**
  * Last-5-GW cards row for the Player Detail Overview tab. Replaces the
  * earlier `MiniBars` chart — the chart was readable in mocks but cramped
- * under real layouts, and dropped the *who* dimension (which opponent the
- * GW was against). Each card shows the opponent club crest, final score
- * from the player's club POV (`2-1 W`), and the points the player earned
- * that GW with green/red tone vs season-average (or a greyed `DNP` chip
- * for any zero-minute GW).
+ * under real layouts and dropped the *who* dimension. Each card shows
+ * the opponent club crest, opp short code with a green/red home-vs-away
+ * dot, and the points the player earned that GW in uniform brand-violet
+ * (DNP rows render greyed with a `DNP` chip).
  *
- * Production class prefix `pdetail-l5__*` (mirrors `pdetail-fixrow*`
- * naming for the upcoming-fixtures rows). Renders the same set of cards
- * for both desktop + portrait — outer container handles layout (5-col
- * grid in desktop; horizontal scroll in portrait via the same grid CSS).
+ * Round-2 polish (per user feedback on `b46ac2e`):
+ *   - drop the `2-1 W` team-result chip (low signal, busy);
+ *   - drop pos/neg green/red on the points number — uniform brand
+ *     violet so the focus stays on the *number*, not the colouring;
+ *   - render Home/Away as a coloured dot beside the opp code, not an
+ *     `H` / `A` letter.
+ *
+ * Production class prefix `pdetail-l5__*`. Same component renders on
+ * desktop + portrait — outer container handles the 5-col layout.
  */
 
 /**
@@ -50,19 +54,18 @@ export function PlayerDetailLastFiveCards({ cards, teamById }) {
             : null
         const oppShort = opp?.short_name ?? '???'
         const crestUrl = plOppCrestUrl(opp?.code)
-        const haLabel = c.home ? 'H' : 'A'
+        const haLabel = c.home ? 'home' : 'away'
         return (
           <div
             key={`${c.gw}-${c.opponentTeamId ?? 'na'}`}
             className={
               'pdetail-l5__card' +
-              (c.dnp ? ' pdetail-l5__card--dnp' : '') +
-              (!c.dnp && c.tone !== 'neutral' ? ` pdetail-l5__card--${c.tone}` : '')
+              (c.dnp ? ' pdetail-l5__card--dnp' : '')
             }
             title={
               c.dnp
                 ? `GW${c.gw} · ${oppShort} (${haLabel}) · DNP`
-                : `GW${c.gw} · ${oppShort} (${haLabel}) · ${c.score ?? '—'} ${c.result ?? ''} · ${c.points ?? 0} pts`
+                : `GW${c.gw} · ${oppShort} (${haLabel}) · ${c.points ?? 0} pts`
             }
           >
             <div className="pdetail-l5__gw">GW{c.gw}</div>
@@ -74,31 +77,20 @@ export function PlayerDetailLastFiveCards({ cards, teamById }) {
               )}
             </div>
             <div className="pdetail-l5__opp">
-              {oppShort} <span className="pdetail-l5__ha">{haLabel}</span>
+              <span>{oppShort}</span>
+              <span
+                className={
+                  'pdetail-l5__ha-dot' +
+                  (c.home ? ' pdetail-l5__ha-dot--home' : ' pdetail-l5__ha-dot--away')
+                }
+                aria-label={c.home ? 'Home' : 'Away'}
+                title={c.home ? 'Home' : 'Away'}
+              />
             </div>
             {c.dnp ? (
               <div className="pdetail-l5__dnp">DNP</div>
             ) : (
-              <>
-                <div className="pdetail-l5__score">
-                  <span className="pdetail-l5__score-num">{c.score ?? '—'}</span>
-                  {c.result ? (
-                    <span
-                      className={`pdetail-l5__result pdetail-l5__result--${c.result.toLowerCase()}`}
-                    >
-                      {c.result}
-                    </span>
-                  ) : null}
-                </div>
-                <div
-                  className={
-                    'pdetail-l5__pts' +
-                    (c.tone !== 'neutral' ? ` pdetail-l5__pts--${c.tone}` : '')
-                  }
-                >
-                  {c.points ?? 0}
-                </div>
-              </>
+              <div className="pdetail-l5__pts">{c.points ?? 0}</div>
             )}
           </div>
         )
