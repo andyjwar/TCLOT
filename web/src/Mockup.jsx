@@ -6962,6 +6962,603 @@ function WirePortraitVariants() {
 }
 
 /* ------------------------------------------------------------------ */
+/* ============ STANDINGS — PORTRAIT LAYOUT VARIANTS (A/B/C/D/E) =====
+ * Five portrait-first mockups of the Standings tab. The production
+ * Standings is a 12-column table; on a 390px phone that table goes
+ * horizontal-scroll. These variants explore five different ways to
+ * present the same 8 teams without horizontal scroll. All class names
+ * are namespaced under `mock-standings-` so they cannot collide with
+ * production or with other mockup sections. Mockup-only — no
+ * production Standings code is touched. */
+
+const STANDINGS_VARIANT_TEAMS = [
+  {
+    rank: 1, abbr: 'CEO', name: 'Crouch End Oashisu', mgr: 'Andy Ward',
+    color: '#f59e0b',
+    pl: 38, w: 25, d: 5, l: 8,
+    forPts: 1842, faced: 1593, gd: 249, pts: 184,
+    form: ['W', 'W', 'W', 'D', 'W'], nxt: 'SCC',
+  },
+  {
+    rank: 2, abbr: 'SZM', name: 'Soul Ze Moles', mgr: 'Eddy Webster',
+    color: '#8b5cf6',
+    pl: 38, w: 22, d: 6, l: 10,
+    forPts: 1788, faced: 1604, gd: 184, pts: 167,
+    form: ['W', 'L', 'W', 'W', 'D'], nxt: 'CEO',
+  },
+  {
+    rank: 3, abbr: 'DBS', name: 'Dalston Bellsprouts', mgr: 'Tom Roe',
+    color: '#10b981',
+    pl: 38, w: 19, d: 11, l: 8,
+    forPts: 1721, faced: 1592, gd: 129, pts: 158,
+    form: ['W', 'D', 'D', 'W', 'W'], nxt: 'ESR',
+  },
+  {
+    rank: 4, abbr: 'TWG', name: 'Toronto Wiggum', mgr: 'Cary Camma',
+    color: '#3b82f6',
+    pl: 38, w: 18, d: 10, l: 10,
+    forPts: 1702, faced: 1645, gd: 57, pts: 152,
+    form: ['D', 'W', 'L', 'W', 'W'], nxt: 'SZM',
+  },
+  {
+    rank: 5, abbr: 'ESR', name: 'Essex Ratigans', mgr: 'Chris Newton',
+    color: '#ef4444',
+    pl: 38, w: 17, d: 9, l: 12,
+    forPts: 1675, faced: 1632, gd: 43, pts: 144,
+    form: ['L', 'W', 'D', 'W', 'L'], nxt: 'DBS',
+  },
+  {
+    rank: 6, abbr: 'DBN', name: 'Dalston Benoit', mgr: 'Cole Henderson',
+    color: '#14b8a6',
+    pl: 38, w: 15, d: 9, l: 14,
+    forPts: 1604, faced: 1671, gd: -67, pts: 132,
+    form: ['W', 'L', 'L', 'D', 'W'], nxt: 'TWG',
+  },
+  {
+    rank: 7, abbr: 'SCC', name: 'Soul Crouch Carrol', mgr: 'Sam Wilson',
+    color: '#64748b',
+    pl: 38, w: 13, d: 8, l: 17,
+    forPts: 1559, faced: 1722, gd: -163, pts: 119,
+    form: ['L', 'D', 'L', 'L', 'W'], nxt: 'CEO',
+  },
+  {
+    rank: 8, abbr: 'PFO', name: 'Pinks Five-O', mgr: 'Pat Hooks',
+    color: '#ec4899',
+    pl: 38, w: 10, d: 6, l: 22,
+    forPts: 1487, faced: 1819, gd: -332, pts: 96,
+    form: ['L', 'L', 'D', 'L', 'L'], nxt: 'DBN',
+  },
+]
+
+const STANDINGS_VARIANT_TEAM_BY_ABBR = STANDINGS_VARIANT_TEAMS.reduce(
+  (m, t) => { m[t.abbr] = t; return m },
+  {},
+)
+
+function fmtSigned(n) {
+  if (n > 0) return '+' + n
+  return String(n)
+}
+
+/* Shared atoms ------------------------------------------------------ */
+
+function StandingsCrest({ team, size = 28, fontSize }) {
+  return (
+    <span
+      className="mock-standings-crest"
+      style={{
+        background: team.color,
+        width: size,
+        height: size,
+        fontSize: fontSize ?? (size <= 22 ? 9 : 10),
+      }}
+      aria-hidden
+    >
+      {team.abbr}
+    </span>
+  )
+}
+
+function StandingsFormDots({ form, size = 7 }) {
+  return (
+    <span
+      className="mock-standings-form"
+      style={{ '--mock-standings-dot': size + 'px' }}
+    >
+      {form.map((f, i) => (
+        <span
+          key={i}
+          className={'mock-standings-form__dot mock-standings-form__dot--' + f}
+          aria-label={f}
+        />
+      ))}
+    </span>
+  )
+}
+
+function StandingsNxt({ abbr, size = 22 }) {
+  const opp = STANDINGS_VARIANT_TEAM_BY_ABBR[abbr]
+  if (!opp) return null
+  return (
+    <span
+      className="mock-standings-nxt"
+      style={{
+        background: opp.color,
+        width: size,
+        height: size,
+        fontSize: size <= 20 ? 8 : 9,
+      }}
+      title={'Next: ' + opp.name}
+      aria-label={'Next opponent: ' + opp.name}
+    >
+      {opp.abbr}
+    </span>
+  )
+}
+
+function StandingsRankCell({ rank }) {
+  if (rank === 8) {
+    return (
+      <span
+        className="mock-standings-rank mock-standings-rank--spoon"
+        aria-label="Rank 8 — wooden spoon"
+      >
+        <span className="mock-standings-rank__num">8</span>
+        <span className="mock-standings-rank__icon" aria-hidden>🧩</span>
+      </span>
+    )
+  }
+  return (
+    <span
+      className={
+        'mock-standings-rank' +
+        (rank === 1 ? ' mock-standings-rank--leader' : '')
+      }
+    >
+      {rank}
+    </span>
+  )
+}
+
+function StandingsEyebrow() {
+  return <div className="mock-standings-eyebrow">Standings</div>
+}
+
+/* ------------------------------------------------------------------ */
+/* Variant A — Wire-style tile, right-aligned 4-stat column,
+ * persistent column header above the tile group. Form dots below the
+ * stat values; Nxt avatar in the bottom-right corner of the tile. */
+
+function StandingsVariantA({ teams }) {
+  return (
+    <div className="mock-standings-a">
+      <StandingsEyebrow />
+      <div className="mock-standings-a__colhead" aria-hidden>
+        <span className="mock-standings-a__colhead-spacer" />
+        <div className="mock-standings-a__colhead-cols">
+          <span>PTS</span>
+          <span>GD</span>
+          <span>FOR</span>
+          <span>FACED</span>
+        </div>
+      </div>
+      <div className="mock-standings-a__list">
+        {teams.map((t) => (
+          <div
+            key={t.abbr}
+            className={
+              'mock-standings-a__row' +
+              (t.rank === 1 ? ' is-leader' : '') +
+              (t.rank === 8 ? ' is-spoon' : '')
+            }
+          >
+            <div className="mock-standings-a__left">
+              <StandingsRankCell rank={t.rank} />
+              <StandingsCrest team={t} size={28} />
+              <div className="mock-standings-a__id">
+                <div className="mock-standings-a__name">{t.name}</div>
+                <div className="mock-standings-a__mgr">{t.mgr}</div>
+              </div>
+            </div>
+            <div className="mock-standings-a__right">
+              <div className="mock-standings-a__values">
+                <span className="mock-standings-a__value mock-standings-a__value--pts">{t.pts}</span>
+                <span className="mock-standings-a__value">{fmtSigned(t.gd)}</span>
+                <span className="mock-standings-a__value">{t.forPts}</span>
+                <span className="mock-standings-a__value">{t.faced}</span>
+              </div>
+              <div className="mock-standings-a__sub">
+                <StandingsFormDots form={t.form} size={7} />
+                <StandingsNxt abbr={t.nxt} size={22} />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Variant B — Density-collapsed table. Drop W/D/L (implicit in PL)
+ * and For/Faced (GD carries the differential). Visible columns:
+ * # · Team · PL · GD · PTS · Form · Nxt. */
+
+function StandingsVariantB({ teams }) {
+  return (
+    <div className="mock-standings-b">
+      <StandingsEyebrow />
+      <table className="mock-standings-b__table">
+        <thead>
+          <tr>
+            <th className="mock-standings-b__th-rank">#</th>
+            <th className="mock-standings-b__th-team">Team</th>
+            <th>PL</th>
+            <th>GD</th>
+            <th className="mock-standings-b__th-pts">PTS</th>
+            <th>Form</th>
+            <th>Nxt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {teams.map((t) => (
+            <tr
+              key={t.abbr}
+              className={
+                (t.rank === 1 ? 'is-leader ' : '') +
+                (t.rank === 8 ? 'is-spoon' : '')
+              }
+            >
+              <td className="mock-standings-b__rank">
+                <StandingsRankCell rank={t.rank} />
+              </td>
+              <td className="mock-standings-b__team">
+                <StandingsCrest team={t} size={22} />
+                <div className="mock-standings-b__id">
+                  <div className="mock-standings-b__name">{t.name}</div>
+                  <div className="mock-standings-b__mgr">{t.mgr}</div>
+                </div>
+              </td>
+              <td>{t.pl}</td>
+              <td>{fmtSigned(t.gd)}</td>
+              <td className="mock-standings-b__pts">{t.pts}</td>
+              <td>
+                <StandingsFormDots form={t.form} size={6} />
+              </td>
+              <td>
+                <StandingsNxt abbr={t.nxt} size={20} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Variant C — Hero leader card + condensed rows below.
+ * The #1 team gets a prominent hero card with big PTS, big crest,
+ * "Top of the league" eyebrow chip, and prominent form dots.
+ * Remaining 7 teams render as compact rows. */
+
+function StandingsVariantC({ teams }) {
+  const [leader, ...rest] = teams
+  return (
+    <div className="mock-standings-c">
+      <StandingsEyebrow />
+      <div className="mock-standings-c__hero">
+        <div className="mock-standings-c__hero-eyebrow">
+          <span className="mock-standings-c__hero-eyebrow-dot" aria-hidden>★</span>
+          Top of the league
+        </div>
+        <div className="mock-standings-c__hero-row">
+          <StandingsCrest team={leader} size={56} fontSize={14} />
+          <div className="mock-standings-c__hero-id">
+            <div className="mock-standings-c__hero-name">{leader.name}</div>
+            <div className="mock-standings-c__hero-mgr">{leader.mgr}</div>
+          </div>
+          <div className="mock-standings-c__hero-pts">
+            <div className="mock-standings-c__hero-pts-num">{leader.pts}</div>
+            <div className="mock-standings-c__hero-pts-lbl">PTS</div>
+          </div>
+        </div>
+        <div className="mock-standings-c__hero-sub">
+          <StandingsFormDots form={leader.form} size={10} />
+          <span className="mock-standings-c__hero-nxt">
+            <span className="mock-standings-c__hero-nxt-lbl">Next</span>
+            <StandingsNxt abbr={leader.nxt} size={22} />
+          </span>
+        </div>
+      </div>
+      <table className="mock-standings-c__table">
+        <thead>
+          <tr>
+            <th className="mock-standings-c__th-rank">#</th>
+            <th className="mock-standings-c__th-team">Team</th>
+            <th>PL</th>
+            <th>GD</th>
+            <th className="mock-standings-c__th-pts">PTS</th>
+            <th>Form</th>
+            <th>Nxt</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rest.map((t) => (
+            <tr
+              key={t.abbr}
+              className={t.rank === 8 ? 'is-spoon' : ''}
+            >
+              <td className="mock-standings-c__rank">
+                <StandingsRankCell rank={t.rank} />
+              </td>
+              <td className="mock-standings-c__team">
+                <StandingsCrest team={t} size={20} />
+                <div className="mock-standings-c__id">
+                  <div className="mock-standings-c__name">{t.name}</div>
+                  <div className="mock-standings-c__mgr">{t.mgr}</div>
+                </div>
+              </td>
+              <td>{t.pl}</td>
+              <td>{fmtSigned(t.gd)}</td>
+              <td className="mock-standings-c__pts">{t.pts}</td>
+              <td>
+                <StandingsFormDots form={t.form} size={6} />
+              </td>
+              <td>
+                <StandingsNxt abbr={t.nxt} size={20} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Variant D — Stats-grid tile (2×2 right-side grid).
+ * Each tile shows rank + crest + name on the left; a 2×2 mini stat
+ * grid on the right (PL/PTS top row, GD/GP bottom row). Form dots
+ * span the bottom of the tile; Nxt avatar sits at the bottom-right.
+ * Tile chrome: rounded cards with subtle bottom border, 8px gap. */
+
+function StandingsVariantD({ teams }) {
+  return (
+    <div className="mock-standings-d">
+      <StandingsEyebrow />
+      <div className="mock-standings-d__list">
+        {teams.map((t) => (
+          <div
+            key={t.abbr}
+            className={
+              'mock-standings-d__tile' +
+              (t.rank === 1 ? ' is-leader' : '') +
+              (t.rank === 8 ? ' is-spoon' : '')
+            }
+          >
+            <div className="mock-standings-d__top">
+              <div className="mock-standings-d__left">
+                <StandingsRankCell rank={t.rank} />
+                <StandingsCrest team={t} size={28} />
+                <div className="mock-standings-d__id">
+                  <div className="mock-standings-d__name">{t.name}</div>
+                  <div className="mock-standings-d__mgr">{t.mgr}</div>
+                </div>
+              </div>
+              <div className="mock-standings-d__grid" aria-hidden>
+                <span className="mock-standings-d__cell">
+                  <em>PL</em>
+                  <span>{t.pl}</span>
+                </span>
+                <span className="mock-standings-d__cell mock-standings-d__cell--pts">
+                  <em>PTS</em>
+                  <span>{t.pts}</span>
+                </span>
+                <span className="mock-standings-d__cell">
+                  <em>GD</em>
+                  <span>{fmtSigned(t.gd)}</span>
+                </span>
+                <span className="mock-standings-d__cell">
+                  <em>W-D-L</em>
+                  <span>{t.w}-{t.d}-{t.l}</span>
+                </span>
+              </div>
+            </div>
+            <div className="mock-standings-d__bottom">
+              <StandingsFormDots form={t.form} size={7} />
+              <StandingsNxt abbr={t.nxt} size={22} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Variant E — Tap-to-expand compact row.
+ * Default visible: # | Team | PTS | Form | Nxt + chevron.
+ * Row 1 is rendered in the expanded state; rows 2–8 collapsed so the
+ * mock shows both interaction states side-by-side. The expand band
+ * reveals full stats (PL/W/D/L/For/Faced/GD). */
+
+function StandingsExpandSubBand({ team }) {
+  return (
+    <div className="mock-standings-e__sub">
+      <div className="mock-standings-e__sub-row">
+        <span><em>PL</em>{team.pl}</span>
+        <span><em>W</em>{team.w}</span>
+        <span><em>D</em>{team.d}</span>
+        <span><em>L</em>{team.l}</span>
+      </div>
+      <div className="mock-standings-e__sub-row">
+        <span><em>For</em>{team.forPts}</span>
+        <span><em>Faced</em>{team.faced}</span>
+        <span><em>GD</em>{fmtSigned(team.gd)}</span>
+      </div>
+    </div>
+  )
+}
+
+function StandingsVariantE({ teams }) {
+  return (
+    <div className="mock-standings-e">
+      <StandingsEyebrow />
+      <div className="mock-standings-e__head" aria-hidden>
+        <span className="mock-standings-e__head-rank">#</span>
+        <span className="mock-standings-e__head-team">Team</span>
+        <span className="mock-standings-e__head-pts">PTS</span>
+        <span className="mock-standings-e__head-form">Form</span>
+        <span className="mock-standings-e__head-nxt">Nxt</span>
+        <span className="mock-standings-e__head-chev" />
+      </div>
+      <div className="mock-standings-e__list">
+        {teams.map((t) => {
+          const expanded = t.rank === 1
+          return (
+            <Fragment key={t.abbr}>
+              <div
+                className={
+                  'mock-standings-e__row' +
+                  (t.rank === 1 ? ' is-leader' : '') +
+                  (t.rank === 8 ? ' is-spoon' : '') +
+                  (expanded ? ' is-expanded' : '')
+                }
+              >
+                <span className="mock-standings-e__rank">
+                  <StandingsRankCell rank={t.rank} />
+                </span>
+                <span className="mock-standings-e__team">
+                  <StandingsCrest team={t} size={22} />
+                  <span className="mock-standings-e__id">
+                    <span className="mock-standings-e__name">{t.name}</span>
+                    <span className="mock-standings-e__mgr">{t.mgr}</span>
+                  </span>
+                </span>
+                <span className="mock-standings-e__pts">{t.pts}</span>
+                <span className="mock-standings-e__form">
+                  <StandingsFormDots form={t.form} size={6} />
+                </span>
+                <span className="mock-standings-e__nxt">
+                  <StandingsNxt abbr={t.nxt} size={20} />
+                </span>
+                <span
+                  className={
+                    'mock-standings-e__chev' +
+                    (expanded ? ' is-up' : '')
+                  }
+                  aria-hidden
+                >
+                  {expanded ? '▲' : '▼'}
+                </span>
+              </div>
+              {expanded && <StandingsExpandSubBand team={t} />}
+            </Fragment>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Showcase wrapper — legend + 5 phone frames stacked. */
+
+const STANDINGS_VARIANTS_META = [
+  {
+    key: 'A',
+    label: 'Wire-style tile · right-aligned 4-stat column · persistent header',
+    desktop: 'Same pattern, just wider — the right column expands to host the W/D/L breakdown alongside the existing 4 numeric columns.',
+    render: (teams) => <StandingsVariantA teams={teams} />,
+  },
+  {
+    key: 'B',
+    label: 'Density-collapsed table · #/Team/PL/GD/PTS/Form/Nxt',
+    desktop: 'Restores W/D/L/For/Faced columns — back to the legacy 12-col layout but with the new visual chrome (typography, dots, crests, eyebrow).',
+    render: (teams) => <StandingsVariantB teams={teams} />,
+  },
+  {
+    key: 'C',
+    label: 'Hero leader card + condensed rows below',
+    desktop: 'Hero card spans full width up top; compact list below. Could also pair side-by-side with a leader card on the left + standings on the right.',
+    render: (teams) => <StandingsVariantC teams={teams} />,
+  },
+  {
+    key: 'D',
+    label: 'Stats-grid tile · 2×2 mini-grid + form dots + Nxt',
+    desktop: 'Becomes a 2-column grid of tiles (4 tiles per row × 2 rows) for fast at-a-glance scanning of all 8 teams.',
+    render: (teams) => <StandingsVariantD teams={teams} />,
+  },
+  {
+    key: 'E',
+    label: 'Tap-to-expand compact row · mobile-only interaction',
+    desktop: 'On desktop all rows show full stats by default — no expand needed since horizontal space is plentiful. The expand-row pattern is mobile-only.',
+    render: (teams) => <StandingsVariantE teams={teams} />,
+  },
+]
+
+function StandingsPortraitVariants() {
+  const teams = STANDINGS_VARIANT_TEAMS
+  return (
+    <div className="mock-standings">
+      <div className="mock-standings__legend">
+        <div className="mock-standings__legend-h">What varies across A–E</div>
+        <ul className="mock-standings__legend-list">
+          <li>
+            <strong>A</strong> — Wire-style tile, right-aligned stat columns
+            (4 stats), persistent column header above the tile group.
+          </li>
+          <li>
+            <strong>B</strong> — Density-collapsed table (drop W/D/L, drop
+            For/Faced; keep #/Team/PL/GD/PTS/Form/Nxt).
+          </li>
+          <li>
+            <strong>C</strong> — Hero leader card + condensed rows for the
+            other 7 teams below.
+          </li>
+          <li>
+            <strong>D</strong> — Stats-grid tile (2×2 mini-grid on the right
+            + form dots + Nxt at the bottom).
+          </li>
+          <li>
+            <strong>E</strong> — Tap-to-expand compact row (mobile-only
+            interaction pattern; row 1 shown expanded).
+          </li>
+        </ul>
+        <div className="mock-standings__legend-shared">
+          Shared across all five: rank #1 carries a subtle leader tint,
+          rank #8 gets the 🧩 wooden-spoon marker with a divider above,
+          5 form dots per team (W green / D grey / L red), next-opponent
+          crest visible, manager names muted under the team name, and a
+          simple lower-case &ldquo;Standings&rdquo; eyebrow above the list
+          (no tile-head meta row). 8 teams shared across all variants for
+          fair comparison.
+        </div>
+      </div>
+
+      <div className="mock-standings__stack">
+        {STANDINGS_VARIANTS_META.map((v) => (
+          <div className="mock-standings__variant" key={v.key}>
+            <div className="mock-standings__variant-label">
+              <strong>Variant {v.key}</strong> · {v.label}
+            </div>
+            <div className="mock-standings__frame">
+              <div className="mock-standings__screen">
+                {v.render(teams)}
+              </div>
+            </div>
+            <div className="mock-standings__desktop-note">
+              <strong>Desktop note ·</strong> {v.desktop}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /* Page                                                                 */
 /* ------------------------------------------------------------------ */
 function readStoredMockupTheme() {
@@ -7803,6 +8400,23 @@ export function Mockup() {
             varies per variant.
           </p>
           <WirePortraitTileRightVariants />
+        </section>
+
+        {/* ============ STANDINGS — PORTRAIT LAYOUT VARIANTS (A–E) ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Standings · portrait layout variants</div>
+          <h2 className="mockup__section-h">Standings — portrait layout variants</h2>
+          <p className="mockup__section-sub">
+            The production Standings is a dense 12-column table that
+            horizontal-scrolls on a 390px phone. Five portrait-first
+            alternatives mocked up below, all rendering the same 8 teams for
+            fair comparison. Each variant carries the league traditions —
+            rank #1 leader tint, the 🧩 wooden-spoon marker on rank #8 with a
+            divider above, 5 form dots, next-opponent crest, and a muted
+            manager name under each team. Pick a winner (or a mix); a
+            follow-up worker will port the choice into production.
+          </p>
+          <StandingsPortraitVariants />
         </section>
 
         {/* 17. Part 2 surfaces — staged separately, integrated as a batch */}

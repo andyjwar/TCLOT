@@ -10249,3 +10249,779 @@
   text-transform: uppercase;
   color: var(--text-muted);
 }
+
+/* ================================================================== */
+/* STANDINGS — PORTRAIT LAYOUT VARIANTS (A/B/C/D/E)                    */
+/* All class names prefixed `mock-standings-` to avoid collisions with */
+/* the existing FlushStandings mockup (`mockup-standings`) or any      */
+/* production CSS.                                                     */
+/* ================================================================== */
+
+/* ----- Legend strip above the five phone frames --------------------- */
+.mock-standings__legend {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  padding: 14px 18px;
+  font-size: var(--text-sm);
+  line-height: 1.55;
+  color: var(--text);
+}
+.mock-standings__legend-h {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  color: var(--text-strong);
+  margin-bottom: 8px;
+}
+.mock-standings__legend-list {
+  margin: 0;
+  padding: 0 0 0 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mock-standings__legend-list strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mock-standings__legend-shared {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  color: var(--text-muted);
+}
+
+/* ----- Stack of 5 phone frames ------------------------------------- */
+.mock-standings__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 36px;
+  margin-top: 20px;
+}
+.mock-standings__variant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.mock-standings__variant-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 460px;
+  line-height: 1.4;
+}
+.mock-standings__variant-label strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+/* Phone frame — 390px max-width, faint outline (per spec). */
+.mock-standings__frame {
+  width: 390px;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: var(--bg);
+  padding: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.mock-standings__screen {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  overflow: hidden;
+  color: var(--text);
+}
+.mock-standings__desktop-note {
+  font-size: var(--text-xs);
+  line-height: 1.5;
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 460px;
+  padding: 0 8px;
+}
+.mock-standings__desktop-note strong {
+  color: var(--text);
+  font-weight: 600;
+}
+
+/* ================================================================== */
+/* Shared atoms — crest / form dots / nxt / rank / eyebrow             */
+/* ================================================================== */
+
+.mock-standings-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  padding: 12px 14px 8px;
+}
+
+.mock-standings-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-circle);
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-family: 'Geist', system-ui, sans-serif;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.mock-standings-form {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.mock-standings-form__dot {
+  width: var(--mock-standings-dot, 7px);
+  height: var(--mock-standings-dot, 7px);
+  border-radius: var(--r-circle);
+  display: inline-block;
+}
+.mock-standings-form__dot--W { background: var(--data-positive); }
+.mock-standings-form__dot--L { background: var(--data-negative); }
+.mock-standings-form__dot--D { background: var(--data-neutral); }
+
+.mock-standings-nxt {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-circle);
+  color: #ffffff;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-family: 'Geist', system-ui, sans-serif;
+  flex-shrink: 0;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
+.mock-standings-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.mock-standings-rank--leader {
+  background: var(--brand-tint);
+  color: var(--brand);
+  font-weight: 700;
+}
+.mock-standings-rank--spoon {
+  position: relative;
+  background: transparent;
+  color: var(--text-muted);
+  gap: 3px;
+}
+.mock-standings-rank__num { font-weight: 700; }
+.mock-standings-rank__icon { font-size: 11px; line-height: 1; }
+
+/* The "is-spoon" divider above the rank-8 row is rendered via a top
+ * border on the row itself, so the divider is variant-aware. */
+
+/* ================================================================== */
+/* Variant A — Wire-style tile · right-aligned 4-stat column            */
+/* ================================================================== */
+
+.mock-standings-a {
+  background: var(--bg);
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.mock-standings-a__colhead {
+  display: flex;
+  align-items: center;
+  padding: 6px 14px 8px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mock-standings-a__colhead-spacer {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mock-standings-a__colhead-cols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  width: 180px;
+  gap: 8px;
+  flex-shrink: 0;
+  text-align: right;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.mock-standings-a__colhead-cols span { text-align: right; }
+.mock-standings-a__list {
+  display: flex;
+  flex-direction: column;
+}
+.mock-standings-a__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+}
+.mock-standings-a__row.is-leader {
+  background: var(--brand-tint);
+}
+.mock-standings-a__row.is-spoon {
+  border-top: 1px solid var(--border);
+}
+.mock-standings-a__row:last-child { border-bottom: none; }
+.mock-standings-a__left {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mock-standings-a__id {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.mock-standings-a__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-a__mgr {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.mock-standings-a__right {
+  width: 180px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mock-standings-a__values {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+}
+.mock-standings-a__value { text-align: right; }
+.mock-standings-a__value--pts {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mock-standings-a__sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+/* ================================================================== */
+/* Variant B — Density-collapsed table                                  */
+/* ================================================================== */
+
+.mock-standings-b { background: var(--bg); }
+.mock-standings-b__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.mock-standings-b__table thead th {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mock-standings-b__table thead th:first-child { padding-left: 14px; }
+.mock-standings-b__table thead th:last-child { padding-right: 14px; }
+.mock-standings-b__th-rank { text-align: left !important; width: 30px; }
+.mock-standings-b__th-team { text-align: left !important; }
+.mock-standings-b__th-pts { color: var(--text-strong) !important; }
+.mock-standings-b__table tbody td {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  padding: 8px 6px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.mock-standings-b__table tbody td:first-child { padding-left: 14px; }
+.mock-standings-b__table tbody td:last-child { padding-right: 14px; }
+.mock-standings-b__table tbody tr:last-child td { border-bottom: none; }
+.mock-standings-b__table tbody tr.is-leader td { background: var(--brand-tint); }
+.mock-standings-b__table tbody tr.is-spoon td { border-top: 1px solid var(--border); }
+.mock-standings-b__rank { text-align: left !important; width: 30px; }
+.mock-standings-b__team {
+  text-align: left !important;
+}
+.mock-standings-b__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mock-standings-b__id { min-width: 0; }
+.mock-standings-b__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+.mock-standings-b__mgr {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.mock-standings-b__pts {
+  color: var(--text-strong) !important;
+  font-weight: 700;
+}
+
+/* ================================================================== */
+/* Variant C — Hero leader card + condensed rows below                  */
+/* ================================================================== */
+
+.mock-standings-c { background: var(--bg); }
+.mock-standings-c__hero {
+  position: relative;
+  margin: 0 12px 12px;
+  padding: 14px 14px 12px;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--brand) 18%, transparent),
+      color-mix(in srgb, var(--brand) 6%, transparent));
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--border));
+  border-radius: 14px;
+  box-shadow: 0 1px 6px color-mix(in srgb, var(--brand) 20%, transparent);
+  overflow: hidden;
+}
+.mock-standings-c__hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 80% at 100% 0%,
+      color-mix(in srgb, var(--brand) 22%, transparent),
+      transparent 60%);
+  pointer-events: none;
+}
+.mock-standings-c__hero-eyebrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  padding: 4px 8px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+.mock-standings-c__hero-eyebrow-dot {
+  font-size: 11px;
+  line-height: 1;
+}
+.mock-standings-c__hero-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.mock-standings-c__hero-id {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mock-standings-c__hero-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-c__hero-mgr {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin-top: 3px;
+}
+.mock-standings-c__hero-pts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.mock-standings-c__hero-pts-num {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.mock-standings-c__hero-pts-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand);
+  margin-top: 2px;
+}
+.mock-standings-c__hero-sub {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
+}
+.mock-standings-c__hero-nxt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.mock-standings-c__hero-nxt-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+/* Condensed rows below the hero — mirrors variant B styling. */
+.mock-standings-c__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.mock-standings-c__table thead th {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.mock-standings-c__table thead th:first-child { padding-left: 14px; }
+.mock-standings-c__table thead th:last-child { padding-right: 14px; }
+.mock-standings-c__th-rank { text-align: left !important; width: 30px; }
+.mock-standings-c__th-team { text-align: left !important; }
+.mock-standings-c__th-pts { color: var(--text-strong) !important; }
+.mock-standings-c__table tbody td {
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  padding: 8px 6px;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+.mock-standings-c__table tbody td:first-child { padding-left: 14px; }
+.mock-standings-c__table tbody td:last-child { padding-right: 14px; }
+.mock-standings-c__table tbody tr:last-child td { border-bottom: none; }
+.mock-standings-c__table tbody tr.is-spoon td { border-top: 1px solid var(--border); }
+.mock-standings-c__rank { text-align: left !important; width: 30px; }
+.mock-standings-c__team {
+  text-align: left !important;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mock-standings-c__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+}
+.mock-standings-c__mgr {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.mock-standings-c__pts {
+  color: var(--text-strong) !important;
+  font-weight: 700;
+}
+
+/* ================================================================== */
+/* Variant D — Stats-grid tile (2×2 right-side grid)                    */
+/* ================================================================== */
+
+.mock-standings-d { background: var(--bg); }
+.mock-standings-d__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px 12px;
+}
+.mock-standings-d__tile {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, #000);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+.mock-standings-d__tile.is-leader {
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--brand) 12%, var(--surface)),
+      var(--surface));
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+}
+.mock-standings-d__tile.is-spoon {
+  margin-top: 6px;
+  border-top: 2px solid var(--border);
+}
+.mock-standings-d__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mock-standings-d__left {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mock-standings-d__id { min-width: 0; flex: 1 1 auto; }
+.mock-standings-d__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-d__mgr {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.mock-standings-d__grid {
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  gap: 2px 12px;
+  flex-shrink: 0;
+}
+.mock-standings-d__cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  justify-content: flex-end;
+}
+.mock-standings-d__cell em {
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.mock-standings-d__cell--pts {
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mock-standings-d__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+}
+
+/* ================================================================== */
+/* Variant E — Tap-to-expand compact row                                */
+/* ================================================================== */
+
+.mock-standings-e { background: var(--bg); }
+.mock-standings-e__head,
+.mock-standings-e__row {
+  display: grid;
+  grid-template-columns: 28px 1fr 40px 60px 28px 16px;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+}
+.mock-standings-e__head {
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+.mock-standings-e__head-rank { text-align: left; }
+.mock-standings-e__head-team { text-align: left; }
+.mock-standings-e__head-pts { text-align: right; }
+.mock-standings-e__head-form { text-align: left; }
+.mock-standings-e__head-nxt { text-align: center; }
+.mock-standings-e__list {
+  display: flex;
+  flex-direction: column;
+}
+.mock-standings-e__row {
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.mock-standings-e__row.is-leader { background: var(--brand-tint); }
+.mock-standings-e__row.is-spoon { border-top: 1px solid var(--border); }
+.mock-standings-e__row.is-expanded { background: var(--surface); }
+.mock-standings-e__row.is-leader.is-expanded {
+  background:
+    linear-gradient(180deg,
+      var(--brand-tint),
+      var(--surface));
+}
+.mock-standings-e__rank { text-align: left; }
+.mock-standings-e__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mock-standings-e__id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mock-standings-e__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-e__mgr {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin-top: 2px;
+}
+.mock-standings-e__pts {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.mock-standings-e__form {
+  display: inline-flex;
+  justify-content: flex-start;
+}
+.mock-standings-e__nxt {
+  display: inline-flex;
+  justify-content: center;
+}
+.mock-standings-e__chev {
+  text-align: center;
+  font-size: 9px;
+  color: var(--text-muted);
+  line-height: 1;
+}
+.mock-standings-e__chev.is-up { color: var(--brand); }
+
+/* Expanded sub-band below row 1. */
+.mock-standings-e__sub {
+  padding: 8px 14px 12px;
+  background:
+    linear-gradient(180deg,
+      var(--surface),
+      var(--surface-2));
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mock-standings-e__sub-row {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  font-weight: 600;
+}
+.mock-standings-e__sub-row span {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.mock-standings-e__sub-row em {
+  font-style: normal;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
