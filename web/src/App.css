@@ -12743,15 +12743,22 @@ button.live-xp__player-name:focus-visible {
     color-mix(in srgb, var(--brand) 22%, var(--fm-border));
 }
 
-/* Form dots inside the hero — prominent per Variant C spec. */
+/* Form dots inside the hero — plain colored circles matching the
+ * condensed-row palette (W = green, D = grey, L = red). Slightly
+ * larger than the 5px mobile-row dots so the hero retains visual
+ * weight, but no W/L letter inside and `border-radius: 50%` for a
+ * true circle (the base `.form-dot` defaults to a rounded-square
+ * chip with the result glyph inside). */
 .standings-hero-card__sub .form-circles {
-  gap: 5px;
+  gap: 4px;
 }
 .standings-hero-card__sub .form-dot {
-  width: 14px;
-  height: 14px;
-  border-radius: 4px;
-  font-size: 8px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
 }
 
 .standings-hero-card__nxt {
