@@ -5662,6 +5662,474 @@ function SettingsShowcase() {
 }
 
 /* ------------------------------------------------------------------ */
+/* ============ WIRE PORTRAIT LAYOUT VARIANTS ============ */
+/* Four mockup variants for the portrait wire/waiver list. Shared toolbar
+ * (full-width search + Position pill + Club pill) and shared row internals
+ * across A–C; D recomposes the row as a vertical card. Only the wrapper
+ * chrome (outer tile padding/border/radius/shadow + inner-card wrapper)
+ * varies. All class names are prefixed `mock-wire-portrait-` so they
+ * can't collide with production. Mockup-only — no production wire styles
+ * touched. */
+
+const WIRE_PORTRAIT_PLAYERS = [
+  {
+    name: 'Saka',
+    club: 'ARS',
+    clubColor: '#ef4444',
+    pos: 'MID',
+    gp: 24,
+    g: 7,
+    a: 9,
+    dc: 28,
+    pts: 14.2,
+    next3: [
+      { opp: 'WHU', home: true },
+      { opp: 'LIV', home: false },
+      { opp: 'BRI', home: true },
+    ],
+    indicator: { kind: 'owned', team: 'TO', teamColor: '#b1364c' },
+  },
+  {
+    name: 'Haaland',
+    club: 'MCI',
+    clubColor: '#06b6d4',
+    pos: 'FWD',
+    gp: 23,
+    g: 18,
+    a: 4,
+    dc: 18,
+    pts: 16.8,
+    next3: [
+      { opp: 'NEW', home: true },
+      { opp: 'CHE', home: false },
+      { opp: 'LIV', home: true },
+    ],
+    indicator: { kind: 'owned', team: 'CC', teamColor: '#4f46e5' },
+  },
+  {
+    name: 'Palmer',
+    club: 'CHE',
+    clubColor: '#2563eb',
+    pos: 'MID',
+    gp: 24,
+    g: 11,
+    a: 7,
+    dc: 16,
+    pts: 12.4,
+    next3: [
+      { opp: 'MCI', home: true },
+      { opp: 'BRE', home: false },
+      { opp: 'AVL', home: true },
+    ],
+    indicator: { kind: 'fa' },
+  },
+  {
+    name: 'Van Dijk',
+    club: 'LIV',
+    clubColor: '#a50034',
+    pos: 'DEF',
+    gp: 24,
+    g: 2,
+    a: 1,
+    dc: 31,
+    pts: 7.9,
+    next3: [
+      { opp: 'BRI', home: false },
+      { opp: 'MCI', home: true },
+      { opp: 'FUL', home: false },
+    ],
+    indicator: null,
+  },
+  {
+    name: 'B. Fernandes',
+    club: 'MUN',
+    clubColor: '#ea580c',
+    pos: 'MID',
+    gp: 22,
+    g: 6,
+    a: 8,
+    dc: 19,
+    pts: 9.1,
+    next3: [
+      { opp: 'NFO', home: true },
+      { opp: 'BOU', home: false },
+      { opp: 'WHU', home: true },
+    ],
+    indicator: { kind: 'injured' },
+  },
+  {
+    name: 'Alisson',
+    club: 'LIV',
+    clubColor: '#a50034',
+    pos: 'GK',
+    gp: 23,
+    g: 0,
+    a: 1,
+    dc: 8,
+    pts: 6.4,
+    next3: [
+      { opp: 'BRI', home: false },
+      { opp: 'MCI', home: true },
+      { opp: 'FUL', home: false },
+    ],
+    indicator: null,
+  },
+]
+
+const WIRE_PORTRAIT_PL_CLUBS = [
+  { name: 'Arsenal', abbr: 'ARS' },
+  { name: 'Aston Villa', abbr: 'AVL' },
+  { name: 'Bournemouth', abbr: 'BOU' },
+  { name: 'Brentford', abbr: 'BRE' },
+  { name: 'Brighton', abbr: 'BRI' },
+]
+
+const WIRE_PORTRAIT_FANTASY_TEAMS = [
+  'Team Tomato',
+  'Castle Caprice',
+  'Hawk Mountain',
+  'Slytherin XI',
+  'North London Forever',
+]
+
+function WirePortraitCrest({ club, color }) {
+  return (
+    <span className="mock-wire-portrait-crest" style={{ background: color }} aria-hidden>
+      {club}
+    </span>
+  )
+}
+
+function WirePortraitOwner({ initials, color }) {
+  return (
+    <span
+      className="mock-wire-portrait-owner"
+      style={{ background: color }}
+      aria-label={`Owned by ${initials}`}
+    >
+      {initials}
+    </span>
+  )
+}
+
+function WirePortraitFixture({ opp, home }) {
+  return (
+    <span
+      className={'mock-wire-portrait-fixture ' + (home ? 'is-home' : 'is-away')}
+    >
+      <span className="mock-wire-portrait-fixture__opp">{opp}</span>
+      <span className="mock-wire-portrait-fixture__ha">{home ? 'H' : 'A'}</span>
+    </span>
+  )
+}
+
+function WirePortraitIndicators({ indicator }) {
+  if (!indicator) return null
+  if (indicator.kind === 'fa') {
+    return (
+      <span className="mock-wire-portrait-row__indicators">
+        <span
+          className="mock-wire-portrait-dot mock-wire-portrait-dot--fa"
+          aria-label="Free agent"
+        />
+      </span>
+    )
+  }
+  if (indicator.kind === 'injured') {
+    return (
+      <span className="mock-wire-portrait-row__indicators">
+        <span
+          className="mock-wire-portrait-dot mock-wire-portrait-dot--injured"
+          aria-label="Injured"
+        />
+      </span>
+    )
+  }
+  if (indicator.kind === 'owned') {
+    return (
+      <span className="mock-wire-portrait-row__indicators">
+        <WirePortraitOwner initials={indicator.team} color={indicator.teamColor} />
+      </span>
+    )
+  }
+  return null
+}
+
+function WirePortraitSearchIcon(props) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      {...props}
+    >
+      <circle cx="11" cy="11" r="7" />
+      <path d="m20 20-3.5-3.5" />
+    </svg>
+  )
+}
+
+function WirePortraitToolbar({ posOpen = false }) {
+  return (
+    <div className="mock-wire-portrait-toolbar">
+      <label className="mock-wire-portrait-search">
+        <WirePortraitSearchIcon className="mock-wire-portrait-search__icon" />
+        <input
+          type="search"
+          readOnly
+          className="mock-wire-portrait-search__input"
+          placeholder="Search players, clubs, owners…"
+          defaultValue=""
+        />
+      </label>
+      <div className="mock-wire-portrait-filters" role="group" aria-label="Wire filters">
+        <span className="mock-wire-portrait-pill-host">
+          <button
+            type="button"
+            className={'mock-wire-portrait-pill' + (posOpen ? ' is-open' : '')}
+            aria-expanded={posOpen}
+          >
+            <span className="mock-wire-portrait-pill__label">Position</span>
+            <span className="mock-wire-portrait-pill__sep" aria-hidden>·</span>
+            <span className="mock-wire-portrait-pill__value">All</span>
+            <CaretIcon className="mock-wire-portrait-pill__caret" />
+          </button>
+          {posOpen && (
+            <div className="mock-wire-portrait-pop" role="menu">
+              {[
+                { label: 'All', checked: true },
+                { label: 'GK', checked: true },
+                { label: 'DEF', checked: true },
+                { label: 'MID', checked: true },
+                { label: 'FWD', checked: true },
+              ].map((opt) => (
+                <label key={opt.label} className="mock-wire-portrait-pop__item">
+                  <input
+                    type="checkbox"
+                    defaultChecked={opt.checked}
+                    readOnly
+                    className="mock-wire-portrait-pop__check"
+                  />
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </span>
+        <button type="button" className="mock-wire-portrait-pill" aria-expanded={false}>
+          <span className="mock-wire-portrait-pill__label">Club</span>
+          <span className="mock-wire-portrait-pill__sep" aria-hidden>·</span>
+          <span className="mock-wire-portrait-pill__value">All</span>
+          <CaretIcon className="mock-wire-portrait-pill__caret" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function WirePortraitHeader() {
+  return (
+    <div className="mock-wire-portrait-header">
+      <span className="mock-wire-portrait-header__title">Wire</span>
+      <span className="mock-wire-portrait-header__meta">347 free agents · GW 28</span>
+    </div>
+  )
+}
+
+function WirePortraitRow({ player }) {
+  return (
+    <div className="mock-wire-portrait-row">
+      <div className="mock-wire-portrait-row__player">
+        <WirePortraitCrest club={player.club} color={player.clubColor} />
+        <span className="mock-wire-portrait-row__name">{player.name}</span>
+        <WirePortraitIndicators indicator={player.indicator} />
+      </div>
+      <div className="mock-wire-portrait-row__pos">{player.pos}</div>
+      <div className="mock-wire-portrait-row__stat">{player.gp}</div>
+      <div className="mock-wire-portrait-row__stat">{player.g}</div>
+      <div className="mock-wire-portrait-row__stat">{player.a}</div>
+      <div className="mock-wire-portrait-row__stat">{player.dc}</div>
+      <div className="mock-wire-portrait-row__next3">
+        {player.next3.map((f, i) => (
+          <WirePortraitFixture key={i} opp={f.opp} home={f.home} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function WirePortraitCard({ player }) {
+  return (
+    <div className="mock-wire-portrait-card">
+      <div className="mock-wire-portrait-card__top">
+        <div className="mock-wire-portrait-card__id">
+          <WirePortraitCrest club={player.club} color={player.clubColor} />
+          <span className="mock-wire-portrait-card__name">{player.name}</span>
+          <WirePortraitIndicators indicator={player.indicator} />
+        </div>
+        <div className="mock-wire-portrait-card__pts">{player.pts.toFixed(1)}</div>
+      </div>
+      <div className="mock-wire-portrait-card__sub">
+        <span>{player.pos}</span>
+        <span aria-hidden>·</span>
+        <span>{player.club}</span>
+        {player.indicator?.kind === 'owned' && (
+          <>
+            <span aria-hidden>·</span>
+            <span>Owned by {player.indicator.team}</span>
+          </>
+        )}
+        {player.indicator?.kind === 'fa' && (
+          <>
+            <span aria-hidden>·</span>
+            <span className="mock-wire-portrait-card__fa-chip">Free agent</span>
+          </>
+        )}
+        {player.indicator?.kind === 'injured' && (
+          <>
+            <span aria-hidden>·</span>
+            <span className="mock-wire-portrait-card__injury-chip">Injured</span>
+          </>
+        )}
+      </div>
+      <div className="mock-wire-portrait-card__stats">
+        <span><em>GP</em> {player.gp}</span>
+        <span><em>G</em> {player.g}</span>
+        <span><em>A</em> {player.a}</span>
+        <span><em>DC</em> {player.dc}</span>
+      </div>
+      <div className="mock-wire-portrait-card__fixtures">
+        {player.next3.map((f, i) => (
+          <WirePortraitFixture key={i} opp={f.opp} home={f.home} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function WirePortraitVariants() {
+  const players = WIRE_PORTRAIT_PLAYERS
+  return (
+    <div className="mock-wire-portrait">
+      <div className="mock-wire-portrait__legend">
+        <div className="mock-wire-portrait__legend-h">What varies across A–D</div>
+        <ul className="mock-wire-portrait__legend-list">
+          <li>
+            <strong>A</strong> — Drop the nested inner card around the table only.
+            Outer dashboard tile (border, radius, shadow, 16/18px padding) preserved.
+          </li>
+          <li>
+            <strong>B</strong> — Outer tile padding goes to <code>0</code> (border / radius /
+            shadow preserved). Header, filter, and search rows get their own
+            padding back. Rows go edge-to-edge inside the tile border.
+          </li>
+          <li>
+            <strong>C</strong> — Strip the outer tile chrome entirely on portrait. Rows extend
+            to the absolute screen edges (FotMob &ldquo;All Players&rdquo; pattern).
+            Position dropdown rendered <em>open</em> so you can see the multi-select.
+          </li>
+          <li>
+            <strong>D</strong> — Same full-bleed chrome as C, but each player rendered as a
+            vertical card (Pts on the right, sub-row, stats row, fixtures row).
+          </li>
+        </ul>
+        <div className="mock-wire-portrait__legend-shared">
+          Shared across all four: same toolbar (full-width search + Position pill + Club pill,
+          no Sort / Owned / Include-drafted), same player-row internals (font, indicators,
+          fixture chips). Only the <em>wrapper chrome</em> changes.
+        </div>
+      </div>
+
+      <div className="mock-wire-portrait__stack">
+        {/* Variant A — drop nested inner card only */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant A</strong> · Drop nested inner card only
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen mock-wire-portrait-screen--padded">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--a">
+                <WirePortraitHeader />
+                <WirePortraitToolbar />
+                <div className="mock-wire-portrait-list mock-wire-portrait-list--a">
+                  {players.map((p) => (
+                    <WirePortraitRow key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant B — zero outer tile padding */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant B</strong> · Zero outer tile padding (keep tile border)
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen mock-wire-portrait-screen--padded">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--b">
+                <WirePortraitHeader />
+                <WirePortraitToolbar />
+                <div className="mock-wire-portrait-list mock-wire-portrait-list--b">
+                  {players.map((p) => (
+                    <WirePortraitRow key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant C — full bleed (with Position dropdown open) */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant C</strong> · Full bleed, no tile chrome (Position dropdown open)
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitHeader />
+                <WirePortraitToolbar posOpen />
+                <div className="mock-wire-portrait-list mock-wire-portrait-list--c">
+                  {players.map((p) => (
+                    <WirePortraitRow key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant D — card per player (full-bleed chrome) */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant D</strong> · Card per player (full-bleed chrome like C)
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitHeader />
+                <WirePortraitToolbar />
+                <div className="mock-wire-portrait-cards">
+                  {players.map((p) => (
+                    <WirePortraitCard key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /* Page                                                                 */
 /* ------------------------------------------------------------------ */
 function readStoredMockupTheme() {
@@ -6456,6 +6924,19 @@ export function Mockup() {
             Owner column is right-aligned and uses tabular numerals when amounts appear.
           </p>
           <WaiversFeed />
+        </section>
+
+        {/* ============ WIRE PORTRAIT LAYOUT VARIANTS ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Wire · portrait layout variants</div>
+          <h2 className="mockup__section-h">Wire — portrait layout variants</h2>
+          <p className="mockup__section-sub">
+            Four side-by-side mockups of the portrait wire (waiver) list. New
+            toolbar (full-width search + Position / Club pills only — no Sort,
+            no Owned, no Include-drafted) is identical across all four. Only
+            the wrapper chrome and edge inset varies. Pick a winner on phone.
+          </p>
+          <WirePortraitVariants />
         </section>
 
         {/* 17. Part 2 surfaces — staged separately, integrated as a batch */}
