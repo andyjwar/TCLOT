@@ -24,8 +24,6 @@ import { liveFixtureLead } from './liveScoresDerivations.js';
  *   awayId: number,
  *   homeName: string,
  *   awayName: string,
- *   homeMgr?: string | null,
- *   awayMgr?: string | null,
  *   homeLive: number | null | undefined,
  *   awayLive: number | null | undefined,
  *   teamLogoMap: object,
@@ -115,9 +113,6 @@ export function LiveFaceOffRow({
           >
             {homeName}
           </span>
-          {!compact && homeMgr ? (
-            <span className="live-banner-row__sub">{homeMgr}</span>
-          ) : null}
         </span>
       </div>
 
@@ -162,9 +157,6 @@ export function LiveFaceOffRow({
           >
             {awayName}
           </span>
-          {!compact && awayMgr ? (
-            <span className="live-banner-row__sub">{awayMgr}</span>
-          ) : null}
         </span>
         <span className="live-banner-row__crest">
           <HeroVillainAvatarFrame

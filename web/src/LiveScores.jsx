@@ -377,16 +377,6 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
-/** "David Higman · #1" sub-line for the desktop face-off row. */
-function teamMgrSubLine(teams, leagueEntryId) {
-  const t = teams?.find((x) => x.id === leagueEntryId);
-  if (!t) return null;
-  const mgr = (t.manager ?? '').trim();
-  const rank = Number.isFinite(Number(t.rank)) ? `#${t.rank}` : '';
-  if (mgr && rank) return `${mgr} · ${rank}`;
-  return mgr || rank || null;
-}
-
 /**
  * All `matches` rows between two `league_entry` ids this season (tile home/away = banner sides).
  * Winner-first score in each chip (e.g. 34–21). For draws, home tile score first (same order as FPL row).
@@ -1492,8 +1482,6 @@ export function LiveScores({
                     awayId={awayId}
                     homeName={homeName}
                     awayName={awayName}
-                    homeMgr={teamMgrSubLine(teams, homeId)}
-                    awayMgr={teamMgrSubLine(teams, awayId)}
                     homeLive={homeLive}
                     awayLive={awayLive}
                     teamLogoMap={teamLogoMap}
