@@ -435,6 +435,12 @@ const DECISIONS_OPEN = [
       'Header tile chrome: variant 4 with tile chrome (currently shipped in PR #3.7) vs full-bleed combos 5a/5b/5c. See HEADER · FULL-BLEED + STATUS STRIP COMBOS showcase.',
     ],
   },
+  {
+    surface: 'PAGE BG · BACKGROUND + HEADER TREATMENT',
+    items: [
+      'A: lifted bg (#fafafa); B: single-color (FotMob mobile); C: brand-tint hero strip; D: shadow-based cards on white body. User to pick — possibly mix (e.g. B on mobile, A on desktop). See BACKGROUND + HEADER COLOR VARIANTS showcase.',
+    ],
+  },
 ]
 
 function DecisionsColumn({ tone, label, groups }) {
@@ -993,6 +999,161 @@ function HeaderFullBleedComboShowcase({
         </div>
         {renderPair('band')}
       </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Section: background + header color variants (mockup-only)            */
+/* ------------------------------------------------------------------ */
+/* User feedback: the current --bg grey feels too dark and jarring
+ * against the white tiles, and the per-tile rhythm
+ * (grey → white → grey → white) doesn't flow cleanly. This showcase
+ * mocks up four alternative treatments without touching production
+ * tokens. Each variant overrides --bg / --surface / --surface-2 and
+ * tile chrome via scoped CSS classes only (see Mockup.css). */
+
+/* Tiny "Live Table" stand-in — three standings rows in a single tile
+ * so each variant shows two tile rhythms (banner + table) under the
+ * header. Avoids pulling MiniApp's nav/chips chrome which would muddy
+ * the bg/tile comparison. */
+function BgVariantLiveTable() {
+  const rows = [
+    { rank: 1, name: 'Crouch End Oashisu', mgr: 'David Higman', pts: 1284, gw: 67 },
+    { rank: 2, name: 'Clapton Cornershop',  mgr: 'Mike Sutton',  pts: 1271, gw: 66 },
+    { rank: 3, name: 'Toronto Oizo',        mgr: 'Andy Ward',    pts: 1268, gw: 66 },
+  ]
+  return (
+    <div className="mockup-bg-variant-table">
+      <div className="mockup-bg-variant-table__head">
+        <span>Live table</span>
+        <span className="mockup-bg-variant-table__head-meta">GW 28</span>
+      </div>
+      {rows.map((r) => (
+        <div className="mockup-bg-variant-table__row" key={r.rank}>
+          <span className="mockup-bg-variant-table__rank">{r.rank}</span>
+          <span className="mockup-bg-variant-table__team">
+            <span className="mockup-bg-variant-table__name">{r.name}</span>
+            <span className="mockup-bg-variant-table__mgr">{r.mgr}</span>
+          </span>
+          <span className="mockup-bg-variant-table__gw">+{r.gw}</span>
+          <span className="mockup-bg-variant-table__pts">{r.pts}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function BgVariantPreview({ variantId, mode, tableRows, leagueEntries, teamLogoMap, kitIndexByEntry }) {
+  const isMobile = mode === 'mobile'
+  return (
+    <div
+      className={
+        'mockup-bg-variant-stage' +
+        ' mockup-bg-variant-stage--' + mode +
+        ' mockup-bg-variant--' + variantId
+      }
+    >
+      <div className="mockup-bg-variant-stage__page">
+        <div className="mockup-bg-variant-stage__section mockup-bg-variant-stage__section--header">
+          <div className="mockup-hero-tile">
+            {isMobile ? (
+              <HeroVariantBMobile />
+            ) : (
+              <HeroVariantBSeasonAndCrests
+                rows={tableRows}
+                entries={leagueEntries}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            )}
+            <HeroVariantBStatusStrip state="live" />
+          </div>
+        </div>
+        <div className="mockup-bg-variant-stage__section">
+          <LiveBannerGroup />
+        </div>
+        <div className="mockup-bg-variant-stage__section">
+          <BgVariantLiveTable />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function BackgroundVariantsShowcase({
+  tableRows,
+  leagueEntries,
+  teamLogoMap,
+  kitIndexByEntry,
+}) {
+  const variants = [
+    {
+      id: 'a',
+      label: 'Variant A — Lighter, softer contrast',
+      desc:
+        'Lift --bg from #f7f7f9 to #fafafa. Tiles unchanged ' +
+        '(white surface, border + radius). Smallest possible tweak — ' +
+        'just calms the grey without changing visual hierarchy.',
+    },
+    {
+      id: 'b',
+      label: 'Variant B — Single-color (FotMob mobile style)',
+      desc:
+        'Body, tiles, and surface-2 all share one color (#fff). ' +
+        'Tiles drop borders + radii; sections separated by hairline ' +
+        'border-bottom only. Brand bar gets a subtle border-bottom to ' +
+        'separate from content. The user’s "all one colour" hypothesis.',
+    },
+    {
+      id: 'c',
+      label: 'Variant C — Brand-tinted hero strip',
+      desc:
+        'Body lifted (Variant A baseline). Top header band wears a soft ' +
+        'brand-violet wash that fades into the page bg over ~140px. ' +
+        'Tiles unchanged. Adds personality at the top, calms the rest.',
+    },
+    {
+      id: 'd',
+      label: 'Variant D — Shadow-based cards on white body',
+      desc:
+        'Body = #fff. Tiles drop border, keep radius, gain a subtle ' +
+        'elevation shadow (0 1px 2px rgba(0,0,0,0.04)). More ' +
+        'elevated / app-like; closer to Stripe / Linear dashboard feel.',
+    },
+  ]
+  return (
+    <div className="mockup-bg-variants">
+      {variants.map((v) => (
+        <div className="mockup-bg-variant" key={v.id}>
+          <div className="mockup-bg-variant__label">{v.label}</div>
+          <p className="mockup-bg-variant__desc">{v.desc}</p>
+          <div className="mockup-bg-variant__previews">
+            <div className="mockup-bg-variant__preview">
+              <div className="mockup-portrait-col__h">Desktop</div>
+              <BgVariantPreview
+                variantId={v.id}
+                mode="desktop"
+                tableRows={tableRows}
+                leagueEntries={leagueEntries}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </div>
+            <div className="mockup-bg-variant__preview">
+              <div className="mockup-portrait-col__h">Mobile · 375 px</div>
+              <BgVariantPreview
+                variantId={v.id}
+                mode="mobile"
+                tableRows={tableRows}
+                leagueEntries={leagueEntries}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </div>
+          </div>
+        </div>
+      ))}
     </div>
   )
 }
@@ -5532,6 +5693,25 @@ export function Mockup() {
             strip needs a new treatment. Compare three approaches.
           </p>
           <HeaderFullBleedComboShowcase
+            tableRows={tableRows}
+            leagueEntries={leagueEntries}
+            teamLogoMap={data?.teamLogoMap ?? {}}
+            kitIndexByEntry={data?.defaultKitIndexByLeagueEntry ?? {}}
+          />
+        </section>
+
+        {/* 1d. Background + header color variants */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">BACKGROUND + HEADER COLOR VARIANTS</div>
+          <h2 className="mockup__section-h">Four treatments for the page bg + header rhythm</h2>
+          <p className="mockup__section-sub">
+            User flagged the current grey page bg as too dark and jarring against
+            the white tiles. Four alternatives mocked up below — each with
+            desktop + mobile previews so you can pick (or mix, e.g. one on mobile
+            + a different one on desktop). Mockup-only; no production token
+            changes shipped.
+          </p>
+          <BackgroundVariantsShowcase
             tableRows={tableRows}
             leagueEntries={leagueEntries}
             teamLogoMap={data?.teamLogoMap ?? {}}

@@ -8054,3 +8054,257 @@
   color: var(--mockup-hv-villain-strong);
 }
 
+/* ------------------------------------------------------------------ */
+/* Background + header color variants (mockup-only)                     */
+/* ------------------------------------------------------------------ */
+/* User feedback: current --bg grey reads too dark + jarring against the
+ * white tiles. Four scoped variants override --bg / --surface /
+ * --surface-2 + tile chrome to compare treatments side-by-side, both
+ * desktop and mobile. Scoped to .mockup-bg-variant--{a|b|c|d} so
+ * nothing in production picks these up. */
+
+.mockup-bg-variants {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-7);
+}
+
+.mockup-bg-variant {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.mockup-bg-variant__label {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--text-strong);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.mockup-bg-variant__desc {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  max-width: 760px;
+  line-height: 1.5;
+}
+
+.mockup-bg-variant__previews {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 391px;
+  gap: var(--space-5);
+  align-items: start;
+}
+@media (max-width: 1080px) {
+  .mockup-bg-variant__previews {
+    grid-template-columns: 1fr;
+    justify-content: stretch;
+  }
+}
+
+.mockup-bg-variant__preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Stage = the outer "device" frame. The inner `__page` div is the
+ * actual page surface that carries --bg. The bezel ring is intentionally
+ * variant-agnostic so the inner page-color contrast reads true. */
+.mockup-bg-variant-stage {
+  border: 1px solid #c8c8cd;
+  background: #d8d8db;
+  padding: 8px;
+  overflow: hidden;
+}
+
+.mockup-bg-variant-stage--desktop {
+  border-radius: 12px;
+}
+
+.mockup-bg-variant-stage--mobile {
+  width: 375px;
+  margin: 0 auto;
+  border-radius: 24px;
+  padding: 8px;
+}
+
+.mockup-bg-variant-stage__page {
+  background: var(--bg);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow: hidden;
+}
+
+.mockup-bg-variant-stage--mobile .mockup-bg-variant-stage__page {
+  border-radius: 16px;
+  padding: 10px;
+  gap: 10px;
+}
+
+/* Default section block — no own chrome; child tile carries it. */
+.mockup-bg-variant-stage__section {
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Tiny stand-in "Live table" tile -------------------------------- */
+.mockup-bg-variant-table {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  overflow: hidden;
+}
+.mockup-bg-variant-table__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 10px var(--space-4);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.mockup-bg-variant-table__head-meta {
+  font-family: 'Geist Mono', monospace;
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+.mockup-bg-variant-table__row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto auto;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 10px var(--space-4);
+  border-bottom: 1px solid var(--border);
+  font-size: var(--text-sm);
+}
+.mockup-bg-variant-table__row:last-child {
+  border-bottom: none;
+}
+.mockup-bg-variant-table__rank {
+  color: var(--text-muted);
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.mockup-bg-variant-table__team {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.mockup-bg-variant-table__name {
+  color: var(--text-strong);
+  font-weight: 500;
+}
+.mockup-bg-variant-table__mgr {
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.mockup-bg-variant-table__gw {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  color: var(--brand);
+  font-size: var(--text-xs);
+  font-weight: 600;
+}
+.mockup-bg-variant-table__pts {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--text-strong);
+  min-width: 44px;
+  text-align: right;
+}
+
+/* ============= VARIANT A — lifted bg, tiles unchanged ============== */
+.mockup-bg-variant--a {
+  --bg: #fafafa;
+}
+
+/* ============= VARIANT B — single-color (FotMob mobile) ============ */
+.mockup-bg-variant--b {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #ffffff;
+}
+.mockup-bg-variant--b .mockup-hero-tile,
+.mockup-bg-variant--b .mockup-live-group,
+.mockup-bg-variant--b .mockup-bg-variant-table {
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+/* Strip inner --surface-2 headers so it really is one color. */
+.mockup-bg-variant--b .mockup-live-group__header,
+.mockup-bg-variant--b .mockup-bg-variant-table__head,
+.mockup-bg-variant--b .mockup-hero-status-strip {
+  background: transparent;
+  border-top-color: #ececec;
+  border-bottom-color: #ececec;
+}
+/* Hairline separators between sections (no per-tile encapsulation). */
+.mockup-bg-variant--b .mockup-bg-variant-stage__section + .mockup-bg-variant-stage__section {
+  border-top: 1px solid #ececec;
+  padding-top: 12px;
+}
+/* Brand bar carries a hairline below so it reads as a header. */
+.mockup-bg-variant--b .mockup-bg-variant-stage__section--header {
+  border-bottom: 1px solid #ececec;
+  padding-bottom: 12px;
+}
+.mockup-bg-variant--b .mockup-bg-variant-stage__section--header + .mockup-bg-variant-stage__section {
+  border-top: none;
+  padding-top: 0;
+}
+/* Table inner row borders stay light to match the flatter aesthetic. */
+.mockup-bg-variant--b .mockup-bg-variant-table__row,
+.mockup-bg-variant--b .mockup-live-group__row {
+  border-bottom-color: #f1f1f1;
+}
+
+/* ============= VARIANT C — brand-tinted hero strip ================= */
+.mockup-bg-variant--c {
+  --bg: #fafafa;
+}
+.mockup-bg-variant--c .mockup-bg-variant-stage__page {
+  background:
+    linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--brand) 9%, var(--bg)) 0,
+      color-mix(in srgb, var(--brand) 5%, var(--bg)) 64px,
+      var(--bg) 160px
+    );
+}
+/* Soften the header tile so the brand wash reads through it (no
+ * solid white block on top of the gradient). */
+.mockup-bg-variant--c .mockup-bg-variant-stage__section--header .mockup-hero-tile {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  backdrop-filter: blur(6px);
+  border-color: color-mix(in srgb, var(--brand) 18%, var(--border));
+}
+
+/* ============= VARIANT D — shadow-based cards, white body ========== */
+.mockup-bg-variant--d {
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --surface-2: #fafafa;
+}
+.mockup-bg-variant--d .mockup-hero-tile,
+.mockup-bg-variant--d .mockup-live-group,
+.mockup-bg-variant--d .mockup-bg-variant-table {
+  border: none;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.04),
+    0 1px 0 rgba(0, 0, 0, 0.04);
+}
