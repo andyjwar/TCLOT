@@ -327,14 +327,30 @@ const WIRE_STAT_COL = 'minmax(2.15rem, 1fr)'
 
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_BEFORE = [
-  { id: 'player', label: '', title: 'Player', width: 'minmax(6.75rem, 9.5rem)' },
-  { id: 'pts', label: 'Pts', width: 'minmax(2.85rem, 1.1fr)' },
+  { id: 'player', label: 'Player', title: 'Player', width: 'minmax(11rem, 1.6fr)' },
+  { id: 'pts', label: 'Pts', width: 'minmax(3rem, 52px)' },
 ]
+
+/** Desktop-only Owner column injected between Player and Pts. */
+const WIRE_OWNER_COLUMN = {
+  id: 'owner',
+  label: 'Owner',
+  title: 'Roster owner',
+  width: 'minmax(110px, 1fr)',
+}
 
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_AFTER = [
   { id: 'next3', label: 'Next 3', width: 'minmax(6.25rem, 1.65fr)' },
 ]
+
+/** Desktop-only status column appended at the very end of the table. */
+const WIRE_STATUS_COLUMN = {
+  id: 'status',
+  label: '',
+  title: 'Availability status',
+  width: 'minmax(22px, 22px)',
+}
 
 const WIRE_NEXT_FIXTURE_PORTRAIT = {
   id: 'next3',
@@ -545,13 +561,24 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
         }
         return c
       })
-    : WIRE_FIXED_COLUMNS_BEFORE
+    : (() => {
+        // Desktop column order: Player → Owner → Pts → stats → Next3 → status
+        const out = []
+        for (const c of WIRE_FIXED_COLUMNS_BEFORE) {
+          if (c.id === 'pts') {
+            out.push(WIRE_OWNER_COLUMN)
+          }
+          out.push(c)
+        }
+        return out
+      })()
   const statWidth = portrait ? PORTRAIT_WIRE_STAT_COL : WIRE_STAT_COL
   const statsWithWidth = stats.map((col) => ({
     ...col,
     width: statWidth,
   }))
-  return [...fixedBefore, ...statsWithWidth, ...fixtureCol]
+  const fixedAfter = portrait ? fixtureCol : [...fixtureCol, WIRE_STATUS_COLUMN]
+  return [...fixedBefore, ...statsWithWidth, ...fixedAfter]
 }
 
 /**
@@ -759,6 +786,55 @@ export function elementSavePoints(el) {
 }
 
 /**
+ * Position-aware DefCon threshold in GW count for Phase-2 row-tone coloring.
+ * GKP/DEF earn DefCon at 10 BPS, MID/FWD at 12 BPS — surfacing here matches
+ * the production gameweek threshold without re-importing fplBonusFromBps.
+ *
+ * @param {number} elementType
+ */
+export function dcThresholdForPosition(elementType) {
+  return elementType === 1 || elementType === 2 ? 10 : 12
+}
+
+/**
+ * Pure helper for the Phase-2 stat-cell tone treatment.
+ *
+ * - `is-good` (green, weight 600): goals/assists > 0; clean sheets > 0 for
+ *   GKP/DEF only; defConHits at or above the position threshold.
+ * - `is-zero` (muted, weight 400): value 0 or non-numeric placeholder.
+ * - `''` (no tone): everything else (e.g. small but non-zero xG).
+ *
+ * Returns a CSS class name suffix to append to `.players-table__cell--stat`.
+ *
+ * @param {string} statId
+ * @param {string | number | null | undefined} value
+ * @param {number} elementType
+ * @returns {'is-good' | 'is-zero' | ''}
+ */
+export function wireStatToneClass(statId, value, elementType) {
+  if (value === '—' || value === '…' || value == null || value === '') {
+    return 'is-zero'
+  }
+  const num = Number(value)
+  if (!Number.isFinite(num)) return 'is-zero'
+  if (num === 0) return 'is-zero'
+
+  switch (statId) {
+    case 'goals':
+    case 'assists':
+      return num > 0 ? 'is-good' : ''
+    case 'cs': {
+      const isGkOrDef = elementType === 1 || elementType === 2
+      return isGkOrDef && num > 0 ? 'is-good' : ''
+    }
+    case 'defConHits':
+      return num >= dcThresholdForPosition(elementType) ? 'is-good' : ''
+    default:
+      return ''
+  }
+}
+
+/**
  * @param {string} statId
  * @param {object} el bootstrap element
  * @param {{ defConHits?: number | null, gamesPlayed?: number | null, sixtyPlus?: number | null } | null | undefined} summary
@@ -875,15 +951,18 @@ export function wireColumnToSortKey(colId) {
       return 'next3'
     case 'pts':
       return 'total_points'
+    case 'owner':
+    case 'status':
+      return null
     default:
       return null
   }
 }
 
 /** Wire table column groups for vertical separators: identity | summary | detail stats | fixtures */
-const WIRE_IDENTITY_COLS = new Set(['player'])
+const WIRE_IDENTITY_COLS = new Set(['player', 'owner'])
 const WIRE_SUMMARY_COLS = new Set(['pts', 'pos', 'gp'])
-const WIRE_FIXTURE_COLS = new Set(['next3'])
+const WIRE_FIXTURE_COLS = new Set(['next3', 'status'])
 
 /**
  * @param {string} colId
