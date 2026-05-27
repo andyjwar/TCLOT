@@ -358,10 +358,17 @@ const WIRE_NEXT_FIXTURE_PORTRAIT = {
   width: 'minmax(1.25rem, 0.7fr)',
 }
 
-/** Portrait wire grid — fr-based so columns fill the row width. */
+/** Portrait wire grid — fr-based so columns fill the row width.
+ *
+ * Stat-column track tightened (1.25rem → 1rem min, 0.9fr → 0.78fr) so the
+ * numeric stats (PTS / POS / GP / G / A / DC) sit with tight ~4–6px gutters
+ * on a 390px phone. Player + Pts + Next3 keep their original generous
+ * widths so the visual anchor (player name) and the right-edge fixture
+ * group don't get squeezed. Desktop unchanged — desktop uses WIRE_STAT_COL
+ * (`minmax(2.15rem, 1fr)`). */
 const PORTRAIT_WIRE_PLAYER_COL = 'minmax(4.5rem, 2fr)'
 const PORTRAIT_WIRE_PTS_COL = 'minmax(1.65rem, 0.65fr)'
-const PORTRAIT_WIRE_STAT_COL = 'minmax(1.25rem, 0.9fr)'
+const PORTRAIT_WIRE_STAT_COL = 'minmax(1rem, 0.78fr)'
 
 /**
  * @param {string} statId

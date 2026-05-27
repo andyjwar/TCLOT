@@ -1343,12 +1343,17 @@ export function PlayersWorkbench({
 
         {portrait ? (
           <>
-            {/* Portrait toolbar — Row 1: full-width search bar */}
+            {/* Portrait toolbar — Row 1: search bar + Wire/Owned segmented toggle */}
             <div className="players-bench-search-row players-bench-search-row--portrait">
               {searchField}
+              <WireOwnedSegmentedToggle
+                value={portraitWireOwned}
+                onChange={setPortraitWireOwned}
+                disabled={!rostersHealthy}
+              />
             </div>
 
-            {/* Portrait toolbar — Row 2: scroll row with the four toolbar elements */}
+            {/* Portrait toolbar — Row 2: filter pills (Position / Club / Stats) */}
             <div
               className="players-bench-filters players-bench-filters--portrait"
               role="toolbar"
@@ -1395,11 +1400,6 @@ export function PlayersWorkbench({
                 onChange={handleStatSelectionChange}
                 positionFilter={effectivePositionFilter}
                 maxStatColumns={statColumnMax ?? 5}
-              />
-              <WireOwnedSegmentedToggle
-                value={portraitWireOwned}
-                onChange={setPortraitWireOwned}
-                disabled={!rostersHealthy}
               />
             </div>
           </>

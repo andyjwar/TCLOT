@@ -1419,10 +1419,10 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   font: inherit;
   font-size: 12px;
   font-weight: 600;
-  padding: 0 14px;
+  padding: 0 10px;
   border-radius: 999px;
   cursor: pointer;
-  min-width: 56px;
+  min-width: 44px;
   transition: background 160ms ease, color 160ms ease;
 }
 
@@ -1522,18 +1522,14 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     gap: 6px;
     background: var(--surface-2);
     flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: visible;
     border-bottom: none;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-    /* Allow dropdown pops to overlay the table below. */
+    /* Positioning context for the absolutely-positioned dropdown popovers
+     * (which use z-index: 40). Visible overflow on BOTH axes lets the
+     * popovers paint outside the row instead of being clipped by the
+     * filter row's bottom edge — the previous `overflow-x: auto` silently
+     * coerced overflow-y to auto, hiding the popovers. */
     position: relative;
     z-index: 6;
-  }
-
-  .players-bench-filters--portrait::-webkit-scrollbar {
-    display: none;
   }
 
   .players-bench-filters--portrait > * {
@@ -1583,7 +1579,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 
   .players-table--portrait .players-table__head-row > * {
     min-height: 30px;
-    padding: 0.4rem 0.18rem;
+    padding: 0.4rem 0.06rem;
     font-size: 11px;
     letter-spacing: 0.05em;
     text-transform: uppercase;
@@ -1604,7 +1600,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 
   .players-table--portrait .players-table__row > * {
     min-height: 38px;
-    padding: 0.32rem 0.18rem;
+    padding: 0.32rem 0.06rem;
   }
 
   .players-table--portrait .players-table__cell {
