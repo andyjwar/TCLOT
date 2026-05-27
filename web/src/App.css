@@ -13129,60 +13129,38 @@ button.live-xp__player-name:focus-visible {
   margin-top: 4px;
 }
 
-/* ─── Standings sub-nav — sticky pill tabs matching Transactions language ── */
-.standings-subnav {
+/* ─── Standings sub-nav — segmented-pill capsule (matches FPL Live `.subnav`).
+ * The wrapper `.standings-subnav-strip` pins the capsule beneath the brand
+ * header + DashboardNav and provides a full-width background so the strip
+ * reads as a sticky header while Schedule / Stats content scrolls under it. */
+.standings-subnav-strip {
   position: sticky;
   top: 0;
   z-index: 30;
-  display: flex;
-  gap: 22px;
-  align-items: center;
-  margin: 18px 0 12px;
-  padding: 10px 4px;
+  margin: 4px -16px 10px;
+  padding: 8px 16px;
   background: var(--fm-bg);
   border-bottom: 1px solid var(--fm-border);
 }
 
-.standings-subnav__btn {
-  position: relative;
-  flex: 0 0 auto;
-  padding: 6px 4px 10px;
-  margin: 0;
-  font: inherit;
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--fm-muted);
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  letter-spacing: 0.01em;
-  transition: color 0.12s ease;
+.fotmob[data-theme='dark'] .standings-subnav-strip {
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
 }
 
-.standings-subnav__btn:hover {
-  color: var(--fm-text-strong);
+.fotmob[data-theme='light'] .standings-subnav-strip {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
 }
 
-.standings-subnav__btn--active {
-  color: var(--tclot-logo-purple);
-  font-weight: 700;
-}
-
-.standings-subnav__btn--active::after {
-  content: '';
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: -1px;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--tclot-logo-purple);
-}
-
-.standings-subnav__btn:focus-visible {
-  outline: 2px solid var(--tclot-logo-purple);
-  outline-offset: 2px;
-  border-radius: 4px;
+@media (max-width: 1080px) {
+  .standings-subnav-strip .subnav {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .standings-subnav-strip .subnav::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 .standings-subview-panel {
@@ -13576,8 +13554,10 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
-/* Desktop reveals the full opponent name beside the crest chip. Mobile keeps
- * the chip-only layout from the user's compact-view screenshot. */
+/* Schedule team-filtered compact rows — opponent name fills the gap between
+ * the crest and the score column. Mobile shows first word only (matches the
+ * "Crouch / Hanson / Toronto" reference in the user's mobile screenshot);
+ * desktop shows the full opponent name. */
 .standings-schedule-team__opp-name {
   font-size: 0.85rem;
   font-weight: 600;
@@ -13588,9 +13568,20 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
+.standings-schedule-team__opp-name-short {
+  display: none;
+}
+
+.standings-schedule-team__opp-name-full {
+  display: inline;
+}
+
 @media (max-width: 767px) {
-  .standings-schedule-team__opp-name {
+  .standings-schedule-team__opp-name-full {
     display: none;
+  }
+  .standings-schedule-team__opp-name-short {
+    display: inline;
   }
 }
 
@@ -13939,3 +13930,121 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
+
+/* ─── Standings Stats sub-tab — mobile fit (≤767px) ─── */
+/* The four Stats sections share a single section chrome; on narrow
+ * viewports the default `.win-margin-table` min-width (32rem) and the
+ * `.fixture-schedule-matrix` min-width (38rem) overflow the page padding.
+ * These overrides drop the min-widths, tighten cell padding, shrink the
+ * luck-matrix cells, and switch the TEAM column to a first-word truncation
+ * so every Stats table renders within a 360px viewport without horizontal
+ * scroll. Desktop (≥768px) is untouched. */
+@media (max-width: 767px) {
+  .standings-stats__section {
+    padding: 12px 10px;
+  }
+
+  /* Wins-by-margin / Weeks-at-1st-or-Last tables */
+  .standings-stats__section .table-scroll--win-margin {
+    overflow-x: visible;
+  }
+  .standings-stats-margin-table.win-margin-table,
+  .standings-stats-weeks-table.win-margin-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+    font-size: 0.74rem;
+  }
+  .standings-stats-margin-table.win-margin-table th,
+  .standings-stats-margin-table.win-margin-table td,
+  .standings-stats-weeks-table.win-margin-table th,
+  .standings-stats-weeks-table.win-margin-table td {
+    padding: 6px 4px;
+  }
+  .standings-stats-margin-table .win-margin-table__team,
+  .standings-stats-weeks-table .win-margin-table__team {
+    min-width: 0;
+    width: auto;
+  }
+  .standings-stats-margin-table .win-margin-table__team-inner,
+  .standings-stats-weeks-table .win-margin-table__team-inner {
+    gap: 6px;
+  }
+  .standings-stats-margin-table .win-margin-table__n,
+  .standings-stats-weeks-table .win-margin-table__n {
+    width: 1.95rem;
+  }
+  /* TEAM column on mobile: first word only beside the crest. */
+  .standings-stats-margin-table .win-margin-table__name-full,
+  .standings-stats-weeks-table .win-margin-table__name-full {
+    display: none;
+  }
+  .standings-stats-margin-table .win-margin-table__name-short,
+  .standings-stats-weeks-table .win-margin-table__name-short {
+    display: inline;
+  }
+
+  /* Weeks table — bar column shrinks but stays usable. */
+  .standings-stats-weeks-table__bar-head,
+  .standings-stats-weeks-table__bar-cell {
+    width: 56px;
+    padding: 6px 4px;
+  }
+
+  /* Schedule luck matrix (Option A from spec): shrink cells until the
+   * 8x8 grid + row labels fits inside 360px without horizontal scroll. */
+  .standings-stats-luck .table-scroll--win-margin {
+    overflow-x: visible;
+  }
+  .standings-stats-luck .fixture-schedule-matrix {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+    font-size: 0.66rem;
+  }
+  .standings-stats-luck .fixture-schedule-matrix th,
+  .standings-stats-luck .fixture-schedule-matrix td {
+    padding: 3px 1px;
+  }
+  .standings-stats-luck .fixture-schedule-matrix__corner,
+  .standings-stats-luck .fixture-schedule-matrix__team {
+    min-width: 0;
+    max-width: none;
+    width: 26px;
+  }
+  .standings-stats-luck .fixture-schedule-matrix__col-head--crest {
+    width: auto;
+    max-width: none;
+    padding: 3px 0 !important;
+  }
+  .standings-stats-luck .fixture-schedule-matrix--delta
+    .fixture-schedule-matrix__cell {
+    min-width: 0;
+  }
+  /* Crests in the matrix shrink to 20px so the row-label column fits
+   * inside ~26px and the column headers don't push the grid wide. */
+  .standings-stats-luck .fixture-schedule-matrix__crest .team-avatar-frame,
+  .standings-stats-luck .fixture-schedule-matrix__crest .team-shirt,
+  .standings-stats-luck .fixture-schedule-matrix__team-inner .team-avatar-frame,
+  .standings-stats-luck .fixture-schedule-matrix__team-inner .team-shirt {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* H2H rivals table — already overrides win-margin min-width via
+   * .standings-h2h-rivals__table { min-width: 0 }, but the surrounding
+   * win-margin-table base still applies its 32rem min-width on the
+   * outer table; reaffirm here to guarantee no overflow. */
+  .standings-h2h-rivals__table.win-margin-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+  }
+  .standings-h2h-rivals__table .win-margin-table__n {
+    width: 1.95rem;
+  }
+  .standings-h2h-rivals__table th,
+  .standings-h2h-rivals__table td {
+    padding: 6px 4px;
+  }
+}

@@ -1251,18 +1251,19 @@ function App() {
   const [waiverGwView, setWaiverGwView] = useState(null)
   /** latest = rich cards; summary = compact share / screenshot layout */
   const [waiverFeedTab, setWaiverFeedTab] = useState(initialWaiverFeedTabForViewport)
-  /** Standings sub-tab nav (Phase 2 redesign): `'schedule' | 'stats'`.
+  /** Standings sub-tab nav (Phase 2 redesign): `'table' | 'schedule' | 'stats'`.
    * Persisted in `sessionStorage` so a refresh keeps the user on the
-   * sub-tab they were viewing. Default `'schedule'`. */
+   * sub-tab they were viewing. Default `'table'`. Earlier `'schedule'
+   * | 'stats'` values still resolve unchanged (forward-compatible). */
   const [standingsSubView, setStandingsSubView] = useState(() => {
-    if (typeof window === 'undefined') return 'schedule'
+    if (typeof window === 'undefined') return 'table'
     try {
       const v = window.sessionStorage.getItem('standingsSubView')
-      if (v === 'schedule' || v === 'stats') return v
+      if (v === 'table' || v === 'schedule' || v === 'stats') return v
     } catch {
       /* ignore */
     }
-    return 'schedule'
+    return 'table'
   })
   /** Schedule sub-tab — `'all'` shows the full league chronological list;
    * a number is a `league_entry` id (compact per-team view). Resets on
@@ -1940,402 +1941,55 @@ function App() {
         <div className="dashboard-content">
           {dashboardView === 'standings' && (
             <>
-              <section
-                className="tile tile--standings tile--standings-c"
-                aria-labelledby="standings-heading"
-              >
-            <div className="tile-head-row tile-head-row--tight">
-              <h2 id="standings-heading" className="tile-title tile-title--sm">
-                Standings
-              </h2>
-            </div>
-            {leaderStandingsRow && (() => {
-              const leader = leaderStandingsRow
-              const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
-              const isSelected = selectedStandingsEntry === leader.league_entry
-              const leaderDisplayName = isMobileStandings
-                ? firstWord(leader.teamName)
-                : leader.teamName
-              const leaderForm = (leader.form ?? []).slice(-5)
-              return (
-                <button
-                  type="button"
-                  className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
-                  aria-pressed={isSelected}
-                  aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, top of the league`}
-                  onClick={() => toggleStandingsHighlight(leader.league_entry)}
+              <div className="standings-subnav-strip">
+                <div
+                  className="subnav standings-subnav-capsule"
+                  role="tablist"
+                  aria-label="Standings sub-views"
                 >
-                  <span className="standings-hero-card__eyebrow">
-                    <span aria-hidden>★</span>
-                    Top of the league
-                  </span>
-                  <div className="standings-hero-card__row">
-                    <span className="standings-hero-card__crest">
-                      <TeamAvatar
-                        entryId={leader.league_entry}
-                        name={leader.teamName}
-                        size="sm"
-                        logoMap={teamLogoMap}
-                        kitIndexByEntry={kitIndexByEntry}
-                      />
-                    </span>
-                    <div className="standings-hero-card__id">
-                      <div className="standings-hero-card__name">{leaderDisplayName}</div>
-                      {leaderMgr ? (
-                        <div className="standings-hero-card__mgr">{leaderMgr}</div>
-                      ) : null}
-                    </div>
-                    <div className="standings-hero-card__pts">
-                      <div className="standings-hero-card__pts-num tabular">{leader.total}</div>
-                      <div className="standings-hero-card__pts-lbl">PTS</div>
-                    </div>
-                  </div>
-                  <div className="standings-hero-card__sub">
-                    <FormCircles form={leaderForm} />
-                    <div className="standings-hero-card__inline-stats">
-                      <span className="standings-hero-card__inline-stat">
-                        <span className="standings-hero-card__inline-stat-lbl">Played</span>
-                        <span className="standings-hero-card__inline-stat-num tabular">{leader.pl}</span>
-                      </span>
-                      <span className="standings-hero-card__inline-sep" aria-hidden>·</span>
-                      <span className="standings-hero-card__inline-stat">
-                        <span className="standings-hero-card__inline-stat-lbl">For</span>
-                        <span className="standings-hero-card__inline-stat-num tabular">{leader.gf}</span>
-                      </span>
-                    </div>
-                  </div>
-                </button>
-              )
-            })()}
-            {isMobileStandings ? (
-              <div className="table-scroll table-scroll--standings-open">
-                <table
-                  className="standings-table standings-table--variant-c standings-table--variant-c-mobile"
-                  role="table"
-                  aria-label="Standings — ranks 2 through 8 (sorted by points descending)"
-                >
-                  <thead>
-                    <tr>
-                      <th scope="col" className="col-rank">#</th>
-                      <th scope="col" className="col-team">Team</th>
-                      <th scope="col" className="col-num col-for">For</th>
-                      <th scope="col" className="col-num col-pts">PTS</th>
-                      <th scope="col" className="col-form">Form</th>
-                      <th scope="col" className="col-next">Nxt</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {mobileNonLeaderStandingsRows.map((row) => {
-                      const isSelected = selectedStandingsEntry === row.league_entry
-                      const mgr = managerByEntry.get(row.league_entry) ?? ''
-                      const rowClass = [
-                        row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
-                        isSelected ? 'is-selected' : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')
-                      const displayName = firstWord(row.teamName)
-                      const form5 = (row.form ?? []).slice(-5)
-                      return (
-                        <Fragment key={row.league_entry}>
-                        <tr
-                          className={rowClass || undefined}
-                          onClick={() => toggleStandingsHighlight(row.league_entry)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              toggleStandingsHighlight(row.league_entry)
-                            }
-                          }}
-                          tabIndex={0}
-                          aria-pressed={isSelected}
-                        >
-                          <td className="col-rank">
-                            {row.rank === 8 ? (
-                              <span role="img" className="standings-rank-8" aria-label="8">
-                                🧩
-                              </span>
-                            ) : (
-                              row.rank
-                            )}
-                          </td>
-                          <td className="col-team">
-                            <span className="team-cell">
-                              <TeamAvatar
-                                entryId={row.league_entry}
-                                name={row.teamName}
-                                size="sm"
-                                logoMap={teamLogoMap}
-                                kitIndexByEntry={kitIndexByEntry}
-                              />
-                              <span className="standings-team-id">
-                                <span className="team-name team-name--sidebar">{displayName}</span>
-                                {mgr ? (
-                                  <span className="standings-team-mgr">{mgr}</span>
-                                ) : null}
-                              </span>
-                            </span>
-                          </td>
-                          <td className="col-num col-for tabular" title="Your points for, all GWs">
-                            {row.gf}
-                          </td>
-                          <td className="col-num col-pts tabular">
-                            <strong>{row.total}</strong>
-                          </td>
-                          <td className="col-form">
-                            <FormCircles form={form5} />
-                          </td>
-                          <td className="col-next">
-                            {row.next ? (
-                              <TeamAvatar
-                                entryId={row.next.id}
-                                name={row.next.name}
-                                size="sm"
-                                logoMap={teamLogoMap}
-                                kitIndexByEntry={kitIndexByEntry}
-                              />
-                            ) : (
-                              <span className="muted">—</span>
-                            )}
-                          </td>
-                        </tr>
-                        {row.rank === 4 ? (
-                          <tr
-                            className="standings-divider standings-divider--minnows"
-                            aria-hidden="true"
-                          >
-                            <td colSpan={6}>
-                              <span className="standings-divider__label">
-                                Minnows
-                              </span>
-                            </td>
-                          </tr>
-                        ) : null}
-                        </Fragment>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="table-scroll table-scroll--standings-open">
-                <table className="standings-table standings-table--sidebar standings-table--variant-c">
-                  <thead>
-                    <tr>
-                      <th className="col-rank">#</th>
-                      <th className="col-team">Team</th>
-                      <th className="col-num col-pl">PL</th>
-                      <th className="col-num col-wdl">W</th>
-                      <th className="col-num col-wdl">D</th>
-                      <th className="col-num col-wdl">L</th>
-                      <StandingsSortTh
-                        columnKey="gf"
-                        sortState={standingsSort}
-                        onSort={handleStandingsSort}
-                        label="For"
-                        title="Your team’s total FPL points across all H2H gameweeks"
-                        className="col-num col-for"
-                      />
-                      <StandingsSortTh
-                        columnKey="ga"
-                        sortState={standingsSort}
-                        onSort={handleStandingsSort}
-                        label="Faced"
-                        title="Points against, all H2H gameweeks"
-                        className="col-num col-faced"
-                      />
-                      <StandingsSortTh
-                        columnKey="gd"
-                        sortState={standingsSort}
-                        onSort={handleStandingsSort}
-                        label="GD"
-                        title="Goal difference (points for minus points against)"
-                        className="col-num col-gd"
-                      />
-                      <StandingsSortTh
-                        columnKey="total"
-                        sortState={standingsSort}
-                        onSort={handleStandingsSort}
-                        label="PTS"
-                        title="League points (3 / 1 / 0 per H2H)"
-                        className="col-num col-pts"
-                      />
-                      <th
-                        className="col-form"
-                        title={`Last ${FORM_LAST_N} H2H matches (W / D / L)`}
-                      >
-                        Form
-                      </th>
-                      <th className="col-next">Nxt</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {nonLeaderStandingsRows.map((row) => {
-                      const isSelected = selectedStandingsEntry === row.league_entry
-                      const mgr = managerByEntry.get(row.league_entry) ?? ''
-                      const rowClass = [
-                        row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
-                        isSelected ? 'is-selected' : '',
-                      ]
-                        .filter(Boolean)
-                        .join(' ')
-                      const form7 = (row.form ?? []).slice(-7)
-                      return (
-                        <Fragment key={row.league_entry}>
-                        <tr
-                          className={rowClass || undefined}
-                          onClick={() => toggleStandingsHighlight(row.league_entry)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' || e.key === ' ') {
-                              e.preventDefault()
-                              toggleStandingsHighlight(row.league_entry)
-                            }
-                          }}
-                          tabIndex={0}
-                          aria-pressed={isSelected}
-                        >
-                          <td className="col-rank">
-                            {row.rank === 8 ? (
-                              <span role="img" className="standings-rank-8" aria-label="8">
-                                🧩
-                              </span>
-                            ) : (
-                              row.rank
-                            )}
-                          </td>
-                          <td className="col-team">
-                            <span className="team-cell">
-                              <TeamAvatar
-                                entryId={row.league_entry}
-                                name={row.teamName}
-                                size="sm"
-                                logoMap={teamLogoMap}
-                                kitIndexByEntry={kitIndexByEntry}
-                              />
-                              <span className="standings-team-id">
-                                <span className="team-name team-name--sidebar">{row.teamName}</span>
-                                {mgr ? (
-                                  <span className="standings-team-mgr">{mgr}</span>
-                                ) : null}
-                              </span>
-                            </span>
-                          </td>
-                          <td className="col-num col-pl">{row.pl}</td>
-                          <td className="col-num col-wdl">{row.matches_won}</td>
-                          <td className="col-num col-wdl">{row.matches_drawn}</td>
-                          <td className="col-num col-wdl">{row.matches_lost}</td>
-                          <td className="col-num col-for tabular" title="Your points for, all GWs">
-                            {row.gf}
-                          </td>
-                          <td className="col-num col-faced tabular">
-                            {row.ga}
-                          </td>
-                          <td className="col-num col-gd tabular">{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
-                          <td className="col-num col-pts tabular">
-                            <strong>{row.total}</strong>
-                          </td>
-                          <td className="col-form">
-                            <FormCircles form={form7} />
-                          </td>
-                          <td className="col-next">
-                            {row.next ? (
-                              <TeamAvatar
-                                entryId={row.next.id}
-                                name={row.next.name}
-                                size="sm"
-                                logoMap={teamLogoMap}
-                                kitIndexByEntry={kitIndexByEntry}
-                              />
-                            ) : (
-                              <span className="muted">—</span>
-                            )}
-                          </td>
-                        </tr>
-                        {row.rank === 4 ? (
-                          <tr
-                            className="standings-divider standings-divider--minnows"
-                            aria-hidden="true"
-                          >
-                            <td colSpan={12}>
-                              <span className="standings-divider__label">
-                                Minnows
-                              </span>
-                            </td>
-                          </tr>
-                        ) : null}
-                        </Fragment>
-                      )
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-
-              {nextGwForFixtureTile != null && nextGwFixtures.length > 0 ? (
-                <section
-                  className="tile tile--compact tile--standings-next-gw"
-                  aria-labelledby="standings-next-gw-heading"
-                >
-                  <div className="tile-head-row tile-head-row--tight">
-                    <h2
-                      id="standings-next-gw-heading"
-                      className="tile-title tile-title--sm tile--standings-next-gw__title"
-                    >
-                      <span className="tile--standings-next-gw__eyebrow">
-                        Next gameweek
-                      </span>
-                      <span className="tile--standings-next-gw__sep" aria-hidden="true">
-                        ·
-                      </span>
-                      <span className="tile--standings-next-gw__gw tabular">
-                        GW {nextGwForFixtureTile}
-                      </span>
-                    </h2>
-                  </div>
-                  <ul className="gw-fixture-list gw-fixture-list--tight tile--standings-next-gw__list">
-                    {nextGwFixtures.map((fx, i) => renderGwFixture(fx, i))}
-                  </ul>
-                </section>
-              ) : null}
-
-              <div
-                className="standings-subnav"
-                role="tablist"
-                aria-label="Standings sub-views"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-standings-schedule"
-                  aria-selected={standingsSubView === 'schedule'}
-                  aria-controls="standings-subview-panel"
-                  className={
-                    'standings-subnav__btn' +
-                    (standingsSubView === 'schedule'
-                      ? ' standings-subnav__btn--active'
-                      : '')
-                  }
-                  onClick={() => setStandingsSubView('schedule')}
-                >
-                  Schedule
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-standings-stats"
-                  aria-selected={standingsSubView === 'stats'}
-                  aria-controls="standings-subview-panel"
-                  className={
-                    'standings-subnav__btn' +
-                    (standingsSubView === 'stats'
-                      ? ' standings-subnav__btn--active'
-                      : '')
-                  }
-                  onClick={() => setStandingsSubView('stats')}
-                >
-                  Stats
-                </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-standings-table"
+                    aria-selected={standingsSubView === 'table'}
+                    aria-controls="standings-subview-panel"
+                    className={
+                      'subnav__tab' +
+                      (standingsSubView === 'table' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setStandingsSubView('table')}
+                  >
+                    Table
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-standings-schedule"
+                    aria-selected={standingsSubView === 'schedule'}
+                    aria-controls="standings-subview-panel"
+                    className={
+                      'subnav__tab' +
+                      (standingsSubView === 'schedule' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setStandingsSubView('schedule')}
+                  >
+                    Schedule
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-standings-stats"
+                    aria-selected={standingsSubView === 'stats'}
+                    aria-controls="standings-subview-panel"
+                    className={
+                      'subnav__tab' +
+                      (standingsSubView === 'stats' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setStandingsSubView('stats')}
+                  >
+                    Stats
+                  </button>
+                </div>
               </div>
 
               <div
@@ -2348,7 +2002,368 @@ function App() {
                 }
                 className="standings-subview-panel"
               >
-                {standingsSubView === 'schedule' ? (
+                {standingsSubView === 'table' ? (
+                  <>
+                  <section
+                    className="tile tile--standings tile--standings-c"
+                    aria-labelledby="standings-heading"
+                  >
+                <div className="tile-head-row tile-head-row--tight">
+                  <h2 id="standings-heading" className="tile-title tile-title--sm">
+                    Standings
+                  </h2>
+                </div>
+                {leaderStandingsRow && (() => {
+                  const leader = leaderStandingsRow
+                  const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
+                  const isSelected = selectedStandingsEntry === leader.league_entry
+                  const leaderDisplayName = isMobileStandings
+                    ? firstWord(leader.teamName)
+                    : leader.teamName
+                  const leaderForm = (leader.form ?? []).slice(-5)
+                  return (
+                    <button
+                      type="button"
+                      className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
+                      aria-pressed={isSelected}
+                      aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, top of the league`}
+                      onClick={() => toggleStandingsHighlight(leader.league_entry)}
+                    >
+                      <span className="standings-hero-card__eyebrow">
+                        <span aria-hidden>★</span>
+                        Top of the league
+                      </span>
+                      <div className="standings-hero-card__row">
+                        <span className="standings-hero-card__crest">
+                          <TeamAvatar
+                            entryId={leader.league_entry}
+                            name={leader.teamName}
+                            size="sm"
+                            logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
+                          />
+                        </span>
+                        <div className="standings-hero-card__id">
+                          <div className="standings-hero-card__name">{leaderDisplayName}</div>
+                          {leaderMgr ? (
+                            <div className="standings-hero-card__mgr">{leaderMgr}</div>
+                          ) : null}
+                        </div>
+                        <div className="standings-hero-card__pts">
+                          <div className="standings-hero-card__pts-num tabular">{leader.total}</div>
+                          <div className="standings-hero-card__pts-lbl">PTS</div>
+                        </div>
+                      </div>
+                      <div className="standings-hero-card__sub">
+                        <FormCircles form={leaderForm} />
+                        <div className="standings-hero-card__inline-stats">
+                          <span className="standings-hero-card__inline-stat">
+                            <span className="standings-hero-card__inline-stat-lbl">Played</span>
+                            <span className="standings-hero-card__inline-stat-num tabular">{leader.pl}</span>
+                          </span>
+                          <span className="standings-hero-card__inline-sep" aria-hidden>·</span>
+                          <span className="standings-hero-card__inline-stat">
+                            <span className="standings-hero-card__inline-stat-lbl">For</span>
+                            <span className="standings-hero-card__inline-stat-num tabular">{leader.gf}</span>
+                          </span>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })()}
+                {isMobileStandings ? (
+                  <div className="table-scroll table-scroll--standings-open">
+                    <table
+                      className="standings-table standings-table--variant-c standings-table--variant-c-mobile"
+                      role="table"
+                      aria-label="Standings — ranks 2 through 8 (sorted by points descending)"
+                    >
+                      <thead>
+                        <tr>
+                          <th scope="col" className="col-rank">#</th>
+                          <th scope="col" className="col-team">Team</th>
+                          <th scope="col" className="col-num col-for">For</th>
+                          <th scope="col" className="col-num col-pts">PTS</th>
+                          <th scope="col" className="col-form">Form</th>
+                          <th scope="col" className="col-next">Nxt</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {mobileNonLeaderStandingsRows.map((row) => {
+                          const isSelected = selectedStandingsEntry === row.league_entry
+                          const mgr = managerByEntry.get(row.league_entry) ?? ''
+                          const rowClass = [
+                            row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
+                            isSelected ? 'is-selected' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')
+                          const displayName = firstWord(row.teamName)
+                          const form5 = (row.form ?? []).slice(-5)
+                          return (
+                            <Fragment key={row.league_entry}>
+                            <tr
+                              className={rowClass || undefined}
+                              onClick={() => toggleStandingsHighlight(row.league_entry)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  toggleStandingsHighlight(row.league_entry)
+                                }
+                              }}
+                              tabIndex={0}
+                              aria-pressed={isSelected}
+                            >
+                              <td className="col-rank">
+                                {row.rank === 8 ? (
+                                  <span role="img" className="standings-rank-8" aria-label="8">
+                                    🧩
+                                  </span>
+                                ) : (
+                                  row.rank
+                                )}
+                              </td>
+                              <td className="col-team">
+                                <span className="team-cell">
+                                  <TeamAvatar
+                                    entryId={row.league_entry}
+                                    name={row.teamName}
+                                    size="sm"
+                                    logoMap={teamLogoMap}
+                                    kitIndexByEntry={kitIndexByEntry}
+                                  />
+                                  <span className="standings-team-id">
+                                    <span className="team-name team-name--sidebar">{displayName}</span>
+                                    {mgr ? (
+                                      <span className="standings-team-mgr">{mgr}</span>
+                                    ) : null}
+                                  </span>
+                                </span>
+                              </td>
+                              <td className="col-num col-for tabular" title="Your points for, all GWs">
+                                {row.gf}
+                              </td>
+                              <td className="col-num col-pts tabular">
+                                <strong>{row.total}</strong>
+                              </td>
+                              <td className="col-form">
+                                <FormCircles form={form5} />
+                              </td>
+                              <td className="col-next">
+                                {row.next ? (
+                                  <TeamAvatar
+                                    entryId={row.next.id}
+                                    name={row.next.name}
+                                    size="sm"
+                                    logoMap={teamLogoMap}
+                                    kitIndexByEntry={kitIndexByEntry}
+                                  />
+                                ) : (
+                                  <span className="muted">—</span>
+                                )}
+                              </td>
+                            </tr>
+                            {row.rank === 4 ? (
+                              <tr
+                                className="standings-divider standings-divider--minnows"
+                                aria-hidden="true"
+                              >
+                                <td colSpan={6}>
+                                  <span className="standings-divider__label">
+                                    Minnows
+                                  </span>
+                                </td>
+                              </tr>
+                            ) : null}
+                            </Fragment>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                ) : (
+                  <div className="table-scroll table-scroll--standings-open">
+                    <table className="standings-table standings-table--sidebar standings-table--variant-c">
+                      <thead>
+                        <tr>
+                          <th className="col-rank">#</th>
+                          <th className="col-team">Team</th>
+                          <th className="col-num col-pl">PL</th>
+                          <th className="col-num col-wdl">W</th>
+                          <th className="col-num col-wdl">D</th>
+                          <th className="col-num col-wdl">L</th>
+                          <StandingsSortTh
+                            columnKey="gf"
+                            sortState={standingsSort}
+                            onSort={handleStandingsSort}
+                            label="For"
+                            title="Your team’s total FPL points across all H2H gameweeks"
+                            className="col-num col-for"
+                          />
+                          <StandingsSortTh
+                            columnKey="ga"
+                            sortState={standingsSort}
+                            onSort={handleStandingsSort}
+                            label="Faced"
+                            title="Points against, all H2H gameweeks"
+                            className="col-num col-faced"
+                          />
+                          <StandingsSortTh
+                            columnKey="gd"
+                            sortState={standingsSort}
+                            onSort={handleStandingsSort}
+                            label="GD"
+                            title="Goal difference (points for minus points against)"
+                            className="col-num col-gd"
+                          />
+                          <StandingsSortTh
+                            columnKey="total"
+                            sortState={standingsSort}
+                            onSort={handleStandingsSort}
+                            label="PTS"
+                            title="League points (3 / 1 / 0 per H2H)"
+                            className="col-num col-pts"
+                          />
+                          <th
+                            className="col-form"
+                            title={`Last ${FORM_LAST_N} H2H matches (W / D / L)`}
+                          >
+                            Form
+                          </th>
+                          <th className="col-next">Nxt</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {nonLeaderStandingsRows.map((row) => {
+                          const isSelected = selectedStandingsEntry === row.league_entry
+                          const mgr = managerByEntry.get(row.league_entry) ?? ''
+                          const rowClass = [
+                            row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
+                            isSelected ? 'is-selected' : '',
+                          ]
+                            .filter(Boolean)
+                            .join(' ')
+                          const form7 = (row.form ?? []).slice(-7)
+                          return (
+                            <Fragment key={row.league_entry}>
+                            <tr
+                              className={rowClass || undefined}
+                              onClick={() => toggleStandingsHighlight(row.league_entry)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter' || e.key === ' ') {
+                                  e.preventDefault()
+                                  toggleStandingsHighlight(row.league_entry)
+                                }
+                              }}
+                              tabIndex={0}
+                              aria-pressed={isSelected}
+                            >
+                              <td className="col-rank">
+                                {row.rank === 8 ? (
+                                  <span role="img" className="standings-rank-8" aria-label="8">
+                                    🧩
+                                  </span>
+                                ) : (
+                                  row.rank
+                                )}
+                              </td>
+                              <td className="col-team">
+                                <span className="team-cell">
+                                  <TeamAvatar
+                                    entryId={row.league_entry}
+                                    name={row.teamName}
+                                    size="sm"
+                                    logoMap={teamLogoMap}
+                                    kitIndexByEntry={kitIndexByEntry}
+                                  />
+                                  <span className="standings-team-id">
+                                    <span className="team-name team-name--sidebar">{row.teamName}</span>
+                                    {mgr ? (
+                                      <span className="standings-team-mgr">{mgr}</span>
+                                    ) : null}
+                                  </span>
+                                </span>
+                              </td>
+                              <td className="col-num col-pl">{row.pl}</td>
+                              <td className="col-num col-wdl">{row.matches_won}</td>
+                              <td className="col-num col-wdl">{row.matches_drawn}</td>
+                              <td className="col-num col-wdl">{row.matches_lost}</td>
+                              <td className="col-num col-for tabular" title="Your points for, all GWs">
+                                {row.gf}
+                              </td>
+                              <td className="col-num col-faced tabular">
+                                {row.ga}
+                              </td>
+                              <td className="col-num col-gd tabular">{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                              <td className="col-num col-pts tabular">
+                                <strong>{row.total}</strong>
+                              </td>
+                              <td className="col-form">
+                                <FormCircles form={form7} />
+                              </td>
+                              <td className="col-next">
+                                {row.next ? (
+                                  <TeamAvatar
+                                    entryId={row.next.id}
+                                    name={row.next.name}
+                                    size="sm"
+                                    logoMap={teamLogoMap}
+                                    kitIndexByEntry={kitIndexByEntry}
+                                  />
+                                ) : (
+                                  <span className="muted">—</span>
+                                )}
+                              </td>
+                            </tr>
+                            {row.rank === 4 ? (
+                              <tr
+                                className="standings-divider standings-divider--minnows"
+                                aria-hidden="true"
+                              >
+                                <td colSpan={12}>
+                                  <span className="standings-divider__label">
+                                    Minnows
+                                  </span>
+                                </td>
+                              </tr>
+                            ) : null}
+                            </Fragment>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </section>
+
+                  {nextGwForFixtureTile != null && nextGwFixtures.length > 0 ? (
+                    <section
+                      className="tile tile--compact tile--standings-next-gw"
+                      aria-labelledby="standings-next-gw-heading"
+                    >
+                      <div className="tile-head-row tile-head-row--tight">
+                        <h2
+                          id="standings-next-gw-heading"
+                          className="tile-title tile-title--sm tile--standings-next-gw__title"
+                        >
+                          <span className="tile--standings-next-gw__eyebrow">
+                            Next gameweek
+                          </span>
+                          <span className="tile--standings-next-gw__sep" aria-hidden="true">
+                            ·
+                          </span>
+                          <span className="tile--standings-next-gw__gw tabular">
+                            GW {nextGwForFixtureTile}
+                          </span>
+                        </h2>
+                      </div>
+                      <ul className="gw-fixture-list gw-fixture-list--tight tile--standings-next-gw__list">
+                        {nextGwFixtures.map((fx, i) => renderGwFixture(fx, i))}
+                      </ul>
+                    </section>
+                  ) : null}
+                  </>
+                ) : standingsSubView === 'schedule' ? (
                   <StandingsScheduleSubview
                     matches={matches}
                     teamsForFormSelect={teamsForFormSelect}

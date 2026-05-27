@@ -4,6 +4,13 @@ import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
 import { TeamH2HRivals } from './TeamH2HRivals.jsx'
 import { WIN_MARGIN_BUCKET_KEYS } from './useLeagueData'
 
+function firstWord(name) {
+  if (typeof name !== 'string') return ''
+  const t = name.trim()
+  if (!t) return ''
+  return t.split(/\s+/)[0]
+}
+
 /** Map bucket key → human-readable description for header/cell tooltips. */
 function bucketTitle(key, kind) {
   const verb = kind === 'losses' ? 'Lost' : 'Won'
@@ -156,7 +163,17 @@ export function StandingsStatsSubview({
                           logoMap={teamLogoMap}
                           kitIndexByEntry={kitIndexByEntry}
                         />
-                        <span className="win-margin-table__name">{row.teamName}</span>
+                        <span
+                          className="win-margin-table__name"
+                          title={row.teamName}
+                        >
+                          <span className="win-margin-table__name-full">
+                            {row.teamName}
+                          </span>
+                          <span className="win-margin-table__name-short">
+                            {firstWord(row.teamName)}
+                          </span>
+                        </span>
                       </span>
                     </th>
                     {WIN_MARGIN_BUCKET_KEYS.map((k) => {
@@ -275,7 +292,17 @@ export function StandingsStatsSubview({
                             logoMap={teamLogoMap}
                             kitIndexByEntry={kitIndexByEntry}
                           />
-                          <span className="win-margin-table__name">{r.teamName}</span>
+                          <span
+                            className="win-margin-table__name"
+                            title={r.teamName}
+                          >
+                            <span className="win-margin-table__name-full">
+                              {r.teamName}
+                            </span>
+                            <span className="win-margin-table__name-short">
+                              {firstWord(r.teamName)}
+                            </span>
+                          </span>
                         </span>
                       </th>
                       <td className="tabular win-margin-table__n">

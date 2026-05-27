@@ -421,8 +421,16 @@ function TeamScheduleCompact({
                     logoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                   />
-                  <span className="standings-schedule-team__opp-name">
-                    {r.opponentName}
+                  <span
+                    className="standings-schedule-team__opp-name"
+                    title={r.opponentName}
+                  >
+                    <span className="standings-schedule-team__opp-name-full">
+                      {r.opponentName}
+                    </span>
+                    <span className="standings-schedule-team__opp-name-short">
+                      {firstWord(r.opponentName)}
+                    </span>
                   </span>
                 </span>
                 <span className="standings-schedule-team__score tabular">
