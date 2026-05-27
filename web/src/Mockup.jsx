@@ -8384,6 +8384,664 @@ function StandingsNavShowcase() {
   )
 }
 
+/* ================================================================== */
+/* HALL OF FAME — Trophy Room + History mockups                         */
+/* ------------------------------------------------------------------ */
+/* All teams, manager names, finishing positions, and historic         */
+/* standings here are MOCK DATA. Eyebrow text in the rendered section  */
+/* discloses this so the user doesn't mistake it for production data.  */
+/* Uses banner PNGs in /hall-champions/ where available; cycles four   */
+/* unique team banners across the 8 mocked seasons (some teams "won"   */
+/* multiple titles).                                                   */
+/* ================================================================== */
+const HOF_TEAMS = [
+  { id: 'CO',  name: 'Crouch End Oashisu',  mgr: 'David Higman',   color: '#7e57ff' },
+  { id: 'SZM', name: 'Soul Ze Moles',       mgr: 'Eddy Webster',   color: '#e94343' },
+  { id: 'DB',  name: 'Dalston Bellsprouts', mgr: 'Tom Roberts',    color: '#28b269' },
+  { id: 'TW',  name: 'Toronto Wiggum',      mgr: 'Andy Ward',      color: '#f79233' },
+  { id: 'ER',  name: 'Essex Ratigans',      mgr: 'Mike Sutton',    color: '#3a8dde' },
+  { id: 'DN',  name: 'Dalston Benoit',      mgr: 'Nick Goodacre',  color: '#9c6b3c' },
+  { id: 'SCC', name: 'Soul Crouch Carrol',  mgr: 'Luke Butcher',   color: '#cf4d8e' },
+  { id: 'PFO', name: 'Pinks Five-O',        mgr: 'Jon Ward',       color: '#c2497a' },
+]
+
+const HOF_TEAM_BY_ID = HOF_TEAMS.reduce((m, t) => { m[t.id] = t; return m }, {})
+
+const HOF_BANNER_FOR_TEAM = {
+  CO:  '/hall-champions/crouch-end-oashisu.png',
+  SZM: '/hall-champions/soul-ze-moles.png',
+  DB:  '/hall-champions/dalston-bellsprouts.png',
+  TW:  '/hall-champions/toronto-wiggum.png',
+}
+
+const HOF_SEASONS = ['18/19', '19/20', '20/21', '21/22', '22/23', '23/24', '24/25', '25/26']
+
+/* Per-season finishing positions: HOF_POSITIONS[teamId][seasonIdx]
+ * = finishing rank (1 = champion, 8 = wooden spoon). Values verified
+ * unique 1–8 per season column. Crouch End wins 4 / Soul Ze Moles 2 /
+ * Dalston Bellsprouts 1 / Toronto Wiggum 1, per spec. */
+const HOF_POSITIONS = {
+  CO:  [3, 2, 1, 2, 1, 2, 1, 1],
+  SZM: [1, 4, 5, 3, 2, 1, 4, 2],
+  DB:  [4, 1, 3, 5, 4, 3, 2, 3],
+  TW:  [2, 3, 4, 1, 3, 5, 6, 4],
+  ER:  [5, 5, 2, 6, 5, 6, 3, 5],
+  DN:  [7, 7, 6, 4, 6, 4, 7, 6],
+  SCC: [6, 8, 8, 7, 8, 8, 8, 8],
+  PFO: [8, 6, 7, 8, 7, 7, 5, 7],
+}
+
+/* Build a banner per season (the team that won that season). */
+const HOF_BANNERS = HOF_SEASONS.map((season, idx) => {
+  const winnerId = Object.keys(HOF_POSITIONS).find((tid) => HOF_POSITIONS[tid][idx] === 1)
+  const team = HOF_TEAM_BY_ID[winnerId]
+  return {
+    season,
+    teamId: winnerId,
+    team: team.name,
+    mgr: team.mgr,
+    image: HOF_BANNER_FOR_TEAM[winnerId] ?? null,
+    color: team.color,
+    isLive: idx === HOF_SEASONS.length - 1,
+  }
+})
+
+/* Per-team title and runner-up totals derived from HOF_POSITIONS. */
+function hofCountFinish(rank) {
+  const out = {}
+  for (const tid of Object.keys(HOF_POSITIONS)) {
+    out[tid] = HOF_POSITIONS[tid].filter((p) => p === rank).length
+  }
+  return out
+}
+const HOF_TITLES_BY_TEAM = hofCountFinish(1)
+const HOF_RUNNERUPS_BY_TEAM = hofCountFinish(2)
+
+/* Mock final standings detail per season — used by Historic Standings
+ * dropdown. Only 25/26 carries full row data; prior seasons synthesise
+ * realistic-ish numbers from the position. */
+function buildHistoricStandings(seasonIdx) {
+  const ranked = HOF_TEAMS
+    .map((t) => ({ team: t, rank: HOF_POSITIONS[t.id][seasonIdx] }))
+    .sort((a, b) => a.rank - b.rank)
+  return ranked.map(({ team, rank }) => {
+    /* Pyramid-ish synthesis: top teams have more wins / better GD. */
+    const w = 27 - (rank - 1) * 2 - (seasonIdx % 3)
+    const d = 7 + ((rank + seasonIdx) % 3)
+    const l = 38 - w - d
+    const gf = 2400 - (rank - 1) * 50 - (seasonIdx % 4) * 8
+    const ga = 2050 + (rank - 1) * 35 + (seasonIdx % 4) * 6
+    const gd = gf - ga
+    const pts = w * 3 + d
+    return {
+      rank,
+      team: team.name,
+      mgr: team.mgr,
+      teamId: team.id,
+      pl: 38, w, d, l,
+      gf, ga, gd, pts,
+    }
+  })
+}
+
+const HOF_HISTORIC_STANDINGS = HOF_SEASONS.reduce((m, season, idx) => {
+  m[season] = buildHistoricStandings(idx)
+  return m
+}, {})
+
+/* ------------------------------------------------------------------ */
+/* HOF · shared atoms                                                   */
+/* ------------------------------------------------------------------ */
+function HofBannerImage({ banner, fit = 'cover' }) {
+  if (banner.image) {
+    return (
+      <img
+        className="hof-banner__img"
+        src={banner.image}
+        alt={`${banner.team} ${banner.season} champion banner`}
+        style={{ objectFit: fit }}
+      />
+    )
+  }
+  /* Fallback for any season without a real PNG — themed gradient with
+   * team initials so the layout still reads. */
+  const initials = banner.team
+    .split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join('').toUpperCase()
+  return (
+    <div
+      className="hof-banner__fallback"
+      style={{
+        background: `linear-gradient(135deg, ${banner.color} 0%, color-mix(in srgb, ${banner.color} 60%, #000) 100%)`,
+      }}
+    >
+      <span>{initials}</span>
+    </div>
+  )
+}
+
+function HofSectionLabel({ children }) {
+  return <div className="hof-mock-eyebrow">{children}</div>
+}
+
+/* ------------------------------------------------------------------ */
+/* TROPHY ROOM — Variants T-A · T-B · T-C · T-D                         */
+/* ------------------------------------------------------------------ */
+
+/* T-A: 3D / pedestal feel — gold metallic frame, slight tilt, reflection.
+ * 8-banner 2×4 grid in the portrait frame. No outside text. */
+function TrophyRoomVariantA() {
+  return (
+    <div className="hof-troom hof-troom--pedestal">
+      <div className="hof-troom__pedestal-grid">
+        {HOF_BANNERS.map((b, i) => (
+          <div
+            className={'hof-troom__pedestal-cell hof-troom__pedestal-cell--' + (i % 2 === 0 ? 'left' : 'right')}
+            key={b.season}
+          >
+            <div className="hof-troom__pedestal-frame">
+              <HofBannerImage banner={b} fit="contain" />
+            </div>
+            <span className="hof-troom__pedestal-reflection" aria-hidden />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* T-B: Flat modern banner gallery — thin brand-tinted border, gold/silver/
+ * bronze placement chip in a corner (champion gold by default). */
+function TrophyRoomVariantB() {
+  return (
+    <div className="hof-troom hof-troom--gallery">
+      <div className="hof-troom__gallery-grid">
+        {HOF_BANNERS.map((b) => (
+          <div className="hof-troom__gallery-card" key={b.season}>
+            <span className="hof-troom__gallery-chip" aria-hidden>1st</span>
+            <HofBannerImage banner={b} fit="cover" />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* T-C: Trophy case — wooden / dark backdrop, banners on shelves with
+ * ambient glow. Heritage / museum feel. */
+function TrophyRoomVariantC() {
+  /* Group into 4 shelves of 2 banners each. */
+  const shelves = []
+  for (let i = 0; i < HOF_BANNERS.length; i += 2) {
+    shelves.push(HOF_BANNERS.slice(i, i + 2))
+  }
+  return (
+    <div className="hof-troom hof-troom--case">
+      <div className="hof-troom__case-back">
+        {shelves.map((row, idx) => (
+          <div className="hof-troom__case-shelf" key={idx}>
+            <div className="hof-troom__case-row">
+              {row.map((b) => (
+                <div className="hof-troom__case-trophy" key={b.season}>
+                  <span className="hof-troom__case-glow" aria-hidden />
+                  <HofBannerImage banner={b} fit="contain" />
+                </div>
+              ))}
+            </div>
+            <div className="hof-troom__case-plank" aria-hidden />
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* T-D: Mobile fullscreen swipeable carousel — one banner fills the
+ * viewport with neighbors peeking on each side; dot indicators at the
+ * bottom. Three frames rendered side-by-side to show different active
+ * positions, simulating a swipe in progress.
+ *
+ * `activeIdx` controls which banner is centered. Static at render time;
+ * a runtime port would track touch deltas + animate. */
+function TrophyRoomVariantDFrame({ activeIdx }) {
+  const total = HOF_BANNERS.length
+  const prev = HOF_BANNERS[(activeIdx - 1 + total) % total]
+  const cur = HOF_BANNERS[activeIdx]
+  const next = HOF_BANNERS[(activeIdx + 1) % total]
+  return (
+    <div className="hof-troom hof-troom--swipe">
+      <div className="hof-troom__swipe-stage">
+        <div className="hof-troom__swipe-peek hof-troom__swipe-peek--prev" aria-hidden>
+          <HofBannerImage banner={prev} fit="cover" />
+        </div>
+        <div className="hof-troom__swipe-active">
+          <HofBannerImage banner={cur} fit="cover" />
+        </div>
+        <div className="hof-troom__swipe-peek hof-troom__swipe-peek--next" aria-hidden>
+          <HofBannerImage banner={next} fit="cover" />
+        </div>
+      </div>
+      <div className="hof-troom__swipe-dots" role="tablist" aria-label="Banner">
+        {HOF_BANNERS.map((b, i) => (
+          <span
+            key={b.season}
+            className={'hof-troom__swipe-dot' + (i === activeIdx ? ' is-active' : '')}
+            role="tab"
+            aria-selected={i === activeIdx}
+          />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* HISTORY — shared building blocks                                     */
+/* ------------------------------------------------------------------ */
+
+/* Team History table — finishing position per team per season + title
+ * / runner-up tally on the far right. Used by H-A/H-B/H-C and visible
+ * on its own. */
+function TeamHistoryTable({ compact = false }) {
+  const rowsByTotalScore = HOF_TEAMS
+    .map((t) => ({
+      team: t,
+      positions: HOF_POSITIONS[t.id],
+      titles: HOF_TITLES_BY_TEAM[t.id],
+      ru: HOF_RUNNERUPS_BY_TEAM[t.id],
+      score: HOF_POSITIONS[t.id].reduce((s, p) => s + (9 - p), 0),
+    }))
+    .sort((a, b) => b.score - a.score)
+  return (
+    <div className={'hof-table hof-table--team-history' + (compact ? ' hof-table--compact' : '')}>
+      <table>
+        <thead>
+          <tr>
+            <th className="hof-th-team">Team</th>
+            {HOF_SEASONS.map((s) => <th key={s} className="hof-th-season">{s}</th>)}
+            <th className="hof-th-meta">Titles</th>
+            <th className="hof-th-meta">Runner-up</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rowsByTotalScore.map(({ team, positions, titles, ru }) => (
+            <tr key={team.id}>
+              <td className="hof-td-team">
+                <span className="hof-team-cell">
+                  <span className="hof-team-cell__crest" style={{ background: team.color }}>
+                    {team.id}
+                  </span>
+                  <span className="hof-team-cell__text">
+                    <span className="hof-team-cell__name">{team.name}</span>
+                    {!compact && <span className="hof-team-cell__mgr">{team.mgr}</span>}
+                  </span>
+                </span>
+              </td>
+              {positions.map((p, i) => (
+                <td key={i} className={'hof-td-pos hof-td-pos--' + p}>{p}</td>
+              ))}
+              <td className="hof-td-meta">{titles}</td>
+              <td className="hof-td-meta">{ru}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* Historic Standings table — full final standings for the selected
+ * season. Includes 2025/26 in the dropdown per spec. Dropdown is
+ * stateful so the user can play with it inside the mockup. */
+function HistoricStandingsTable({ initialSeason = '25/26' }) {
+  const [season, setSeason] = useState(initialSeason)
+  const rows = HOF_HISTORIC_STANDINGS[season] ?? []
+  return (
+    <div className="hof-historic">
+      <div className="hof-historic__head">
+        <label className="hof-historic__label" htmlFor="hof-season-select">Season</label>
+        <select
+          id="hof-season-select"
+          className="hof-historic__select"
+          value={season}
+          onChange={(e) => setSeason(e.target.value)}
+        >
+          {HOF_SEASONS.slice().reverse().map((s) => (
+            <option key={s} value={s}>{`20${s.replace('/', '/')}`}{s === '25/26' ? ' · live' : ''}</option>
+          ))}
+        </select>
+      </div>
+      <div className="hof-table hof-table--standings">
+        <table>
+          <thead>
+            <tr>
+              <th className="hof-th-rank">#</th>
+              <th className="hof-th-team">Team</th>
+              <th className="hof-th-mgr">Manager</th>
+              <th>PL</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>For</th>
+              <th>Faced</th>
+              <th>GD</th>
+              <th className="hof-th-pts">PTS</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => {
+              const team = HOF_TEAM_BY_ID[r.teamId]
+              return (
+                <tr key={r.teamId}>
+                  <td className="hof-td-rank">{r.rank}</td>
+                  <td>
+                    <span className="hof-team-cell">
+                      <span className="hof-team-cell__crest" style={{ background: team.color }}>
+                        {team.id}
+                      </span>
+                      <span className="hof-team-cell__text">
+                        <span className="hof-team-cell__name">{r.team}</span>
+                      </span>
+                    </span>
+                  </td>
+                  <td className="hof-td-mgr">{r.mgr}</td>
+                  <td>{r.pl}</td>
+                  <td>{r.w}</td>
+                  <td>{r.d}</td>
+                  <td>{r.l}</td>
+                  <td>{r.gf}</td>
+                  <td>{r.ga}</td>
+                  <td className={r.gd >= 0 ? 'hof-td-gd-pos' : 'hof-td-gd-neg'}>
+                    {r.gd > 0 ? `+${r.gd}` : r.gd}
+                  </td>
+                  <td className="hof-td-pts">{r.pts}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* Champions of Champions matrix — rows = teams, columns = seasons,
+ * cells = finishing position; right column = total. Two style modes:
+ *   `style="heatmap"` — gold/silver/bronze + greyscale tinting per pos
+ *   `style="chip"`    — circular chip per finishing tier
+ * Plus `algorithm` toggle: when true, cells show `9 - position` (the
+ * algorithmic 8-7-6-5-4-3-2-1 score) instead of the raw position;
+ * total column sums those scores either way. */
+function CocMatrixTable({ style: mode = 'heatmap', algorithm = false, sticky = true }) {
+  const rows = HOF_TEAMS
+    .map((t) => {
+      const positions = HOF_POSITIONS[t.id]
+      const scores = positions.map((p) => 9 - p)
+      const total = scores.reduce((s, v) => s + v, 0)
+      const titles = positions.filter((p) => p === 1).length
+      return { team: t, positions, scores, total, titles }
+    })
+    .sort((a, b) => b.total - a.total)
+  return (
+    <div className={'hof-coc hof-coc--' + mode + (algorithm ? ' hof-coc--algo' : '')}>
+      <table className={sticky ? 'hof-coc__table is-sticky' : 'hof-coc__table'}>
+        <thead>
+          <tr>
+            <th className="hof-coc__th-team">Team</th>
+            {HOF_SEASONS.map((s) => <th key={s} className="hof-coc__th-season">{s}</th>)}
+            <th className="hof-coc__th-total">{algorithm ? 'Total pts' : 'Total titles'}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(({ team, positions, scores, total, titles }) => (
+            <tr key={team.id}>
+              <td className="hof-coc__td-team">
+                <span className="hof-team-cell">
+                  <span className="hof-team-cell__crest" style={{ background: team.color }}>
+                    {team.id}
+                  </span>
+                  <span className="hof-team-cell__text">
+                    <span className="hof-team-cell__name">{team.name}</span>
+                    <span className="hof-team-cell__mgr">{team.mgr}</span>
+                  </span>
+                </span>
+              </td>
+              {positions.map((p, i) => {
+                const display = algorithm ? scores[i] : p
+                if (mode === 'chip') {
+                  return (
+                    <td key={i} className="hof-coc__td-cell">
+                      <span className={'hof-coc__chip hof-coc__chip--pos-' + p}>{display}</span>
+                    </td>
+                  )
+                }
+                return (
+                  <td key={i} className={'hof-coc__td-cell hof-coc__td-cell--pos-' + p}>
+                    {display}
+                  </td>
+                )
+              })}
+              <td className="hof-coc__td-total">
+                <strong>{algorithm ? total : titles}</strong>
+                {!algorithm && <span className="hof-coc__td-total-sub">{titles === 1 ? 'title' : 'titles'}</span>}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* History · Variant H-A — sub-sub-nav (3 sub-tabs within History). */
+function HistoryVariantA() {
+  const [tab, setTab] = useState('team')
+  return (
+    <div className="hof-history-variant">
+      <nav className="hof-history-variant__subnav" aria-label="History sections">
+        {[
+          { id: 'team',  label: 'Team History' },
+          { id: 'std',   label: 'Historic Standings' },
+          { id: 'coc',   label: 'Champions of Champions' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            className={'hof-history-variant__subnav-pill' + (tab === t.id ? ' is-active' : '')}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+      {tab === 'team' && <TeamHistoryTable />}
+      {tab === 'std' && <HistoricStandingsTable />}
+      {tab === 'coc' && <CocMatrixTable style="heatmap" />}
+    </div>
+  )
+}
+
+/* History · Variant H-B — three stacked sections in one scroll. */
+function HistoryVariantB() {
+  return (
+    <div className="hof-history-variant hof-history-variant--stacked">
+      <div className="hof-history-variant__block">
+        <HofSectionLabel>Team History</HofSectionLabel>
+        <TeamHistoryTable />
+      </div>
+      <div className="hof-history-variant__block">
+        <HofSectionLabel>Historic Standings</HofSectionLabel>
+        <HistoricStandingsTable />
+      </div>
+      <div className="hof-history-variant__block">
+        <HofSectionLabel>Champions of Champions</HofSectionLabel>
+        <CocMatrixTable style="heatmap" />
+      </div>
+    </div>
+  )
+}
+
+/* History · Variant H-C — hero "season scrubber" animation at the top
+ * + stacked tables below. Scrubber rendered as static year-pills with
+ * one highlighted; the hero card celebrates that season's champion.
+ *
+ * NOTE: animation is DESCRIBED (not implemented). At runtime the hero
+ * card would morph between seasons — title sweep, GD counter ticking,
+ * banner crossfade. */
+function HistoryVariantC() {
+  const [pickIdx, setPickIdx] = useState(HOF_SEASONS.length - 1)
+  const banner = HOF_BANNERS[pickIdx]
+  const standings = HOF_HISTORIC_STANDINGS[banner.season]
+  const champion = standings[0]
+  const factPts = champion.pts
+  const factGd = champion.gd
+  const factWins = champion.w
+  return (
+    <div className="hof-history-variant hof-history-variant--hero">
+      <div className="hof-hero">
+        <div className="hof-hero__bg" aria-hidden>
+          <HofBannerImage banner={banner} fit="cover" />
+        </div>
+        <div className="hof-hero__overlay" aria-hidden />
+        <div className="hof-hero__content">
+          <div className="hof-hero__eyebrow">Season {banner.season}{banner.isLive ? ' · live' : ' · champion'}</div>
+          <div className="hof-hero__team">{banner.team}</div>
+          <div className="hof-hero__mgr">{banner.mgr}</div>
+          <div className="hof-hero__stats">
+            <div className="hof-hero__stat">
+              <span className="hof-hero__stat-num">{factPts}</span>
+              <span className="hof-hero__stat-label">PTS</span>
+            </div>
+            <div className="hof-hero__stat">
+              <span className="hof-hero__stat-num">{factGd > 0 ? `+${factGd}` : factGd}</span>
+              <span className="hof-hero__stat-label">GD</span>
+            </div>
+            <div className="hof-hero__stat">
+              <span className="hof-hero__stat-num">{factWins}</span>
+              <span className="hof-hero__stat-label">Wins</span>
+            </div>
+          </div>
+          <div className="hof-hero__caption">
+            {banner.isLive
+              ? 'Took the title race in GW37 — clinched in front of the league.'
+              : 'Wire-to-wire run; clinched on the final matchday.'}
+          </div>
+        </div>
+      </div>
+      <div className="hof-scrubber" role="tablist" aria-label="Season scrubber">
+        {HOF_SEASONS.map((s, i) => (
+          <button
+            key={s}
+            type="button"
+            role="tab"
+            aria-selected={i === pickIdx}
+            className={'hof-scrubber__pill' + (i === pickIdx ? ' is-active' : '')}
+            onClick={() => setPickIdx(i)}
+          >
+            <span className="hof-scrubber__pill-year">{s}</span>
+          </button>
+        ))}
+      </div>
+      <div className="hof-history-variant__block">
+        <HofSectionLabel>Team History</HofSectionLabel>
+        <TeamHistoryTable />
+      </div>
+      <div className="hof-history-variant__block">
+        <HofSectionLabel>Historic Standings · live season included</HofSectionLabel>
+        <HistoricStandingsTable />
+      </div>
+    </div>
+  )
+}
+
+/* Live tally view — total titles + runner-ups, no matrix, for A/B
+ * compare against the H-D matrix variants. */
+function CocLiveTally() {
+  const rows = HOF_TEAMS
+    .map((t) => ({
+      team: t,
+      titles: HOF_TITLES_BY_TEAM[t.id],
+      ru: HOF_RUNNERUPS_BY_TEAM[t.id],
+    }))
+    .sort((a, b) => (b.titles - a.titles) || (b.ru - a.ru))
+  return (
+    <div className="hof-coc hof-coc--tally">
+      <table className="hof-coc__table">
+        <thead>
+          <tr>
+            <th className="hof-coc__th-team">Team</th>
+            <th className="hof-coc__th-tally">Titles</th>
+            <th className="hof-coc__th-tally">Runner-up</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map(({ team, titles, ru }) => (
+            <tr key={team.id}>
+              <td className="hof-coc__td-team">
+                <span className="hof-team-cell">
+                  <span className="hof-team-cell__crest" style={{ background: team.color }}>
+                    {team.id}
+                  </span>
+                  <span className="hof-team-cell__text">
+                    <span className="hof-team-cell__name">{team.name}</span>
+                    <span className="hof-team-cell__mgr">{team.mgr}</span>
+                  </span>
+                </span>
+              </td>
+              <td className="hof-coc__td-tally">
+                <span className="hof-coc__trophy-row" aria-hidden>
+                  {Array.from({ length: titles }).map((_, i) => (
+                    <span key={i} className="hof-coc__trophy" />
+                  ))}
+                </span>
+                <strong>{titles}</strong>
+              </td>
+              <td className="hof-coc__td-tally">
+                <strong>{ru}</strong>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* Champions of Champions — Live vs Algorithm toggle with the matrix as
+ * the focal table. Re-uses CocMatrixTable. */
+function CocLiveAlgoToggle({ style: mode = 'heatmap' }) {
+  const [algo, setAlgo] = useState(false)
+  return (
+    <div className="hof-coc-toggle">
+      <div className="hof-coc-toggle__row">
+        <span className="hof-coc-toggle__label">View</span>
+        <div className="hof-coc-toggle__seg" role="tablist" aria-label="Champions of Champions view">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={!algo}
+            className={'hof-coc-toggle__seg-btn' + (!algo ? ' is-active' : '')}
+            onClick={() => setAlgo(false)}
+          >
+            Live
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={algo}
+            className={'hof-coc-toggle__seg-btn' + (algo ? ' is-active' : '')}
+            onClick={() => setAlgo(true)}
+          >
+            Algorithm · 8-7-6-5-4-3-2-1
+          </button>
+        </div>
+      </div>
+      <CocMatrixTable style={mode} algorithm={algo} />
+    </div>
+  )
+}
+
 function readStoredMockupTheme() {
   if (typeof window === 'undefined') return 'light'
   try {
@@ -8401,6 +9059,7 @@ const MOCKUP_TABS = [
   { id: 'standings', label: 'Standings' },
   { id: 'wire',      label: 'Wire' },
   { id: 'live',      label: 'Live' },
+  { id: 'hall',      label: 'Hall of Fame' },
   { id: 'other',     label: 'Other' },
 ]
 
@@ -9021,6 +9680,185 @@ export function Mockup() {
             the visual effect is visible without live data.
           </p>
           <ContribStreamingShowcase />
+        </section>
+        </>)}
+
+        {activeTab === 'hall' && (<>
+        {/* ============================================================
+         *  HALL OF FAME · Trophy Room (variants T-A · T-B · T-C · T-D)
+         *  + History (variants H-A · H-B · H-C · H-D1 · H-D2 + tally)
+         *  Mock data — disclosed in eyebrows so it's not mistaken for
+         *  real league history. Banners use existing PNGs in
+         *  /hall-champions/ where available, themed fallbacks elsewhere.
+         * ============================================================ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">HALL OF FAME · sub-tabs · spec</div>
+          <h2 className="mockup__section-h">Two sub-sections — Trophy Room + History</h2>
+          <p className="mockup__section-sub">
+            User direction: Hall of Fame splits into <strong>Trophy Room</strong>{' '}
+            (banners-only — no surrounding text) and <strong>History</strong>{' '}
+            (Team History · Historic Standings · Champions of Champions). Mobile
+            Trophy Room must be a fullscreen swipeable carousel. Champions of
+            Champions gets a live · algorithm toggle and a season-as-column
+            matrix. All standings/matrix data below is{' '}
+            <strong>mock</strong> — eight plausible seasons (2018/19 → 2025/26)
+            with Crouch End on 4 titles, Soul Ze Moles on 2, Bellsprouts and
+            Wiggum on 1 each.
+          </p>
+        </section>
+
+        {/* TROPHY ROOM — variants T-A · T-B · T-C ----------------------- */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">TROPHY ROOM · desktop framing options · T-A · T-B · T-C</div>
+          <h2 className="mockup__section-h">Three desktop chrome treatments for the 8 banners</h2>
+          <p className="mockup__section-sub">
+            Same 8 banners, three desktop chrome directions. T-A: pedestal /
+            hung-banner with a metallic frame and slight tilt. T-B: flat modern
+            gallery with thin brand-tinted borders. T-C: museum trophy case on
+            wooden shelves with ambient glow. All three render in 375 px
+            portrait frames so the mobile beat reads — for desktop the same
+            grid widens to 4 cols. The mobile spec (T-D) lives in the next
+            section below.
+          </p>
+          <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">T-A · Pedestal · 3D framed</div>
+              <PortraitFrame>
+                <TrophyRoomVariantA />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">T-B · Banner gallery · flat modern</div>
+              <PortraitFrame>
+                <TrophyRoomVariantB />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">T-C · Trophy case · museum</div>
+              <PortraitFrame>
+                <TrophyRoomVariantC />
+              </PortraitFrame>
+            </div>
+          </div>
+        </section>
+
+        {/* TROPHY ROOM — variant T-D (mobile fullscreen swipe) ---------- */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">
+            TROPHY ROOM · mobile fullscreen swipe · T-D
+            <span className="mockup-variant-picked" aria-label="Recommended"> RECOMMENDED FOR MOBILE</span>
+          </div>
+          <h2 className="mockup__section-h">Full-bleed banner per screen, swipe left/right</h2>
+          <p className="mockup__section-sub">
+            Per the user&apos;s explicit ask: &ldquo;On mobile I want the trophy
+            room to be full screen images that you slide left and right to the
+            next one presented neatly and within the theme of celebration. No
+            additional text outside.&rdquo; Three frames below show the same
+            carousel mid-swipe at three different active positions — neighbors
+            peek on each side; dot indicators sit at the bottom. Background is
+            a brand-tinted celebratory dark wash so the banner pops. No
+            overlay text.
+          </p>
+          <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">T-D · banner 1 (18/19) active</div>
+              <PortraitFrame>
+                <TrophyRoomVariantDFrame activeIdx={0} />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">T-D · banner 4 (21/22) active</div>
+              <PortraitFrame>
+                <TrophyRoomVariantDFrame activeIdx={3} />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">T-D · banner 8 (25/26 live) active</div>
+              <PortraitFrame>
+                <TrophyRoomVariantDFrame activeIdx={7} />
+              </PortraitFrame>
+            </div>
+          </div>
+        </section>
+
+        {/* HISTORY — variants H-A · H-B · H-C ---------------------------- */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">HISTORY · layout direction · H-A · H-B · H-C</div>
+          <h2 className="mockup__section-h">How to organise the three History tables</h2>
+          <p className="mockup__section-sub">
+            Three competing layouts for the History tab. H-A uses a{' '}
+            <strong>sub-sub-nav</strong> (one table at a time). H-B{' '}
+            <strong>stacks</strong> all three tables vertically in one scroll.
+            H-C adds a <strong>hero season scrubber</strong> at the top —
+            tap a year and the hero card celebrates that season&apos;s
+            champion (the user&apos;s &ldquo;celebrate the history of the
+            teams&rdquo; ask). Pick a layout direction; the matrix style
+            (H-D1 vs H-D2) is a separate decision below.
+          </p>
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">H-A · TABBED SUB-SUB-NAV (one table at a time)</div>
+          <HistoryVariantA />
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">H-B · THREE STACKED SECTIONS (one scroll)</div>
+          <HistoryVariantB />
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">
+            H-C · HERO SCRUBBER + STACKED TABLES (celebrate the history)
+          </div>
+          <HistoryVariantC />
+          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-4)' }}>
+            <strong>Animation note:</strong> the year-pills above the hero card
+            are a static scrubber in the mockup. At runtime, tapping a pill
+            animates the hero — banner crossfades, champion title sweep,
+            counters tick from the previous season&apos;s value to the new one
+            (PTS / GD / Wins). On idle, the scrubber auto-advances every
+            ~4 s so the hall feels alive when nobody&apos;s touching it.
+          </p>
+        </section>
+
+        {/* HISTORY — Champions of Champions matrix variants ------------- */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">CHAMPIONS OF CHAMPIONS · matrix style · H-D1 vs H-D2</div>
+          <h2 className="mockup__section-h">Season-as-column matrix — heatmap or chip</h2>
+          <p className="mockup__section-sub">
+            Per the user: &ldquo;maybe show each season as a column where the
+            team finished with a total score on the right?&rdquo; Rows = teams,
+            columns = seasons (8 of them), each cell shows the finishing
+            position (1–8). Far right column = total titles in the live view,
+            or total algorithmic points (8-7-6-5-4-3-2-1 per season) when the
+            top-of-table toggle is flipped. Two visual treatments below,
+            shown side-by-side at desktop width.
+          </p>
+          <div className="hof-coc-row">
+            <div className="hof-coc-row__col">
+              <div className="mockup-portrait-col__h">H-D1 · Heatmap cells (gold/silver/bronze + greyscale)</div>
+              <CocLiveAlgoToggle style="heatmap" />
+            </div>
+            <div className="hof-coc-row__col">
+              <div className="mockup-portrait-col__h">H-D2 · Chip cells (colored circular chips)</div>
+              <CocLiveAlgoToggle style="chip" />
+            </div>
+          </div>
+        </section>
+
+        {/* HISTORY — Champions of Champions LIVE TALLY (no matrix) ------ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">
+            CHAMPIONS OF CHAMPIONS · LIVE TALLY (reference / A-B compare)
+          </div>
+          <h2 className="mockup__section-h">Just titles + runner-ups, no matrix</h2>
+          <p className="mockup__section-sub">
+            Reference treatment: cumulative trophy + runner-up counts only.
+            For users who don&apos;t want the per-season grid. A/B against the
+            matrix variants above.
+          </p>
+          <CocLiveTally />
         </section>
         </>)}
 
