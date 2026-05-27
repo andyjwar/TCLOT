@@ -880,31 +880,34 @@ function PortraitWireTileList({
                 >
                   {displayName}
                 </ClickablePlayerName>
+                <span
+                  className="players-wire-tile__pos-chip"
+                  aria-label={`Position ${posLetter}`}
+                  title={`Position ${posLetter}`}
+                >
+                  {posLetter}
+                </span>
               </div>
+              {/* Single sub-row: owner avatar (when present) + injury dots +
+               * Next-3 fixtures. Position moved up next to the name; the
+               * previous standalone position/owner row was collapsed. */}
               <div className="players-wire-tile__sub-row">
-                <span className="players-wire-tile__pos">{posLetter}</span>
                 {rostersHealthy && owner ? (
-                  <>
-                    <span className="players-wire-tile__sub-sep" aria-hidden>·</span>
-                    <span
-                      className="players-wire-tile__owner"
-                      title={`Owned by ${owner.teamName}`}
-                      aria-label={`Owned by ${owner.teamName}`}
-                    >
-                      <TeamAvatar
-                        entryId={owner.leagueEntryId}
-                        name={owner.teamName}
-                        size="sm"
-                        logoMap={logoMap}
-                        kitIndexByEntry={kitIndexByEntry}
-                        badgeFallback
-                      />
-                    </span>
-                  </>
+                  <span
+                    className="players-wire-tile__owner"
+                    title={`Owned by ${owner.teamName}`}
+                    aria-label={`Owned by ${owner.teamName}`}
+                  >
+                    <TeamAvatar
+                      entryId={owner.leagueEntryId}
+                      name={owner.teamName}
+                      size="sm"
+                      logoMap={logoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                      badgeFallback
+                    />
+                  </span>
                 ) : null}
-                {/* Injury / suspension dots only — owner + FA dots intentionally
-                 * dropped because the visible owner avatar (or its absence on
-                 * the wire) already encodes ownership status. */}
                 <PlayerInlineIndicators
                   el={el}
                   owner={null}
@@ -912,9 +915,9 @@ function PortraitWireTileList({
                   logoMap={logoMap}
                   kitIndexByEntry={kitIndexByEntry}
                 />
-              </div>
-              <div className="players-wire-tile__fixtures">
-                <NextFixtureBadges fixtures={nextFixtures} />
+                <span className="players-wire-tile__fixtures">
+                  <NextFixtureBadges fixtures={nextFixtures} />
+                </span>
               </div>
             </div>
             <div
