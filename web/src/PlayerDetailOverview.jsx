@@ -1,6 +1,7 @@
 import {
   countDcThresholdMet,
   countGamesPlayedOver60,
+  isSeasonComplete,
   lastFiveGwCards,
   upcomingFixturesNext,
 } from './playerDetailDerivations.js'
@@ -81,15 +82,44 @@ export function PlayerDetailOverview({
       </section>
     ) : null
 
-  const nextFiveBlock =
-    upcoming.length > 0 ? (
+  /*
+   * Next-5 block:
+   *  - 1-5 upcoming fixtures → 5-card row.
+   *  - 0 upcoming AND `summaryPayload.fixtures` is a (loaded) empty array
+   *    → render a single full-width "Season complete" placeholder card so
+   *    the section reads as intentional rather than missing. Pre-load
+   *    state (`summaryPayload == null` or no `fixtures` array yet) hides
+   *    the section to avoid a flash before the fetch resolves.
+   */
+  const seasonOver = isSeasonComplete(summaryPayload)
+  let nextFiveBlock = null
+  if (upcoming.length > 0) {
+    nextFiveBlock = (
       <section className="pdetail__section">
         <h4 className={portrait ? 'pdetail-p__section-h' : 'pdetail__section-h'}>
           Next 5 fixtures
         </h4>
         <PlayerDetailNextFiveCards rows={upcoming} teamById={teamById} />
       </section>
-    ) : null
+    )
+  } else if (seasonOver) {
+    nextFiveBlock = (
+      <section className="pdetail__section">
+        <h4 className={portrait ? 'pdetail-p__section-h' : 'pdetail__section-h'}>
+          Next 5 fixtures
+        </h4>
+        <div
+          className="pdetail-l5 pdetail-n5 pdetail-n5--empty"
+          role="status"
+          aria-live="polite"
+        >
+          <div className="pdetail-l5__card pdetail-n5__card pdetail-n5__empty-card">
+            Season complete — fixtures resume next season
+          </div>
+        </div>
+      </section>
+    )
+  }
 
   if (portrait) {
     return (

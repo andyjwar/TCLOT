@@ -245,6 +245,24 @@ export function performanceTableRows(elementSummary) {
 }
 
 /**
+ * "Season complete" detector for the Overview Next-5 placeholder. Returns
+ * `true` only when we're confident the season is over — the summary
+ * payload has loaded *and* it has zero upcoming fixtures. Returns `false`
+ * for the pre-load state (`summaryPayload == null` or `fixtures` not yet
+ * an array) so the caller doesn't flash a "Season complete" placeholder
+ * during the in-flight fetch.
+ *
+ * @param {object | null | undefined} elementSummary FPL element-summary payload
+ * @returns {boolean}
+ */
+export function isSeasonComplete(elementSummary) {
+  if (!elementSummary) return false
+  const fx = elementSummary.fixtures
+  if (!Array.isArray(fx)) return false
+  return fx.length === 0
+}
+
+/**
  * First N upcoming fixtures, with `home` flag derived from `is_home` and
  * the opponent team-id derived from `team_h` / `team_a`.
  *

@@ -8,6 +8,7 @@ import {
   fixtureScoreForGw,
   formatPerformanceStat,
   historyScoreFromPerspective,
+  isSeasonComplete,
   lastFiveGwCards,
   lastNHistoryRows,
   miniBarTone,
@@ -159,6 +160,25 @@ test('performanceTableRows — past + future merged, DGW collapsed into extras',
       { gw: 6, kind: 'future', extras: 0 },
     ],
   )
+})
+
+test('isSeasonComplete — true only when summary loaded with zero upcoming fixtures', () => {
+  // Pre-load state — must NOT trip the "season complete" placeholder
+  assert.equal(isSeasonComplete(null), false)
+  assert.equal(isSeasonComplete(undefined), false)
+  assert.equal(isSeasonComplete({}), false) // payload exists but `fixtures` not yet present
+  assert.equal(isSeasonComplete({ fixtures: null }), false)
+  assert.equal(isSeasonComplete({ fixtures: undefined }), false)
+
+  // Loaded with upcoming fixtures → still mid-season
+  assert.equal(
+    isSeasonComplete({ fixtures: [{ event: 38, team_h: 1, team_a: 2 }] }),
+    false,
+  )
+
+  // Loaded with no upcoming fixtures → season complete
+  assert.equal(isSeasonComplete({ fixtures: [] }), true)
+  assert.equal(isSeasonComplete({ history: [{ round: 38 }], fixtures: [] }), true)
 })
 
 test('upcomingFixturesNext — first 5, opponent + home flag derived from team ids', () => {

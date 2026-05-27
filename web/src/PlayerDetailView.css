@@ -2300,6 +2300,35 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   height: 22px;
 }
 
+/*
+ * Season-end placeholder — when the FPL `element-summary.fixtures` array
+ * has loaded with zero upcoming fixtures (e.g. GW 38 is final and the
+ * next season's fixtures haven't been published yet). The grid collapses
+ * to a single full-width row whose card carries a centred muted message,
+ * so the section reads as intentional rather than missing. Height stays
+ * comparable to a regular Next-5 card so the section doesn't collapse
+ * vertically and break the rhythm with Last 5.
+ */
+.pdetail-n5--empty {
+  grid-template-columns: 1fr;
+}
+.pdetail-n5__empty-card {
+  /* Override card flex flow → centred prose, no crest/dot/GW eyebrow. */
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 18px 14px;
+  color: var(--text-muted);
+  font-size: var(--pdetail-text-sm);
+  line-height: 1.4;
+  min-height: 96px;
+  background: color-mix(in srgb, var(--surface-2) 60%, var(--surface));
+}
+@media (max-width: 600px) {
+  .pdetail-n5__empty-card { min-height: 80px; padding: 14px 12px; }
+}
+
 /* Portrait: keep 5-column grid but tighten paddings. Mobile sheets are
    ~360-420 wide → 5 × 56-72 px cards fit cleanly. */
 @media (max-width: 600px) {
