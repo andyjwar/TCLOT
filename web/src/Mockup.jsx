@@ -441,6 +441,12 @@ const DECISIONS_OPEN = [
       'A: lifted bg (#fafafa); B: single-color (FotMob mobile); C: brand-tint hero strip; D: shadow-based cards on white body. User to pick — possibly mix (e.g. B on mobile, A on desktop). See BACKGROUND + HEADER COLOR VARIANTS showcase.',
     ],
   },
+  {
+    surface: 'MOBILE NAV · BOTTOM NAV TREATMENT',
+    items: [
+      'A: current flush, full-width; B: floating pill (Lyft-style, icons only); C: floating rounded rectangle with labels; D: half-floating, rounded top corners only. See FLOATING BOTTOM NAV — VARIANTS showcase.',
+    ],
+  },
 ]
 
 function DecisionsColumn({ tone, label, groups }) {
@@ -1152,6 +1158,162 @@ function BackgroundVariantsShowcase({
               />
             </div>
           </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Section: floating bottom nav variants (mockup-only)                  */
+/* ------------------------------------------------------------------ */
+/* User asked whether we can do a Lyft-style floating pill bottom nav on
+ * web — yes, trivially. Four treatments mocked up in mobile portrait
+ * frames so they can pick. Scoped CSS only; production
+ * .dashboard-nav--bottom in App.css is untouched. */
+
+const BOTTOM_NAV_ITEMS = [
+  { id: 'fplLive',       label: 'Live',     icon: 'radio' },
+  { id: 'standings',     label: 'Table',    icon: 'bar-chart-3' },
+  { id: 'teamSelection', label: 'Trades',   icon: 'users' },
+  { id: 'players',       label: 'Wire',     icon: 'shuffle' },
+  { id: 'more',          label: 'More',     icon: 'more' },
+]
+
+function BottomNavMockPage() {
+  // Lightweight placeholder cards so the nav has something to float
+  // over. Mirrors the rhythm of a Live Scores list without wiring real
+  // data — keeps the comparison focused on nav chrome.
+  const cards = [
+    { home: 'Crouch End', away: 'Clapton',    homeScore: 67, awayScore: 66, status: '78\'', live: true },
+    { home: 'Toronto',    away: 'Seoul 7',    homeScore: 54, awayScore: 49, status: 'HT',   live: true },
+    { home: 'AFC Loaf',   away: 'Jamiroquai', homeScore: 41, awayScore: 40, status: 'FT',   live: false },
+    { home: 'Oashisu',    away: 'Cornershop', homeScore: 0,  awayScore: 0,  status: 'Sat 12:00', live: false, pre: true },
+  ]
+  return (
+    <div className="mockup-bottom-nav-screen__page">
+      <div className="mockup-bottom-nav-screen__page-h">
+        <span className="mockup-bottom-nav-screen__page-eyebrow">FPL · GW 28</span>
+        <span className="mockup-bottom-nav-screen__page-title">Live Scores</span>
+      </div>
+      <div className="mockup-bottom-nav-screen__page-cards">
+        {cards.map((c, i) => (
+          <div className="mockup-bottom-nav-screen__page-card" key={i}>
+            <div className="mockup-bottom-nav-screen__page-card-team">
+              <span className="mockup-bottom-nav-screen__page-card-crest" aria-hidden />
+              <span className="mockup-bottom-nav-screen__page-card-name">{c.home}</span>
+              <span className="mockup-bottom-nav-screen__page-card-score">
+                {c.pre ? '—' : c.homeScore}
+              </span>
+            </div>
+            <div className="mockup-bottom-nav-screen__page-card-team">
+              <span className="mockup-bottom-nav-screen__page-card-crest" aria-hidden />
+              <span className="mockup-bottom-nav-screen__page-card-name">{c.away}</span>
+              <span className="mockup-bottom-nav-screen__page-card-score">
+                {c.pre ? '—' : c.awayScore}
+              </span>
+            </div>
+            <div
+              className={
+                'mockup-bottom-nav-screen__page-card-status' +
+                (c.live ? ' is-live' : '')
+              }
+            >
+              {c.live && <span className="mockup-bottom-nav-screen__page-card-pulse" aria-hidden />}
+              {c.status}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function BottomNavMock({ variant, activeId = 'standings', showLabels = true }) {
+  return (
+    <nav
+      className={'mockup-bottom-nav mockup-bottom-nav--' + variant}
+      aria-label={`Bottom nav variant ${variant.toUpperCase()}`}
+    >
+      {BOTTOM_NAV_ITEMS.map((item) => {
+        const isActive = item.id === activeId
+        return (
+          <button
+            key={item.id}
+            type="button"
+            className={
+              'mockup-bottom-nav__btn' +
+              (isActive ? ' is-active' : '')
+            }
+          >
+            <span className="mockup-bottom-nav__icon-wrap" aria-hidden>
+              <LucideIcon name={item.icon} />
+            </span>
+            {showLabels ? (
+              <span className="mockup-bottom-nav__label">{item.label}</span>
+            ) : null}
+          </button>
+        )
+      })}
+    </nav>
+  )
+}
+
+const FLOATING_NAV_VARIANTS = [
+  {
+    id: 'a',
+    label: 'Variant A — Current (flush, full-width)',
+    desc:
+      'Baseline. bottom: 0, edge-to-edge, top hairline border, no rounded ' +
+      'corners. Matches what ships today in .dashboard-nav--bottom.',
+    showLabels: true,
+  },
+  {
+    id: 'b',
+    label: 'Variant B — Floating pill (Lyft-style)',
+    desc:
+      'bottom: 12px + safe-area, side margins, 999px radius, strong shadow, ' +
+      'icons-only. Active item gets a brand-tinted circle behind the icon. ' +
+      'Closest match to the Lyft screenshot.',
+    showLabels: false,
+  },
+  {
+    id: 'c',
+    label: 'Variant C — Floating rounded rectangle',
+    desc:
+      'Same floating positioning as B but 20px radius (not pill) and labels ' +
+      'kept under each icon. Less aggressive than the pill; better for ' +
+      'users who rely on label legibility.',
+    showLabels: true,
+  },
+  {
+    id: 'd',
+    label: 'Variant D — Half-floating (rounded top corners)',
+    desc:
+      'bottom: 0 flush, but border-top-radius: 20px and a soft top-edge ' +
+      'shadow. Labels kept. Compromise — a slight "raised" feel without ' +
+      'fully detaching from the bottom edge.',
+    showLabels: true,
+  },
+]
+
+function FloatingBottomNavShowcase() {
+  return (
+    <div className="mockup-bottom-nav-variants">
+      {FLOATING_NAV_VARIANTS.map((v) => (
+        <div className="mockup-bottom-nav-variant" key={v.id}>
+          <div className="mockup-bottom-nav-variant__label">{v.label}</div>
+          <div className="mockup-bottom-nav-stage">
+            <div className="mockup-bottom-nav-screen">
+              <BottomNavMockPage />
+              <BottomNavMock
+                variant={v.id}
+                activeId="standings"
+                showLabels={v.showLabels}
+              />
+            </div>
+          </div>
+          <p className="mockup-bottom-nav-variant__desc">{v.desc}</p>
         </div>
       ))}
     </div>
@@ -5717,6 +5879,24 @@ export function Mockup() {
             teamLogoMap={data?.teamLogoMap ?? {}}
             kitIndexByEntry={data?.defaultKitIndexByLeagueEntry ?? {}}
           />
+        </section>
+
+        {/* 1e. Floating bottom nav variants — mobile-only treatment */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">FLOATING BOTTOM NAV — VARIANTS</div>
+          <h2 className="mockup__section-h">
+            Lyft-style floating pill + three alternatives
+          </h2>
+          <p className="mockup__section-sub">
+            User shared a Lyft app screenshot with a floating pill bottom nav
+            and asked if we can do the same on web — yes, trivially. Four
+            treatments rendered in mobile portrait frames (mobile-only
+            chrome). A is the current production baseline; B is the closest
+            Lyft match; C and D are intermediate options. All four respect
+            <code style={{ fontFamily: 'Geist Mono, monospace', fontSize: 12, margin: '0 4px' }}>env(safe-area-inset-bottom)</code>.
+            Mockup-only; production <code style={{ fontFamily: 'Geist Mono, monospace', fontSize: 12, margin: '0 4px' }}>.dashboard-nav--bottom</code> is untouched.
+          </p>
+          <FloatingBottomNavShowcase />
         </section>
 
         {/* 2. Accent compare */}

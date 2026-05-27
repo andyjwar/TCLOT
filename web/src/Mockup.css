@@ -8308,3 +8308,376 @@
     0 1px 2px rgba(0, 0, 0, 0.04),
     0 1px 0 rgba(0, 0, 0, 0.04);
 }
+
+/* ================================================================== */
+/* FLOATING BOTTOM NAV — VARIANTS                                       */
+/* ------------------------------------------------------------------ */
+/* Mobile-only treatments mocked up in 375px portrait frames. Scoped   */
+/* to .mockup-bottom-nav-* classes — production .dashboard-nav--bottom */
+/* in App.css is untouched.                                            */
+/* ================================================================== */
+
+.mockup-bottom-nav-variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(375px, 1fr));
+  gap: 28px;
+  align-items: start;
+}
+
+.mockup-bottom-nav-variant {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mockup-bottom-nav-variant__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+  letter-spacing: -0.005em;
+}
+
+.mockup-bottom-nav-variant__desc {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* --- Phone-shell stage (matches the bg-variant portrait styling) ---- */
+.mockup-bottom-nav-stage {
+  width: 375px;
+  height: 720px;
+  margin: 0 auto;
+  border: 1px solid #c8c8cd;
+  background: #d8d8db;
+  border-radius: 28px;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.mockup-bottom-nav-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #fafafa;
+  border-radius: 20px;
+  overflow: hidden;
+  color: #111;
+  font-family:
+    'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* --- Mock page surface (placeholder cards) -------------------------- */
+.mockup-bottom-nav-screen__page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  /* Bottom padding leaves space for the floating nav to overlay
+     without covering content; tuned per-variant below. */
+  padding: 14px 14px 96px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.mockup-bottom-nav-screen__page-h {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 12px;
+}
+
+.mockup-bottom-nav-screen__page-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(17, 17, 17, 0.5);
+}
+
+.mockup-bottom-nav-screen__page-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #111;
+}
+
+.mockup-bottom-nav-screen__page-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mockup-bottom-nav-screen__page-card {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 6px 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1px solid #ececec;
+  border-radius: 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+}
+
+.mockup-bottom-nav-screen__page-card-team {
+  display: grid;
+  grid-template-columns: 18px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+
+.mockup-bottom-nav-screen__page-card-crest {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #c8c8d0, #e8e8ec);
+}
+
+.mockup-bottom-nav-screen__page-card-name {
+  color: #111;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mockup-bottom-nav-screen__page-card-score {
+  font-family: 'Geist Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: #111;
+  font-size: 14px;
+}
+
+.mockup-bottom-nav-screen__page-card-status {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(17, 17, 17, 0.5);
+}
+
+.mockup-bottom-nav-screen__page-card-status.is-live {
+  color: #d32d2f;
+}
+
+.mockup-bottom-nav-screen__page-card-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #d32d2f;
+  box-shadow: 0 0 0 0 rgba(211, 45, 47, 0.45);
+  animation: mockup-bottom-nav-pulse 1.4s ease-out infinite;
+}
+
+@keyframes mockup-bottom-nav-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(211, 45, 47, 0.5); }
+  70%  { box-shadow: 0 0 0 6px rgba(211, 45, 47, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(211, 45, 47, 0); }
+}
+
+/* --- Base bottom-nav (shared across variants) ----------------------- */
+.mockup-bottom-nav {
+  position: absolute;
+  z-index: 2;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 0;
+  margin: 0;
+  font-family: inherit;
+  /* Variants set background/border/radius/shadow/positioning. */
+}
+
+.mockup-bottom-nav__btn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  color: rgba(17, 17, 17, 0.6);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 120ms ease;
+}
+
+.mockup-bottom-nav__btn:hover {
+  color: var(--brand);
+}
+
+.mockup-bottom-nav__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.mockup-bottom-nav__icon-wrap svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.mockup-bottom-nav__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============= VARIANT A — Current (flush, full-width) ============= */
+/* Reference baseline: matches production .dashboard-nav--bottom */
+.mockup-bottom-nav--a {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: calc(56px + env(safe-area-inset-bottom, 0px));
+  padding:
+    6px 8px
+    calc(6px + env(safe-area-inset-bottom, 0px));
+  background: #ffffff;
+  border-top: 1px solid #ececec;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.mockup-bottom-nav--a .mockup-bottom-nav__btn {
+  padding: 4px 6px;
+  border-radius: 8px;
+}
+
+.mockup-bottom-nav--a .mockup-bottom-nav__btn.is-active {
+  color: var(--brand);
+}
+
+/* ============= VARIANT B — Floating pill (Lyft-style) ============== */
+.mockup-bottom-nav--b {
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  height: 56px;
+  padding: 8px 12px;
+  background: #ffffff;
+  border-radius: 999px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+.mockup-bottom-nav--b .mockup-bottom-nav__btn {
+  border-radius: 999px;
+}
+
+.mockup-bottom-nav--b .mockup-bottom-nav__icon-wrap {
+  width: 40px;
+  height: 40px;
+}
+
+.mockup-bottom-nav--b .mockup-bottom-nav__btn.is-active .mockup-bottom-nav__icon-wrap {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+
+.mockup-bottom-nav--b .mockup-bottom-nav__btn.is-active {
+  color: var(--brand);
+}
+
+/* ============= VARIANT C — Floating rounded rectangle ============== */
+.mockup-bottom-nav--c {
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  min-height: 64px;
+  padding: 8px 8px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
+.mockup-bottom-nav--c .mockup-bottom-nav__btn {
+  padding: 6px 4px;
+  border-radius: 12px;
+  gap: 3px;
+}
+
+.mockup-bottom-nav--c .mockup-bottom-nav__icon-wrap {
+  width: 36px;
+  height: 36px;
+}
+
+.mockup-bottom-nav--c .mockup-bottom-nav__btn.is-active .mockup-bottom-nav__icon-wrap {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+
+.mockup-bottom-nav--c .mockup-bottom-nav__btn.is-active {
+  color: var(--brand);
+}
+
+/* ============= VARIANT D — Half-floating (rounded top corners) ===== */
+.mockup-bottom-nav--d {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: calc(60px + env(safe-area-inset-bottom, 0px));
+  padding:
+    8px 8px
+    calc(8px + env(safe-area-inset-bottom, 0px));
+  background: #ffffff;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+  box-sizing: border-box;
+}
+
+.mockup-bottom-nav--d .mockup-bottom-nav__btn {
+  padding: 4px 4px;
+  border-radius: 12px;
+  gap: 3px;
+}
+
+.mockup-bottom-nav--d .mockup-bottom-nav__icon-wrap {
+  width: 36px;
+  height: 36px;
+}
+
+.mockup-bottom-nav--d .mockup-bottom-nav__btn.is-active .mockup-bottom-nav__icon-wrap {
+  background: var(--brand-tint);
+  color: var(--brand);
+}
+
+.mockup-bottom-nav--d .mockup-bottom-nav__btn.is-active {
+  color: var(--brand);
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .mockup-bottom-nav__btn,
+  .mockup-bottom-nav__icon-wrap,
+  .mockup-bottom-nav-screen__page-card-pulse {
+    transition: none;
+    animation: none;
+  }
+}
