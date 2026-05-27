@@ -129,9 +129,16 @@
   min-height: 100vh;
 }
 
-/* —— Cursor-like light shell (toggle on title tile) —— */
+/* —— Cursor-like light shell (toggle on title tile) ——
+ *
+ * Page background was lifted from #f2f2f2 → #fafafa as part of the
+ * "brand-tinted hero strip" treatment (mockup Variant C). Both `--fm-bg`
+ * (the actually-painted page bg via `.fotmob { background: var(--fm-bg) }`)
+ * and `--bg` (Phase 1 design token, used by the hero gradient stop) are
+ * set to the same value so the gradient bottom-stop matches the page bg
+ * exactly. */
 .fotmob[data-theme='light'] {
-  --fm-bg: #f2f2f2;
+  --fm-bg: #fafafa;
   --fm-card: #ffffff;
   --fm-border: #e2e2e2;
   --fm-text: rgba(51, 51, 51, 0.92);
@@ -171,7 +178,7 @@
 
   /* —— Phase 1 design-system tokens — light overrides —— */
   --brand-tint: color-mix(in srgb, #795bfb 12%, transparent);
-  --bg: #f7f7f9;
+  --bg: #fafafa;
   --surface: #ffffff;
   --surface-2: #f1f1f5;
   --border: #e4e4ea;
@@ -183,6 +190,43 @@
 
 .fotmob[data-theme='light'] .tile {
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+}
+
+/* ------------------------------------------------------------------ */
+/* Brand-tinted hero strip (mockup Variant C → production).            */
+/*                                                                     */
+/* Replaces the solid light-theme page bg with a vertical gradient     */
+/* that fades from a soft violet wash (8–9% brand mix) at the top      */
+/* through a lighter mix at 64px down to the bare page bg by 160px.    */
+/* Below 160px the gradient stops paint the same colour as `--fm-bg`,  */
+/* so any element/section sitting below the hero strip sees an         */
+/* unchanged background.                                               */
+/*                                                                     */
+/* Ported verbatim from `.mockup-bg-variant--c` in Mockup.css. Light   */
+/* theme only — dark theme keeps its solid `--fm-bg` page bg.          */
+/* ------------------------------------------------------------------ */
+.fotmob[data-theme='light'] {
+  background: linear-gradient(
+    to bottom,
+    color-mix(in srgb, var(--brand) 9%, var(--fm-bg)) 0,
+    color-mix(in srgb, var(--brand) 5%, var(--fm-bg)) 64px,
+    var(--fm-bg) 160px
+  );
+}
+
+/* Brand-header "tile" — already `background: transparent` in production
+ * (see `.tile.tile--brand-header`), so the gradient reads through the
+ * header without any extra work. The mockup variant applies a
+ * translucent white + 6px backdrop blur to its header tile because the
+ * mockup baseline has a solid white card; we add the same frosted-glass
+ * treatment here in light theme so the brand row gets a subtle
+ * "presence" over the gradient (matches the visual character of the
+ * approved mockup). The blur is only painted on the brand row itself,
+ * not the status strip below (which has its own `--surface-2` bg). */
+.fotmob[data-theme='light'] .tile.tile--brand-header {
+  background: color-mix(in srgb, #ffffff 70%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 .fotmob[data-theme='light'] .data-banner {
