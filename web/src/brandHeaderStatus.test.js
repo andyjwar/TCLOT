@@ -211,3 +211,181 @@ test('deriveBrandHeaderStatus — pre-season ignores liveFixtureCount/minute', (
   assert.equal(out.liveFixtureCount, null)
   assert.equal(out.minute, null)
 })
+
+// PR #5h — absorb the live tile pill into the brand-header strip. Two new
+// optional inputs (finished/totalFixtureCount) drive `progressLabel`; the
+// 24h-window kickoff sneak peek drives `kickoffLabel`.
+
+test('deriveBrandHeaderStatus — live populates progressLabel "2 of 10 complete" from fixture counts', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+    liveFixtureCount: 5,
+    minute: 47,
+    finishedFixtureCount: 2,
+    totalFixtureCount: 10,
+  })
+  assert.equal(out.status, 'live')
+  assert.equal(out.progressLabel, '2 of 10 complete')
+})
+
+test('deriveBrandHeaderStatus — live with 0 finished of 10 still renders "0 of 10 complete"', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+    finishedFixtureCount: 0,
+    totalFixtureCount: 10,
+  })
+  assert.equal(out.progressLabel, '0 of 10 complete')
+})
+
+test('deriveBrandHeaderStatus — progressLabel null when totalFixtureCount is 0 (graceful)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+    finishedFixtureCount: 0,
+    totalFixtureCount: 0,
+  })
+  assert.equal(out.progressLabel, null)
+})
+
+test('deriveBrandHeaderStatus — progressLabel null when totalFixtureCount is null', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+  })
+  assert.equal(out.progressLabel, null)
+})
+
+test('deriveBrandHeaderStatus — progressLabel null on idle even with fixture counts (defensive)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 28 },
+    now: new Date('2026-03-10T10:00:00Z'),
+    finishedFixtureCount: 10,
+    totalFixtureCount: 10,
+  })
+  assert.equal(out.status, 'idle')
+  assert.equal(out.progressLabel, null)
+})
+
+test('deriveBrandHeaderStatus — progressLabel null on pre-season even with fixture counts (defensive)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: null,
+    nextEvent: { id: 1, deadline_time: '2026-08-14T17:30:00Z' },
+    lastFinishedEvent: null,
+    season: '2026/27',
+    now: new Date('2026-06-01T10:00:00Z'),
+    finishedFixtureCount: 0,
+    totalFixtureCount: 10,
+  })
+  assert.equal(out.status, 'pre-season')
+  assert.equal(out.progressLabel, null)
+})
+
+test('deriveBrandHeaderStatus — kickoffLabel populated on idle when deadline within 24h', () => {
+  /** `now` deliberately 23h before the deadline so the kickoff falls into
+   * tomorrow in every host timezone — guarantees the cross-day "Sat 16:30"
+   * shape (rather than the same-day "16:30" tail) regardless of where the
+   * test machine is. */
+  const out = deriveBrandHeaderStatus({
+    currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
+    nextEvent: { id: 29, deadline_time: '2026-03-14T15:30:00Z' },
+    lastFinishedEvent: { id: 28 },
+    now: new Date('2026-03-13T16:00:00Z'),
+  })
+  assert.equal(out.status, 'idle')
+  assert.equal(out.nextGw, 29)
+  assert.ok(out.kickoffLabel, 'expected a Sat 16:30-style label within 24h window')
+  assert.ok(
+    /^[A-Z][a-z]{2}\s\d{2}:\d{2}$/.test(out.kickoffLabel),
+    `kickoffLabel "${out.kickoffLabel}" should look like "Sat 16:30"`,
+  )
+})
+
+test('deriveBrandHeaderStatus — kickoffLabel populated on pre-season when deadline within 24h', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: null,
+    nextEvent: { id: 1, deadline_time: '2026-08-15T17:30:00Z' },
+    lastFinishedEvent: null,
+    season: '2026/27',
+    now: new Date('2026-08-15T10:00:00Z'),
+  })
+  assert.equal(out.status, 'pre-season')
+  assert.ok(out.kickoffLabel, 'expected kickoffLabel within 24h window')
+})
+
+test('deriveBrandHeaderStatus — kickoffLabel null when deadline more than 24h away (nextDeadlineLabel stays the source of truth)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
+    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    lastFinishedEvent: { id: 28 },
+    now: new Date('2026-03-10T10:00:00Z'),
+  })
+  assert.equal(out.status, 'idle')
+  assert.equal(out.kickoffLabel, null)
+  assert.equal(out.nextDeadlineLabel, 'Mar 15')
+})
+
+test('deriveBrandHeaderStatus — kickoffLabel null when deadline already in the past', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
+    nextEvent: { id: 29, deadline_time: '2026-03-14T15:30:00Z' },
+    lastFinishedEvent: { id: 28 },
+    now: new Date('2026-03-14T20:00:00Z'),
+  })
+  assert.equal(out.status, 'idle')
+  assert.equal(out.kickoffLabel, null)
+})
+
+test('deriveBrandHeaderStatus — kickoffLabel null on post-season idle (no nextEvent)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: null,
+    nextEvent: null,
+    lastFinishedEvent: { id: 38 },
+    season: '2025/26',
+    now: new Date('2026-05-26T10:00:00Z'),
+  })
+  assert.equal(out.status, 'idle')
+  assert.equal(out.kickoffLabel, null)
+})
+
+test('deriveBrandHeaderStatus — kickoffLabel null on live state (defensive)', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: {
+      id: 28,
+      finished: false,
+      deadline_time: '2026-03-08T13:30:00Z',
+    },
+    nextEvent: { id: 29, deadline_time: '2026-03-09T13:30:00Z' },
+    lastFinishedEvent: { id: 27 },
+    now: new Date('2026-03-08T15:00:00Z'),
+  })
+  assert.equal(out.status, 'live')
+  assert.equal(out.kickoffLabel, null)
+})

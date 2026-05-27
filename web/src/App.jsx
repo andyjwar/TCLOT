@@ -46,8 +46,16 @@ function TclotLionIcon({ size = 22 }) {
  * placeholder copy. */
 function BrandHeaderStatusBody({ liveStatus }) {
   if (!liveStatus || liveStatus.status === 'unknown') return null
-  const { status, liveGw, lastFinishedGw, nextGw, nextDeadlineLabel, seasonShort } =
-    liveStatus
+  const {
+    status,
+    liveGw,
+    lastFinishedGw,
+    nextGw,
+    nextDeadlineLabel,
+    seasonShort,
+    progressLabel,
+    kickoffLabel,
+  } = liveStatus
 
   if (status === 'live') {
     const liveCount = Number.isFinite(liveStatus.liveFixtureCount)
@@ -78,6 +86,12 @@ function BrandHeaderStatusBody({ liveStatus }) {
             <span>Live</span>
           </>
         ) : null}
+        {progressLabel ? (
+          <>
+            <span className="brand-header__status-sep">·</span>
+            <span>{progressLabel}</span>
+          </>
+        ) : null}
       </>
     )
   }
@@ -104,9 +118,13 @@ function BrandHeaderStatusBody({ liveStatus }) {
           GW {lastFinishedGw} complete
         </span>
         <span className="brand-header__status-sep">·</span>
-        <span>
-          GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
-        </span>
+        {kickoffLabel ? (
+          <span>GW {nextGw} kicks off {kickoffLabel}</span>
+        ) : (
+          <span>
+            GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
+          </span>
+        )}
       </>
     )
   }
@@ -116,9 +134,13 @@ function BrandHeaderStatusBody({ liveStatus }) {
     <>
       <span className="brand-header__status-strong">Pre-season</span>
       <span className="brand-header__status-sep">·</span>
-      <span>
-        GW {nextGw ?? 1} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
-      </span>
+      {kickoffLabel ? (
+        <span>GW {nextGw ?? 1} kicks off {kickoffLabel}</span>
+      ) : (
+        <span>
+          GW {nextGw ?? 1} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
+        </span>
+      )}
     </>
   )
 }
@@ -1308,10 +1330,14 @@ function App() {
    * need. Shared `fetchFplJsonCached` means the Live tab still gets a warm
    * cache when the user opens it.
    */
-  const { liveFixtureCount: brandLiveFixtureCount, minute: brandLiveMinute } =
-    useFplFixtureLiveSummary({
-      currentEvent: draftBootstrapEvents.currentEvent,
-    })
+  const {
+    liveFixtureCount: brandLiveFixtureCount,
+    minute: brandLiveMinute,
+    finishedFixtureCount: brandFinishedFixtureCount,
+    totalFixtureCount: brandTotalFixtureCount,
+  } = useFplFixtureLiveSummary({
+    currentEvent: draftBootstrapEvents.currentEvent,
+  })
 
   /**
    * Brand-header status strip state. Derived from the cheap bootstrap pull
@@ -1328,6 +1354,8 @@ function App() {
         season: BRAND_HEADER_SEASON,
         liveFixtureCount: brandLiveFixtureCount,
         minute: brandLiveMinute,
+        finishedFixtureCount: brandFinishedFixtureCount,
+        totalFixtureCount: brandTotalFixtureCount,
       }),
     [
       draftBootstrapEvents.currentEvent,
@@ -1335,6 +1363,8 @@ function App() {
       draftBootstrapEvents.lastFinishedEvent,
       brandLiveFixtureCount,
       brandLiveMinute,
+      brandFinishedFixtureCount,
+      brandTotalFixtureCount,
     ],
   )
 
@@ -3186,9 +3216,12 @@ function App() {
                   needed. The horizontal H2H mini-ticker (FplLiveGwTickerBar)
                   is now scoped to the Lineups + Projections sub-tabs only;
                   on the Live GW sub-tab, the new 4-fixture grid below
-                  (LiveScores → live-banner-group-tile) plus its
-                  LiveSharedStatusHeader already cover the same job at
-                  full size, so the mini-ticker is redundant there. */}
+                  (LiveScores → live-banner-group-tile) already covers the
+                  same job at full size, so the mini-ticker is redundant
+                  there. (The per-tile pill that previously sat above the
+                  fixture rows was retired in PR #5h — its two unique data
+                  points moved into the brand-header status strip; see
+                  brandHeaderStatus.js.) */}
               {fplLiveTab !== 'live' ? (
                 <FplLiveGwTickerBar
                   teams={teamsForFormSelect}

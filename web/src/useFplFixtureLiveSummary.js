@@ -46,28 +46,61 @@ function classicResourceUrl(pathAndQuery) {
  *
  * A fixture is "live" when it has kicked off but FPL hasn't marked the
  * match finished (provisional or hard). 0 live fixtures returns `null`
- * fields so the consumer falls back to the bare `● GW {N} · Live` copy.
+ * fields for `liveFixtureCount` / `minute` so the consumer falls back to
+ * the bare `● GW {N} · Live` copy.
  *
  * `minute` uses the **highest** elapsed minute among live fixtures (i.e.
  * the live fixture that started earliest in real time, since synchronized
  * kickoffs tick the same minute counter). Documented in the PR #4 brief
  * as the "GW window is currently at" reading.
  *
+ * `finishedFixtureCount` / `totalFixtureCount` (PR #5h) drive the
+ * brand-header strip's `progressLabel` ("2 of 10 complete"). They reflect
+ * the whole-GW shape, not the live subset — so a fully-finished mid-GW
+ * window (between fixture days) still surfaces `7 of 10 complete` while
+ * `liveFixtureCount` is null. `totalFixtureCount` is 0 only when the
+ * fixtures payload is empty / not yet loaded; consumers gate on `> 0`.
+ *
  * @param {object[] | null | undefined} fixtures
- * @returns {{ liveFixtureCount: number | null, minute: number | null }}
+ * @returns {{
+ *   liveFixtureCount: number | null,
+ *   minute: number | null,
+ *   finishedFixtureCount: number,
+ *   totalFixtureCount: number,
+ * }}
  */
 export function deriveLiveSummary(fixtures) {
-  if (!Array.isArray(fixtures) || fixtures.length === 0) {
-    return { liveFixtureCount: null, minute: null }
+  const arr = Array.isArray(fixtures) ? fixtures : []
+  const totalFixtureCount = arr.length
+  let finishedFixtureCount = 0
+  for (const f of arr) {
+    if (f && (f.finished === true || f.finished_provisional === true)) {
+      finishedFixtureCount += 1
+    }
   }
-  const live = fixtures.filter(
+  if (totalFixtureCount === 0) {
+    return {
+      liveFixtureCount: null,
+      minute: null,
+      finishedFixtureCount: 0,
+      totalFixtureCount: 0,
+    }
+  }
+  const live = arr.filter(
     (f) =>
       f &&
       f.started === true &&
       f.finished !== true &&
       f.finished_provisional !== true,
   )
-  if (!live.length) return { liveFixtureCount: null, minute: null }
+  if (!live.length) {
+    return {
+      liveFixtureCount: null,
+      minute: null,
+      finishedFixtureCount,
+      totalFixtureCount,
+    }
+  }
   let maxMin = 0
   let sawMinute = false
   for (const f of live) {
@@ -83,15 +116,18 @@ export function deriveLiveSummary(fixtures) {
   return {
     liveFixtureCount: live.length,
     minute: sawMinute ? maxMin : null,
+    finishedFixtureCount,
+    totalFixtureCount,
   }
 }
 
 /**
  * Polls `classic fixtures?event={currentEvent.id}` while the GW is live so
- * the brand header status strip can render fixture count + minute. No-op
- * when there's no current event, the deadline hasn't passed, or the event
- * is already marked finished — the strip degrades to the bootstrap-only
- * `● GW {N} · Live` copy in those windows.
+ * the brand header status strip can render fixture count + minute +
+ * `finished / total` progress. No-op when there's no current event, the
+ * deadline hasn't passed, or the event is already marked finished — the
+ * strip degrades to the bootstrap-only `● GW {N} · Live` copy in those
+ * windows.
  *
  * @param {{
  *   currentEvent?: object | null,
@@ -99,7 +135,12 @@ export function deriveLiveSummary(fixtures) {
  *   pollIntervalMs?: number,
  *   now?: () => Date,
  * }} opts
- * @returns {{ liveFixtureCount: number | null, minute: number | null }}
+ * @returns {{
+ *   liveFixtureCount: number | null,
+ *   minute: number | null,
+ *   finishedFixtureCount: number,
+ *   totalFixtureCount: number,
+ * }}
  */
 export function useFplFixtureLiveSummary({
   currentEvent,
@@ -110,6 +151,8 @@ export function useFplFixtureLiveSummary({
   const [summary, setSummary] = useState({
     liveFixtureCount: null,
     minute: null,
+    finishedFixtureCount: 0,
+    totalFixtureCount: 0,
   })
 
   const nowRef = useRef(now)
@@ -166,7 +209,12 @@ export function useFplFixtureLiveSummary({
    * doesn't linger between GWs / after FT. */
   useEffect(() => {
     if (!shouldPoll) {
-      setSummary({ liveFixtureCount: null, minute: null })
+      setSummary({
+        liveFixtureCount: null,
+        minute: null,
+        finishedFixtureCount: 0,
+        totalFixtureCount: 0,
+      })
     }
   }, [shouldPoll])
 

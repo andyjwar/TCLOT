@@ -17,7 +17,6 @@ import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import { LiveFixtureGwPointsChart } from './LiveFixtureGwPointsChart.jsx';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
-import { LiveSharedStatusHeader } from './LiveSharedStatusHeader.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
@@ -1266,8 +1265,8 @@ export function LiveScores({
 
   // Sum of remaining player-fixtures across both sides of every H2H
   // matchup. Used only to gate the empty-state — when this is 0 the
-  // tile is hidden entirely (GW done ⇒ the FINAL · GW N strip already
-  // says "Gameweek complete").
+  // tile is hidden entirely (GW done ⇒ the brand-header status strip
+  // already says "GW {N} complete · …" page-wide).
   const totalRemainingFixtures = useMemo(
     () =>
       leftToPlayByFixture.reduce(
@@ -1407,10 +1406,6 @@ export function LiveScores({
           className="tile tile--compact live-banner-group-tile"
           aria-label={`Gameweek ${gameweek} head-to-head fixtures`}
         >
-          <LiveSharedStatusHeader
-            eventSnapshot={eventSnapshot}
-            gwFixtures={contributionLiveContext?.gwFixtures ?? null}
-          />
           <div className="live-banner-group__list">
             {gwMatches.map((m) => {
               const homeId = Number(m.league_entry_1);

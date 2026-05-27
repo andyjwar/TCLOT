@@ -11138,75 +11138,13 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   gap: 16px;
 }
 
-/* Slim label strip above the list — chip + meta + progress. Option A:
-   no own border/background, just spacing, so the 4 fixture tiles below
-   carry all the visual weight. Horizontal padding aligns the chip with
-   the face-off row content inside each tile (which uses 12px 14px). */
-.live-banner-group__header {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  padding: 2px 4px;
-  font-size: 0.78rem;
-}
-.live-banner-group__chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border: 1px solid transparent;
-}
-.live-banner-group__chip--pre {
-  background: rgba(255, 255, 255, 0.04);
-  color: var(--fm-text);
-  border-color: var(--fm-border);
-}
-.live-banner-group__chip--live {
-  background: rgba(239, 68, 68, 0.14);
-  color: #fca5a5;
-  border-color: rgba(239, 68, 68, 0.32);
-}
-.fotmob[data-theme='light'] .live-banner-group__chip--live {
-  background: rgba(220, 38, 38, 0.10);
-  color: #b91c1c;
-  border-color: rgba(220, 38, 38, 0.24);
-}
-.live-banner-group__chip--ft {
-  background: var(--fm-card);
-  color: var(--fm-text);
-  border-color: var(--fm-border);
-}
-.live-banner-group__chip-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #ef4444;
-  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
-}
-.live-banner-group__meta {
-  color: var(--fm-muted);
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.7rem;
-}
-.live-banner-group__progress {
-  margin-left: auto;
-  color: var(--fm-text);
-  font-weight: 500;
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.7rem;
-}
-@media (max-width: 480px) {
-  .live-banner-group__progress {
-    margin-left: 0;
-    flex-basis: 100%;
-  }
-}
+/* The per-tile pill (chip + meta + progress) that previously sat above
+   the 4 H2H fixture rows was retired in PR #5h — its two unique data
+   points (live progress "N of M complete" + sub-24h kickoff label
+   "Sat 16:30") were absorbed into the brand-header status strip; the
+   chip itself was redundant with that strip's "● GW {N} — …" copy. The
+   former `.live-banner-group__header / __chip* / __meta / __progress`
+   rules used to sit here. */
 
 /* Vertical list of fully-chromed fixture tiles. User feedback on the
    prior 2×2 grid treatment: it read as a fused container instead of 4

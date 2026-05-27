@@ -7,7 +7,6 @@ import {
   formatLiveMatchupMargin,
   isCleanSheetEligible,
   liveFixtureLead,
-  liveGroupStatus,
   liveGwOutcomeDot,
   liveGwProgress,
   liveMatchupMargin,
@@ -128,84 +127,6 @@ test('formatKickoffLabel — invalid / missing returns null', () => {
   assert.equal(formatKickoffLabel(null), null)
   assert.equal(formatKickoffLabel(''), null)
   assert.equal(formatKickoffLabel('not-a-date'), null)
-})
-
-test('liveGroupStatus — pre when deadline future and no fixtures started', () => {
-  const out = liveGroupStatus({
-    eventSnapshot: {
-      id: 28,
-      finished: false,
-      deadline_time: '2026-03-08T13:30:00Z',
-    },
-    gwFixtures: [],
-    now: new Date('2026-03-08T10:00:00Z'),
-  })
-  assert.equal(out.kind, 'pre')
-  assert.equal(out.chipLabel, 'GW 28 · Upcoming')
-})
-
-test('liveGroupStatus — live when at least one fixture started, with progress', () => {
-  const fixtures = [
-    { started: true, finished: true, finished_provisional: true },
-    { started: true, finished: false, finished_provisional: false },
-    { started: false, finished: false, finished_provisional: false },
-    { started: false, finished: false, finished_provisional: false },
-  ]
-  const out = liveGroupStatus({
-    eventSnapshot: {
-      id: 28,
-      finished: false,
-      deadline_time: '2026-03-08T13:30:00Z',
-    },
-    gwFixtures: fixtures,
-    liveFixtureCount: 1,
-    minute: 32,
-    now: new Date('2026-03-08T15:00:00Z'),
-  })
-  assert.equal(out.kind, 'live')
-  assert.equal(out.chipLabel, 'Live · GW 28')
-  assert.equal(out.progress, '1 of 4 fixtures complete')
-  assert.equal(out.meta, '1 fixture live · 32′')
-})
-
-test('liveGroupStatus — live with multiple live fixtures uses plural', () => {
-  const out = liveGroupStatus({
-    eventSnapshot: { id: 28, finished: false },
-    gwFixtures: [{ started: true }, { started: true }],
-    liveFixtureCount: 2,
-    minute: null,
-    now: new Date('2026-03-08T15:00:00Z'),
-  })
-  assert.equal(out.kind, 'live')
-  assert.equal(out.meta, '2 fixtures live')
-})
-
-test('liveGroupStatus — ft when event marked finished', () => {
-  const out = liveGroupStatus({
-    eventSnapshot: { id: 28, finished: true },
-    gwFixtures: [{ finished: true }, { finished: true }],
-    now: new Date('2026-03-10T15:00:00Z'),
-  })
-  assert.equal(out.kind, 'ft')
-  assert.equal(out.chipLabel, 'Final · GW 28')
-})
-
-test('liveGroupStatus — ft when every classic fixture is finished even if event flag lags', () => {
-  const out = liveGroupStatus({
-    eventSnapshot: { id: 28, finished: false },
-    gwFixtures: [
-      { finished: true },
-      { finished_provisional: true },
-    ],
-    now: new Date('2026-03-10T15:00:00Z'),
-  })
-  assert.equal(out.kind, 'ft')
-})
-
-test('liveGroupStatus — missing event id renders bare GW label', () => {
-  const out = liveGroupStatus({})
-  assert.equal(out.kind, 'pre')
-  assert.equal(out.chipLabel, 'GW · Upcoming')
 })
 
 test('rowsByPointsContributed — descending by points; ties broken by mins/pickPosition', () => {

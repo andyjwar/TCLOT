@@ -136,102 +136,6 @@ export function formatKickoffLabel(iso, now = new Date()) {
 }
 
 /**
- * Shared status for the *group* of all H2H fixtures in a single GW. The
- * mockup `LiveHeaderStrip` covers four states (Pre / Live / Mid-GW / FT):
- *
- *   - `'pre'`  — GW hasn't started, all upcoming.
- *   - `'live'` — at least one PL fixture has kicked off this GW and the
- *                GW is not finished. May or may not have a known minute /
- *                a progress count of finished fixtures.
- *   - `'ft'`   — every PL fixture in the GW is finished (event marked
- *                `finished` by FPL bootstrap, or every classic fixture is
- *                `finished === true`).
- *
- * @param {{
- *   eventSnapshot?: { id?: number, finished?: boolean, deadline_time?: string | null } | null,
- *   gwFixtures?: object[] | null,
- *   liveFixtureCount?: number | null,
- *   minute?: number | null,
- *   now?: Date,
- * }} input
- * @returns {{
- *   kind: 'pre' | 'live' | 'ft',
- *   chipLabel: string,
- *   meta: string | null,
- *   progress: string | null,
- * }}
- */
-export function liveGroupStatus({
-  eventSnapshot,
-  gwFixtures,
-  liveFixtureCount,
-  minute,
-  now = new Date(),
-} = {}) {
-  const gwNum = Number(eventSnapshot?.id);
-  const gwLabel = Number.isFinite(gwNum) ? `GW ${gwNum}` : 'GW';
-
-  const fixtures = Array.isArray(gwFixtures) ? gwFixtures : [];
-  const finishedFixtures = fixtures.filter(
-    (f) => f && (f.finished === true || f.finished_provisional === true),
-  );
-  const totalFixtures = fixtures.length;
-  const allFinished =
-    Boolean(eventSnapshot?.finished) ||
-    (totalFixtures > 0 && finishedFixtures.length === totalFixtures);
-
-  const deadlineIso = eventSnapshot?.deadline_time;
-  const deadlinePassed = (() => {
-    if (!deadlineIso) return false;
-    const t = new Date(deadlineIso).getTime();
-    if (Number.isNaN(t)) return false;
-    return t <= now.getTime();
-  })();
-
-  if (allFinished) {
-    return {
-      kind: 'ft',
-      chipLabel: `Final · ${gwLabel}`,
-      meta: 'Gameweek complete',
-      progress: null,
-    };
-  }
-
-  const hasLive = Number(liveFixtureCount) > 0;
-  const someStarted = fixtures.some((f) => f && f.started === true);
-
-  if (deadlinePassed || hasLive || someStarted) {
-    const liveN = Number(liveFixtureCount);
-    const liveMin = Number(minute);
-    let meta = null;
-    if (Number.isFinite(liveN) && liveN > 0) {
-      if (Number.isFinite(liveMin) && liveMin > 0) {
-        meta = `${liveN} ${liveN === 1 ? 'fixture' : 'fixtures'} live · ${liveMin}′`;
-      } else {
-        meta = `${liveN} ${liveN === 1 ? 'fixture' : 'fixtures'} live`;
-      }
-    }
-    let progress = null;
-    if (totalFixtures > 0) {
-      progress = `${finishedFixtures.length} of ${totalFixtures} fixtures complete`;
-    }
-    return {
-      kind: 'live',
-      chipLabel: `Live · ${gwLabel}`,
-      meta,
-      progress,
-    };
-  }
-
-  return {
-    kind: 'pre',
-    chipLabel: `${gwLabel} · Upcoming`,
-    meta: deadlineIso ? `Kicks off ${formatKickoffLabel(deadlineIso, now) ?? '—'}` : null,
-    progress: null,
-  };
-}
-
-/**
  * Whether a given FPL position is eligible to score clean-sheet points:
  *
  *   - `'GK'` / `'GKP'`  → +4 CS points
@@ -330,9 +234,10 @@ export function sortStartingXIByPosition(players) {
 /**
  * Compact "N/M done" progress label for the expanded-fixture sticky header.
  *
- * Reads the same finished/finished-provisional flags as `liveGroupStatus`
- * but renders a short slash-separated string the table-style header uses
- * (the long form "N of M fixtures complete" would wrap on mobile).
+ * Reads the same finished/finished-provisional flags the brand-header
+ * progress label does but renders a short slash-separated string the
+ * table-style header uses (the long form "N of M fixtures complete" would
+ * wrap on mobile).
  *
  * Returns null when there are no fixtures (blank week / data not yet
  * loaded) so the caller can omit the label entirely.

@@ -7,6 +7,8 @@
  * (`Mockup.jsx#HeroVariantBSeasonAndCrests` + `HeroVariantBStatusStrip`).
  */
 
+import { formatKickoffLabel } from './liveScoresDerivations.js'
+
 /**
  * Compact season label for the status strip — `25/26` for the 2025/26 season.
  * The brand header itself shows the wider `2025/26` form; the strip uses the
@@ -53,6 +55,32 @@ function finitePositiveOrNull(v) {
   return n
 }
 
+/** 24 hours in ms — the cutoff for swapping the month-day `Mar 15` label
+ * to the tighter `Sat 16:30` day-of-week + time-of-day form. Matches the
+ * spec for PR #5h (absorb live pill into brand header). */
+const KICKOFF_LABEL_WINDOW_MS = 24 * 60 * 60 * 1000
+
+/**
+ * `Sat 16:30` label when the next deadline is within the next 24h, null
+ * otherwise. Past deadlines also return null so the strip never surfaces
+ * an already-elapsed kickoff. Reuses `formatKickoffLabel` from
+ * `liveScoresDerivations.js` so the formatting stays in lockstep with
+ * the (now-retired) live tile pill copy.
+ *
+ * @param {string | null | undefined} deadlineIso
+ * @param {Date} now
+ * @returns {string | null}
+ */
+function kickoffLabelWithin24h(deadlineIso, now) {
+  if (!deadlineIso) return null
+  const d = new Date(deadlineIso)
+  if (Number.isNaN(d.getTime())) return null
+  const delta = d.getTime() - now.getTime()
+  if (delta <= 0) return null
+  if (delta > KICKOFF_LABEL_WINDOW_MS) return null
+  return formatKickoffLabel(deadlineIso, now)
+}
+
 /**
  * Derive the brand-header status strip state purely from bootstrap-derived data.
  *
@@ -61,11 +89,14 @@ function finitePositiveOrNull(v) {
  *           Optional `liveFixtureCount` / `minute` (from `useFplFixtureLiveSummary`,
  *           PR #4) ride along on the result — when both are absent the strip degrades
  *           to `● GW {N} · Live` (pre-kickoff, between fixture windows, or fetch
- *           failure).
+ *           failure). Optional `finishedFixtureCount` / `totalFixtureCount` drive
+ *           the `progressLabel` ("2 of 10 complete") added in PR #5h.
  * - `idle`: `events.current` is finished (between GWs). Copy: `GW {last} complete ·
- *           GW {next} of {seasonShort} starts {date}`.
+ *           GW {next} of {seasonShort} starts {date}`. When the deadline is within
+ *           24h the consumer swaps to `GW {next} kicks off {kickoffLabel}` using
+ *           the tighter `Sat 16:30` form.
  * - `pre-season`: no event has finished yet. Copy: `Pre-season · GW 1 of {seasonShort}
- *           starts {date}`.
+ *           starts {date}`. Same 24h kickoff window swap as `idle`.
  *
  * @param {{
  *   currentEvent?: object | null,
@@ -75,6 +106,8 @@ function finitePositiveOrNull(v) {
  *   now?: Date,
  *   liveFixtureCount?: number | null,
  *   minute?: number | null,
+ *   finishedFixtureCount?: number | null,
+ *   totalFixtureCount?: number | null,
  * }} p
  * @returns {{
  *   status: 'live' | 'idle' | 'pre-season' | 'unknown',
@@ -85,6 +118,8 @@ function finitePositiveOrNull(v) {
  *   seasonShort: string,
  *   liveFixtureCount: number | null,
  *   minute: number | null,
+ *   progressLabel: string | null,
+ *   kickoffLabel: string | null,
  * }}
  */
 export function deriveBrandHeaderStatus({
@@ -95,6 +130,8 @@ export function deriveBrandHeaderStatus({
   now = new Date(),
   liveFixtureCount = null,
   minute = null,
+  finishedFixtureCount = null,
+  totalFixtureCount = null,
 }) {
   const seasonShort = seasonShortLabel(season)
   const lastFinishedGw =
@@ -111,6 +148,8 @@ export function deriveBrandHeaderStatus({
       seasonShort,
       liveFixtureCount: null,
       minute: null,
+      progressLabel: null,
+      kickoffLabel: null,
     }
   }
 
@@ -121,6 +160,15 @@ export function deriveBrandHeaderStatus({
     const deadlinePassed =
       deadline && !Number.isNaN(deadline.getTime()) && deadline.getTime() <= now.getTime()
     if (deadlinePassed) {
+      const totalNum = Number(totalFixtureCount)
+      const finishedNum = Number(finishedFixtureCount)
+      const progressLabel =
+        Number.isFinite(totalNum) &&
+        totalNum > 0 &&
+        Number.isFinite(finishedNum) &&
+        finishedNum >= 0
+          ? `${finishedNum} of ${totalNum} complete`
+          : null
       return {
         status: 'live',
         liveGw: Number(currentEvent.id),
@@ -135,6 +183,8 @@ export function deriveBrandHeaderStatus({
           minute == null || !Number.isFinite(Number(minute)) || Number(minute) < 0
             ? null
             : Number(minute),
+        progressLabel,
+        kickoffLabel: null,
       }
     }
   }
@@ -149,6 +199,8 @@ export function deriveBrandHeaderStatus({
       seasonShort,
       liveFixtureCount: null,
       minute: null,
+      progressLabel: null,
+      kickoffLabel: kickoffLabelWithin24h(nextEvent?.deadline_time, now),
     }
   }
 
@@ -161,5 +213,7 @@ export function deriveBrandHeaderStatus({
     seasonShort,
     liveFixtureCount: null,
     minute: null,
+    progressLabel: null,
+    kickoffLabel: kickoffLabelWithin24h(nextEvent?.deadline_time, now),
   }
 }
