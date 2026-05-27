@@ -1108,6 +1108,43 @@ function initialWaiverFeedTabForViewport() {
 
 const STANDINGS_SORT_KEYS = /** @type {const} */ (['gf', 'ga', 'gd', 'total'])
 
+/** Listens to the same `(max-width: 767px)` breakpoint the Standings
+ * Variant C CSS uses, so the JSX rendering branches (mobile vs desktop
+ * thead/columns/team-name truncation) stay locked to the same line as
+ * the visual styling. */
+function useIsMobileStandingsViewport() {
+  const getMatch = () => {
+    if (typeof window === 'undefined' || !window.matchMedia) return false
+    return window.matchMedia('(max-width: 767px)').matches
+  }
+  const [isMobile, setIsMobile] = useState(getMatch)
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return undefined
+    const mq = window.matchMedia('(max-width: 767px)')
+    const handler = (e) => setIsMobile(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
+  return isMobile
+}
+
+/** First word of a team name — used on mobile to keep team-cell narrow.
+ * "Crouch End Oashisu" → "Crouch", "Hanson of York AFC" → "Hanson". */
+function firstWord(name) {
+  if (!name) return ''
+  const parts = String(name).split(/\s+/)
+  return parts[0] || ''
+}
+
+/** Rank-zone bucket for the left-edge colour bar.
+ * 1–4 = top tier (emerald), 5–7 = mid (slate), 8 = wooden spoon (red). */
+function rankZone(rank) {
+  if (rank == null) return 'mid'
+  if (rank <= 4) return 'top'
+  if (rank === 8) return 'bottom'
+  return 'mid'
+}
+
 /** Sortable header for For / Faced / GD / PTS — `null` sortState = league order. */
 function StandingsSortTh({ columnKey, sortState, onSort, label, title, className }) {
   const isPts = columnKey === 'total'
@@ -1236,6 +1273,17 @@ function App() {
   )
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
+  /** Mobile (≤767px) renders a separate condensed Standings table with
+   * static headers, no sort UI, and rows fixed to PTS-desc order — even
+   * if the user previously sorted by another column on desktop. The
+   * desktop table keeps the existing interactive sort. */
+  const isMobileStandings = useIsMobileStandingsViewport()
+  /** league_entry id of the row the user has tapped to highlight, or null.
+   * Toggles on click; works for both the hero card (rank 1) and the
+   * condensed rows below. Visual treatment matches the leader hero so
+   * the rank-1 highlight tradition still reads, plus user can mark any
+   * other row for at-a-glance comparison. */
+  const [selectedStandingsEntry, setSelectedStandingsEntry] = useState(null)
   const [liveGw, setLiveGw] = useState(null)
   /** Draft bootstrap `events.current` — default Live tab GW when user has not chosen one. */
   const [fplLiveLandingGw, setFplLiveLandingGw] = useState(null)
@@ -1643,6 +1691,25 @@ function App() {
     })
   }, [])
 
+  /** Toggle the user-selected standings row (hero card + condensed rows). */
+  const toggleStandingsHighlight = useCallback((leagueEntryId) => {
+    if (leagueEntryId == null) return
+    setSelectedStandingsEntry((prev) => (prev === leagueEntryId ? null : leagueEntryId))
+  }, [])
+
+  /** Manager display name keyed by `league_entry` — used under each team
+   * name in the hero card and the condensed rows. Mirrors the lookup
+   * `BrandHeader` already does on the same `leagueEntries` array. */
+  const managerByEntry = useMemo(() => {
+    const m = new Map()
+    for (const e of leagueEntries ?? []) {
+      if (e?.id == null) continue
+      const name = `${e.player_first_name ?? ''} ${e.player_last_name ?? ''}`.trim()
+      if (name) m.set(e.id, name)
+    }
+    return m
+  }, [leagueEntries])
+
   const sortedStandingsRows = useMemo(() => {
     if (!standingsSort) return tableRows
     const { key, dir } = standingsSort
@@ -1659,6 +1726,26 @@ function App() {
     })
     return out
   }, [tableRows, standingsSort])
+
+  /** Rank-1 row always renders in the hero card at the top — independent
+   * of the current sort. The condensed table below renders the other 7
+   * rows in whatever order the user sorted (or league order if unsorted),
+   * with rank-1 removed. Preserves the "first-place row highlight
+   * tradition" by making the hero card the visual celebration of #1. */
+  const leaderStandingsRow = useMemo(() => {
+    return (tableRows ?? []).find((r) => r.rank === 1) ?? null
+  }, [tableRows])
+
+  const nonLeaderStandingsRows = useMemo(() => {
+    return sortedStandingsRows.filter((r) => r.rank !== 1)
+  }, [sortedStandingsRows])
+
+  /** Mobile always renders PTS-desc — which is league order
+   * (`tableRows` is already sorted by total desc with tiebreakers).
+   * We just drop the leader (rendered in the hero card). */
+  const mobileNonLeaderStandingsRows = useMemo(() => {
+    return (tableRows ?? []).filter((r) => r.rank !== 1)
+  }, [tableRows])
 
   const completeGwFixtures = useMemo(() => {
     const gw = Number(completeGwEffective)
@@ -1908,7 +1995,7 @@ function App() {
           {dashboardView === 'standings' && (
             <>
               <section
-                className="tile tile--standings"
+                className="tile tile--standings tile--standings-c"
                 aria-labelledby="standings-heading"
               >
             <div className="tile-head-row tile-head-row--tight">
@@ -1916,126 +2003,318 @@ function App() {
                 Standings
               </h2>
             </div>
-            <div className="table-scroll table-scroll--standings-open">
-              <table className="standings-table standings-table--sidebar">
-                <thead>
-                  <tr>
-                    <th className="col-rank">#</th>
-                    <th className="col-team">Team</th>
-                    <th className="col-num col-pl">PL</th>
-                    <th className="col-num col-wdl">W</th>
-                    <th className="col-num col-wdl">D</th>
-                    <th className="col-num col-wdl">L</th>
-                    <StandingsSortTh
-                      columnKey="gf"
-                      sortState={standingsSort}
-                      onSort={handleStandingsSort}
-                      label="For"
-                      title="Your team’s total FPL points across all H2H gameweeks"
-                      className="col-num col-for"
-                    />
-                    <StandingsSortTh
-                      columnKey="ga"
-                      sortState={standingsSort}
-                      onSort={handleStandingsSort}
-                      label="Faced"
-                      title="Points against, all H2H gameweeks"
-                      className="col-num col-faced"
-                    />
-                    <StandingsSortTh
-                      columnKey="gd"
-                      sortState={standingsSort}
-                      onSort={handleStandingsSort}
-                      label="GD"
-                      title="Goal difference (points for minus points against)"
-                      className="col-num col-gd"
-                    />
-                    <StandingsSortTh
-                      columnKey="total"
-                      sortState={standingsSort}
-                      onSort={handleStandingsSort}
-                      label="PTS"
-                      title="League points (3 / 1 / 0 per H2H)"
-                      className="col-num col-pts"
-                    />
-                    <th
-                      className="col-form"
-                      title={`Last ${FORM_LAST_N} H2H matches (W / D / L)`}
-                    >
-                      Form
-                    </th>
-                    <th className="col-next">Nxt</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedStandingsRows.map((row) => {
-                    const isLeader = row.rank === 1
-                    const rowClass = [
-                      isLeader ? 'row-highlight' : '',
-                      row.rank === 1 ? 'standings-row--divider-below' : '',
-                      row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
-                    ]
-                      .filter(Boolean)
-                      .join(' ')
-                    return (
-                      <tr key={row.league_entry} className={rowClass || undefined}>
-                        <td className="col-rank">
-                          {row.rank === 8 ? (
-                            <span role="img" className="standings-rank-8" aria-label="8">
-                              🧩
+            {leaderStandingsRow && (() => {
+              const leader = leaderStandingsRow
+              const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
+              const isSelected = selectedStandingsEntry === leader.league_entry
+              const leaderDisplayName = isMobileStandings
+                ? firstWord(leader.teamName)
+                : leader.teamName
+              const leaderForm = (leader.form ?? []).slice(-5)
+              const gdStr = leader.gd > 0 ? `+${leader.gd}` : `${leader.gd}`
+              return (
+                <button
+                  type="button"
+                  className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
+                  data-zone={rankZone(leader.rank)}
+                  aria-pressed={isSelected}
+                  aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, top of the league`}
+                  onClick={() => toggleStandingsHighlight(leader.league_entry)}
+                >
+                  <span className="standings-hero-card__eyebrow">
+                    <span aria-hidden>★</span>
+                    Top of the league
+                  </span>
+                  <div className="standings-hero-card__row">
+                    <span className="standings-hero-card__crest">
+                      <TeamAvatar
+                        entryId={leader.league_entry}
+                        name={leader.teamName}
+                        size="sm"
+                        logoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
+                    </span>
+                    <div className="standings-hero-card__id">
+                      <div className="standings-hero-card__name">{leaderDisplayName}</div>
+                      {leaderMgr ? (
+                        <div className="standings-hero-card__mgr">{leaderMgr}</div>
+                      ) : null}
+                    </div>
+                    <div className="standings-hero-card__pts">
+                      <div className="standings-hero-card__pts-num tabular">{leader.total}</div>
+                      <div className="standings-hero-card__pts-lbl">PTS</div>
+                    </div>
+                  </div>
+                  <div className="standings-hero-card__sub">
+                    <FormCircles form={leaderForm} />
+                    {leader.next ? (
+                      <span className="standings-hero-card__nxt">
+                        <span className="standings-hero-card__nxt-lbl">Next</span>
+                        <span className="standings-hero-card__nxt-crest">
+                          <TeamAvatar
+                            entryId={leader.next.id}
+                            name={leader.next.name}
+                            size="sm"
+                            logoMap={teamLogoMap}
+                            kitIndexByEntry={kitIndexByEntry}
+                          />
+                        </span>
+                      </span>
+                    ) : null}
+                  </div>
+                  <div className="standings-hero-card__stats" aria-hidden="false">
+                    <div className="standings-hero-card__stat">
+                      <div className="standings-hero-card__stat-lbl">PL</div>
+                      <div className="standings-hero-card__stat-num tabular">{leader.pl}</div>
+                    </div>
+                    <div className="standings-hero-card__stat">
+                      <div className="standings-hero-card__stat-lbl">GD</div>
+                      <div className="standings-hero-card__stat-num tabular">{gdStr}</div>
+                    </div>
+                  </div>
+                </button>
+              )
+            })()}
+            {isMobileStandings ? (
+              <div className="table-scroll table-scroll--standings-open">
+                <table
+                  className="standings-table standings-table--variant-c standings-table--variant-c-mobile"
+                  role="table"
+                  aria-label="Standings — ranks 2 through 8 (sorted by points descending)"
+                >
+                  <thead>
+                    <tr>
+                      <th scope="col" className="col-rank">#</th>
+                      <th scope="col" className="col-team">Team</th>
+                      <th scope="col" className="col-num col-for">For</th>
+                      <th scope="col" className="col-num col-pts">PTS</th>
+                      <th scope="col" className="col-form">Form</th>
+                      <th scope="col" className="col-next">Nxt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {mobileNonLeaderStandingsRows.map((row) => {
+                      const isSelected = selectedStandingsEntry === row.league_entry
+                      const mgr = managerByEntry.get(row.league_entry) ?? ''
+                      const rowClass = [
+                        row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
+                        isSelected ? 'is-selected' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')
+                      const displayName = firstWord(row.teamName)
+                      const form5 = (row.form ?? []).slice(-5)
+                      return (
+                        <tr
+                          key={row.league_entry}
+                          className={rowClass || undefined}
+                          data-zone={rankZone(row.rank)}
+                          onClick={() => toggleStandingsHighlight(row.league_entry)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              toggleStandingsHighlight(row.league_entry)
+                            }
+                          }}
+                          tabIndex={0}
+                          aria-pressed={isSelected}
+                        >
+                          <td className="col-rank">
+                            {row.rank === 8 ? (
+                              <span role="img" className="standings-rank-8" aria-label="8">
+                                🧩
+                              </span>
+                            ) : (
+                              row.rank
+                            )}
+                          </td>
+                          <td className="col-team">
+                            <span className="team-cell">
+                              <TeamAvatar
+                                entryId={row.league_entry}
+                                name={row.teamName}
+                                size="sm"
+                                logoMap={teamLogoMap}
+                                kitIndexByEntry={kitIndexByEntry}
+                              />
+                              <span className="standings-team-id">
+                                <span className="team-name team-name--sidebar">{displayName}</span>
+                                {mgr ? (
+                                  <span className="standings-team-mgr">{mgr}</span>
+                                ) : null}
+                              </span>
                             </span>
-                          ) : (
-                            row.rank
-                          )}
-                        </td>
-                        <td className="col-team">
-                          <span className="team-cell">
-                            <TeamAvatar
-                              entryId={row.league_entry}
-                              name={row.teamName}
-                              size="sm"
-                              logoMap={teamLogoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                            />
-                            <span className="team-name team-name--sidebar">{row.teamName}</span>
-                          </span>
-                        </td>
-                        <td className="col-num col-pl">{row.pl}</td>
-                        <td className="col-num col-wdl">{row.matches_won}</td>
-                        <td className="col-num col-wdl">{row.matches_drawn}</td>
-                        <td className="col-num col-wdl">{row.matches_lost}</td>
-                        <td className="col-num col-for tabular" title="Your points for, all GWs">
-                          {row.gf}
-                        </td>
-                        <td className="col-num col-faced tabular">
-                          {row.ga}
-                        </td>
-                        <td className="col-num col-gd tabular">{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
-                        <td className="col-num col-pts tabular">
-                          <strong>{row.total}</strong>
-                        </td>
-                        <td className="col-form">
-                          <FormCircles form={row.form} />
-                        </td>
-                        <td className="col-next">
-                          {row.next ? (
-                            <TeamAvatar
-                              entryId={row.next.id}
-                              name={row.next.name}
-                              size="sm"
-                              logoMap={teamLogoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                            />
-                          ) : (
-                            <span className="muted">—</span>
-                          )}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          </td>
+                          <td className="col-num col-for tabular" title="Your points for, all GWs">
+                            {row.gf}
+                          </td>
+                          <td className="col-num col-pts tabular">
+                            <strong>{row.total}</strong>
+                          </td>
+                          <td className="col-form">
+                            <FormCircles form={form5} />
+                          </td>
+                          <td className="col-next">
+                            {row.next ? (
+                              <TeamAvatar
+                                entryId={row.next.id}
+                                name={row.next.name}
+                                size="sm"
+                                logoMap={teamLogoMap}
+                                kitIndexByEntry={kitIndexByEntry}
+                              />
+                            ) : (
+                              <span className="muted">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <div className="table-scroll table-scroll--standings-open">
+                <table className="standings-table standings-table--sidebar standings-table--variant-c">
+                  <thead>
+                    <tr>
+                      <th className="col-rank">#</th>
+                      <th className="col-team">Team</th>
+                      <th className="col-num col-pl">PL</th>
+                      <th className="col-num col-wdl">W</th>
+                      <th className="col-num col-wdl">D</th>
+                      <th className="col-num col-wdl">L</th>
+                      <StandingsSortTh
+                        columnKey="gf"
+                        sortState={standingsSort}
+                        onSort={handleStandingsSort}
+                        label="For"
+                        title="Your team’s total FPL points across all H2H gameweeks"
+                        className="col-num col-for"
+                      />
+                      <StandingsSortTh
+                        columnKey="ga"
+                        sortState={standingsSort}
+                        onSort={handleStandingsSort}
+                        label="Faced"
+                        title="Points against, all H2H gameweeks"
+                        className="col-num col-faced"
+                      />
+                      <StandingsSortTh
+                        columnKey="gd"
+                        sortState={standingsSort}
+                        onSort={handleStandingsSort}
+                        label="GD"
+                        title="Goal difference (points for minus points against)"
+                        className="col-num col-gd"
+                      />
+                      <StandingsSortTh
+                        columnKey="total"
+                        sortState={standingsSort}
+                        onSort={handleStandingsSort}
+                        label="PTS"
+                        title="League points (3 / 1 / 0 per H2H)"
+                        className="col-num col-pts"
+                      />
+                      <th
+                        className="col-form"
+                        title={`Last ${FORM_LAST_N} H2H matches (W / D / L)`}
+                      >
+                        Form
+                      </th>
+                      <th className="col-next">Nxt</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {nonLeaderStandingsRows.map((row) => {
+                      const isSelected = selectedStandingsEntry === row.league_entry
+                      const mgr = managerByEntry.get(row.league_entry) ?? ''
+                      const rowClass = [
+                        row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
+                        isSelected ? 'is-selected' : '',
+                      ]
+                        .filter(Boolean)
+                        .join(' ')
+                      const form5 = (row.form ?? []).slice(-5)
+                      return (
+                        <tr
+                          key={row.league_entry}
+                          className={rowClass || undefined}
+                          data-zone={rankZone(row.rank)}
+                          onClick={() => toggleStandingsHighlight(row.league_entry)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              toggleStandingsHighlight(row.league_entry)
+                            }
+                          }}
+                          tabIndex={0}
+                          aria-pressed={isSelected}
+                        >
+                          <td className="col-rank">
+                            {row.rank === 8 ? (
+                              <span role="img" className="standings-rank-8" aria-label="8">
+                                🧩
+                              </span>
+                            ) : (
+                              row.rank
+                            )}
+                          </td>
+                          <td className="col-team">
+                            <span className="team-cell">
+                              <TeamAvatar
+                                entryId={row.league_entry}
+                                name={row.teamName}
+                                size="sm"
+                                logoMap={teamLogoMap}
+                                kitIndexByEntry={kitIndexByEntry}
+                              />
+                              <span className="standings-team-id">
+                                <span className="team-name team-name--sidebar">{row.teamName}</span>
+                                {mgr ? (
+                                  <span className="standings-team-mgr">{mgr}</span>
+                                ) : null}
+                              </span>
+                            </span>
+                          </td>
+                          <td className="col-num col-pl">{row.pl}</td>
+                          <td className="col-num col-wdl">{row.matches_won}</td>
+                          <td className="col-num col-wdl">{row.matches_drawn}</td>
+                          <td className="col-num col-wdl">{row.matches_lost}</td>
+                          <td className="col-num col-for tabular" title="Your points for, all GWs">
+                            {row.gf}
+                          </td>
+                          <td className="col-num col-faced tabular">
+                            {row.ga}
+                          </td>
+                          <td className="col-num col-gd tabular">{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                          <td className="col-num col-pts tabular">
+                            <strong>{row.total}</strong>
+                          </td>
+                          <td className="col-form">
+                            <FormCircles form={form5} />
+                          </td>
+                          <td className="col-next">
+                            {row.next ? (
+                              <TeamAvatar
+                                entryId={row.next.id}
+                                name={row.next.name}
+                                size="sm"
+                                logoMap={teamLogoMap}
+                                kitIndexByEntry={kitIndexByEntry}
+                              />
+                            ) : (
+                              <span className="muted">—</span>
+                            )}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </section>
 
               <div className="dashboard-stack">

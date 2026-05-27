@@ -10079,26 +10079,31 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   border-bottom: none;
 }
 
-/* Portrait phones: compact standings (#, Team, PL, For, PTS) — landscape & desktop keep full table */
+/* Portrait phones: compact standings (#, Team, PL, For, PTS) — landscape & desktop keep full table.
+ * The production Standings tab now uses `.standings-table--variant-c`
+ * (hero leader card + condensed rows) and owns its own breakpoints
+ * further down in this file; exclude it from the legacy portrait hide
+ * so we don't fight the new column-visibility scheme. The Live tab,
+ * Hall historic/career tables still use the legacy behaviour. */
 @media (orientation: portrait) {
-  .standings-table .col-wdl,
-  .standings-table .col-faced,
-  .standings-table .col-gd,
-  .standings-table .col-form,
-  .standings-table .col-next {
+  .standings-table:not(.standings-table--variant-c) .col-wdl,
+  .standings-table:not(.standings-table--variant-c) .col-faced,
+  .standings-table:not(.standings-table--variant-c) .col-gd,
+  .standings-table:not(.standings-table--variant-c) .col-form,
+  .standings-table:not(.standings-table--variant-c) .col-next {
     display: none;
   }
 
-  .standings-table th,
-  .standings-table td {
+  .standings-table:not(.standings-table--variant-c) th,
+  .standings-table:not(.standings-table--variant-c) td {
     padding: 10px 6px;
   }
 
-  .standings-table {
+  .standings-table:not(.standings-table--variant-c) {
     font-size: 0.82rem;
   }
 
-  .standings-table thead th {
+  .standings-table:not(.standings-table--variant-c) thead th {
     font-size: 0.68rem;
   }
 
@@ -12545,5 +12550,531 @@ button.live-xp__player-name:focus-visible {
     padding-top: 8px;
     padding-bottom: 8px;
     background: transparent;
+  }
+}
+
+/* ================================================================== */
+/* Standings — hero leader card + condensed rows (Variant C)           */
+/* ------------------------------------------------------------------ */
+/* Production port of Mockup.jsx StandingsVariantC.                    */
+/*                                                                     */
+/* Mobile (≤767px): renders a separate `.standings-table--variant-c-   */
+/* mobile` six-column table (# · Team · For · PTS · Form · Nxt) with   */
+/* static headers (no sort chevrons, no click). The JS render branch   */
+/* picks PTS-desc rows for mobile regardless of any desktop sort.      */
+/*                                                                     */
+/* Desktop (≥768px): renders the full 12-column sortable table         */
+/* (# · Team · PL · W · D · L · For · Faced · GD · PTS · Form · Nxt).  */
+/*                                                                     */
+/* Hero card: rank #1 leader. Brand-tinted gradient + radial highlight */
+/* + GREEN rank-zone bar flush to the left edge.                       */
+/*                                                                     */
+/* Rank-zone bars (4px, ::before on row's first td or on the hero card */
+/* itself): green for ranks 1–4, neutral slate for 5–7, red for 8.     */
+/* ================================================================== */
+
+/* Rank-zone palette — local to the Standings tile so the rest of the
+ * app keeps its existing token system. Chosen to harmonise with:
+ *   - emerald (10b981) matches `--fm-win` lineage / form-win green
+ *   - slate (94a3b8) is a neutral muted mid-tier marker
+ *   - red (ef4444) is the same hue as `--fm-standings-8th-bg`
+ *     (rgba(239, 68, 68, 0.09)), now full-saturation on the edge bar
+ */
+.tile.tile--standings-c {
+  --rank-zone-top: #10b981;
+  --rank-zone-mid: #94a3b8;
+  --rank-zone-bottom: #ef4444;
+}
+
+/* ----- Hero leader card -------------------------------------------- */
+
+.standings-hero-card {
+  position: relative;
+  display: block;
+  width: calc(100% - 24px);
+  margin: 12px;
+  padding: 14px 14px 12px 18px;
+  box-sizing: border-box;
+  /* Stack the radial top-right highlight on top of the diagonal
+   * brand-tint so the ::before pseudo can be reused for the rank-
+   * zone bar on the left edge. */
+  background:
+    radial-gradient(
+      120% 80% at 100% 0%,
+      color-mix(in srgb, var(--brand) 22%, transparent),
+      transparent 60%
+    ),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--brand) 18%, transparent),
+      color-mix(in srgb, var(--brand) 6%, transparent)
+    );
+  border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--fm-border));
+  border-radius: 14px;
+  box-shadow: 0 1px 6px color-mix(in srgb, var(--brand) 20%, transparent);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  overflow: hidden;
+  transition: box-shadow 120ms ease, border-color 120ms ease;
+}
+
+/* Rank-zone bar — hero card is always rank 1, so always green. */
+.standings-hero-card::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--rank-zone-top);
+  pointer-events: none;
+}
+
+.standings-hero-card:hover {
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--brand) 28%, transparent);
+}
+
+.standings-hero-card:focus-visible {
+  outline: 2px solid var(--brand, #795bfb);
+  outline-offset: 2px;
+}
+
+.standings-hero-card.is-selected {
+  border-color: var(--brand, #795bfb);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--brand) 32%, transparent),
+    0 1px 6px color-mix(in srgb, var(--brand) 22%, transparent);
+}
+
+.standings-hero-card__eyebrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand, #795bfb);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  padding: 4px 8px;
+  border-radius: 999px;
+  margin-bottom: 10px;
+}
+
+.standings-hero-card__row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Hero crest — promote the inner avatar frame to 56px regardless of
+ * the TeamAvatar `size="sm"` default (28px). Scope tight so we don't
+ * affect crests elsewhere on the page. */
+.standings-hero-card__crest .team-avatar-frame {
+  width: 56px;
+  height: 56px;
+  border-width: 2px;
+}
+
+.standings-hero-card__id {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.standings-hero-card__name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-strong, var(--fm-text-strong));
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.standings-hero-card__mgr {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted, var(--fm-muted));
+  line-height: 1.2;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.standings-hero-card__pts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.standings-hero-card__pts-num {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--text-strong, var(--fm-text-strong));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.standings-hero-card__pts-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand, #795bfb);
+  margin-top: 2px;
+}
+
+.standings-hero-card__sub {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid
+    color-mix(in srgb, var(--brand) 22%, var(--fm-border));
+}
+
+/* Form dots inside the hero — prominent per Variant C spec. */
+.standings-hero-card__sub .form-circles {
+  gap: 5px;
+}
+.standings-hero-card__sub .form-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  font-size: 8px;
+}
+
+.standings-hero-card__nxt {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.standings-hero-card__nxt-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted, var(--fm-muted));
+}
+
+.standings-hero-card__nxt-crest .team-avatar-frame {
+  width: 22px;
+  height: 22px;
+}
+
+/* PL / GD stat strip below the form/next row. */
+.standings-hero-card__stats {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid
+    color-mix(in srgb, var(--brand) 18%, var(--fm-border));
+}
+.standings-hero-card__stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1;
+}
+.standings-hero-card__stat-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand, #795bfb);
+}
+.standings-hero-card__stat-num {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-strong, var(--fm-text-strong));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+/* ----- Condensed table — shared (mobile + desktop variants) -------- */
+
+/* Manager name muted, under each team name. */
+.standings-table--variant-c .standings-team-id {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.standings-table--variant-c .team-name--sidebar {
+  display: block;
+}
+.standings-team-mgr {
+  display: block;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted, var(--fm-muted));
+  line-height: 1.2;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Tabular numerics on the columns that scan vertically. */
+.standings-table--variant-c .col-pts,
+.standings-table--variant-c .col-gd,
+.standings-table--variant-c .col-for,
+.standings-table--variant-c .col-faced {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Whole-row click target for highlight toggle. */
+.standings-table--variant-c tbody tr {
+  cursor: pointer;
+}
+.standings-table--variant-c tbody tr:hover td {
+  background: color-mix(in srgb, var(--brand) 6%, transparent);
+}
+.standings-table--variant-c tbody tr:focus-visible {
+  outline: 2px solid var(--brand, #795bfb);
+  outline-offset: -2px;
+}
+.standings-table--variant-c tbody tr.is-selected td {
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+}
+
+/* Rank-zone bar on each row — 4px vertical stripe flush to the
+ * row's left edge. Implemented as `::before` on the first cell
+ * (table rows can't host abs-positioned pseudos reliably across
+ * browsers, but cells can). The cell is sized to its own content
+ * + padding; the bar overlays via `position: absolute`. */
+.standings-table--variant-c tbody tr td:first-child {
+  position: relative;
+}
+.standings-table--variant-c tbody tr td:first-child::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--rank-zone-mid);
+  pointer-events: none;
+}
+.standings-table--variant-c tbody tr[data-zone='top']
+  td:first-child::before {
+  background: var(--rank-zone-top);
+}
+.standings-table--variant-c tbody tr[data-zone='bottom']
+  td:first-child::before {
+  background: var(--rank-zone-bottom);
+}
+
+/* When a row is selected, draw the brand accent stripe just inside
+ * the rank-zone bar so both reads. */
+.standings-table--variant-c tbody tr.is-selected td:first-child {
+  box-shadow: inset 7px 0 0 -3px var(--brand, #795bfb);
+}
+
+/* ----- Mobile (≤767px): static 6-col table ------------------------ */
+/*
+ * The mobile table renders ONLY as `.standings-table--variant-c-
+ * mobile` (no `.standings-table--sidebar`), so most legacy sidebar
+ * rules don't apply at all. We only need to defeat the few base
+ * `.standings-table` rules (`.col-form` padding, `.col-next`
+ * padding-right, `.col-team` min-width, `.col-rank` width).
+ *
+ * Target visible columns + paddings to fit ~290px scroll-container
+ * width on a 360px viewport (after 18px tile padding each side).
+ */
+
+.standings-table--variant-c-mobile {
+  width: 100%;
+  table-layout: auto;
+}
+
+/* Base cell padding (mobile). */
+.standings-table--variant-c-mobile th,
+.standings-table--variant-c-mobile td {
+  padding: 8px 4px;
+}
+
+/* Column-specific overrides — chain `.col-*` to (0,2,0) so we beat
+ * the (0,2,0) base `.standings-table .col-form { padding-left: 12px;
+ * padding-right: 12px }` and `.col-next { padding-right: 16px }`. */
+.standings-table--variant-c-mobile .col-form,
+.standings-table--variant-c-mobile .col-next,
+.standings-table--variant-c-mobile .col-for,
+.standings-table--variant-c-mobile .col-num.col-pts {
+  padding-left: 4px;
+  padding-right: 4px;
+  min-width: 0;
+}
+
+/* Edge breathing room on first/last cells. The first cell carries
+ * the rank-zone bar (4px), so leave at least 8px of padding-left so
+ * the rank glyph doesn't crowd the bar. */
+.standings-table--variant-c-mobile thead th:first-child,
+.standings-table--variant-c-mobile tbody td:first-child {
+  padding-left: 10px;
+}
+.standings-table--variant-c-mobile thead th:last-child,
+.standings-table--variant-c-mobile tbody td:last-child {
+  padding-right: 8px;
+}
+
+/* Static mobile thead — no buttons, no hover, no sort UI. */
+.standings-table--variant-c-mobile thead th {
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted, var(--fm-muted));
+  text-align: right;
+  border-bottom: 1px solid var(--fm-border);
+  cursor: default;
+}
+.standings-table--variant-c-mobile thead th.col-rank,
+.standings-table--variant-c-mobile thead th.col-team {
+  text-align: left;
+}
+.standings-table--variant-c-mobile thead th.col-form {
+  text-align: center;
+}
+
+/* Rank — narrow, content-sized. Shrink the 🧩 emoji so the rank-8
+ * row doesn't push the whole column wider than the digits. */
+.standings-table--variant-c-mobile .col-rank {
+  width: auto;
+  min-width: 0;
+  font-weight: 700;
+}
+.standings-table--variant-c-mobile .standings-rank-8 {
+  font-size: 0.85rem;
+}
+
+/* Team col — kill the legacy `.standings-table .col-team
+ * { min-width: 140px }` floor so the column shrinks to content. */
+.standings-table--variant-c-mobile .col-team {
+  min-width: 0;
+  text-align: left;
+}
+.standings-table--variant-c-mobile td.col-team .team-avatar-frame--sm {
+  width: 20px;
+  height: 20px;
+}
+.standings-table--variant-c-mobile .team-cell {
+  gap: 6px;
+}
+.standings-table--variant-c-mobile .team-name--sidebar {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  /* First-word names are usually 6–8 chars and fit naturally; the
+   * cap is a safety net (and forces the manager line below to truncate
+   * with ellipsis when its full name would otherwise push the column
+   * wide enough to overflow a 360px viewport). */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 72px;
+}
+.standings-table--variant-c-mobile .standings-team-mgr {
+  font-size: 10px;
+  max-width: 72px;
+}
+
+/* For / PTS — right-aligned tabular numerics. */
+.standings-table--variant-c-mobile td.col-for,
+.standings-table--variant-c-mobile td.col-num.col-pts {
+  text-align: right;
+}
+
+/* Form: 5px circles, 1px gap → ≈ 31px content + 8px padding ≈ 39px.
+ * Mobile table doesn't have `--sidebar` so no need to fight its
+ * `.form-circles { gap: 5px }` rule. */
+.standings-table--variant-c-mobile .col-form {
+  text-align: center;
+}
+.standings-table--variant-c-mobile .form-circles {
+  gap: 1px;
+  justify-content: center;
+}
+.standings-table--variant-c-mobile .form-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  font-size: 0;
+  line-height: 0;
+  /* Hide the W/L/D glyph at this size; colour is the signal. */
+  color: transparent;
+}
+
+/* Next opponent — 16px crest, right-aligned. */
+.standings-table--variant-c-mobile td.col-next .team-avatar-frame--sm {
+  width: 16px;
+  height: 16px;
+}
+.standings-table--variant-c-mobile .col-next {
+  text-align: right;
+}
+
+/* Hero card sizing on mobile — keep current 56px crest defaults from
+ * the base rules; tighten margin so the card aligns with the table
+ * (which has 0 outer margin inside the tile padding). */
+@media (max-width: 767px) {
+  .standings-hero-card {
+    margin: 12px;
+    padding: 14px 14px 12px 18px;
+  }
+}
+
+/* ----- Desktop (≥768px): full 12-column sortable table ------------ */
+
+@media (min-width: 768px) {
+  /* Ensure every column the variant-c table declares is visible on
+   * desktop, even when the user's viewport reports portrait
+   * orientation (tall ultrawide, tablet portrait, etc.). */
+  .standings-table--variant-c .col-pl,
+  .standings-table--variant-c .col-wdl,
+  .standings-table--variant-c .col-for,
+  .standings-table--variant-c .col-faced,
+  .standings-table--variant-c .col-gd,
+  .standings-table--variant-c .col-form,
+  .standings-table--variant-c .col-next {
+    display: table-cell;
+  }
+
+  /* Hero card scales up: bigger crest, slightly larger type. */
+  .standings-hero-card {
+    width: calc(100% - 32px);
+    margin: 16px;
+    padding: 18px 18px 16px 22px;
+  }
+  .standings-hero-card__crest .team-avatar-frame {
+    width: 72px;
+    height: 72px;
+  }
+  .standings-hero-card__name {
+    font-size: 18px;
+  }
+  .standings-hero-card__mgr {
+    font-size: 12px;
+  }
+  .standings-hero-card__pts-num {
+    font-size: 36px;
+  }
+  .standings-hero-card__stat-num {
+    font-size: 18px;
   }
 }
