@@ -630,14 +630,25 @@
 
   .app.fotmob.dashboard-layout-host,
   .app.fotmob {
-    padding-bottom: calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+    /* Floating bottom-nav (mockup Variant B): nav is detached from the
+     * bottom edge by 12px + safe-area, so the dashboard root needs an
+     * extra 12px of padding on top of the nav height + safe area + gap
+     * so content doesn't sit underneath the floating pill. */
+    padding-bottom: calc(var(--mobile-bottom-nav-h) + env(safe-area-inset-bottom, 0px) + 28px);
   }
 
+  /* Floating Lyft-style pill (mockup Variant B → production).
+   *
+   * Detaches the bottom nav from the bottom edge by 12px + safe-area
+   * inset, reshapes it as a 999px pill with side margins, and gives it
+   * a strong drop shadow so it reads as a floating chip above the page
+   * content. Replaces the previous edge-to-edge bar (which sat at
+   * bottom: 0 with a top hairline border and a full-width fill). */
   .dashboard-nav--bottom {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 12px;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
     z-index: 100;
     display: flex;
     flex-wrap: nowrap;
@@ -645,20 +656,33 @@
     justify-content: space-around;
     gap: 0;
     margin: 0;
-    padding: 6px 8px calc(6px + env(safe-area-inset-bottom, 0px));
-    background: var(--fm-card);
-    border-top: 1px solid var(--fm-border);
-    border-bottom: none;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    padding: 8px 12px;
+    height: var(--mobile-bottom-nav-h);
+    background: var(--surface);
+    border: none;
+    border-radius: 999px;
+    box-shadow:
+      0 4px 16px rgba(0, 0, 0, 0.12),
+      0 1px 3px rgba(0, 0, 0, 0.08);
+    box-sizing: border-box;
     transition: transform 0.22s ease, opacity 0.22s ease;
   }
 
   .fotmob[data-theme='dark'] .dashboard-nav--bottom {
-    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.45);
+    /* Dark theme: --surface (#14141a) is darker than the page bg
+     * (#121212), giving the pill its own card identity. Strengthen the
+     * shadow slightly so the pill still floats visibly on dark chrome. */
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.55),
+      0 1px 3px rgba(0, 0, 0, 0.4);
   }
 
   .app.fotmob[data-bottom-nav-hidden='true'] .dashboard-nav--bottom {
-    transform: translateY(100%);
+    /* Float-aware hide: translate the pill down by its own height PLUS
+     * its distance from the viewport bottom so it ends up fully
+     * off-screen (the previous `translateY(100%)` left a 12px sliver of
+     * pill peeking up from the bottom). */
+    transform: translateY(calc(100% + 12px + env(safe-area-inset-bottom, 0px)));
     opacity: 0;
     pointer-events: none;
   }
@@ -670,17 +694,25 @@
   }
 
   .dashboard-nav__btn--bottom {
+    /* Lyft-style pill: icons only, centered in the 40px content area of
+     * the 56px pill (8px top/bottom padding). The brand-tint active
+     * indicator is rendered behind the icon by ::before (see below), so
+     * the button itself stays transparent. min-height is 0 because the
+     * pill height is fixed at 56px; the previous 44px floor would have
+     * forced buttons to overflow the pill by 4px. Tap target stays
+     * generous via the full-width flex slot (~70px wide × 40px tall on
+     * a 360px pill with 5 items). */
     flex: 1 1 0;
     min-width: 0;
-    min-height: 44px;
+    min-height: 0;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
-    padding: 4px 6px;
+    gap: 0;
+    padding: 0;
     font-size: 0.65rem;
     font-weight: 600;
-    border-radius: 8px;
+    border-radius: 999px;
   }
 
   .dashboard-nav__btn--bottom .dashboard-nav__emoji {
@@ -691,23 +723,49 @@
   .dashboard-nav__btn--bottom .dashboard-nav__icon {
     width: 22px;
     height: 22px;
+    /* Sit above the ::before brand-tint circle on the active button. */
+    position: relative;
+    z-index: 1;
   }
 
   .dashboard-nav__btn--bottom .dashboard-nav__fd-logo {
     height: 1.25rem;
     max-width: 2.2rem;
     width: auto;
+    position: relative;
+    z-index: 1;
   }
 
+  /* Icons-only treatment per Variant B (Lyft look). Production
+   * `DashboardNav` still renders the `.dashboard-nav__label` span; we
+   * hide it via CSS so we don't have to thread an `iconsOnly` prop
+   * through the component just for the mobile pill. */
   .dashboard-nav__btn--bottom .dashboard-nav__label {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    display: none;
   }
 
+  /* Drop the desktop underline indicator. */
   .dashboard-nav__btn--bottom.dashboard-nav__btn--active::after {
     display: none;
+  }
+
+  /* Active item — render a 40px brand-tint circle BEHIND the icon
+   * (rather than around the entire button) to match the mockup's
+   * "icon in a coloured pill" pattern. The button already has
+   * `position: relative` via the `.dashboard-layout--with-nav` rule
+   * above, so `::before` anchors to it. */
+  .dashboard-nav__btn--bottom.dashboard-nav__btn--active::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--brand-tint);
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
   }
 
   .dashboard-nav__btn--bottom.dashboard-nav__btn--active {
