@@ -973,7 +973,15 @@
   flex-direction: column;
   flex: 1 1 auto;
   min-height: 0;
-  overflow: auto;
+  /*
+   * Round 3: hide host overflow so the topbar + hero + tabs stay pinned
+   * at the panel top while only `.pdetail__main` scrolls. Previously
+   * `overflow: auto` made the entire host scrollable, which let the
+   * hero scroll out of view alongside the table — and broke the
+   * auto-scroll-to-last-completed-GW behaviour because the inner flex
+   * height chain never resolved to a bounded value.
+   */
+  overflow: hidden;
   background: var(--fm-bg-root, var(--surface));
   color: var(--text);
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -986,6 +994,19 @@
 .pdetail__main {
   flex: 1 1 auto;
   min-height: 0;
+  /*
+   * Round 3: flex column so child tab content (`.pperf`,
+   * `.pdetail__body`) can claim a bounded height via
+   * `flex: 1 1 auto; min-height: 0` and have inner scroll containers
+   * (the Performance table-wrap, primarily) actually compute a sensible
+   * `max-height: 100%`. Without `display: flex` here, `.pperf` rendered
+   * at its content's natural height which made the panel itself scroll
+   * past the topbar/hero, defeating the auto-scroll-to-last-completed-GW
+   * behaviour. Overview content remains free to overflow and scroll
+   * within main via the outer block scroll.
+   */
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
