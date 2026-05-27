@@ -8634,6 +8634,30 @@ function TrophyRoomVariantDFrame({ activeIdx }) {
   )
 }
 
+/* T-D · "View all" grid — same brand-tinted celebratory dark background
+ * as the swipe carousel. 8 banner cards in a 2×4 grid; each card is a
+ * shrunk-down copy of the active swipe card (banner art carries its
+ * own team name + year — nothing layered on top). Tapping a card in a
+ * runtime port would open the swipe view at that index. */
+function TrophyRoomVariantDViewAll() {
+  return (
+    <div className="hof-troom hof-troom--viewall">
+      <div className="hof-troom__viewall-grid">
+        {HOF_BANNERS.map((b) => (
+          <button
+            key={b.season}
+            type="button"
+            className="hof-troom__viewall-card"
+            aria-label={`Open ${b.team} ${b.season} banner`}
+          >
+            <HofBannerImage banner={b} fit="cover" />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ------------------------------------------------------------------ */
 /* HISTORY — shared building blocks                                     */
 /* ------------------------------------------------------------------ */
@@ -9759,7 +9783,7 @@ export function Mockup() {
             a brand-tinted celebratory dark wash so the banner pops. No
             overlay text.
           </p>
-          <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
+          <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--4">
             <div className="mockup-portrait-col">
               <div className="mockup-portrait-col__h">T-D · banner 1 (18/19) active</div>
               <PortraitFrame>
@@ -9776,6 +9800,12 @@ export function Mockup() {
               <div className="mockup-portrait-col__h">T-D · banner 8 (25/26 live) active</div>
               <PortraitFrame>
                 <TrophyRoomVariantDFrame activeIdx={7} />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">T-D · view all · grid of 8</div>
+              <PortraitFrame>
+                <TrophyRoomVariantDViewAll />
               </PortraitFrame>
             </div>
           </div>

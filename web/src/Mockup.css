@@ -12265,6 +12265,27 @@
   }
 }
 
+/* T-D row hosts 3 active-state frames + 1 view-all frame; widens to 4
+ * across at xl, wraps to 2x2 at lg, single column at sm. */
+.hof-portrait-row--4 {
+  display: grid;
+  grid-template-columns: repeat(4, 375px);
+  gap: var(--space-5);
+  justify-content: center;
+}
+@media (max-width: 1680px) {
+  .hof-portrait-row--4 { grid-template-columns: repeat(3, 375px); }
+}
+@media (max-width: 1280px) {
+  .hof-portrait-row--4 { grid-template-columns: repeat(2, 375px); }
+}
+@media (max-width: 820px) {
+  .hof-portrait-row--4 { grid-template-columns: 1fr; }
+  .hof-portrait-row--4 .mockup-portrait-frame {
+    width: 100% !important; max-width: 375px; margin: 0 auto;
+  }
+}
+
 /* ================================================================== */
 /* TROPHY ROOM                                                          */
 /* ================================================================== */
@@ -12486,6 +12507,51 @@
 .hof-troom__swipe-dot.is-active {
   background: #fff;
   transform: scale(1.4);
+}
+
+/* T-D · view-all grid — same brand-tinted celebratory dark wash as the
+ * swipe carousel, 8 banner cards in 2 cols × 4 rows. Cards use the
+ * same aspect ratio (3:4) as the active swipe card so they visually
+ * read as shrunk-down copies. No text overlays — banner art carries
+ * its own title + year. */
+.hof-troom--viewall {
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--brand) 22%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, #1a0f33 0%, #0c0820 100%);
+  padding: 14px 12px;
+}
+.hof-troom__viewall-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.hof-troom__viewall-card {
+  appearance: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.02);
+  aspect-ratio: 3 / 4;
+  border-radius: 8px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  box-shadow:
+    0 4px 10px -6px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hof-troom__viewall-card:hover,
+.hof-troom__viewall-card:focus-visible {
+  transform: translateY(-1px) scale(1.02);
+  box-shadow:
+    0 10px 20px -8px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+  outline: none;
+}
+.hof-troom__viewall-card:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 70%, #fff);
+  outline-offset: 2px;
 }
 
 /* ================================================================== */
