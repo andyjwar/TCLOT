@@ -328,7 +328,6 @@ const WIRE_STAT_COL = 'minmax(2.15rem, 1fr)'
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_BEFORE = [
   { id: 'player', label: '', title: 'Player', width: 'minmax(6.75rem, 9.5rem)' },
-  { id: 'detail', label: '', title: 'Player detail', width: '1.9rem' },
   { id: 'pts', label: 'Pts', width: 'minmax(2.85rem, 1.1fr)' },
 ]
 
@@ -537,7 +536,7 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
     })
   const fixtureCol = portrait ? [WIRE_NEXT_FIXTURE_PORTRAIT] : WIRE_FIXED_COLUMNS_AFTER
   const fixedBefore = portrait
-    ? WIRE_FIXED_COLUMNS_BEFORE.filter((c) => c.id !== 'detail').map((c) => {
+    ? WIRE_FIXED_COLUMNS_BEFORE.map((c) => {
         if (c.id === 'player') {
           return { ...c, width: PORTRAIT_WIRE_PLAYER_COL }
         }
@@ -882,7 +881,7 @@ export function wireColumnToSortKey(colId) {
 }
 
 /** Wire table column groups for vertical separators: identity | summary | detail stats | fixtures */
-const WIRE_IDENTITY_COLS = new Set(['player', 'detail'])
+const WIRE_IDENTITY_COLS = new Set(['player'])
 const WIRE_SUMMARY_COLS = new Set(['pts', 'pos', 'gp'])
 const WIRE_FIXTURE_COLS = new Set(['next3'])
 

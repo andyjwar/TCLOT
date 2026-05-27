@@ -14,9 +14,8 @@ import {
 import { PlayerKit } from './PlayerKit.jsx'
 import { TeamAvatar } from './TeamAvatar.jsx'
 import { fplShirtImageUrl } from './fplShirtUrl'
-import { parsePlayersHash, pushPlayersHash, replacePlayersHash } from './playerRoutes.js'
-import { PlayerDetailView } from './PlayerDetailView.jsx'
-import { loadLeagueFixtures } from './playerGwHistory.js'
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
+import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx'
 import {
   POS_FILTER_ALL,
   POS_LABEL,
@@ -50,15 +49,9 @@ import {
 import { usePortraitMobile, useMobileLayout } from './usePortraitMobile.js'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
 import {
-  buildCompareOptionLabel,
   fetchBootstrapDraft,
   fetchLeagueJsonFile,
-  PLAYERS_LEAGUE_DATA_BASE,
-  rosterIdsForLeagueEntry,
-  suggestBenchTarget,
 } from './playersBenchShared.js'
-
-const DATA_BASE = PLAYERS_LEAGUE_DATA_BASE
 
 const WIRE_STATS_SESSION_PREFIX = 'tclot-player-wire-stats-gw-'
 
@@ -332,7 +325,8 @@ function wireCellClass(colId, activeSortColId, extra = '', groupStart = false) {
 }
 
 /**
- * Waiver-wire browser + full-screen player detail (mobile portrait first).
+ * Waiver-wire browser. Player detail opens via the shared full-screen
+ * `PlayerDetailOverlay` (same path as Live / Compare flows).
  *
  * @param {{
  *   leagueEntries: object[],
@@ -340,7 +334,6 @@ function wireCellClass(colId, activeSortColId, extra = '', groupStart = false) {
  *   leagueDataRevision?: string,
  *   logoMap?: Record<string, string>,
  *   kitIndexByEntry?: Record<number, number>,
- *   onDetailOpenChange?: (open: boolean) => void,
  * }} props
  */
 export function PlayersWorkbench({
@@ -349,7 +342,6 @@ export function PlayersWorkbench({
   leagueDataRevision = '',
   logoMap = {},
   kitIndexByEntry = {},
-  onDetailOpenChange,
 }) {
   const portrait = usePortraitMobile()
   const mobileLayout = useMobileLayout()
@@ -377,20 +369,13 @@ export function PlayersWorkbench({
   const [summaryLoading, setSummaryLoading] = useState(false)
   /** @type {[number|null, (id: number|null)=>void]} */
   const [myTeamLeagueEntryId, setMyTeamLeagueEntryId] = useState(null)
-  /** @type {[import('./playersFilterPills.jsx').CompareClubSource | null, (v: import('./playersFilterPills.jsx').CompareClubSource | null) => void]} */
-  const [compareSource, setCompareSource] = useState(null)
-  /** @type {[number|null, (id: number|null)=>void]} */
-  const [detailPlayerId, setDetailPlayerId] = useState(null)
-  const [benchId, setBenchId] = useState(null)
   /** @type {[string[], (ids: string[]) => void]} */
   const [selectedStatIds, setSelectedStatIds] = useState(() =>
     readWireStatSelection(POS_FILTER_ALL),
   )
-  /** @type {[object[] | null, (v: object[] | null) => void]} */
-  const [plFixtures, setPlFixtures] = useState(null)
-  const hydratedFromUrlRef = useRef(false)
-  /** True when detail was opened via `pushPlayersHash` (list entry exists behind detail). */
-  const detailHistoryPushedRef = useRef(false)
+
+  /** Player detail launches via the shared overlay (no inline view). */
+  const playerDetailOverlay = usePlayerDetailOverlayOptional()
 
   const elemsById = useMemo(() => {
     const m = new Map()
@@ -444,10 +429,6 @@ export function PlayersWorkbench({
     },
     [positionFilter, statColumnMax],
   )
-
-  useEffect(() => {
-    onDetailOpenChange?.(detailPlayerId != null)
-  }, [detailPlayerId, onDetailOpenChange])
 
   useEffect(() => {
     if (portrait) {
@@ -613,16 +594,6 @@ export function PlayersWorkbench({
 
   useEffect(() => {
     let cancel = false
-    void loadLeagueFixtures(DATA_BASE).then((rows) => {
-      if (!cancel) setPlFixtures(rows)
-    })
-    return () => {
-      cancel = true
-    }
-  }, [leagueDataRevision])
-
-  useEffect(() => {
-    let cancel = false
     ;(async () => {
       try {
         setSquadsErr(null)
@@ -656,275 +627,34 @@ export function PlayersWorkbench({
     }
   }, [teamsForFormSelect, leagueDataRevision])
 
-  /** Hydrate from URL once bootstrap + IDs are ready (avoids clobbering `#/players?…` before load). */
-  useEffect(() => {
-    if (!bootstrap || elemsById.size === 0 || hydratedFromUrlRef.current) return
-    const parsed = parsePlayersHash()
-    if (
-      parsed == null ||
-      (parsed.waiver == null &&
-        parsed.bench == null &&
-        parsed.teamId == null &&
-        parsed.plClubId == null)
-    ) {
-      hydratedFromUrlRef.current = true
-      return
-    }
-    hydratedFromUrlRef.current = true
-    queueMicrotask(() => {
-      const { waiver, bench, teamId, plClubId } = parsed
-
-      if (
-        teamId != null &&
-        teamsForFormSelect.some((x) => Number(x.id) === Number(teamId))
-      ) {
-        setMyTeamLeagueEntryId(Number(teamId))
-        setCompareSource({ kind: 'fantasy', id: Number(teamId) })
-      } else if (
-        plClubId != null &&
-        bootstrap?.teams?.some((x) => Number(x.id) === Number(plClubId))
-      ) {
-        setCompareSource({ kind: 'pl-club', id: Number(plClubId) })
-      }
-
-      const waiverNum =
-        waiver != null && elemsById.has(Number(waiver)) ? Number(waiver) : null
-      const sourceRosterIds =
-        teamId != null
-          ? rosterIdsForLeagueEntry(Number(teamId), ownerByElementId)
-          : new Set()
-      let nextBench =
-        waiverNum != null && teamId != null
-          ? suggestBenchTarget([...sourceRosterIds], elemsById, elemsById.get(waiverNum))
-          : null
-      if (
-        waiverNum != null &&
-        bench != null &&
-        elemsById.has(Number(bench))
-      ) {
-        const bb = elemsById.get(Number(bench))
-        const ww = elemsById.get(waiverNum)
-        if (bb && ww && bb.element_type === ww.element_type) nextBench = Number(bench)
-      }
-
-      if (waiverNum != null) {
-        setDetailPlayerId(waiverNum)
-        setBenchId(nextBench)
-      }
-    })
-  }, [teamsForFormSelect, elemsById, bootstrap, ownerByElementId])
-
-  useEffect(() => {
-    const onPop = () => {
-      const parsed = parsePlayersHash()
-      if (!parsed || parsed.waiver == null) {
-        detailHistoryPushedRef.current = false
-        setDetailPlayerId(null)
-        setBenchId(null)
-        setCompareSource(null)
-        return
-      }
-      detailHistoryPushedRef.current = true
-      if (elemsById.has(Number(parsed.waiver))) {
-        setDetailPlayerId(Number(parsed.waiver))
-        setBenchId(parsed.bench)
-      }
-      if (
-        parsed.teamId != null &&
-        teamsForFormSelect.some((x) => Number(x.id) === Number(parsed.teamId))
-      ) {
-        setCompareSource({ kind: 'fantasy', id: Number(parsed.teamId) })
-        setMyTeamLeagueEntryId(Number(parsed.teamId))
-      } else if (
-        parsed.plClubId != null &&
-        bootstrap?.teams?.some((x) => Number(x.id) === Number(parsed.plClubId))
-      ) {
-        setCompareSource({ kind: 'pl-club', id: Number(parsed.plClubId) })
-      } else {
-        setCompareSource(null)
-      }
-    }
-    window.addEventListener('popstate', onPop)
-    return () => window.removeEventListener('popstate', onPop)
-  }, [elemsById, teamsForFormSelect, bootstrap])
-
-  useEffect(() => {
-    if (!bootstrap) return
-    const slice = {
-      waiver: detailPlayerId,
-      bench: detailPlayerId != null ? benchId : null,
-    }
-    if (detailPlayerId != null && compareSource) {
-      if (compareSource.kind === 'fantasy') {
-        slice.teamId = compareSource.id
-      } else {
-        slice.plClubId = compareSource.id
-      }
-    } else {
-      slice.teamId = myTeamLeagueEntryId
-    }
-    replacePlayersHash(slice)
-  }, [bootstrap, detailPlayerId, benchId, compareSource, myTeamLeagueEntryId])
-
-  const detailPlayerEl = detailPlayerId != null ? elemsById.get(detailPlayerId) : null
-  const benchEl = benchId != null ? elemsById.get(benchId) : null
-
-  const compareSearchOptions = useMemo(() => {
-    const w = detailPlayerEl
-    if (!w?.element_type) return []
-    const out = []
-    const waiverId = Number(w.id)
-
-    for (const el of bootstrap?.elements ?? []) {
-      if (el.element_type !== w.element_type) continue
-      if (Number(el.id) === waiverId) continue
-      out.push({
-        id: Number(el.id),
-        label: buildCompareOptionLabel(el, w.element_type, teamById, true),
-      })
-    }
-
-    out.sort(
-      (a, b) =>
-        (Number(elemsById.get(b.id)?.total_points) || 0) -
-        (Number(elemsById.get(a.id)?.total_points) || 0),
-    )
-    return out
-  }, [detailPlayerEl, elemsById, bootstrap, teamById])
-
-  const compareSquadOptions = useMemo(() => {
-    const w = detailPlayerEl
-    if (!w?.element_type || !compareSource) return []
-    const out = []
-
-    if (compareSource.kind === 'fantasy') {
-      const rosterIds = rosterIdsForLeagueEntry(compareSource.id, ownerByElementId)
-      for (const pid of rosterIds) {
-        const el = elemsById.get(Number(pid))
-        if (!el || el.element_type !== w.element_type) continue
-        out.push({
-          id: Number(pid),
-          label: buildCompareOptionLabel(el, w.element_type, teamById),
-        })
-      }
-    } else {
-      for (const el of bootstrap?.elements ?? []) {
-        if (Number(el.team) !== Number(compareSource.id)) continue
-        if (el.element_type !== w.element_type) continue
-        out.push({
-          id: Number(el.id),
-          label: buildCompareOptionLabel(el, w.element_type, teamById),
-        })
-      }
-    }
-
-    out.sort(
-      (a, b) =>
-        (Number(elemsById.get(b.id)?.total_points) || 0) -
-        (Number(elemsById.get(a.id)?.total_points) || 0),
-    )
-    return out
-  }, [detailPlayerEl, compareSource, ownerByElementId, elemsById, bootstrap, teamById])
-
-  const handleSearchBenchSelect = useCallback((id) => {
-    if (id != null) {
-      setCompareSource(null)
-    }
-    setBenchId(id)
-  }, [])
-
-  const openDetailFor = useCallback(
+  /**
+   * Open the full-screen `PlayerDetailOverlay`. Passes `myTeamLeagueEntryId` so the
+   * overlay's compare picker preselects the user's roster when available.
+   */
+  const openPlayerDetail = useCallback(
     (el) => {
-      const id = Number(el.id)
-      const nextSource =
-        myTeamLeagueEntryId != null
-          ? { kind: 'fantasy', id: Number(myTeamLeagueEntryId) }
-          : null
-      const rosterIds =
-        nextSource?.kind === 'fantasy'
-          ? rosterIdsForLeagueEntry(nextSource.id, ownerByElementId)
-          : new Set()
-      const pick =
-        nextSource != null
-          ? suggestBenchTarget([...rosterIds], elemsById, el)
-          : null
-      setCompareSource(nextSource)
-      setDetailPlayerId(id)
-      setBenchId(pick)
-      const hashSlice = { waiver: id, bench: pick }
-      if (nextSource?.kind === 'fantasy') {
-        hashSlice.teamId = nextSource.id
+      if (!playerDetailOverlay) return
+      const id = Number(el?.id)
+      if (!Number.isFinite(id)) return
+      const payload = { element: id }
+      if (myTeamLeagueEntryId != null) {
+        payload.leagueEntryId = Number(myTeamLeagueEntryId)
       }
-      detailHistoryPushedRef.current = pushPlayersHash(hashSlice)
+      const team = teamById.get(Number(el?.team))
+      if (team?.short_name) payload.teamShort = team.short_name
+      const display = fplElementDisplayName(el, id)
+      if (display) payload.displayName = display
+      if (el?.web_name) payload.web_name = el.web_name
+      playerDetailOverlay.openPlayerDetail(payload)
     },
-    [elemsById, ownerByElementId, myTeamLeagueEntryId],
+    [playerDetailOverlay, myTeamLeagueEntryId, teamById],
   )
-
-  const closeDetail = useCallback(() => {
-    const hadHistoryEntry = detailHistoryPushedRef.current
-    detailHistoryPushedRef.current = false
-    setDetailPlayerId(null)
-    setBenchId(null)
-    setCompareSource(null)
-    if (hadHistoryEntry) {
-      window.history.back()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (detailPlayerId == null || !detailPlayerEl) return
-    const squadIds = new Set(compareSquadOptions.map((o) => o.id))
-    const searchIds = new Set(compareSearchOptions.map((o) => o.id))
-    const validIds = compareSource ? squadIds : searchIds
-    if (benchId != null && !validIds.has(benchId)) {
-      setBenchId(null)
-      return
-    }
-    if (compareSource?.kind === 'fantasy' && benchId == null) {
-      const rosterIds = rosterIdsForLeagueEntry(compareSource.id, ownerByElementId)
-      const pick = suggestBenchTarget([...rosterIds], elemsById, detailPlayerEl)
-      setBenchId(pick)
-    }
-  }, [
-    compareSource,
-    compareSquadOptions,
-    compareSearchOptions,
-    ownerByElementId,
-    detailPlayerId,
-    detailPlayerEl,
-    benchId,
-    elemsById,
-  ])
 
   return (
     <section
-      className={`tile tile--standings players-bench-tile${portrait && detailPlayerId == null ? ' players-bench-tile--portrait-list' : ''}${detailPlayerId != null ? ' players-bench-tile--detail' : ''}`}
-      aria-label={detailPlayerId != null ? 'Player detail' : 'Players wire list'}
+      className={`tile tile--standings players-bench-tile${portrait ? ' players-bench-tile--portrait-list' : ''}`}
+      aria-label="Players wire list"
     >
-      {detailPlayerId != null && detailPlayerEl ? (
-        <PlayerDetailView
-          playerId={detailPlayerId}
-          benchId={benchId}
-          onBenchChange={setBenchId}
-          onBack={closeDetail}
-          playerEl={detailPlayerEl}
-          benchEl={benchEl}
-          teamById={teamById}
-          teamsForFormSelect={teamsForFormSelect}
-          plClubs={clubOptions}
-          compareSource={compareSource}
-          onCompareSourceChange={setCompareSource}
-          compareSearchOptions={compareSearchOptions}
-          compareSquadOptions={compareSquadOptions}
-          onSearchBenchSelect={handleSearchBenchSelect}
-          logoMap={logoMap}
-          kitIndexByEntry={kitIndexByEntry}
-          ownerByElementId={ownerByElementId}
-          rostersHealthy={rostersHealthy}
-          plFixtures={plFixtures}
-        />
-      ) : (
-        <>
       {squadsErr ? (
         <p className="players-bench-banner" role="alert">
           Could not load player data. {squadsErr}
@@ -1041,7 +771,6 @@ export function PlayersWorkbench({
               const thClass = [
                 'players-table__th',
                 col.id === 'player' ? 'players-table__th--player' : '',
-                col.id === 'detail' ? 'players-table__th--detail' : '',
                 col.id === 'pts' ? 'players-table__th--pts' : '',
                 col.id === 'next3' ? 'players-table__th--next3' : '',
                 isActive ? ' players-table__th--sorted' : '',
@@ -1096,19 +825,21 @@ export function PlayersWorkbench({
               const summary = summaryByElement.get(elId)
               const nextFixtures = nextFixturesByTeam.get(Number(el.team)) ?? []
 
+              const displayName = fplElementDisplayName(el, el.id)
+              const rowTappable = portrait && Boolean(playerDetailOverlay)
               return (
                 <div
                   key={el.id}
-                  className={`players-table__row${detailPlayerId === el.id ? ' players-table__row--active' : ''}${portrait ? ' players-table__row--tappable' : ''}`}
+                  className={`players-table__row${rowTappable ? ' players-table__row--tappable' : ''}`}
                   role="row"
-                  tabIndex={portrait ? 0 : undefined}
-                  onClick={portrait ? () => openDetailFor(el) : undefined}
+                  tabIndex={rowTappable ? 0 : undefined}
+                  onClick={rowTappable ? () => openPlayerDetail(el) : undefined}
                   onKeyDown={
-                    portrait
+                    rowTappable
                       ? (e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault()
-                            openDetailFor(el)
+                            openPlayerDetail(el)
                           }
                         }
                       : undefined
@@ -1136,41 +867,18 @@ export function PlayersWorkbench({
                           </span>
                           <span className="players-table__player-text">
                             <span className="players-table__name-row">
-                              <span className="players-table__name">
-                                {fplElementDisplayName(el, el.id)}
-                              </span>
+                              <ClickablePlayerName
+                                element={el.id}
+                                displayName={displayName}
+                                web_name={el.web_name}
+                                teamShort={row.teamShort}
+                                className="players-table__name"
+                              >
+                                {displayName}
+                              </ClickablePlayerName>
                               <PlayerAvailabilityMark el={el} />
                             </span>
                           </span>
-                        </span>
-                      )
-                    }
-                    if (col.id === 'detail') {
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--detail',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <button
-                            type="button"
-                            className="players-table__detail-btn"
-                            aria-label={`Details for ${fplElementDisplayName(el, el.id)}`}
-                            title="Player detail"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              openDetailFor(el)
-                            }}
-                          >
-                            <span className="players-table__detail-btn-emoji" aria-hidden>
-                              🔍
-                            </span>
-                          </button>
                         </span>
                       )
                     }
@@ -1249,8 +957,6 @@ export function PlayersWorkbench({
       {!bootstrap ? (
         <p className="muted players-bench-loading">Loading waiver pool…</p>
       ) : null}
-        </>
-      )}
     </section>
   )
 }

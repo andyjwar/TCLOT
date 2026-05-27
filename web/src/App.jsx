@@ -1226,13 +1226,11 @@ function App() {
   const [themePref, setThemePref] = useState(() => readStoredThemePref())
   const [systemTheme, setSystemTheme] = useState(() => resolveSystemTheme())
   const colorTheme = themePref === 'system' ? systemTheme : themePref
-  const [wireDetailOpen, setWireDetailOpen] = useState(false)
   const [playerDetailOverlayOpen, setPlayerDetailOverlayOpen] = useState(false)
 
   const bottomNavHidden = useAutoHideBottomNav({
     enabled:
       dashboardView !== 'more' &&
-      !wireDetailOpen &&
       !playerDetailOverlayOpen,
   })
 
@@ -1241,7 +1239,6 @@ function App() {
     setPlayerDetailOverlayOpen(false)
     if (view !== 'players') {
       stripPlayersHash()
-      setWireDetailOpen(false)
     }
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0)
@@ -2363,7 +2360,6 @@ function App() {
                 ).trim()}
                 logoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
-                onDetailOpenChange={setWireDetailOpen}
               />
             </div>
           ) : null}
