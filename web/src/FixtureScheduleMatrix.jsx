@@ -114,6 +114,12 @@ export function FixtureScheduleMatrix({
                         logoMap={teamLogoMap}
                         kitIndexByEntry={kitIndexByEntry}
                       />
+                      <span
+                        className="fixture-schedule-matrix__name"
+                        title={teamName}
+                      >
+                        {teamName}
+                      </span>
                     </span>
                   </th>
                   {orderedIds.map((colId, j) => {

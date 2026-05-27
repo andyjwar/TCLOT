@@ -254,7 +254,12 @@ function AllTeamsScheduleList({
                       }
                       title={fx.homeName}
                     >
-                      {firstWord(fx.homeName)}
+                      <span className="standings-schedule__fixture-name-full">
+                        {fx.homeName}
+                      </span>
+                      <span className="standings-schedule__fixture-name-short">
+                        {firstWord(fx.homeName)}
+                      </span>
                     </span>
                     {homeRank != null ? (
                       <span className="standings-schedule__fixture-rank muted">({homeRank})</span>
@@ -299,7 +304,12 @@ function AllTeamsScheduleList({
                       }
                       title={fx.awayName}
                     >
-                      {firstWord(fx.awayName)}
+                      <span className="standings-schedule__fixture-name-full">
+                        {fx.awayName}
+                      </span>
+                      <span className="standings-schedule__fixture-name-short">
+                        {firstWord(fx.awayName)}
+                      </span>
                     </span>
                     <TeamAvatar
                       entryId={fx.awayId}
@@ -411,6 +421,9 @@ function TeamScheduleCompact({
                     logoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                   />
+                  <span className="standings-schedule-team__opp-name">
+                    {r.opponentName}
+                  </span>
                 </span>
                 <span className="standings-schedule-team__score tabular">
                   {showScore ? (

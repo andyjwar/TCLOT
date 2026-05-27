@@ -13400,6 +13400,26 @@ button.live-xp__player-name:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--fm-text-strong);
+  min-width: 0;
+}
+
+/* Desktop shows full team name; mobile shows first-word truncation only.
+ * Spec: ≥768px = desktop full name; ≤767px = first-word. */
+.standings-schedule__fixture-name-short {
+  display: none;
+}
+
+.standings-schedule__fixture-name-full {
+  display: inline;
+}
+
+@media (max-width: 767px) {
+  .standings-schedule__fixture-name-full {
+    display: none;
+  }
+  .standings-schedule__fixture-name-short {
+    display: inline;
+  }
 }
 
 .standings-schedule__fixture-name--winner {
@@ -13552,6 +13572,26 @@ button.live-xp__player-name:focus-visible {
 .standings-schedule-team__opp {
   display: inline-flex;
   align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+/* Desktop reveals the full opponent name beside the crest chip. Mobile keeps
+ * the chip-only layout from the user's compact-view screenshot. */
+.standings-schedule-team__opp-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+@media (max-width: 767px) {
+  .standings-schedule-team__opp-name {
+    display: none;
+  }
 }
 
 .standings-schedule-team__score {
@@ -13814,6 +13854,23 @@ button.live-xp__player-name:focus-visible {
   /* Section is already chrome'd by parent .standings-stats__section */
 }
 
+/* Schedule luck matrix — desktop shows team name beside row-label crest;
+ * mobile keeps row labels as crest-only (matches the 5.56 PM screenshot). */
+.fixture-schedule-matrix--delta .fixture-schedule-matrix__team {
+  min-width: 0;
+}
+
+.fixture-schedule-matrix--delta .fixture-schedule-matrix__name {
+  display: inline;
+  margin-left: 4px;
+}
+
+@media (max-width: 767px) {
+  .fixture-schedule-matrix--delta .fixture-schedule-matrix__name {
+    display: none;
+  }
+}
+
 /* ─── Stats sub-tab — Section 4: H2H rivals (P/W/D/L/PF/PA + team picker) ─ */
 .standings-h2h-rivals {
   display: block;
@@ -13867,7 +13924,9 @@ button.live-xp__player-name:focus-visible {
   display: none;
 }
 
-@media (max-width: 480px) {
+/* Spec: ≥768px = full team name; ≤767px = first-word only (matches the
+ * 5.58 PM screenshot's `<crest> Soul Ze` portrait layout). */
+@media (max-width: 767px) {
   .standings-h2h-rivals__name-full {
     display: none;
   }
