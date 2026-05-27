@@ -47,7 +47,6 @@ import {
   OwnedFilterPill,
   SortPill,
   IncludeDraftedToggle,
-  fantasyTeamFirstWord,
 } from './playersFilterPills.jsx'
 import { usePortraitMobile, useMobileLayout } from './usePortraitMobile.js'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
@@ -88,8 +87,7 @@ function writeWireStatsSession(gw, map) {
 
 /**
  * Phase-2 availability mark: 🚑 ambulance for injured OR doubtful, red dot
- * for suspended, nothing for available. Drives the row-end status column on
- * desktop and the inline player-cell status badge on portrait.
+ * for suspended, nothing for available.
  *
  * @param {object} el bootstrap element
  */
@@ -116,29 +114,69 @@ function playerAvailabilityMark(el) {
   return null
 }
 
-function PlayerAvailabilityMark({ el }) {
+/**
+ * Trailing inline indicator cluster rendered after the player name (right edge
+ * of the Player cell). Up to two items: an ownership signal (owner avatar OR
+ * green FA dot) plus an availability signal (🚑 OR red suspended dot). Mutually
+ * exclusive on ownership; stacking allowed across the two axes.
+ *
+ * @param {{
+ *   el: object,
+ *   owner: { leagueEntryId: number, teamName: string } | null | undefined,
+ *   rostersHealthy: boolean,
+ *   logoMap: Record<string, string>,
+ *   kitIndexByEntry: Record<number, number>,
+ * }} props
+ */
+function PlayerInlineIndicators({ el, owner, rostersHealthy, logoMap, kitIndexByEntry }) {
   const mark = playerAvailabilityMark(el)
-  if (!mark) return null
-  if (mark.kind === 'dot') {
-    return (
-      <span
-        className="players-status-indicator players-status-indicator--sus"
-        title={mark.title}
-        aria-label={mark.label}
-        role="img"
-      >
-        <span className="players-status-indicator__dot" />
-      </span>
-    )
-  }
+  const showOwner = rostersHealthy && owner
+  const showFa = rostersHealthy && !owner
+  if (!mark && !showOwner && !showFa) return null
   return (
-    <span
-      className="players-status-indicator"
-      title={mark.title}
-      aria-label={mark.label}
-      role="img"
-    >
-      {mark.emoji}
+    <span className="players-table__name-indicators" aria-hidden={false}>
+      {showOwner ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--owner"
+          title={`Owned by ${owner.teamName}`}
+          aria-label={`Owned by ${owner.teamName}`}
+        >
+          <TeamAvatar
+            entryId={owner.leagueEntryId}
+            name={owner.teamName}
+            size="sm"
+            logoMap={logoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            badgeFallback
+          />
+        </span>
+      ) : null}
+      {showFa ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--fa"
+          title="Free agent"
+          aria-label="Free agent"
+          role="img"
+        />
+      ) : null}
+      {mark && mark.kind === 'emoji' ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--injury"
+          title={mark.title}
+          aria-label={mark.label}
+          role="img"
+        >
+          {mark.emoji}
+        </span>
+      ) : null}
+      {mark && mark.kind === 'dot' ? (
+        <span
+          className="players-table__name-indicator players-table__name-indicator--sus"
+          title={mark.title}
+          aria-label={mark.label}
+          role="img"
+        />
+      ) : null}
     </span>
   )
 }
@@ -883,10 +921,10 @@ export function PlayersWorkbench({
               const thClass = [
                 'players-table__th',
                 col.id === 'player' ? 'players-table__th--player' : '',
-                col.id === 'owner' ? 'players-table__th--owner' : '',
+                // Desktop-only fixed POS column (chip render) — center alignment.
+                col.id === 'pos' && !portrait ? 'players-table__th--pos' : '',
                 col.id === 'pts' ? 'players-table__th--pts' : '',
                 col.id === 'next3' ? 'players-table__th--next3' : '',
-                col.id === 'status' ? 'players-table__th--status' : '',
                 isActive ? 'players-table__th--sorted' : '',
                 groupStart ? 'players-table__col--group-start' : '',
               ]
@@ -971,6 +1009,7 @@ export function PlayersWorkbench({
                   {visibleCols.map((col, colIndex) => {
                     const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
                     if (col.id === 'player') {
+                      const owner = ownerByElementId.get(elId)
                       return (
                         <span
                           key={col.id}
@@ -999,53 +1038,33 @@ export function PlayersWorkbench({
                               >
                                 {displayName}
                               </ClickablePlayerName>
-                              {!portrait && posLabel ? (
-                                <PositionChip pos={posLabel} />
-                              ) : null}
-                              {/* Portrait: inline status indicator inside player cell
-                                  (no dedicated status column in the portrait grid). */}
-                              {portrait ? <PlayerAvailabilityMark el={el} /> : null}
+                              <PlayerInlineIndicators
+                                el={el}
+                                owner={owner}
+                                rostersHealthy={rostersHealthy}
+                                logoMap={logoMap}
+                                kitIndexByEntry={kitIndexByEntry}
+                              />
                             </span>
                           </span>
                         </span>
                       )
                     }
-                    if (col.id === 'owner') {
-                      const owner = ownerByElementId.get(elId)
+                    // Desktop fixed POS column — chip render. Portrait keeps the
+                    // existing 'pos' stat-column code path (falls through below).
+                    if (col.id === 'pos' && !portrait) {
                       return (
                         <span
                           key={col.id}
                           className={wireCellClass(
                             col.id,
                             activeSortColId,
-                            'players-table__cell--owner',
+                            'players-table__cell--pos',
                             groupStart,
                           )}
                           role="cell"
                         >
-                          {rostersHealthy && owner ? (
-                            <span className="players-table__owner">
-                              <TeamAvatar
-                                entryId={owner.leagueEntryId}
-                                name={owner.teamName}
-                                size="sm"
-                                logoMap={logoMap}
-                                kitIndexByEntry={kitIndexByEntry}
-                                badgeFallback
-                              />
-                              <span className="players-table__owner-name">
-                                {fantasyTeamFirstWord(owner.teamName) || owner.teamName}
-                              </span>
-                            </span>
-                          ) : (
-                            <span className="players-table__free-agent">
-                              <span
-                                className="players-table__free-agent-dot"
-                                aria-hidden
-                              />
-                              Free agent
-                            </span>
-                          )}
+                          {posLabel ? <PositionChip pos={posLabel} /> : null}
                         </span>
                       )
                     }
@@ -1105,22 +1124,6 @@ export function PlayersWorkbench({
                             fixtures={nextFixtures}
                             nextOnly={portrait}
                           />
-                        </span>
-                      )
-                    }
-                    if (col.id === 'status') {
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--status',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <PlayerAvailabilityMark el={el} />
                         </span>
                       )
                     }

@@ -331,26 +331,18 @@ const WIRE_FIXED_COLUMNS_BEFORE = [
   { id: 'pts', label: 'Pts', width: 'minmax(3rem, 52px)' },
 ]
 
-/** Desktop-only Owner column injected between Player and Pts. */
-const WIRE_OWNER_COLUMN = {
-  id: 'owner',
-  label: 'Owner',
-  title: 'Roster owner',
-  width: 'minmax(110px, 1fr)',
+/** Desktop-only Position column injected between Player and Pts. Chip-only. */
+const WIRE_POSITION_COLUMN = {
+  id: 'pos',
+  label: 'POS',
+  title: 'Position',
+  width: 'minmax(56px, 64px)',
 }
 
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_AFTER = [
   { id: 'next3', label: 'Next 3', width: 'minmax(6.25rem, 1.65fr)' },
 ]
-
-/** Desktop-only status column appended at the very end of the table. */
-const WIRE_STATUS_COLUMN = {
-  id: 'status',
-  label: '',
-  title: 'Availability status',
-  width: 'minmax(22px, 22px)',
-}
 
 const WIRE_NEXT_FIXTURE_PORTRAIT = {
   id: 'next3',
@@ -546,6 +538,9 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
     .filter(Boolean)
     .filter((col) => {
       if (col.id === 'pos' && positionFilter !== POS_FILTER_ALL) return false
+      // Desktop has a dedicated fixed POS column between Player and Pts —
+      // suppress the stat-list 'pos' to avoid double-rendering the position.
+      if (col.id === 'pos' && !portrait) return false
       if (!col.hideWhenPos?.length) return true
       if (positionFilter === POS_FILTER_ALL) return true
       return !col.hideWhenPos.includes(positionFilter)
@@ -562,11 +557,11 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
         return c
       })
     : (() => {
-        // Desktop column order: Player → Owner → Pts → stats → Next3 → status
+        // Desktop column order: Player → POS → Pts → stats → Next3
         const out = []
         for (const c of WIRE_FIXED_COLUMNS_BEFORE) {
           if (c.id === 'pts') {
-            out.push(WIRE_OWNER_COLUMN)
+            out.push(WIRE_POSITION_COLUMN)
           }
           out.push(c)
         }
@@ -577,8 +572,7 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
     ...col,
     width: statWidth,
   }))
-  const fixedAfter = portrait ? fixtureCol : [...fixtureCol, WIRE_STATUS_COLUMN]
-  return [...fixedBefore, ...statsWithWidth, ...fixedAfter]
+  return [...fixedBefore, ...statsWithWidth, ...fixtureCol]
 }
 
 /**
@@ -951,18 +945,15 @@ export function wireColumnToSortKey(colId) {
       return 'next3'
     case 'pts':
       return 'total_points'
-    case 'owner':
-    case 'status':
-      return null
     default:
       return null
   }
 }
 
 /** Wire table column groups for vertical separators: identity | summary | detail stats | fixtures */
-const WIRE_IDENTITY_COLS = new Set(['player', 'owner'])
-const WIRE_SUMMARY_COLS = new Set(['pts', 'pos', 'gp'])
-const WIRE_FIXTURE_COLS = new Set(['next3', 'status'])
+const WIRE_IDENTITY_COLS = new Set(['player', 'pos'])
+const WIRE_SUMMARY_COLS = new Set(['pts', 'gp'])
+const WIRE_FIXTURE_COLS = new Set(['next3'])
 
 /**
  * @param {string} colId

@@ -3,11 +3,12 @@
  * Three vertical bands inside one card on desktop:
  *   1. Header band  — title meta + search + Include drafted toggle
  *   2. Filter pill row — Position · Club · Owned · spacer · Sort · Stats
- *   3. Table band   — Player · Owner · Pts · stat cols · Next 3 · status
+ *   3. Table band   — Player · POS chip · Pts · stat cols · Next 3
  *
  * Portrait stacks four bands (title strip → scroll pill row → search+toggle
- * row → sticky-header sortable table) — the Player cell absorbs slack and
- * an inline status indicator rides inside it (no dedicated status column).
+ * row → sticky-header sortable table). The Player cell owns a trailing
+ * indicator cluster (right-aligned inside the cell) carrying ownership +
+ * availability — there is no dedicated owner or status column.
  */
 
 /* =====================================================
@@ -743,30 +744,56 @@
 }
 
 /* =====================================================
-   Status indicator atom — row-end on desktop / inline in player cell on portrait
+   Player-cell trailing indicator cluster
+   Lives at the right edge of the Player cell (after the name).
+   Up to two icons stack: ownership (owner avatar OR green FA dot) plus
+   availability (🚑 emoji OR red suspended dot).
    ===================================================== */
 
-.players-status-indicator {
+.players-table__name-indicators {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.players-table__name-indicator {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;
-  height: 18px;
-  font-size: 13px;
-  line-height: 1;
   flex-shrink: 0;
+  line-height: 1;
 }
 
-.players-status-indicator__dot {
+.players-table__name-indicator--fa {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--data-positive);
+}
+
+.players-table__name-indicator--sus {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: var(--data-negative);
-  display: inline-block;
 }
 
-.players-status-indicator--sus .players-status-indicator__dot {
-  background: var(--data-negative);
+.players-table__name-indicator--injury {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Owner avatar at ~18px regardless of the TeamAvatar size prop ('sm' = 20px elsewhere). */
+.players-table__name-indicator--owner {
+  width: 18px;
+  height: 18px;
+}
+
+.players-table__name-indicator--owner .team-avatar-frame {
+  width: 18px;
+  height: 18px;
 }
 
 /* =====================================================
@@ -852,19 +879,23 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   text-align: left;
 }
 
-.players-table__th--owner {
-  justify-content: flex-start;
+.players-table__th--pos {
+  justify-content: center;
+  text-align: center;
 }
 
-.players-table__th--status {
+.players-table__th--next3 {
   justify-content: center;
-  color: transparent;
+  text-align: center;
 }
 
 .players-table__th-btn {
+  /* Default: right-align label + sort arrow so numeric column headers match
+   * their right-aligned data cells (Pts, stat cols). Per-column overrides
+   * below flip this for text/centered columns (Player, POS, Next 3). */
   display: inline-flex;
   align-items: center;
-  justify-content: inherit;
+  justify-content: flex-end;
   gap: 0.18rem;
   width: 100%;
   height: 100%;
@@ -883,6 +914,14 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 
 .players-table__th-btn.players-table__th--player {
   justify-content: flex-start;
+}
+
+.players-table__th-btn.players-table__th--pos {
+  justify-content: center;
+}
+
+.players-table__th-btn.players-table__th--next3 {
+  justify-content: center;
 }
 
 .players-table__th-btn:hover {
@@ -967,11 +1006,8 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   min-width: 0;
 }
 
-.players-table__cell--owner {
-  justify-content: flex-start;
-  gap: 6px;
-  min-width: 0;
-  font-size: var(--text-sm);
+.players-table__cell--pos {
+  justify-content: center;
 }
 
 .players-table__cell--pts {
@@ -1003,10 +1039,6 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   overflow: visible;
 }
 
-.players-table__cell--status {
-  justify-content: center;
-}
-
 /* Player cell */
 .players-table__kit {
   flex-shrink: 0;
@@ -1034,6 +1066,8 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   align-items: center;
   gap: 6px;
   min-width: 0;
+  flex: 1 1 auto;
+  width: 100%;
 }
 
 .players-table__name {
@@ -1045,48 +1079,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
-}
-
-/* Owner cell */
-.players-table__owner {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.players-table__owner .team-avatar-frame--sm {
-  flex-shrink: 0;
-  width: 20px;
-  height: 20px;
-}
-
-.players-table__owner-name {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  color: var(--text);
-  font-weight: 500;
-}
-
-.players-table__free-agent {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--data-positive);
-  font-weight: 600;
-  font-size: var(--text-sm);
-  white-space: nowrap;
-}
-
-.players-table__free-agent-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--data-positive);
-  display: inline-block;
-  flex-shrink: 0;
+  flex: 1 1 auto;
 }
 
 /* Fixtures (Next 3) */
@@ -1311,9 +1304,18 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     gap: 4px;
   }
 
-  .players-table--portrait .players-table__name-row .players-status-indicator {
-    width: 14px;
-    height: 14px;
+  /* Slightly tighter indicator cluster on portrait */
+  .players-table--portrait .players-table__name-indicators {
+    gap: 3px;
+  }
+
+  .players-table--portrait .players-table__name-indicator--owner,
+  .players-table--portrait .players-table__name-indicator--owner .team-avatar-frame {
+    width: 16px;
+    height: 16px;
+  }
+
+  .players-table--portrait .players-table__name-indicator--injury {
     font-size: 11px;
   }
 
