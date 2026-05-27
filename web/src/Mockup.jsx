@@ -6011,6 +6011,838 @@ function WirePortraitCard({ player }) {
   )
 }
 
+/* ------------------------------------------------------------------ */
+/* ============ WIRE PORTRAIT TILE LAYOUT VARIANTS (E/F/G/H) ============ */
+/* Tile-based row layouts targeting ~5-6 tiles per phone viewport.
+ * Follows on from A/B/C/D — those explored wrapper chrome, these
+ * explore taller per-row tile compositions. New class names all
+ * use `mock-wire-portrait-tile-` so they don't collide with A–D
+ * styles. Toolbar is the latest production shape: search + Wire|Owned
+ * toggle on Row 1, Position/Club/Stats pills on Row 2. */
+
+const WIRE_TILE_PLAYERS = [
+  {
+    name: 'Bruno Fernandes',
+    club: 'MUN',
+    clubColor: '#da291c',
+    pos: 'M',
+    pts: 184,
+    gp: 22, g: 6, a: 8, dc: 19,
+    next3: [
+      { opp: 'NFO', home: true },
+      { opp: 'BOU', home: false },
+      { opp: 'WHU', home: true },
+    ],
+    availability: 'fit',
+    ownership: { kind: 'owned', team: 'TO', teamColor: '#b1364c' },
+  },
+  {
+    name: 'Mohamed Salah',
+    club: 'LIV',
+    clubColor: '#c8102e',
+    pos: 'F',
+    pts: 177,
+    gp: 36, g: 28, a: 14, dc: 6,
+    next3: [
+      { opp: 'ARS', home: true },
+      { opp: 'BHA', home: false },
+      { opp: 'NEW', home: true },
+    ],
+    availability: 'fit',
+    ownership: { kind: 'fa' },
+  },
+  {
+    name: 'Erling Haaland',
+    club: 'MCI',
+    clubColor: '#6cabdd',
+    pos: 'F',
+    pts: 169,
+    gp: 32, g: 22, a: 5, dc: 4,
+    next3: [
+      { opp: 'TOT', home: false },
+      { opp: 'CHE', home: true },
+      { opp: 'AVL', home: false },
+    ],
+    availability: 'doubtful',
+    ownership: { kind: 'owned', team: 'CC', teamColor: '#4f46e5' },
+  },
+  {
+    name: 'Bukayo Saka',
+    club: 'ARS',
+    clubColor: '#ef0107',
+    pos: 'F',
+    pts: 167,
+    gp: 30, g: 12, a: 11, dc: 5,
+    next3: [
+      { opp: 'LIV', home: true },
+      { opp: 'NEW', home: false },
+      { opp: 'BHA', home: true },
+    ],
+    availability: 'fit',
+    ownership: { kind: 'fa' },
+  },
+  {
+    name: 'Trent Alexander-Arnold',
+    club: 'LIV',
+    clubColor: '#c8102e',
+    pos: 'D',
+    pts: 149,
+    gp: 25, g: 3, a: 8, dc: 12,
+    next3: [
+      { opp: 'ARS', home: true },
+      { opp: 'BHA', home: false },
+      { opp: 'NEW', home: true },
+    ],
+    availability: 'injured',
+    ownership: { kind: 'owned', team: 'HM', teamColor: '#7a1f3f' },
+  },
+  {
+    name: 'Cole Palmer',
+    club: 'CHE',
+    clubColor: '#034694',
+    pos: 'M',
+    pts: 148,
+    gp: 28, g: 14, a: 7, dc: 9,
+    next3: [
+      { opp: 'MCI', home: true },
+      { opp: 'BRE', home: false },
+      { opp: 'AVL', home: true },
+    ],
+    availability: 'fit',
+    ownership: { kind: 'fa' },
+  },
+]
+
+function WirePortraitTileCrest({ club, color }) {
+  return (
+    <span
+      className="mock-wire-portrait-tile-crest"
+      style={{ background: color }}
+      aria-hidden
+    >
+      {club}
+    </span>
+  )
+}
+
+function WirePortraitTileOwner({ initials, color }) {
+  return (
+    <span
+      className="mock-wire-portrait-tile-owner"
+      style={{ background: color }}
+      aria-label={`Owned by ${initials}`}
+    >
+      {initials}
+    </span>
+  )
+}
+
+function WirePortraitTileFaTag() {
+  return <span className="mock-wire-portrait-tile-fatag">Free agent</span>
+}
+
+function WirePortraitTileAvailDot({ kind }) {
+  return (
+    <span
+      className={`mock-wire-portrait-tile-avail mock-wire-portrait-tile-avail--${kind}`}
+      aria-label={kind === 'fit' ? 'Fit' : kind === 'injured' ? 'Injured' : 'Doubtful'}
+    />
+  )
+}
+
+function WirePortraitTileFixture({ opp, home }) {
+  return (
+    <span
+      className={
+        'mock-wire-portrait-tile-fixture ' + (home ? 'is-home' : 'is-away')
+      }
+    >
+      <span className="mock-wire-portrait-tile-fixture__opp">{opp}</span>
+      <span className="mock-wire-portrait-tile-fixture__ha">{home ? 'H' : 'A'}</span>
+    </span>
+  )
+}
+
+function WirePortraitTileOwnership({ ownership }) {
+  if (!ownership) return null
+  if (ownership.kind === 'fa') return <WirePortraitTileFaTag />
+  if (ownership.kind === 'owned') {
+    return (
+      <WirePortraitTileOwner
+        initials={ownership.team}
+        color={ownership.teamColor}
+      />
+    )
+  }
+  return null
+}
+
+/* Shared toolbar for E/F/G/H — matches the just-shipped production polish:
+ * Row 1: full-width pill search + Wire|Owned segmented toggle to the right.
+ * Row 2: Position / Club / Stats dropdown pills (all closed). */
+function WirePortraitTileToolbar({ statsCount = 5 }) {
+  return (
+    <div className="mock-wire-portrait-tile-toolbar">
+      <div className="mock-wire-portrait-tile-toolbar__row1">
+        <label className="mock-wire-portrait-tile-search">
+          <WirePortraitSearchIcon className="mock-wire-portrait-tile-search__icon" />
+          <input
+            type="search"
+            readOnly
+            className="mock-wire-portrait-tile-search__input"
+            placeholder="Search players, clubs, owners…"
+            defaultValue=""
+          />
+        </label>
+        <div className="mock-wire-portrait-tile-segment" role="group" aria-label="Player ownership filter">
+          <button
+            type="button"
+            className="mock-wire-portrait-tile-segment__btn mock-wire-portrait-tile-segment__btn--active"
+            aria-pressed
+          >
+            Wire
+          </button>
+          <button
+            type="button"
+            className="mock-wire-portrait-tile-segment__btn"
+            aria-pressed={false}
+          >
+            Owned
+          </button>
+        </div>
+      </div>
+      <div className="mock-wire-portrait-tile-toolbar__row2" role="group" aria-label="Wire filters">
+        <button type="button" className="mock-wire-portrait-tile-pill" aria-expanded={false}>
+          <span className="mock-wire-portrait-tile-pill__label">Position</span>
+          <span className="mock-wire-portrait-tile-pill__sep" aria-hidden>·</span>
+          <span className="mock-wire-portrait-tile-pill__value">All</span>
+          <CaretIcon className="mock-wire-portrait-tile-pill__caret" />
+        </button>
+        <button type="button" className="mock-wire-portrait-tile-pill" aria-expanded={false}>
+          <span className="mock-wire-portrait-tile-pill__label">Club</span>
+          <span className="mock-wire-portrait-tile-pill__sep" aria-hidden>·</span>
+          <span className="mock-wire-portrait-tile-pill__value">All</span>
+          <CaretIcon className="mock-wire-portrait-tile-pill__caret" />
+        </button>
+        <button type="button" className="mock-wire-portrait-tile-pill" aria-expanded={false}>
+          <span className="mock-wire-portrait-tile-pill__label">Stats</span>
+          <span className="mock-wire-portrait-tile-pill__sep" aria-hidden>·</span>
+          <span className="mock-wire-portrait-tile-pill__value">{statsCount}</span>
+          <CaretIcon className="mock-wire-portrait-tile-pill__caret" />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function WirePortraitTileHeader() {
+  return (
+    <div className="mock-wire-portrait-tile-header">
+      <span className="mock-wire-portrait-tile-header__title">Wire</span>
+      <span className="mock-wire-portrait-tile-header__meta">347 free agents · GW 28</span>
+    </div>
+  )
+}
+
+/* ---------------- Variant E — identity-left, stats-right ---------------- */
+function WirePortraitTileE({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-e">
+      <div className="mock-wire-portrait-tile-e__id">
+        <WirePortraitTileCrest club={player.club} color={player.clubColor} />
+        <div className="mock-wire-portrait-tile-e__id-text">
+          <div className="mock-wire-portrait-tile-e__name">{player.name}</div>
+          <div className="mock-wire-portrait-tile-e__meta">
+            <span className="mock-wire-portrait-tile-e__pos">{player.pos}</span>
+            <span className="mock-wire-portrait-tile-e__sep" aria-hidden>·</span>
+            <WirePortraitTileAvailDot kind={player.availability} />
+            <span className="mock-wire-portrait-tile-e__sep" aria-hidden>·</span>
+            <WirePortraitTileOwnership ownership={player.ownership} />
+          </div>
+        </div>
+      </div>
+      <div className="mock-wire-portrait-tile-e__data">
+        <div className="mock-wire-portrait-tile-e__pts">
+          <span className="mock-wire-portrait-tile-e__pts-num">{player.pts}</span>
+          <span className="mock-wire-portrait-tile-e__pts-lbl">PTS</span>
+        </div>
+        <div className="mock-wire-portrait-tile-e__stats">
+          <span><em>GP</em>{player.gp}</span>
+          <span><em>G</em>{player.g}</span>
+          <span><em>A</em>{player.a}</span>
+          <span><em>DC</em>{player.dc}</span>
+        </div>
+        <div className="mock-wire-portrait-tile-e__fixtures">
+          {player.next3.map((f, i) => (
+            <WirePortraitTileFixture key={i} opp={f.opp} home={f.home} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Variant F — stats-forward, full-width stats ---------------- */
+function WirePortraitTileF({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-f">
+      <div className="mock-wire-portrait-tile-f__top">
+        <WirePortraitTileCrest club={player.club} color={player.clubColor} />
+        <div className="mock-wire-portrait-tile-f__id">
+          <div className="mock-wire-portrait-tile-f__name-row">
+            <span className="mock-wire-portrait-tile-f__name">{player.name}</span>
+            <WirePortraitTileAvailDot kind={player.availability} />
+          </div>
+          <div className="mock-wire-portrait-tile-f__sub">
+            <span className="mock-wire-portrait-tile-f__pos">{player.pos}</span>
+            <span className="mock-wire-portrait-tile-f__sep" aria-hidden>·</span>
+            <span className="mock-wire-portrait-tile-f__club">{player.club}</span>
+            <span className="mock-wire-portrait-tile-f__sep" aria-hidden>·</span>
+            <WirePortraitTileOwnership ownership={player.ownership} />
+          </div>
+        </div>
+        <div className="mock-wire-portrait-tile-f__pts">
+          <span className="mock-wire-portrait-tile-f__pts-num">{player.pts}</span>
+          <span className="mock-wire-portrait-tile-f__pts-lbl">PTS</span>
+        </div>
+      </div>
+      <div className="mock-wire-portrait-tile-f__stats">
+        <span><em>GP</em>{player.gp}</span>
+        <span><em>G</em>{player.g}</span>
+        <span><em>A</em>{player.a}</span>
+        <span><em>DC</em>{player.dc}</span>
+      </div>
+      <div className="mock-wire-portrait-tile-f__fixtures">
+        {player.next3.map((f, i) => (
+          <WirePortraitTileFixture key={i} opp={f.opp} home={f.home} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Variant G — compact side-by-side ---------------- */
+function WirePortraitTileG({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-g">
+      <div className="mock-wire-portrait-tile-g__id">
+        <WirePortraitTileCrest club={player.club} color={player.clubColor} />
+        <div className="mock-wire-portrait-tile-g__id-text">
+          <div className="mock-wire-portrait-tile-g__name">{player.name}</div>
+          <div className="mock-wire-portrait-tile-g__meta">
+            <span className="mock-wire-portrait-tile-g__pos">{player.pos}</span>
+            <span className="mock-wire-portrait-tile-g__sep" aria-hidden>·</span>
+            <WirePortraitTileAvailDot kind={player.availability} />
+            <span className="mock-wire-portrait-tile-g__sep" aria-hidden>·</span>
+            <WirePortraitTileOwnership ownership={player.ownership} />
+          </div>
+        </div>
+      </div>
+      <div className="mock-wire-portrait-tile-g__data">
+        <div className="mock-wire-portrait-tile-g__pts">
+          <span className="mock-wire-portrait-tile-g__pts-num">{player.pts}</span>
+          <span className="mock-wire-portrait-tile-g__pts-lbl">PTS</span>
+        </div>
+        <div className="mock-wire-portrait-tile-g__stats">
+          <span><em>G</em>{player.g}</span>
+          <span><em>A</em>{player.a}</span>
+          <span><em>DC</em>{player.dc}</span>
+        </div>
+        <div className="mock-wire-portrait-tile-g__fixtures">
+          {player.next3.map((f, i) => (
+            <WirePortraitTileFixture key={i} opp={f.opp} home={f.home} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Variant H — hero Pts, brand-tinted ---------------- */
+function WirePortraitTileH({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-h">
+      <div className="mock-wire-portrait-tile-h__main">
+        <div className="mock-wire-portrait-tile-h__id-row">
+          <WirePortraitTileCrest club={player.club} color={player.clubColor} />
+          <span className="mock-wire-portrait-tile-h__name">{player.name}</span>
+          <WirePortraitTileAvailDot kind={player.availability} />
+        </div>
+        <div className="mock-wire-portrait-tile-h__sub">
+          <span className="mock-wire-portrait-tile-h__pos">{player.pos}</span>
+          <span className="mock-wire-portrait-tile-h__sep" aria-hidden>·</span>
+          <span className="mock-wire-portrait-tile-h__club">{player.club}</span>
+          <span className="mock-wire-portrait-tile-h__sep" aria-hidden>·</span>
+          <WirePortraitTileOwnership ownership={player.ownership} />
+        </div>
+        <div className="mock-wire-portrait-tile-h__stats">
+          <span><em>GP</em> {player.gp}</span>
+          <span aria-hidden>·</span>
+          <span><em>G</em> {player.g}</span>
+          <span aria-hidden>·</span>
+          <span><em>A</em> {player.a}</span>
+          <span aria-hidden>·</span>
+          <span><em>DC</em> {player.dc}</span>
+        </div>
+        <div className="mock-wire-portrait-tile-h__fixtures">
+          {player.next3.map((f, i) => (
+            <WirePortraitTileFixture key={i} opp={f.opp} home={f.home} />
+          ))}
+        </div>
+      </div>
+      <div className="mock-wire-portrait-tile-h__pts">
+        <span className="mock-wire-portrait-tile-h__pts-num">{player.pts}</span>
+        <span className="mock-wire-portrait-tile-h__pts-lbl">PTS</span>
+      </div>
+    </div>
+  )
+}
+
+function WirePortraitTileVariants() {
+  const players = WIRE_TILE_PLAYERS
+  return (
+    <div className="mock-wire-portrait">
+      <div className="mock-wire-portrait__legend">
+        <div className="mock-wire-portrait__legend-h">What varies across E–H</div>
+        <ul className="mock-wire-portrait__legend-list">
+          <li>
+            <strong>E</strong> — identity left, mini stats grid right, fixtures
+            bottom-right (compact 2-row identity).
+          </li>
+          <li>
+            <strong>F</strong> — stats forward; metadata as sub-row; stats and
+            fixtures full-width.
+          </li>
+          <li>
+            <strong>G</strong> — tight side-by-side; identity 50%, stats 50%;
+            no separate fixture row.
+          </li>
+          <li>
+            <strong>H</strong> — hero Pts; large brand-tinted points; stats
+            single-line; fixture chips inline.
+          </li>
+        </ul>
+        <div className="mock-wire-portrait__legend-shared">
+          Shared across all four: same toolbar (search + Wire/Owned segmented
+          toggle on row 1, Position / Club / Stats pills on row 2), same crest
+          (24px), full player names (no truncation), single-letter positions
+          (G/D/M/F), 8px availability dots (fit/injured/doubtful), and the
+          same Pts value (184) on the topmost player for direct comparison.
+        </div>
+      </div>
+
+      <div className="mock-wire-portrait__stack">
+        {/* Variant E */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant E</strong> · Identity left · mini stats grid right · ~88px tile
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--e">
+                  {players.map((p) => (
+                    <WirePortraitTileE key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant F */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant F</strong> · Stats-forward · full-width stats row · ~96px card
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--f">
+                  {players.map((p) => (
+                    <WirePortraitTileF key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant G */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant G</strong> · Tight side-by-side · no separate fixture row · ~76px tile
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--g">
+                  {players.map((p) => (
+                    <WirePortraitTileG key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant H */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant H</strong> · Hero Pts · brand-tinted right edge · ~88px card
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--h">
+                  {players.map((p) => (
+                    <WirePortraitTileH key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* ============ WIRE PORTRAIT TILE LAYOUT VARIANTS (I/J/K/L) ============ */
+/* Follow-up to E/F/G/H. The user found that inline-mixed stat positions
+ * made columns shift tile-to-tile, breaking at-a-glance comparison when
+ * sorting (you can't scan down a Goals column if Goals isn't at the same
+ * x in every tile).
+ *
+ * These four variants lock stats into a FIXED-WIDTH right column so
+ * PTS / G / A / DC values appear at identical x-coordinates across
+ * every tile. Left column = crest + full name (wraps if needed) +
+ * Next-3 fixture chips below. Right column varies per variant.
+ *
+ * All shared atoms (crest, fixture chip, toolbar, header) are reused
+ * verbatim from the E/F/G/H section above. Class names are namespaced
+ * `mock-wire-portrait-tile-{i,j,k,l}-*` and a shared `…-ijkl-*` for the
+ * common left column. */
+
+const WIRE_TILE_RIGHT_PLAYERS = [
+  {
+    name: 'Mohamed Salah',
+    club: 'LIV',
+    clubColor: '#c8102e',
+    pos: 'F',
+    pts: 184, gp: 36, g: 28, a: 14, dc: 6,
+    next3: [
+      { opp: 'ARS', home: true },
+      { opp: 'LIV', home: false },
+      { opp: 'BRI', home: true },
+    ],
+  },
+  {
+    name: 'Bruno Fernandes',
+    club: 'MUN',
+    clubColor: '#da291c',
+    pos: 'M',
+    pts: 167, gp: 22, g: 6, a: 8, dc: 19,
+    next3: [
+      { opp: 'NFO', home: true },
+      { opp: 'BOU', home: false },
+      { opp: 'WHU', home: true },
+    ],
+  },
+  {
+    name: 'Trent Alexander-Arnold',
+    club: 'LIV',
+    clubColor: '#c8102e',
+    pos: 'D',
+    pts: 149, gp: 30, g: 3, a: 6, dc: 3,
+    next3: [
+      { opp: 'ARS', home: true },
+      { opp: 'LIV', home: false },
+      { opp: 'BRI', home: true },
+    ],
+  },
+  {
+    name: 'Cole Palmer',
+    club: 'CHE',
+    clubColor: '#034694',
+    pos: 'M',
+    pts: 169, gp: 37, g: 10, a: 8, dc: 1,
+    next3: [
+      { opp: 'NEW', home: true },
+      { opp: 'CHE', home: false },
+      { opp: 'LIV', home: true },
+    ],
+  },
+  {
+    name: 'Ollie Watkins',
+    club: 'AVL',
+    clubColor: '#670e36',
+    pos: 'F',
+    pts: 144, gp: 37, g: 16, a: 4, dc: 0,
+    next3: [
+      { opp: 'MCI', home: true },
+      { opp: 'BRE', home: false },
+      { opp: 'AVL', home: true },
+    ],
+  },
+  {
+    name: 'Bukayo Saka',
+    club: 'ARS',
+    clubColor: '#ef0107',
+    pos: 'F',
+    pts: 148, gp: 36, g: 3, a: 3, dc: 13,
+    next3: [
+      { opp: 'NFO', home: true },
+      { opp: 'BOU', home: false },
+      { opp: 'WHU', home: true },
+    ],
+  },
+]
+
+/* Shared left column for I/J/K/L: crest + full name, fixtures below. */
+function WirePortraitTileIJKLLeft({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-ijkl__left">
+      <div className="mock-wire-portrait-tile-ijkl__id-row">
+        <WirePortraitTileCrest club={player.club} color={player.clubColor} />
+        <span className="mock-wire-portrait-tile-ijkl__name">{player.name}</span>
+      </div>
+      <div className="mock-wire-portrait-tile-ijkl__fixtures">
+        {player.next3.map((f, i) => (
+          <WirePortraitTileFixture key={i} opp={f.opp} home={f.home} />
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Variant I — persistent column header above tile group ---------------- */
+function WirePortraitTileI({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-i">
+      <WirePortraitTileIJKLLeft player={player} />
+      <div className="mock-wire-portrait-tile-i__right">
+        <span>{player.pts}</span>
+        <span>{player.g}</span>
+        <span>{player.a}</span>
+        <span>{player.dc}</span>
+      </div>
+    </div>
+  )
+}
+
+function WirePortraitTileIColHeader() {
+  return (
+    <div className="mock-wire-portrait-tile-i-colhead" aria-hidden>
+      <span className="mock-wire-portrait-tile-i-colhead__spacer" />
+      <div className="mock-wire-portrait-tile-i-colhead__cols">
+        <span>Pts</span>
+        <span>G</span>
+        <span>A</span>
+        <span>DC</span>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Variant J — per-tile label-above-value ---------------- */
+function WirePortraitTileJ({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-j">
+      <WirePortraitTileIJKLLeft player={player} />
+      <div className="mock-wire-portrait-tile-j__right">
+        <div className="mock-wire-portrait-tile-j__labels">
+          <span>Pts</span>
+          <span>G</span>
+          <span>A</span>
+          <span>DC</span>
+        </div>
+        <div className="mock-wire-portrait-tile-j__values">
+          <span>{player.pts}</span>
+          <span>{player.g}</span>
+          <span>{player.a}</span>
+          <span>{player.dc}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Variant K — 2×2 stats grid ---------------- */
+function WirePortraitTileK({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-k">
+      <WirePortraitTileIJKLLeft player={player} />
+      <div className="mock-wire-portrait-tile-k__right">
+        <div className="mock-wire-portrait-tile-k__cell">
+          <em>Pts</em>
+          <span>{player.pts}</span>
+        </div>
+        <div className="mock-wire-portrait-tile-k__cell">
+          <em>G</em>
+          <span>{player.g}</span>
+        </div>
+        <div className="mock-wire-portrait-tile-k__cell">
+          <em>A</em>
+          <span>{player.a}</span>
+        </div>
+        <div className="mock-wire-portrait-tile-k__cell">
+          <em>DC</em>
+          <span>{player.dc}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Variant L — hero PTS + 3-stat strip ---------------- */
+function WirePortraitTileL({ player }) {
+  return (
+    <div className="mock-wire-portrait-tile-l">
+      <WirePortraitTileIJKLLeft player={player} />
+      <div className="mock-wire-portrait-tile-l__right">
+        <div className="mock-wire-portrait-tile-l__pts">{player.pts}</div>
+        <div className="mock-wire-portrait-tile-l__strip">
+          <span><em>G</em>{player.g}</span>
+          <span><em>A</em>{player.a}</span>
+          <span><em>DC</em>{player.dc}</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function WirePortraitTileRightVariants() {
+  const players = WIRE_TILE_RIGHT_PLAYERS
+  return (
+    <div className="mock-wire-portrait">
+      <div className="mock-wire-portrait__legend">
+        <div className="mock-wire-portrait__legend-h">What varies across I–L</div>
+        <ul className="mock-wire-portrait__legend-list">
+          <li>
+            <strong>I</strong> — persistent column header above the tile
+            group; pure values in tiles (most table-like).
+          </li>
+          <li>
+            <strong>J</strong> — label-above-value per tile (self-describing,
+            more redundant).
+          </li>
+          <li>
+            <strong>K</strong> — 2×2 mini stat grid per tile.
+          </li>
+          <li>
+            <strong>L</strong> — hero Pts + smaller 3-stat strip (G/A/DC)
+            below.
+          </li>
+        </ul>
+        <div className="mock-wire-portrait__legend-shared">
+          Shared across all four: identity left (crest + full name) with the
+          Next-3 fixture chips directly below the name, and a{' '}
+          <strong>fixed-width right column</strong> so stat values appear at
+          the same x-coordinate from tile to tile. Numbers use{' '}
+          <code>tabular-nums</code> so 1s and 8s stay aligned. Long names
+          (e.g. Trent Alexander-Arnold) wrap inside the left column without
+          shifting the stat column. Position chip / availability dot /
+          owned-by are intentionally omitted — focus is identity+fixtures
+          left, stats right.
+        </div>
+      </div>
+
+      <div className="mock-wire-portrait__stack">
+        {/* Variant I */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant I</strong> · Persistent column header · pure values in tiles
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar statsCount={4} />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--ijkl">
+                  <WirePortraitTileIColHeader />
+                  {players.map((p) => (
+                    <WirePortraitTileI key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant J */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant J</strong> · Label-above-value per tile · self-describing
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar statsCount={4} />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--ijkl">
+                  {players.map((p) => (
+                    <WirePortraitTileJ key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant K */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant K</strong> · 2×2 stats grid · label + value per cell
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar statsCount={4} />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--ijkl">
+                  {players.map((p) => (
+                    <WirePortraitTileK key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Variant L */}
+        <div className="mock-wire-portrait__variant">
+          <div className="mock-wire-portrait__variant-label">
+            <strong>Variant L</strong> · Hero Pts · G/A/DC strip below
+          </div>
+          <div className="mock-wire-portrait__frame">
+            <div className="mock-wire-portrait-screen">
+              <div className="mock-wire-portrait-tile mock-wire-portrait-tile--c">
+                <WirePortraitTileHeader />
+                <WirePortraitTileToolbar statsCount={4} />
+                <div className="mock-wire-portrait-tile-list mock-wire-portrait-tile-list--ijkl">
+                  {players.map((p) => (
+                    <WirePortraitTileL key={p.name} player={p} />
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function WirePortraitVariants() {
   const players = WIRE_PORTRAIT_PLAYERS
   return (
@@ -6937,6 +7769,40 @@ export function Mockup() {
             the wrapper chrome and edge inset varies. Pick a winner on phone.
           </p>
           <WirePortraitVariants />
+        </section>
+
+        {/* ============ WIRE TILE LAYOUT VARIANTS (E/F/G/H) ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Wire · tile layout variants</div>
+          <h2 className="mockup__section-h">Wire — tile layout variants</h2>
+          <p className="mockup__section-sub">
+            Follow-up to the A–D portrait variants. Variant C (full-bleed flat
+            grid) shipped, but the user found it horizontally cramped — full
+            names truncate and there&apos;s no room for fixture chips. These
+            four explore taller-per-row tile compositions that fit ~5–6 tiles
+            per phone viewport (not one-per-screen like Variant D). Same
+            production toolbar across all four (search + Wire/Owned toggle on
+            row 1, Position / Club / Stats pills on row 2). Pick a winner on
+            phone.
+          </p>
+          <WirePortraitTileVariants />
+        </section>
+
+        {/* ============ WIRE TILE LAYOUT VARIANTS (I/J/K/L) — right-aligned stats ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Wire · tile layout variants (right-aligned stats)</div>
+          <h2 className="mockup__section-h">Wire — tile layout variants (right-aligned stats)</h2>
+          <p className="mockup__section-sub">
+            Follow-up to E/F/G/H. Those laid stats inline-with-text, so a
+            stat column&apos;s x-position shifted from tile to tile — bad
+            for at-a-glance comparison when sorting (you can&apos;t scan down
+            the Goals column if Goals isn&apos;t at the same x in every
+            row). These four lock stats into a fixed-width right column so
+            values line up vertically across tiles. Identity (crest +
+            name) and Next-3 fixtures live on the left; the right column
+            varies per variant.
+          </p>
+          <WirePortraitTileRightVariants />
         </section>
 
         {/* 17. Part 2 surfaces — staged separately, integrated as a batch */}

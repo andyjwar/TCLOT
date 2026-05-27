@@ -9318,3 +9318,934 @@
     max-width: 390px;
   }
 }
+
+/* =================================================================== */
+/* WIRE — PORTRAIT TILE LAYOUT VARIANTS (E / F / G / H)                  */
+/* =================================================================== */
+/* Tile-based row layouts targeting ~5-6 tiles per phone viewport.
+ * Shared toolbar (search + Wire|Owned toggle on row 1, Position /
+ * Club / Stats pills on row 2). Each variant differs in the row
+ * composition. Namespaced `mock-wire-portrait-tile-` to keep clear
+ * of A–D styles. */
+
+/* ----- Toolbar (E/F/G/H) ----- */
+.mock-wire-portrait-tile-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 12px 10px;
+  background: var(--surface-2);
+}
+.mock-wire-portrait-tile-toolbar__row1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mock-wire-portrait-tile-toolbar__row2 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.mock-wire-portrait-tile-toolbar__row2::-webkit-scrollbar { display: none; }
+.mock-wire-portrait-tile-toolbar__row2 > * { flex-shrink: 0; }
+
+.mock-wire-portrait-tile-search {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.mock-wire-portrait-tile-search__icon {
+  width: 14px;
+  height: 14px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.mock-wire-portrait-tile-search__input {
+  flex: 1 1 auto;
+  background: transparent;
+  border: 0;
+  outline: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--text);
+  min-width: 0;
+  width: 100%;
+}
+.mock-wire-portrait-tile-search__input::placeholder { color: var(--text-muted); }
+
+/* Wire | Owned segmented toggle (mirrors players-portrait-segment) */
+.mock-wire-portrait-tile-segment {
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 32px;
+  width: 96px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.mock-wire-portrait-tile-segment__btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 8px;
+  border-radius: 999px;
+  cursor: pointer;
+  flex: 1 1 0;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-segment__btn--active {
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  color: color-mix(in srgb, var(--brand) 85%, var(--text-strong));
+}
+
+/* Dropdown pills row 2 — same shape as A/B/C pill but with own ns */
+.mock-wire-portrait-tile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 28px;
+  padding: 0 10px 0 11px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.mock-wire-portrait-tile-pill__label { color: var(--text-muted); font-weight: 500; }
+.mock-wire-portrait-tile-pill__sep { color: var(--text-muted); padding: 0 1px; }
+.mock-wire-portrait-tile-pill__value { color: var(--text-strong); font-weight: 600; }
+.mock-wire-portrait-tile-pill__caret {
+  width: 11px;
+  height: 11px;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+/* ----- Header strip (E/F/G/H) — same as variant C header ----- */
+.mock-wire-portrait-tile-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px;
+  background: var(--surface-2);
+}
+.mock-wire-portrait-tile-header__title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.2;
+}
+.mock-wire-portrait-tile-header__meta {
+  font-size: 10px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+/* ----- Shared atoms (crest, owner, dot, fixture) ----- */
+.mock-wire-portrait-tile-crest {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.18);
+}
+.mock-wire-portrait-tile-owner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.mock-wire-portrait-tile-fatag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  flex-shrink: 0;
+}
+.mock-wire-portrait-tile-avail {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.mock-wire-portrait-tile-avail--fit { background: var(--data-positive); }
+.mock-wire-portrait-tile-avail--injured { background: var(--data-negative); }
+.mock-wire-portrait-tile-avail--doubtful {
+  background: color-mix(in srgb, var(--text-muted) 60%, var(--border));
+}
+
+.mock-wire-portrait-tile-fixture {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  height: 17px;
+  padding: 0 4px;
+  font-size: 8.5px;
+  font-weight: 600;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  border: 1px solid;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  white-space: nowrap;
+  background: transparent;
+  border-radius: 4px;
+}
+.mock-wire-portrait-tile-fixture.is-home {
+  color: color-mix(in srgb, #2f8a39 80%, var(--text-strong));
+  border-color: color-mix(in srgb, #2f8a39 55%, transparent);
+  background: color-mix(in srgb, #439446 16%, transparent);
+}
+.mock-wire-portrait-tile-fixture.is-away {
+  color: color-mix(in srgb, #b92c28 80%, var(--text-strong));
+  border-color: color-mix(in srgb, #b92c28 55%, transparent);
+  background: color-mix(in srgb, #b92c28 12%, transparent);
+}
+.mock-wire-portrait-tile-fixture__opp { font-weight: 700; }
+.mock-wire-portrait-tile-fixture__ha {
+  font-weight: 500;
+  opacity: 0.8;
+  padding-left: 2px;
+}
+
+/* ----- Tile list wrappers — variant-specific gap + padding ----- */
+.mock-wire-portrait-tile-list {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+}
+.mock-wire-portrait-tile-list--e {
+  border-top: 1px solid var(--border);
+}
+.mock-wire-portrait-tile-list--f {
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+}
+.mock-wire-portrait-tile-list--g {
+  border-top: 1px solid var(--border);
+}
+.mock-wire-portrait-tile-list--h {
+  gap: 8px;
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border);
+}
+
+/* =================================================================== */
+/* Variant E — identity-left, mini stats grid right, fixtures bottom-right */
+/* =================================================================== */
+.mock-wire-portrait-tile-e {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.mock-wire-portrait-tile-e:last-child { border-bottom: none; }
+
+.mock-wire-portrait-tile-e__id {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-e__id-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.mock-wire-portrait-tile-e__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.25;
+  word-break: break-word;
+}
+.mock-wire-portrait-tile-e__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1;
+  flex-wrap: wrap;
+}
+.mock-wire-portrait-tile-e__pos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 14px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.mock-wire-portrait-tile-e__sep { opacity: 0.55; }
+
+.mock-wire-portrait-tile-e__data {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+.mock-wire-portrait-tile-e__pts {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  line-height: 1;
+}
+.mock-wire-portrait-tile-e__pts-num {
+  font-size: 17px;
+  font-weight: 700;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+.mock-wire-portrait-tile-e__pts-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+.mock-wire-portrait-tile-e__stats {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 1px 10px;
+  font-size: 11px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.mock-wire-portrait-tile-e__stats > span {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.mock-wire-portrait-tile-e__stats em {
+  font-style: normal;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 500;
+  color: var(--text-muted);
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.mock-wire-portrait-tile-e__fixtures {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+/* =================================================================== */
+/* Variant F — stats-forward, full-width stats, sub-row metadata        */
+/* =================================================================== */
+.mock-wire-portrait-tile-f {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.mock-wire-portrait-tile-f__top {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.mock-wire-portrait-tile-f__id {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.mock-wire-portrait-tile-f__name-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.mock-wire-portrait-tile-f__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.2;
+}
+.mock-wire-portrait-tile-f__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.mock-wire-portrait-tile-f__pos {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.mock-wire-portrait-tile-f__club {
+  font-weight: 600;
+  color: var(--text);
+}
+.mock-wire-portrait-tile-f__sep { opacity: 0.55; }
+.mock-wire-portrait-tile-f__pts {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  line-height: 1;
+  gap: 2px;
+}
+.mock-wire-portrait-tile-f__pts-num {
+  font-size: 22px;
+  font-weight: 700;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+.mock-wire-portrait-tile-f__pts-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.1em;
+}
+.mock-wire-portrait-tile-f__stats {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  font-size: 12px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.mock-wire-portrait-tile-f__stats em {
+  font-style: normal;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-right: 4px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.mock-wire-portrait-tile-f__fixtures {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* =================================================================== */
+/* Variant G — compact side-by-side (~76px), no separate fixture row   */
+/* =================================================================== */
+.mock-wire-portrait-tile-g {
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  min-height: 70px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.mock-wire-portrait-tile-g:last-child { border-bottom: none; }
+.mock-wire-portrait-tile-g::before {
+  content: '';
+  grid-column: 2;
+  align-self: stretch;
+  background: color-mix(in srgb, var(--border) 60%, transparent);
+}
+
+.mock-wire-portrait-tile-g__id {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-g__id-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.mock-wire-portrait-tile-g__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.2;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+.mock-wire-portrait-tile-g__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.mock-wire-portrait-tile-g__pos {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.mock-wire-portrait-tile-g__sep { opacity: 0.55; }
+
+.mock-wire-portrait-tile-g__data {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-g__pts {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  line-height: 1;
+}
+.mock-wire-portrait-tile-g__pts-num {
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+.mock-wire-portrait-tile-g__pts-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+}
+.mock-wire-portrait-tile-g__stats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 11px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+.mock-wire-portrait-tile-g__stats em {
+  font-style: normal;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-right: 3px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.mock-wire-portrait-tile-g__fixtures {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.mock-wire-portrait-tile-g__fixtures .mock-wire-portrait-tile-fixture {
+  height: 15px;
+  padding: 0 3px;
+  font-size: 8px;
+}
+
+/* =================================================================== */
+/* Variant H — hero Pts; large brand-tinted; stats single-line          */
+/* =================================================================== */
+.mock-wire-portrait-tile-h {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: stretch;
+  gap: 12px;
+  padding: 10px 12px;
+  background: linear-gradient(
+    to right,
+    var(--surface) 65%,
+    color-mix(in srgb, var(--brand) 8%, var(--surface)) 100%
+  );
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+.mock-wire-portrait-tile-h__main {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-h__id-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-h__name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.2;
+  min-width: 0;
+  word-break: break-word;
+}
+.mock-wire-portrait-tile-h__sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.mock-wire-portrait-tile-h__pos {
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.02em;
+}
+.mock-wire-portrait-tile-h__club {
+  font-weight: 600;
+  color: var(--text);
+}
+.mock-wire-portrait-tile-h__sep { opacity: 0.55; }
+
+.mock-wire-portrait-tile-h__stats {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  flex-wrap: wrap;
+}
+.mock-wire-portrait-tile-h__stats em {
+  font-style: normal;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-weight: 500;
+  font-size: 9px;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-right: 2px;
+}
+.mock-wire-portrait-tile-h__fixtures {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 1px;
+}
+
+.mock-wire-portrait-tile-h__pts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  flex-shrink: 0;
+  padding-left: 4px;
+  line-height: 1;
+}
+.mock-wire-portrait-tile-h__pts-num {
+  font-size: 30px;
+  font-weight: 800;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  color: color-mix(in srgb, var(--brand) 70%, var(--text-strong));
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.mock-wire-portrait-tile-h__pts-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  margin-top: 3px;
+}
+
+/* =================================================================== */
+/* WIRE — PORTRAIT TILE LAYOUT VARIANTS (I / J / K / L)                  */
+/* Fixed-column right-side stats: every tile shares the same right-col   */
+/* x-start so PTS / G / A / DC values column-align across tiles when     */
+/* the list is sorted. Numbers use tabular-nums so digits stay aligned.  */
+/* =================================================================== */
+
+/* All four variants share the same list wrapper, left column, and
+ * tile-level 2-column grid. The right column width is the same across
+ * variants (168px) so all four phone frames render with identical
+ * geometry — only the contents of the right column changes. */
+
+/* ----- Shared list wrapper ----- */
+.mock-wire-portrait-tile-list--ijkl {
+  display: flex;
+  flex-direction: column;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* ----- Shared left column (identity + fixtures) ----- */
+.mock-wire-portrait-tile-ijkl__left {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  justify-content: center;
+}
+.mock-wire-portrait-tile-ijkl__id-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-ijkl__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.25;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+  min-width: 0;
+}
+.mock-wire-portrait-tile-ijkl__fixtures {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex-wrap: wrap;
+}
+
+/* ----- Common tile chrome (rigid 2-column grid) -----
+ * The right column is FIXED at 168px. This is what guarantees that
+ * stat values appear at the same x-coordinate across all tiles in
+ * a list, regardless of how the left column wraps. */
+.mock-wire-portrait-tile-i,
+.mock-wire-portrait-tile-j,
+.mock-wire-portrait-tile-k,
+.mock-wire-portrait-tile-l {
+  display: grid;
+  grid-template-columns: 1fr 168px;
+  align-items: center;
+  column-gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+.mock-wire-portrait-tile-i:last-child,
+.mock-wire-portrait-tile-j:last-child,
+.mock-wire-portrait-tile-k:last-child,
+.mock-wire-portrait-tile-l:last-child {
+  border-bottom: none;
+}
+
+/* =================================================================== */
+/* Variant I — persistent column header + pure values in tiles          */
+/* =================================================================== */
+/* Header sits inside the list, above the first tile. Uses the same
+ * 2-col grid template + identical 4-col inner-grid so the header
+ * labels line up over the value columns below. */
+.mock-wire-portrait-tile-i-colhead {
+  display: grid;
+  grid-template-columns: 1fr 168px;
+  align-items: center;
+  column-gap: 12px;
+  padding: 7px 12px 6px;
+  background: color-mix(in srgb, var(--surface-2) 55%, var(--surface));
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+.mock-wire-portrait-tile-i-colhead__spacer { display: block; }
+.mock-wire-portrait-tile-i-colhead__cols {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 6px;
+}
+.mock-wire-portrait-tile-i-colhead__cols > span {
+  text-align: right;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+/* Variant I right column — 4-col grid, right-aligned tabular values */
+.mock-wire-portrait-tile-i__right {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 6px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1;
+}
+.mock-wire-portrait-tile-i__right > span {
+  text-align: right;
+}
+
+/* =================================================================== */
+/* Variant J — per-tile labels above values                              */
+/* =================================================================== */
+.mock-wire-portrait-tile-j__right {
+  display: grid;
+  grid-template-rows: auto auto;
+  row-gap: 3px;
+}
+.mock-wire-portrait-tile-j__labels,
+.mock-wire-portrait-tile-j__values {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  column-gap: 6px;
+}
+.mock-wire-portrait-tile-j__labels > span {
+  text-align: right;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.mock-wire-portrait-tile-j__values {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1;
+}
+.mock-wire-portrait-tile-j__values > span {
+  text-align: right;
+}
+
+/* =================================================================== */
+/* Variant K — 2×2 stats grid; each cell is label + value (side-by-side) */
+/* =================================================================== */
+.mock-wire-portrait-tile-k__right {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 10px;
+  row-gap: 4px;
+}
+.mock-wire-portrait-tile-k__cell {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: baseline;
+  column-gap: 5px;
+}
+.mock-wire-portrait-tile-k__cell em {
+  font-style: normal;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-align: right;
+}
+.mock-wire-portrait-tile-k__cell span {
+  text-align: right;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1;
+}
+
+/* =================================================================== */
+/* Variant L — hero Pts + smaller 3-stat strip below                    */
+/* =================================================================== */
+.mock-wire-portrait-tile-l__right {
+  display: grid;
+  grid-template-rows: auto auto;
+  row-gap: 4px;
+  justify-items: end;
+  align-self: center;
+}
+.mock-wire-portrait-tile-l__pts {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-size: 26px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: color-mix(in srgb, var(--brand) 70%, var(--text-strong));
+}
+.mock-wire-portrait-tile-l__strip {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  column-gap: 6px;
+  width: 100%;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1;
+}
+.mock-wire-portrait-tile-l__strip > span {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: flex-end;
+  gap: 3px;
+  white-space: nowrap;
+}
+.mock-wire-portrait-tile-l__strip em {
+  font-style: normal;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
