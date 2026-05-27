@@ -833,10 +833,18 @@ export function PlayersWorkbench({
                   className={`players-table__row${rowTappable ? ' players-table__row--tappable' : ''}`}
                   role="row"
                   tabIndex={rowTappable ? 0 : undefined}
-                  onClick={rowTappable ? () => openPlayerDetail(el) : undefined}
+                  onClick={
+                    rowTappable
+                      ? (e) => {
+                          if (e.target.closest('button, a')) return
+                          openPlayerDetail(el)
+                        }
+                      : undefined
+                  }
                   onKeyDown={
                     rowTappable
                       ? (e) => {
+                          if (e.target !== e.currentTarget) return
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault()
                             openPlayerDetail(el)
