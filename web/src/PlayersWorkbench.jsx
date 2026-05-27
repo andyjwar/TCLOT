@@ -37,18 +37,11 @@ import {
   wireStatsMapFromPayload,
   wireStatToneClass,
   wireTableGridTemplate,
+  WIRE_MAX_STAT_COLUMNS,
   WIRE_STAT_CATALOG,
   writeWireStatSelection,
 } from './playersWireList.js'
 import './PlayersWorkbench.css'
-import {
-  PositionFilterPill,
-  StatsColumnsPill,
-  PillClearButton,
-  OwnedFilterPill,
-  SortPill,
-  IncludeDraftedToggle,
-} from './playersFilterPills.jsx'
 import { usePortraitMobile, useMobileLayout } from './usePortraitMobile.js'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
 import {
@@ -188,138 +181,6 @@ function PlayerInlineIndicators({ el, owner, rostersHealthy, logoMap, kitIndexBy
 function PositionChip({ pos }) {
   if (!pos) return null
   return <span className={`position-chip position-chip--${pos}`}>{pos}</span>
-}
-
-function plClubBadgeUrl(code) {
-  return code != null
-    ? `https://resources.premierleague.com/premierleague/badges/50/t${code}.png`
-    : null
-}
-
-/**
- * @param {{
- *   clubFilter: number | 'all',
- *   clubOptions: object[],
- *   onSelect: (id: number | 'all') => void,
- * }} props
- */
-function ClubFilterPill({ clubFilter, clubOptions, onSelect, compact = false }) {
-  const [open, setOpen] = useState(false)
-  const rootRef = useRef(null)
-
-  const selectedTeam =
-    clubFilter === 'all'
-      ? null
-      : clubOptions.find((t) => Number(t.id) === Number(clubFilter)) ?? null
-
-  const selectedBadgeUrl = plClubBadgeUrl(selectedTeam?.code)
-  const selectedLabel = selectedTeam
-    ? String(selectedTeam.short_name ?? selectedTeam.name ?? 'Club')
-    : 'Club'
-
-  const dismiss = useCallback(() => setOpen(false), [])
-  usePillMenuDismiss(rootRef, open, dismiss)
-
-  const pick = (id) => {
-    onSelect(id)
-    setOpen(false)
-  }
-
-  const isActive = clubFilter !== 'all'
-  const badgeOnly = compact && isActive
-
-  return (
-    <div
-      className={`players-club-pill${badgeOnly ? ' players-club-pill--badge-only' : ''}`}
-      ref={rootRef}
-    >
-      <button
-        type="button"
-        className={`team-selection-submenu__btn players-club-pill__btn${
-          clubFilter !== 'all' ? ' team-selection-submenu__btn--active' : ''
-        }${open ? ' players-menu-pill__btn--open' : ''}`}
-        aria-haspopup="listbox"
-        aria-expanded={open}
-        aria-label={
-          clubFilter === 'all'
-            ? 'Filter by club'
-            : `Club filter: ${selectedLabel}`
-        }
-        onClick={() => setOpen((v) => !v)}
-      >
-        {selectedBadgeUrl ? (
-          <img
-            src={selectedBadgeUrl}
-            alt=""
-            className="players-club-pill__badge"
-            width={18}
-            height={18}
-            loading="lazy"
-          />
-        ) : null}
-        <span className="players-club-pill__label">{selectedLabel}</span>
-        {clubFilter !== 'all' ? (
-          <PillClearButton
-            label="Show all clubs"
-            onClear={() => onSelect('all')}
-          />
-        ) : null}
-        <span className="players-menu-pill__chev" aria-hidden>
-          ▾
-        </span>
-      </button>
-      {open ? (
-        <ul className="players-menu-pill__menu" role="listbox" aria-label="Clubs">
-          <li role="presentation">
-            <button
-              type="button"
-              role="option"
-              aria-selected={clubFilter === 'all'}
-              className={`players-menu-pill__option${
-                clubFilter === 'all' ? ' players-menu-pill__option--active' : ''
-              }`}
-              onClick={() => pick('all')}
-            >
-              <span className="players-menu-pill__option-text">All clubs</span>
-            </button>
-          </li>
-          {clubOptions.map((t) => {
-            const tid = Number(t.id)
-            const active = Number(clubFilter) === tid
-            const badge = plClubBadgeUrl(t.code)
-            const short = String(t.short_name ?? t.name ?? '?')
-            return (
-              <li key={t.id} role="presentation">
-                <button
-                  type="button"
-                  role="option"
-                  aria-selected={active}
-                  className={`players-menu-pill__option${
-                    active ? ' players-menu-pill__option--active' : ''
-                  }`}
-                  onClick={() => pick(tid)}
-                >
-                  {badge ? (
-                    <img
-                      src={badge}
-                      alt=""
-                      className="players-club-pill__badge"
-                      width={20}
-                      height={20}
-                      loading="lazy"
-                    />
-                  ) : (
-                    <span className="players-club-pill__badge-fallback">{short.slice(0, 3)}</span>
-                  )}
-                  <span className="players-menu-pill__option-text">{short}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      ) : null}
-    </div>
-  )
 }
 
 const PORTRAIT_POSITION_OPTIONS = [
@@ -1033,12 +894,7 @@ export function PlayersWorkbench({
   const [ownedIds, setOwnedIds] = useState(() => new Set())
   const [rostersHealthy, setRostersHealthy] = useState(false)
 
-  const [availableOnly, setAvailableOnly] = useState(true)
   const [search, setSearch] = useState('')
-  /** @type {[import('./playersWireList.js').PositionFilterId, (v: import('./playersWireList.js').PositionFilterId)=>void]} */
-  const [positionFilter, setPositionFilter] = useState(POS_FILTER_ALL)
-  /** @type {[number|'all', (v: number|'all')=>void]} */
-  const [clubFilter, setClubFilter] = useState('all')
   /** @type {[import('./playersWireList.js').WireSortKey, (v: import('./playersWireList.js').WireSortKey)=>void]} */
   const [sortKey, setSortKey] = useState('total_points')
   /** @type {[import('./playersWireList.js').WireSortDir, (v: import('./playersWireList.js').WireSortDir)=>void]} */
@@ -1046,34 +902,29 @@ export function PlayersWorkbench({
   /** element id → { defConHits, gamesPlayed, sixtyPlus } from element-summary */
   const [summaryByElement, setSummaryByElement] = useState(() => new Map())
   const [summaryLoading, setSummaryLoading] = useState(false)
-  /** @type {[number|null, (id: number|null)=>void]} */
-  const [myTeamLeagueEntryId, setMyTeamLeagueEntryId] = useState(null)
   /** @type {[string[], (ids: string[]) => void]} */
   const [selectedStatIds, setSelectedStatIds] = useState(() =>
     readWireStatSelection(POS_FILTER_ALL),
   )
 
   /* ============================================================
-   * Portrait-only multi-select state. Desktop continues to use the
-   * single-select positionFilter / clubFilter / availableOnly /
-   * myTeamLeagueEntryId state above — this state is layered on top
-   * for the ≤600px toolbar and read only when `portrait === true`.
-   *
-   * For the Club + Fantasy multi-selects, `null` is the "uninitialized,
-   * everything on" sentinel — the option list isn't available until
-   * bootstrap + leagueEntries arrive. As soon as the user makes any
-   * change, the value flips to an explicit `number[]`.
+   * Shared multi-select toolbar state — drives both the portrait
+   * (≤600px) and desktop toolbars. For the Club + Fantasy
+   * multi-selects, `null` is the "uninitialized, everything on"
+   * sentinel — the option list isn't available until bootstrap +
+   * leagueEntries arrive. As soon as the user makes any change,
+   * the value flips to an explicit `number[]`.
    * ============================================================ */
   /** @type {[string[], (ids: string[]) => void]} */
-  const [portraitPositions, setPortraitPositions] = useState(() => [
+  const [selectedPositions, setSelectedPositions] = useState(() => [
     '1', '2', '3', '4',
   ])
   /** @type {[number[] | null, (ids: number[] | null) => void]} */
-  const [portraitPlClubs, setPortraitPlClubs] = useState(null)
+  const [selectedPlClubs, setSelectedPlClubs] = useState(null)
   /** @type {[number[] | null, (ids: number[] | null) => void]} */
-  const [portraitFantasyTeams, setPortraitFantasyTeams] = useState(null)
+  const [selectedFantasyTeams, setSelectedFantasyTeams] = useState(null)
   /** @type {['wire' | 'owned', (v: 'wire' | 'owned') => void]} */
-  const [portraitWireOwned, setPortraitWireOwned] = useState('wire')
+  const [wireOwnedMode, setWireOwnedMode] = useState('wire')
 
   /** Player detail launches via the shared overlay (no inline view). */
   const playerDetailOverlay = usePlayerDetailOverlayOptional()
@@ -1096,18 +947,6 @@ export function PlayersWorkbench({
     return m
   }, [bootstrap])
 
-  /** Every squad element rostered league-wide */
-  const rosterIdsForMine = useMemo(() => {
-    if (myTeamLeagueEntryId == null) return new Set()
-    const s = new Set()
-    for (const [pid, owner] of ownerByElementId) {
-      if (Number(owner.leagueEntryId) === Number(myTeamLeagueEntryId)) {
-        s.add(Number(pid))
-      }
-    }
-    return s
-  }, [myTeamLeagueEntryId, ownerByElementId])
-
   const nextFixturesByTeam = useMemo(() => {
     if (!bootstrap) return new Map()
     return buildNextFixturesByTeam(bootstrap, teamById, 3)
@@ -1115,15 +954,14 @@ export function PlayersWorkbench({
 
   /**
    * Effective position filter — drives column visibility + Stats picker.
-   * Portrait derives this from `portraitPositions` (multi-select): if exactly
-   * one position is selected, treat it as a per-position filter; otherwise
+   * Derived from `selectedPositions` (multi-select): if exactly one
+   * position is selected, treat it as a per-position filter; otherwise
    * collapse to 'all' (mixed selection → All-style columns).
    */
   const effectivePositionFilter = useMemo(() => {
-    if (!portrait) return positionFilter
-    if (portraitPositions.length === 1) return portraitPositions[0]
+    if (selectedPositions.length === 1) return selectedPositions[0]
     return POS_FILTER_ALL
-  }, [portrait, positionFilter, portraitPositions])
+  }, [selectedPositions])
 
   const visibleCols = useMemo(
     () => visibleWireColumns(effectivePositionFilter, selectedStatIds, { portrait }),
@@ -1158,15 +996,15 @@ export function PlayersWorkbench({
     )
   }, [bootstrap])
 
-  /* Portrait multi-select effective lists.
-   * `portraitPlClubs` / `portraitFantasyTeams` default to `null` meaning
+  /* Multi-select effective lists.
+   * `selectedPlClubs` / `selectedFantasyTeams` default to `null` meaning
    * "user hasn't customized, treat as all-on". We materialize the full
    * id lists here once option data exists so the dropdown UI can show
    * "All …" checked correctly and the filter logic has a concrete set. */
-  const effectivePortraitPlClubs = useMemo(() => {
-    if (portraitPlClubs != null) return portraitPlClubs
+  const effectivePlClubs = useMemo(() => {
+    if (selectedPlClubs != null) return selectedPlClubs
     return clubOptions.map((t) => Number(t.id))
-  }, [portraitPlClubs, clubOptions])
+  }, [selectedPlClubs, clubOptions])
 
   const fantasyEntryIds = useMemo(
     () =>
@@ -1176,10 +1014,10 @@ export function PlayersWorkbench({
     [leagueEntries],
   )
 
-  const effectivePortraitFantasyTeams = useMemo(() => {
-    if (portraitFantasyTeams != null) return portraitFantasyTeams
+  const effectiveFantasyTeams = useMemo(() => {
+    if (selectedFantasyTeams != null) return selectedFantasyTeams
     return fantasyEntryIds
-  }, [portraitFantasyTeams, fantasyEntryIds])
+  }, [selectedFantasyTeams, fantasyEntryIds])
 
   const nextFixtureSortKey = useCallback(
     (el) => {
@@ -1228,59 +1066,41 @@ export function PlayersWorkbench({
     if (!bootstrap?.elements?.length) return []
     let list = [...bootstrap.elements]
 
-    if (portrait) {
-      // Portrait — multi-select filters. Empty arrays mean "nothing checked"
-      // and produce zero matches (empty state).
-      const posSet = new Set(portraitPositions.map(String))
-      list = list.filter((el) => posSet.has(String(el.element_type)))
+    // Multi-select filters apply on both portrait + desktop. Empty arrays
+    // mean "nothing checked" and produce zero matches (empty state).
+    const posSet = new Set(selectedPositions.map(String))
+    list = list.filter((el) => posSet.has(String(el.element_type)))
 
-      // PL clubs: pre-init (null) is treated as "all on" by the effective
-      // list, so no extra branch needed.
-      if (portraitPlClubs != null) {
-        const plSet = new Set(portraitPlClubs.map(Number))
-        list = list.filter((el) => plSet.has(Number(el.team)))
-      }
+    // PL clubs: pre-init (null) is treated as "all on" by the effective
+    // list, so no extra branch needed.
+    if (selectedPlClubs != null) {
+      const plSet = new Set(selectedPlClubs.map(Number))
+      list = list.filter((el) => plSet.has(Number(el.team)))
+    }
 
-      if (rostersHealthy && portraitFantasyTeams != null) {
-        const fantasySet = new Set(portraitFantasyTeams.map(Number))
-        const allFantasyOn =
-          fantasyEntryIds.length > 0 &&
-          fantasyEntryIds.every((id) => fantasySet.has(id))
-        if (!allFantasyOn) {
-          list = list.filter((el) => {
-            const owner = ownerByElementId.get(Number(el.id))
-            if (!owner) {
-              // Free agents only included if "Wire" mode is selected; in
-              // "Owned" mode FAs are excluded by the wire-owned filter below.
-              return portraitWireOwned === 'wire'
-            }
-            return fantasySet.has(Number(owner.leagueEntryId))
-          })
-        }
+    if (rostersHealthy && selectedFantasyTeams != null) {
+      const fantasySet = new Set(selectedFantasyTeams.map(Number))
+      const allFantasyOn =
+        fantasyEntryIds.length > 0 &&
+        fantasyEntryIds.every((id) => fantasySet.has(id))
+      if (!allFantasyOn) {
+        list = list.filter((el) => {
+          const owner = ownerByElementId.get(Number(el.id))
+          if (!owner) {
+            // Free agents only included if "Wire" mode is selected; in
+            // "Owned" mode FAs are excluded by the wire-owned filter below.
+            return wireOwnedMode === 'wire'
+          }
+          return fantasySet.has(Number(owner.leagueEntryId))
+        })
       }
+    }
 
-      if (rostersHealthy) {
-        if (portraitWireOwned === 'wire') {
-          list = list.filter((el) => !ownedIds.has(Number(el.id)))
-        } else {
-          list = list.filter((el) => ownedIds.has(Number(el.id)))
-        }
-      }
-    } else {
-      if (positionFilter !== POS_FILTER_ALL) {
-        list = list.filter((el) => String(el.element_type) === positionFilter)
-      }
-      if (clubFilter !== 'all') {
-        list = list.filter((el) => Number(el.team) === Number(clubFilter))
-      }
-      if (availableOnly && rostersHealthy) {
-        if (myTeamLeagueEntryId != null) {
-          list = list.filter((el) => !rosterIdsForMine.has(Number(el.id)))
-        } else {
-          list = list.filter((el) => !ownedIds.has(Number(el.id)))
-        }
-      } else if (myTeamLeagueEntryId != null && rostersHealthy) {
-        list = list.filter((el) => rosterIdsForMine.has(Number(el.id)))
+    if (rostersHealthy) {
+      if (wireOwnedMode === 'wire') {
+        list = list.filter((el) => !ownedIds.has(Number(el.id)))
+      } else {
+        list = list.filter((el) => ownedIds.has(Number(el.id)))
       }
     }
 
@@ -1303,20 +1123,14 @@ export function PlayersWorkbench({
   }, [
     bootstrap,
     search,
-    availableOnly,
     rostersHealthy,
     ownedIds,
     ownerByElementId,
-    rosterIdsForMine,
-    myTeamLeagueEntryId,
-    positionFilter,
-    clubFilter,
-    portrait,
-    portraitPositions,
-    portraitPlClubs,
-    portraitFantasyTeams,
+    selectedPositions,
+    selectedPlClubs,
+    selectedFantasyTeams,
     fantasyEntryIds,
-    portraitWireOwned,
+    wireOwnedMode,
     effectiveSortKey,
     sortDir,
     summaryExtraFor,
@@ -1413,19 +1227,13 @@ export function PlayersWorkbench({
     }
   }, [teamsForFormSelect, leagueDataRevision])
 
-  /**
-   * Open the full-screen `PlayerDetailOverlay`. Passes `myTeamLeagueEntryId` so the
-   * overlay's compare picker preselects the user's roster when available.
-   */
+  /** Open the full-screen `PlayerDetailOverlay`. */
   const openPlayerDetail = useCallback(
     (el) => {
       if (!playerDetailOverlay) return
       const id = Number(el?.id)
       if (!Number.isFinite(id)) return
       const payload = { element: id }
-      if (myTeamLeagueEntryId != null) {
-        payload.leagueEntryId = Number(myTeamLeagueEntryId)
-      }
       const team = teamById.get(Number(el?.team))
       if (team?.short_name) payload.teamShort = team.short_name
       const display = fplElementDisplayName(el, id)
@@ -1433,85 +1241,8 @@ export function PlayersWorkbench({
       if (el?.web_name) payload.web_name = el.web_name
       playerDetailOverlay.openPlayerDetail(payload)
     },
-    [playerDetailOverlay, myTeamLeagueEntryId, teamById],
+    [playerDetailOverlay, teamById],
   )
-
-  /* Phase-2 Owned filter — collapses (availableOnly, myTeamLeagueEntryId)
-   * into a single enum: 'free' | 'any' | { teamId }. Currently there is no
-   * app-level "my team" identity to anchor a "On my squad" preset, so the
-   * pill skips that promoted row and surfaces per-team rows directly. */
-  const ownedMode = useMemo(() => {
-    if (myTeamLeagueEntryId != null) return { teamId: Number(myTeamLeagueEntryId) }
-    return availableOnly ? 'free' : 'any'
-  }, [availableOnly, myTeamLeagueEntryId])
-
-  const handleOwnedModeChange = useCallback((mode) => {
-    if (mode === 'free') {
-      setAvailableOnly(true)
-      setMyTeamLeagueEntryId(null)
-      return
-    }
-    if (mode === 'any') {
-      setAvailableOnly(false)
-      setMyTeamLeagueEntryId(null)
-      return
-    }
-    if (mode === 'mySquad') {
-      // No app-level "my team" — fall back to any-owner (no-op narrow).
-      setAvailableOnly(false)
-      setMyTeamLeagueEntryId(null)
-      return
-    }
-    if (typeof mode === 'object' && mode != null && Number.isFinite(Number(mode.teamId))) {
-      setAvailableOnly(false)
-      setMyTeamLeagueEntryId(Number(mode.teamId))
-    }
-  }, [])
-
-  /* The Include-drafted toggle is the inverse of `availableOnly` and only
-   * meaningful in the FA / Any-owner spectrum (decision 9). When the user
-   * has narrowed to a specific squad, the toggle is disabled. */
-  const includeDrafted = !availableOnly
-  const includeDraftedDisabled = ownedMode !== 'free' && ownedMode !== 'any'
-  const handleIncludeDraftedChange = useCallback((next) => {
-    if (next) handleOwnedModeChange('any')
-    else handleOwnedModeChange('free')
-  }, [handleOwnedModeChange])
-
-  const handleSortKeyChange = useCallback((key) => setSortKey(key), [])
-  const handleSortDirChange = useCallback((dir) => setSortDir(dir), [])
-
-  /* Header meta line — "2025/26 · GW {gw} · {n} {label}" (e.g. "12 free-agent MIDs"). */
-  const positionLabelForMeta = useMemo(() => {
-    if (effectivePositionFilter === POS_FILTER_ALL) return 'players'
-    // POS_LABEL is uppercase ("GKP", "DEF", "MID", "FWD"); pluralize as-is.
-    return `${POS_LABEL[Number(effectivePositionFilter)] ?? 'players'}s`
-  }, [effectivePositionFilter])
-  const headerMeta = useMemo(() => {
-    const parts = ['2025/26']
-    if (currentGw != null) parts.push(`GW ${currentGw}`)
-    if (bootstrap) {
-      const n = outfieldList.length
-      const noun = positionLabelForMeta
-      const freeAgentPrefix = portrait
-        ? portraitWireOwned === 'wire'
-          ? 'free-agent '
-          : ''
-        : ownedMode === 'free'
-          ? 'free-agent '
-          : ''
-      parts.push(`${n} ${freeAgentPrefix}${noun}`)
-    }
-    return parts.join(' · ')
-  }, [
-    currentGw,
-    bootstrap,
-    outfieldList.length,
-    positionLabelForMeta,
-    ownedMode,
-    portrait,
-    portraitWireOwned,
-  ])
 
   const searchPlaceholder = portrait ? 'Search players' : '👀 Search players, clubs, owners…'
 
@@ -1546,12 +1277,61 @@ export function PlayersWorkbench({
     </label>
   )
 
-  const includeDraftedToggle = (
-    <IncludeDraftedToggle
-      checked={includeDrafted}
-      onChange={handleIncludeDraftedChange}
-      disabled={includeDraftedDisabled || !rostersHealthy}
-      compact={portrait}
+  const wireOwnedSegmented = (
+    <WireOwnedSegmentedToggle
+      value={wireOwnedMode}
+      onChange={setWireOwnedMode}
+      disabled={!rostersHealthy}
+    />
+  )
+
+  const positionPill = (
+    <MultiSelectDropdownPill
+      label="Position"
+      options={PORTRAIT_POSITION_OPTIONS}
+      selectedIds={selectedPositions}
+      onSelectionChange={(ids) => setSelectedPositions(ids.map(String))}
+      allLabel="All"
+    />
+  )
+
+  const clubPill = (
+    <MultiSelectGroupedDropdownPill
+      label="Club"
+      allLabel="All"
+      sections={[
+        {
+          id: 'pl',
+          label: 'Premier League',
+          options: clubOptions.map((t) => ({
+            id: Number(t.id),
+            label: String(t.short_name ?? t.name ?? '?'),
+          })),
+          selectedIds: effectivePlClubs,
+          onSelectionChange: (ids) => setSelectedPlClubs(ids.map(Number)),
+        },
+        {
+          id: 'fantasy',
+          label: 'Fantasy teams',
+          options: leagueEntries
+            .filter((e) => Number.isFinite(Number(e?.id)))
+            .map((e) => ({
+              id: Number(e.id),
+              label: String(e?.teamName ?? `Team ${e?.id}`),
+            })),
+          selectedIds: effectiveFantasyTeams,
+          onSelectionChange: (ids) => setSelectedFantasyTeams(ids.map(Number)),
+        },
+      ]}
+    />
+  )
+
+  const statsPill = (
+    <PortraitStatsDropdownPill
+      selectedIds={selectedStatIds}
+      onChange={handleStatSelectionChange}
+      positionFilter={effectivePositionFilter}
+      maxStatColumns={statColumnMax ?? WIRE_MAX_STAT_COLUMNS}
     />
   )
 
@@ -1567,30 +1347,19 @@ export function PlayersWorkbench({
       ) : null}
 
       <div className="players-bench-chrome section-chrome section-chrome--sticky">
-        {/* Header band — title meta + (desktop only) search + include-drafted */}
-        <div className="players-bench-header">
-          <div className="players-bench-header__titles">
-            <h2 className="players-bench-header__title">Players</h2>
-            <span className="players-bench-header__meta">{headerMeta}</span>
-          </div>
-          {!portrait ? (
-            <>
-              {searchField}
-              {includeDraftedToggle}
-            </>
-          ) : null}
-        </div>
-
         {portrait ? (
           <>
+            {/* Portrait header — just the "Players" title. */}
+            <div className="players-bench-header">
+              <div className="players-bench-header__titles">
+                <h2 className="players-bench-header__title">Players</h2>
+              </div>
+            </div>
+
             {/* Portrait toolbar — Row 1: search bar + Wire/Owned segmented toggle */}
             <div className="players-bench-search-row players-bench-search-row--portrait">
               {searchField}
-              <WireOwnedSegmentedToggle
-                value={portraitWireOwned}
-                onChange={setPortraitWireOwned}
-                disabled={!rostersHealthy}
-              />
+              {wireOwnedSegmented}
             </div>
 
             {/* Portrait toolbar — Row 2: filter pills (Position / Club / Stats) */}
@@ -1599,90 +1368,36 @@ export function PlayersWorkbench({
               role="toolbar"
               aria-label="Player filters"
             >
-              <MultiSelectDropdownPill
-                label="Position"
-                options={PORTRAIT_POSITION_OPTIONS}
-                selectedIds={portraitPositions}
-                onSelectionChange={(ids) => setPortraitPositions(ids.map(String))}
-                allLabel="All"
-              />
-              <MultiSelectGroupedDropdownPill
-                label="Club"
-                allLabel="All"
-                sections={[
-                  {
-                    id: 'pl',
-                    label: 'Premier League',
-                    options: clubOptions.map((t) => ({
-                      id: Number(t.id),
-                      label: String(t.short_name ?? t.name ?? '?'),
-                    })),
-                    selectedIds: effectivePortraitPlClubs,
-                    onSelectionChange: (ids) => setPortraitPlClubs(ids.map(Number)),
-                  },
-                  {
-                    id: 'fantasy',
-                    label: 'Fantasy teams',
-                    options: leagueEntries
-                      .filter((e) => Number.isFinite(Number(e?.id)))
-                      .map((e) => ({
-                        id: Number(e.id),
-                        label: String(e?.teamName ?? `Team ${e?.id}`),
-                      })),
-                    selectedIds: effectivePortraitFantasyTeams,
-                    onSelectionChange: (ids) =>
-                      setPortraitFantasyTeams(ids.map(Number)),
-                  },
-                ]}
-              />
-              <PortraitStatsDropdownPill
-                selectedIds={selectedStatIds}
-                onChange={handleStatSelectionChange}
-                positionFilter={effectivePositionFilter}
-                maxStatColumns={statColumnMax ?? 5}
-              />
+              {positionPill}
+              {clubPill}
+              {statsPill}
             </div>
           </>
         ) : (
-          /* Desktop filter pill row — Position · Club · Owned · spacer · Sort · Stats */
-          <div className="players-bench-filters" role="toolbar" aria-label="Player filters">
-            <PositionFilterPill
-              positionFilter={positionFilter}
-              onSelect={setPositionFilter}
-              compact={portrait}
-            />
-            <ClubFilterPill
-              clubFilter={clubFilter}
-              clubOptions={clubOptions}
-              onSelect={setClubFilter}
-              compact={portrait}
-            />
-            <OwnedFilterPill
-              ownedMode={ownedMode}
-              onOwnedModeChange={handleOwnedModeChange}
-              teams={teamsForFormSelect}
-              myFantasyEntryId={null}
-              logoMap={logoMap}
-              kitIndexByEntry={kitIndexByEntry}
-              compact={portrait}
-              rostersHealthy={rostersHealthy}
-            />
-            <span className="players-bench-filters__spacer" aria-hidden />
-            <SortPill
-              sortKey={sortKey}
-              sortDir={sortDir}
-              onSortKeyChange={handleSortKeyChange}
-              onSortDirChange={handleSortDirChange}
-              positionFilter={positionFilter}
-            />
-            <StatsColumnsPill
-              selectedIds={selectedStatIds}
-              onChange={handleStatSelectionChange}
-              positionFilter={positionFilter}
-              maxStatColumns={statColumnMax ?? 8}
-              compact={portrait}
-            />
-          </div>
+          <>
+            {/* Desktop header — title (left) + search (flex-grow) + Wire/Owned (right). */}
+            <div className="players-bench-header">
+              <div className="players-bench-header__titles">
+                <h2 className="players-bench-header__title">Players</h2>
+              </div>
+              {searchField}
+              {wireOwnedSegmented}
+            </div>
+
+            {/* Desktop toolbar — Position · Club · Stats multi-select pills. Sort
+             * is driven by column-header clicks on the table; the standalone
+             * Sort pill + Owned pill + Include-drafted toggle have been retired
+             * in favor of the multi-select + Wire/Owned semantics. */}
+            <div
+              className="players-bench-filters players-bench-filters--desktop"
+              role="toolbar"
+              aria-label="Player filters"
+            >
+              {positionPill}
+              {clubPill}
+              {statsPill}
+            </div>
+          </>
         )}
       </div>
 
