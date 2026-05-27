@@ -13040,6 +13040,23 @@ button.live-xp__player-name:focus-visible {
     font-size: 14px;
   }
 
+  /* Numeric column typography — normalize so PL / W / D / L / For /
+   * Faced / GD all render at the same 0.88rem (≈14px) / 400 weight.
+   * Defeats the legacy `.standings-table--sidebar .col-for, .col-faced
+   * { font-size: 0.72rem }` rule (0,2,0) with a 3-class chain (0,3,1).
+   * PTS gets one step up in size + bold, so it reads as the primary
+   * stat across the row. Scoped to variant-c so other consumers of
+   * `.standings-table--sidebar` (Live, Hall of Fame, etc.) are
+   * unaffected. */
+  .standings-table--variant-c.standings-table--sidebar td.col-num {
+    font-size: 0.88rem;
+    font-weight: 400;
+  }
+  .standings-table--variant-c.standings-table--sidebar td.col-num.col-pts {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+
   /* Desktop condensed-row form dots — 8px plain circles matching the
    * mobile + hero styling (no W/L letter inside). Defeats the legacy
    * `.standings-table--sidebar .form-dot { width: 22px; height: 22px;
