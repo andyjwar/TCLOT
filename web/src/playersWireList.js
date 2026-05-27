@@ -14,11 +14,12 @@ export const PORTRAIT_POS_LABEL_SINGLE = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' }
 
 /** Portrait default stat columns per position filter (≤600px) — wire list only.
  *
- * The 'all' filter shows Pos + GP + G + A + DC (5 stat cols) on mobile, with
- * Player/Pts/Next3 as fixed columns flanking the stat group. Per-position
- * filters keep their 4-stat defaults — only 'all' was widened. */
+ * Variant I tile layout: 'pos' is rendered as a single-letter label inside
+ * each tile's left-column sub-row, so it's no longer needed as a stat column.
+ * Defaults per filter therefore stay focused on numeric stats (Pts is always
+ * rendered first, ahead of these). */
 export const PORTRAIT_DEFAULT_WIRE_STAT_IDS_BY_POSITION = {
-  all: ['pos', 'gp', 'goals', 'assists', 'defConHits'],
+  all: ['gp', 'goals', 'assists', 'defConHits'],
   '1': ['starts', 'cs', 'savePts', 'bonus'],
   '2': ['goals', 'assists', 'cs', 'defConHits'],
   '3': ['goals', 'assists', 'cs', 'defConHits'],
@@ -396,9 +397,10 @@ export function defaultWireStatIdsForPosition(positionFilter) {
 }
 
 /**
- * Portrait max stat columns. The 'all' filter fits 5 (Pos + GP + G + A + DC);
- * per-position filters cap at 4 because they already carry domain-specific
- * defaults that don't include 'pos'.
+ * Portrait max stat columns. Variant I tiles have a fixed 168px right column
+ * that fits Pts + N stats — 'all' caps at 5 stats (so right column shows
+ * Pts + 5 = 6 cells), per-position filters cap at 4 (Pts + 4 = 5 cells). Pos
+ * is rendered in the tile sub-row and is not counted in this cap.
  *
  * @param {PositionFilterId} positionFilter
  */
@@ -555,10 +557,10 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
     .map((id) => wireStatToColumn(id))
     .filter(Boolean)
     .filter((col) => {
-      if (col.id === 'pos' && positionFilter !== POS_FILTER_ALL) return false
-      // Desktop has a dedicated fixed POS column between Player and Pts —
-      // suppress the stat-list 'pos' to avoid double-rendering the position.
-      if (col.id === 'pos' && !portrait) return false
+      // 'pos' is never a stat column. Desktop has a dedicated fixed POS column
+      // between Player and Pts; portrait (Variant I tile layout) renders the
+      // single-letter position in each tile's left-column sub-row.
+      if (col.id === 'pos') return false
       if (!col.hideWhenPos?.length) return true
       if (positionFilter === POS_FILTER_ALL) return true
       return !col.hideWhenPos.includes(positionFilter)

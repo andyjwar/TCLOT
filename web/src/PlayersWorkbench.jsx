@@ -19,6 +19,7 @@ import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx'
 import {
   POS_FILTER_ALL,
   POS_LABEL,
+  PORTRAIT_POS_LABEL_SINGLE,
   buildNextFixturesByTeam,
   buildOwnerByElementFromElementStatus,
   compareWireElements,
@@ -731,6 +732,242 @@ function NextFixtureBadges({ fixtures, nextOnly = false }) {
         </span>
       ))}
     </span>
+  )
+}
+
+/**
+ * Portrait Variant I tile list — replaces the desktop table grid on
+ * `@media (max-width: 600px)` with a flat tile-based list. Each tile uses a
+ * 2-column grid: left = identity (crest + name + position single letter +
+ * owner avatar + ailments + Next-3 fixtures), right = fixed 168px N-track
+ * grid of stat values aligned under a persistent column header.
+ *
+ * The header + tile right-column tracks share the same `repeat(N, 1fr)`
+ * template so PTS / G / A / DC values stay column-aligned across tiles
+ * regardless of how the left column wraps.
+ */
+function PortraitWireTileList({
+  outfieldList,
+  visibleCols,
+  teamById,
+  ownerByElementId,
+  summaryByElement,
+  summaryLoading,
+  nextFixturesByTeam,
+  rostersHealthy,
+  logoMap,
+  kitIndexByEntry,
+  activeSortColId,
+  sortDir,
+  onColumnSort,
+  playerDetailOverlay,
+  openPlayerDetail,
+}) {
+  // Pts + selected stats (player + next3 are rendered in the tile's left
+  // column, not the right). 'pos' is already excluded from `visibleCols`
+  // by `visibleWireColumns` (it lives in the tile sub-row instead).
+  const rightCols = visibleCols.filter(
+    (c) => c.id !== 'player' && c.id !== 'next3',
+  )
+  const rightTracks = `repeat(${Math.max(rightCols.length, 1)}, 1fr)`
+  const tappable = Boolean(playerDetailOverlay)
+
+  return (
+    <div className="players-wire-tile-list" role="list" aria-label="Waiver wire players">
+      <div
+        className="players-wire-tile-colhead"
+        role="row"
+        aria-label="Stat columns"
+      >
+        <span className="players-wire-tile-colhead__spacer" aria-hidden />
+        <div
+          className="players-wire-tile-colhead__cols"
+          style={{ gridTemplateColumns: rightTracks }}
+        >
+          {rightCols.map((col) => {
+            const colSortKey = wireColumnToSortKey(col.id)
+            const isActive = col.id === activeSortColId
+            const ariaSort = isActive
+              ? sortDir === 'asc'
+                ? 'ascending'
+                : 'descending'
+              : colSortKey
+                ? 'none'
+                : undefined
+            const cellClass = `players-wire-tile-colhead__cell${
+              isActive ? ' players-wire-tile-colhead__cell--sorted' : ''
+            }`
+            if (!colSortKey) {
+              return (
+                <span
+                  key={col.id}
+                  className={cellClass}
+                  role="columnheader"
+                  title={col.title}
+                >
+                  {col.label}
+                </span>
+              )
+            }
+            return (
+              <button
+                key={col.id}
+                type="button"
+                className={`${cellClass} players-wire-tile-colhead__btn`}
+                role="columnheader"
+                aria-sort={ariaSort}
+                title={col.title ? `${col.title} · tap to sort` : 'Tap to sort'}
+                onClick={() => onColumnSort(col.id)}
+              >
+                <span className="players-wire-tile-colhead__label">{col.label}</span>
+                {isActive ? (
+                  <span className="players-wire-tile-colhead__arrow" aria-hidden>
+                    {sortDir === 'asc' ? '↑' : '↓'}
+                  </span>
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
+      </div>
+
+      {outfieldList.map((el) => {
+        const row = enrichElementRow(el, teamById)
+        const elId = Number(el.id)
+        const summary = summaryByElement.get(elId)
+        const nextFixtures = nextFixturesByTeam.get(Number(el.team)) ?? []
+        const displayName = fplElementDisplayName(el, el.id)
+        const owner = ownerByElementId.get(elId)
+        const posLetter = PORTRAIT_POS_LABEL_SINGLE[el.element_type] ?? '?'
+
+        return (
+          <div
+            key={el.id}
+            className={`players-wire-tile${tappable ? ' players-wire-tile--tappable' : ''}`}
+            role="listitem"
+            tabIndex={tappable ? 0 : undefined}
+            onClick={
+              tappable
+                ? (e) => {
+                    if (e.target.closest('button, a')) return
+                    openPlayerDetail(el)
+                  }
+                : undefined
+            }
+            onKeyDown={
+              tappable
+                ? (e) => {
+                    if (e.target !== e.currentTarget) return
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      openPlayerDetail(el)
+                    }
+                  }
+                : undefined
+            }
+          >
+            <div className="players-wire-tile__left">
+              <div className="players-wire-tile__id-row">
+                <span className="players-wire-tile__kit">
+                  <PlayerKit badgeUrl={row.badgeUrl} teamShort={row.teamShort} />
+                </span>
+                <ClickablePlayerName
+                  element={el.id}
+                  displayName={displayName}
+                  web_name={el.web_name}
+                  teamShort={row.teamShort}
+                  className="players-wire-tile__name"
+                >
+                  {displayName}
+                </ClickablePlayerName>
+              </div>
+              <div className="players-wire-tile__sub-row">
+                <span className="players-wire-tile__pos">{posLetter}</span>
+                {rostersHealthy && owner ? (
+                  <>
+                    <span className="players-wire-tile__sub-sep" aria-hidden>·</span>
+                    <span
+                      className="players-wire-tile__owner"
+                      title={`Owned by ${owner.teamName}`}
+                      aria-label={`Owned by ${owner.teamName}`}
+                    >
+                      <TeamAvatar
+                        entryId={owner.leagueEntryId}
+                        name={owner.teamName}
+                        size="sm"
+                        logoMap={logoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                        badgeFallback
+                      />
+                    </span>
+                  </>
+                ) : null}
+                {/* Injury / suspension dots only — owner + FA dots intentionally
+                 * dropped because the visible owner avatar (or its absence on
+                 * the wire) already encodes ownership status. */}
+                <PlayerInlineIndicators
+                  el={el}
+                  owner={null}
+                  rostersHealthy={false}
+                  logoMap={logoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              </div>
+              <div className="players-wire-tile__fixtures">
+                <NextFixtureBadges fixtures={nextFixtures} />
+              </div>
+            </div>
+            <div
+              className="players-wire-tile__right"
+              style={{ gridTemplateColumns: rightTracks }}
+            >
+              {rightCols.map((col) => {
+                const isActive = col.id === activeSortColId
+                if (col.id === 'pts') {
+                  const pts = Number.isFinite(Number(el.total_points))
+                    ? el.total_points
+                    : '—'
+                  return (
+                    <span
+                      key={col.id}
+                      className={`players-wire-tile__stat players-wire-tile__stat--pts${
+                        isActive ? ' players-wire-tile__stat--sorted' : ''
+                      }`}
+                      role="cell"
+                    >
+                      {pts}
+                    </span>
+                  )
+                }
+                if (WIRE_STAT_CATALOG[col.id]) {
+                  const statDef = WIRE_STAT_CATALOG[col.id]
+                  const value = formatWireStatValue(
+                    col.id,
+                    el,
+                    summary,
+                    summaryLoading,
+                  )
+                  const tone = wireStatToneClass(value)
+                  return (
+                    <span
+                      key={col.id}
+                      className={`players-wire-tile__stat${
+                        tone ? ` ${tone}` : ''
+                      }${isActive ? ' players-wire-tile__stat--sorted' : ''}`}
+                      role="cell"
+                      title={statDef.title}
+                    >
+                      {value}
+                    </span>
+                  )
+                }
+                return null
+              })}
+            </div>
+          </div>
+        )
+      })}
+    </div>
   )
 }
 
@@ -1447,241 +1684,252 @@ export function PlayersWorkbench({
       </div>
 
       <div className="players-table-scroll">
-        <div
-          className={`players-table players-table--wide${portrait ? ' players-table--portrait' : ''}`}
-          role="table"
-          aria-label="Waiver wire players"
-          style={{ '--wire-cols': tableGridTemplate }}
-        >
-          <div className="players-table__head" role="rowgroup">
-            <div className="players-table__head-row" role="row">
-            {visibleCols.map((col, colIndex) => {
-              const colSortKey = wireColumnToSortKey(col.id)
-              const isActive = col.id === activeSortColId
-              const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
-              const ariaSort = isActive
-                ? sortDir === 'asc'
-                  ? 'ascending'
-                  : 'descending'
-                : colSortKey
-                  ? 'none'
-                  : undefined
-              const thClass = [
-                'players-table__th',
-                col.id === 'player' ? 'players-table__th--player' : '',
-                // Desktop-only fixed POS column (chip render) — center alignment.
-                col.id === 'pos' && !portrait ? 'players-table__th--pos' : '',
-                col.id === 'pts' ? 'players-table__th--pts' : '',
-                col.id === 'next3' ? 'players-table__th--next3' : '',
-                isActive ? 'players-table__th--sorted' : '',
-                groupStart ? 'players-table__col--group-start' : '',
-              ]
-                .filter(Boolean)
-                .join(' ')
+        {portrait ? (
+          <PortraitWireTileList
+            outfieldList={bootstrap ? outfieldList : []}
+            visibleCols={visibleCols}
+            teamById={teamById}
+            ownerByElementId={ownerByElementId}
+            summaryByElement={summaryByElement}
+            summaryLoading={summaryLoading}
+            nextFixturesByTeam={nextFixturesByTeam}
+            rostersHealthy={rostersHealthy}
+            logoMap={logoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            activeSortColId={activeSortColId}
+            sortDir={sortDir}
+            onColumnSort={handleColumnSort}
+            playerDetailOverlay={playerDetailOverlay}
+            openPlayerDetail={openPlayerDetail}
+          />
+        ) : (
+          <div
+            className="players-table players-table--wide"
+            role="table"
+            aria-label="Waiver wire players"
+            style={{ '--wire-cols': tableGridTemplate }}
+          >
+            <div className="players-table__head" role="rowgroup">
+              <div className="players-table__head-row" role="row">
+              {visibleCols.map((col, colIndex) => {
+                const colSortKey = wireColumnToSortKey(col.id)
+                const isActive = col.id === activeSortColId
+                const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
+                const ariaSort = isActive
+                  ? sortDir === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : colSortKey
+                    ? 'none'
+                    : undefined
+                const thClass = [
+                  'players-table__th',
+                  col.id === 'player' ? 'players-table__th--player' : '',
+                  col.id === 'pos' ? 'players-table__th--pos' : '',
+                  col.id === 'pts' ? 'players-table__th--pts' : '',
+                  col.id === 'next3' ? 'players-table__th--next3' : '',
+                  isActive ? 'players-table__th--sorted' : '',
+                  groupStart ? 'players-table__col--group-start' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')
 
-              if (!colSortKey) {
+                if (!colSortKey) {
+                  return (
+                    <span key={col.id} className={thClass} role="columnheader" title={col.title}>
+                      {col.label}
+                    </span>
+                  )
+                }
+
                 return (
-                  <span key={col.id} className={thClass} role="columnheader" title={col.title}>
-                    {col.label}
-                  </span>
+                  <button
+                    key={col.id}
+                    type="button"
+                    className={`${thClass} players-table__th-btn`}
+                    role="columnheader"
+                    aria-sort={ariaSort}
+                    title={col.title ? `${col.title} · click to sort` : 'Click to sort'}
+                    onClick={() => handleColumnSort(col.id)}
+                  >
+                    <span className="players-table__th-label">{col.label}</span>
+                    {!mobileLayout ? (
+                      isActive ? (
+                        <span className="players-table__sort-indicator" aria-hidden>
+                          {sortDir === 'asc' ? '↑' : '↓'}
+                        </span>
+                      ) : (
+                        <span
+                          className="players-table__sort-indicator players-table__sort-indicator--idle"
+                          aria-hidden
+                        >
+                          ↕
+                        </span>
+                      )
+                    ) : null}
+                  </button>
                 )
-              }
-
-              return (
-                <button
-                  key={col.id}
-                  type="button"
-                  className={`${thClass} players-table__th-btn`}
-                  role="columnheader"
-                  aria-sort={ariaSort}
-                  title={col.title ? `${col.title} · click to sort` : 'Click to sort'}
-                  onClick={() => handleColumnSort(col.id)}
-                >
-                  <span className="players-table__th-label">{col.label}</span>
-                  {!mobileLayout ? (
-                    isActive ? (
-                      <span className="players-table__sort-indicator" aria-hidden>
-                        {sortDir === 'asc' ? '↑' : '↓'}
-                      </span>
-                    ) : (
-                      <span
-                        className="players-table__sort-indicator players-table__sort-indicator--idle"
-                        aria-hidden
-                      >
-                        ↕
-                      </span>
-                    )
-                  ) : null}
-                </button>
-              )
-            })}
+              })}
+              </div>
             </div>
-          </div>
 
-          <div className="players-table__body" role="rowgroup">
-            {(bootstrap ? outfieldList : []).map((el) => {
-              const row = enrichElementRow(el, teamById)
-              const elId = Number(el.id)
-              const summary = summaryByElement.get(elId)
-              const nextFixtures = nextFixturesByTeam.get(Number(el.team)) ?? []
+            <div className="players-table__body" role="rowgroup">
+              {(bootstrap ? outfieldList : []).map((el) => {
+                const row = enrichElementRow(el, teamById)
+                const elId = Number(el.id)
+                const summary = summaryByElement.get(elId)
+                const nextFixtures = nextFixturesByTeam.get(Number(el.team)) ?? []
 
-              const displayName = fplElementDisplayName(el, el.id)
-              const rowTappable = Boolean(playerDetailOverlay)
-              const posLabel = POS_LABEL[el.element_type]
-              return (
-                <div
-                  key={el.id}
-                  className={`players-table__row${rowTappable ? ' players-table__row--tappable' : ''}`}
-                  role="row"
-                  tabIndex={rowTappable ? 0 : undefined}
-                  onClick={
-                    rowTappable
-                      ? (e) => {
-                          if (e.target.closest('button, a')) return
-                          openPlayerDetail(el)
-                        }
-                      : undefined
-                  }
-                  onKeyDown={
-                    rowTappable
-                      ? (e) => {
-                          if (e.target !== e.currentTarget) return
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault()
+                const displayName = fplElementDisplayName(el, el.id)
+                const rowTappable = Boolean(playerDetailOverlay)
+                const posLabel = POS_LABEL[el.element_type]
+                return (
+                  <div
+                    key={el.id}
+                    className={`players-table__row${rowTappable ? ' players-table__row--tappable' : ''}`}
+                    role="row"
+                    tabIndex={rowTappable ? 0 : undefined}
+                    onClick={
+                      rowTappable
+                        ? (e) => {
+                            if (e.target.closest('button, a')) return
                             openPlayerDetail(el)
                           }
-                        }
-                      : undefined
-                  }
-                >
-                  {visibleCols.map((col, colIndex) => {
-                    const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
-                    if (col.id === 'player') {
-                      const owner = ownerByElementId.get(elId)
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--player',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <span className="players-table__kit">
-                            <PlayerKit
-                              badgeUrl={row.badgeUrl}
-                              teamShort={row.teamShort}
-                            />
-                          </span>
-                          <span className="players-table__player-text">
-                            <span className="players-table__name-row">
-                              <ClickablePlayerName
-                                element={el.id}
-                                displayName={displayName}
-                                web_name={el.web_name}
+                        : undefined
+                    }
+                    onKeyDown={
+                      rowTappable
+                        ? (e) => {
+                            if (e.target !== e.currentTarget) return
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault()
+                              openPlayerDetail(el)
+                            }
+                          }
+                        : undefined
+                    }
+                  >
+                    {visibleCols.map((col, colIndex) => {
+                      const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
+                      if (col.id === 'player') {
+                        const owner = ownerByElementId.get(elId)
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--player',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            <span className="players-table__kit">
+                              <PlayerKit
+                                badgeUrl={row.badgeUrl}
                                 teamShort={row.teamShort}
-                                className="players-table__name"
-                              >
-                                {displayName}
-                              </ClickablePlayerName>
-                              <PlayerInlineIndicators
-                                el={el}
-                                owner={owner}
-                                rostersHealthy={rostersHealthy}
-                                logoMap={logoMap}
-                                kitIndexByEntry={kitIndexByEntry}
                               />
                             </span>
+                            <span className="players-table__player-text">
+                              <span className="players-table__name-row">
+                                <ClickablePlayerName
+                                  element={el.id}
+                                  displayName={displayName}
+                                  web_name={el.web_name}
+                                  teamShort={row.teamShort}
+                                  className="players-table__name"
+                                >
+                                  {displayName}
+                                </ClickablePlayerName>
+                                <PlayerInlineIndicators
+                                  el={el}
+                                  owner={owner}
+                                  rostersHealthy={rostersHealthy}
+                                  logoMap={logoMap}
+                                  kitIndexByEntry={kitIndexByEntry}
+                                />
+                              </span>
+                            </span>
                           </span>
-                        </span>
-                      )
-                    }
-                    // Desktop fixed POS column — chip render. Portrait keeps the
-                    // existing 'pos' stat-column code path (falls through below).
-                    if (col.id === 'pos' && !portrait) {
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--pos',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          {posLabel ? <PositionChip pos={posLabel} /> : null}
-                        </span>
-                      )
-                    }
-                    if (col.id === 'pts') {
-                      const pts = Number.isFinite(Number(el.total_points)) ? el.total_points : '—'
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--pts',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          {pts}
-                        </span>
-                      )
-                    }
-                    if (WIRE_STAT_CATALOG[col.id]) {
-                      const statDef = WIRE_STAT_CATALOG[col.id]
-                      const value = formatWireStatValue(col.id, el, summary, summaryLoading, {
-                        portraitPosSingleLetter:
-                          portrait && col.id === 'pos',
-                      })
-                      const tone = wireStatToneClass(value)
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            `players-table__cell--stat${tone ? ` ${tone}` : ''}`,
-                            groupStart,
-                          )}
-                          role="cell"
-                          title={statDef.title}
-                        >
-                          {value}
-                        </span>
-                      )
-                    }
-                    if (col.id === 'next3') {
-                      return (
-                        <span
-                          key={col.id}
-                          className={wireCellClass(
-                            col.id,
-                            activeSortColId,
-                            'players-table__cell--next3',
-                            groupStart,
-                          )}
-                          role="cell"
-                        >
-                          <NextFixtureBadges
-                            fixtures={nextFixtures}
-                            nextOnly={portrait}
-                          />
-                        </span>
-                      )
-                    }
-                    return null
-                  })}
-                </div>
-              )
-            })}
+                        )
+                      }
+                      if (col.id === 'pos') {
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--pos',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            {posLabel ? <PositionChip pos={posLabel} /> : null}
+                          </span>
+                        )
+                      }
+                      if (col.id === 'pts') {
+                        const pts = Number.isFinite(Number(el.total_points)) ? el.total_points : '—'
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--pts',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            {pts}
+                          </span>
+                        )
+                      }
+                      if (WIRE_STAT_CATALOG[col.id]) {
+                        const statDef = WIRE_STAT_CATALOG[col.id]
+                        const value = formatWireStatValue(col.id, el, summary, summaryLoading)
+                        const tone = wireStatToneClass(value)
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              `players-table__cell--stat${tone ? ` ${tone}` : ''}`,
+                              groupStart,
+                            )}
+                            role="cell"
+                            title={statDef.title}
+                          >
+                            {value}
+                          </span>
+                        )
+                      }
+                      if (col.id === 'next3') {
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--next3',
+                              groupStart,
+                            )}
+                            role="cell"
+                          >
+                            <NextFixtureBadges fixtures={nextFixtures} />
+                          </span>
+                        )
+                      }
+                      return null
+                    })}
+                  </div>
+                )
+              })}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {!bootstrap ? (

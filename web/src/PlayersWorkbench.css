@@ -1685,4 +1685,278 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     font-size: 0.46rem;
     line-height: 1.28rem;
   }
+
+  /* =====================================================
+     Portrait Variant I — tile list (replaces grid table)
+     Per-tile 2-col grid: left = identity + sub-row + fixtures,
+     right = fixed 168px N-track value grid sharing tracks with
+     the persistent column header above the tile group.
+     ===================================================== */
+
+  .players-wire-tile-list {
+    display: flex;
+    flex-direction: column;
+    background: var(--surface);
+  }
+
+  .players-wire-tile-colhead {
+    display: grid;
+    grid-template-columns: 1fr 168px;
+    align-items: center;
+    column-gap: 12px;
+    padding: 8px 12px;
+    background: color-mix(in srgb, var(--brand) 6%, var(--surface-2));
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  }
+
+  .players-wire-tile-colhead__spacer {
+    display: block;
+  }
+
+  .players-wire-tile-colhead__cols {
+    display: grid;
+    column-gap: 6px;
+  }
+
+  .players-wire-tile-colhead__cell {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+    margin: 0;
+    padding: 2px 0;
+    border: none;
+    background: transparent;
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    min-width: 0;
+    text-align: right;
+  }
+
+  .players-wire-tile-colhead__btn {
+    cursor: pointer;
+    border-radius: 4px;
+  }
+
+  .players-wire-tile-colhead__btn:hover {
+    color: var(--text);
+  }
+
+  .players-wire-tile-colhead__btn:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+
+  .players-wire-tile-colhead__cell--sorted {
+    color: var(--text-strong);
+    font-weight: 800;
+  }
+
+  .players-wire-tile-colhead__label {
+    min-width: 0;
+  }
+
+  .players-wire-tile-colhead__arrow {
+    flex-shrink: 0;
+    font-size: 9px;
+    line-height: 1;
+    color: var(--brand);
+  }
+
+  .players-wire-tile {
+    display: grid;
+    grid-template-columns: 1fr 168px;
+    align-items: center;
+    column-gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+    transition: background 160ms ease;
+    min-width: 0;
+  }
+
+  .players-wire-tile:last-child {
+    border-bottom: none;
+  }
+
+  .players-wire-tile--tappable {
+    cursor: pointer;
+  }
+
+  .players-wire-tile--tappable:hover {
+    background: var(--row-hi);
+  }
+
+  .players-wire-tile--tappable:focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: -2px;
+  }
+
+  .players-wire-tile__left {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    justify-content: center;
+  }
+
+  .players-wire-tile__id-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .players-wire-tile__kit {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: grid;
+    place-items: center;
+  }
+
+  .players-wire-tile__kit .pl-kit-badge,
+  .players-wire-tile__kit .pl-kit-fallback {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .players-wire-tile__name {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-strong);
+    line-height: 1.25;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .players-wire-tile__sub-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 0;
+    flex-wrap: wrap;
+  }
+
+  .players-wire-tile__pos {
+    font-family: 'Geist', system-ui, sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+    line-height: 1;
+  }
+
+  .players-wire-tile__sub-sep {
+    color: var(--text-muted);
+    font-size: 11px;
+    line-height: 1;
+  }
+
+  .players-wire-tile__owner {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+  }
+
+  .players-wire-tile__owner .team-avatar-frame {
+    width: 16px;
+    height: 16px;
+  }
+
+  /* Indicator cluster reused — only injury/sus dots show in this context. */
+  .players-wire-tile__sub-row .players-table__name-indicators {
+    margin-left: 0;
+    gap: 4px;
+  }
+
+  .players-wire-tile__sub-row .players-table__name-indicator--injury {
+    font-size: 11px;
+  }
+
+  .players-wire-tile__fixtures {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .players-wire-tile__fixtures .players-fixtures-badges {
+    justify-content: flex-start;
+    gap: 4px;
+  }
+
+  /* Slim down the Next-3 chips so three fit comfortably alongside the
+   * left-column identity stack on a 360–390px phone. */
+  .players-wire-tile__fixtures .players-fixture-badge {
+    width: 1.4rem;
+    height: 1.4rem;
+    padding: 0.04rem;
+    border-width: 1.25px;
+  }
+
+  .players-wire-tile__fixtures .players-fixture-badge--home {
+    border-radius: 4px;
+  }
+
+  .players-wire-tile__fixtures .players-fixture-badge__crest {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .players-wire-tile__fixtures .players-fixture-badge__crest--fallback {
+    font-size: 0.5rem;
+    line-height: 1.4rem;
+  }
+
+  .players-wire-tile__right {
+    display: grid;
+    column-gap: 6px;
+    align-items: center;
+    font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .players-wire-tile__stat {
+    text-align: right;
+    min-width: 0;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+
+  .players-wire-tile__stat--pts {
+    color: var(--text-strong);
+    font-weight: 700;
+  }
+
+  .players-wire-tile__stat.is-zero {
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .players-wire-tile__stat--sorted {
+    color: var(--text-strong);
+    font-weight: 700;
+  }
+
+  .players-wire-tile__stat--sorted.is-zero {
+    color: var(--text-muted);
+    font-weight: 600;
+  }
 }
