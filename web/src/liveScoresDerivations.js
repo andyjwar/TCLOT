@@ -559,6 +559,37 @@ export function liveGwOutcomeDot(liveMyPts, liveOppPts, hasGwStarted = true) {
 }
 
 /**
+ * Count of distinct starters in the **effective** XI who still have at
+ * least one club fixture left to play this GW. Drives the bracketed
+ * `(N)` indicator next to each side's score in the FPL Live → Live GW
+ * H2H fixture rows.
+ *
+ * Differs from the fixture-sum count surfaced by the legacy "Players
+ * remaining" tile (sum of `playerGamesLeftToPlay`): a single DGW player
+ * with two unfinished matches counts as **1 player** here, but **2
+ * fixtures** in the fixture-sum count. The user-facing copy in the
+ * fixture row reads as "players still on the pitch / yet to play",
+ * which is the distinct-player semantic.
+ *
+ * Returns 0 for empty / non-array inputs so callers can route into the
+ * "all done" indicator without a null guard.
+ *
+ * @param {object[] | null | undefined} xiRows — 11 rows from submitted
+ *   `starters` or `displayStarters` (post-autosub when the official /
+ *   projected sub list is available)
+ * @returns {number}
+ */
+export function countEffectiveXiPlayersRemaining(xiRows) {
+  if (!Array.isArray(xiRows) || !xiRows.length) return 0;
+  let n = 0;
+  for (const r of xiRows) {
+    const left = Number(r?.playerGamesLeftToPlay);
+    if (Number.isFinite(left) && left > 0) n += 1;
+  }
+  return n;
+}
+
+/**
  * Tiny initials helper for the team-crest fallback used in the compressed
  * face-off row. Two-letter (first letter of first two words) or first two
  * letters of a single-word name.

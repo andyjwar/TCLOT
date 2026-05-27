@@ -24,8 +24,12 @@ import { liveFixtureLead } from './liveScoresDerivations.js';
  *   awayId: number,
  *   homeName: string,
  *   awayName: string,
+ *   homeDisplayName?: string,
+ *   awayDisplayName?: string,
  *   homeLive: number | null | undefined,
  *   awayLive: number | null | undefined,
+ *   homeRemaining?: number | null,
+ *   awayRemaining?: number | null,
  *   teamLogoMap: object,
  *   kitIndexByEntry?: object,
  *   compact?: boolean,
@@ -43,10 +47,12 @@ export function LiveFaceOffRow({
   awayId,
   homeName,
   awayName,
-  homeMgr = null,
-  awayMgr = null,
+  homeDisplayName,
+  awayDisplayName,
   homeLive,
   awayLive,
+  homeRemaining = null,
+  awayRemaining = null,
   teamLogoMap,
   kitIndexByEntry,
   compact = false,
@@ -74,6 +80,46 @@ export function LiveFaceOffRow({
         'aria-controls': ariaControls,
       }
     : {};
+
+  /**
+   * Bracketed `(N)` indicator showing the count of starting-XI players who
+   * still have a Premier League fixture to play this GW. When `N === 0`
+   * (every starter has finished their PL match), we swap the `(0)`
+   * placeholder for the **Option A** "all done" green pulse dot — chosen
+   * over the trophy/crown (B) and check chip (C) variants because it
+   * carries the lowest visual noise and the green colour reads as
+   * "complete / all clear" at a glance. Render nothing when the squad
+   * payload is missing (`null`) so an orphan / not-yet-ingested fixture
+   * doesn't render a misleading green dot.
+   */
+  function renderRemaining(n, side) {
+    if (n == null || !Number.isFinite(Number(n))) return null;
+    const count = Math.max(0, Math.floor(Number(n)));
+    if (count === 0) {
+      return (
+        <span
+          className="live-banner-row__done"
+          role="img"
+          aria-label={`${side === 'home' ? 'Home' : 'Away'} team — all 11 starters have finished their fixtures`}
+          title="All 11 starters have finished their fixtures"
+        >
+          <span className="live-banner-row__done-pulse" aria-hidden="true" />
+          <span className="live-banner-row__done-check" aria-hidden="true">
+            ✓
+          </span>
+        </span>
+      );
+    }
+    return (
+      <span
+        className="live-banner-row__remaining tabular"
+        title={`${count} starter${count === 1 ? '' : 's'} still to play this GW`}
+        aria-label={`${count} starter${count === 1 ? '' : 's'} still to play`}
+      >
+        ({count})
+      </span>
+    );
+  }
 
   return (
     <RowEl
@@ -110,8 +156,9 @@ export function LiveFaceOffRow({
               (homeWinner ? ' live-banner-row__name--winner' : '') +
               (awayWinner ? ' live-banner-row__name--loser' : '')
             }
+            title={homeName}
           >
-            {homeName}
+            {homeDisplayName ?? homeName}
           </span>
         </span>
       </div>
@@ -119,26 +166,32 @@ export function LiveFaceOffRow({
       <div className="live-banner-row__score tabular" aria-label="Gameweek score">
         {homeScoreLive && awayScoreLive ? (
           <>
-            <span
-              className={
-                'live-banner-row__score-half' +
-                (homeWinner ? ' live-banner-row__score-half--winner' : '') +
-                (awayWinner ? ' live-banner-row__score-half--loser' : '')
-              }
-            >
-              {homeLive}
+            <span className="live-banner-row__score-side live-banner-row__score-side--home">
+              <span
+                className={
+                  'live-banner-row__score-half' +
+                  (homeWinner ? ' live-banner-row__score-half--winner' : '') +
+                  (awayWinner ? ' live-banner-row__score-half--loser' : '')
+                }
+              >
+                {homeLive}
+              </span>
+              {renderRemaining(homeRemaining, 'home')}
             </span>
             <span className="live-banner-row__score-sep" aria-hidden="true">
               –
             </span>
-            <span
-              className={
-                'live-banner-row__score-half' +
-                (awayWinner ? ' live-banner-row__score-half--winner' : '') +
-                (homeWinner ? ' live-banner-row__score-half--loser' : '')
-              }
-            >
-              {awayLive}
+            <span className="live-banner-row__score-side live-banner-row__score-side--away">
+              <span
+                className={
+                  'live-banner-row__score-half' +
+                  (awayWinner ? ' live-banner-row__score-half--winner' : '') +
+                  (homeWinner ? ' live-banner-row__score-half--loser' : '')
+                }
+              >
+                {awayLive}
+              </span>
+              {renderRemaining(awayRemaining, 'away')}
             </span>
           </>
         ) : (
@@ -154,8 +207,9 @@ export function LiveFaceOffRow({
               (awayWinner ? ' live-banner-row__name--winner' : '') +
               (homeWinner ? ' live-banner-row__name--loser' : '')
             }
+            title={awayName}
           >
-            {awayName}
+            {awayDisplayName ?? awayName}
           </span>
         </span>
         <span className="live-banner-row__crest">

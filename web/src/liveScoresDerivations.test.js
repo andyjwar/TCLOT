@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   computeManagerForm,
+  countEffectiveXiPlayersRemaining,
   dcThresholdReached,
   formatKickoffLabel,
   formatLiveMatchupMargin,
@@ -546,5 +547,40 @@ test('liveGwOutcomeDot — kind by margin; hasGwStarted=false → none', () => {
     liveGwOutcomeDot(67, 61),
     'win',
     'hasGwStarted defaults to true',
+  )
+})
+
+test('countEffectiveXiPlayersRemaining — counts distinct starters with games left (DGW dedup, ignores 0/non-finite)', () => {
+  // Empty / nullish input → 0 (no null guard needed in the renderer).
+  assert.equal(countEffectiveXiPlayersRemaining(null), 0)
+  assert.equal(countEffectiveXiPlayersRemaining([]), 0)
+
+  // DGW player with 2 fixtures left counts as 1 player; 0 / negative /
+  // non-finite values are skipped so the renderer can swap in the
+  // "all done" indicator only when every starter is truly finished.
+  const xi = [
+    { playerGamesLeftToPlay: 1 },
+    { playerGamesLeftToPlay: 2 },
+    { playerGamesLeftToPlay: 0 },
+    { playerGamesLeftToPlay: null },
+    { playerGamesLeftToPlay: 'oops' },
+    { playerGamesLeftToPlay: -1 },
+    { playerGamesLeftToPlay: 1 },
+  ]
+  assert.equal(countEffectiveXiPlayersRemaining(xi), 3)
+
+  // Whole-XI states: 0 (all done) + 11 (pre-kickoff) — sanity guards for
+  // the renderer's `N === 0` branch and the upper bound.
+  assert.equal(
+    countEffectiveXiPlayersRemaining(
+      Array.from({ length: 11 }, () => ({ playerGamesLeftToPlay: 0 })),
+    ),
+    0,
+  )
+  assert.equal(
+    countEffectiveXiPlayersRemaining(
+      Array.from({ length: 11 }, () => ({ playerGamesLeftToPlay: 1 })),
+    ),
+    11,
   )
 })

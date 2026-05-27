@@ -4,6 +4,15 @@ import { useEffect, useState } from 'react'
 export const PORTRAIT_MOBILE_MQ = '(max-width: 600px)'
 
 /**
+ * Phone-width breakpoint shared by Standings Variant C, the Live GW fixture
+ * rows (first-word team names + done indicator), and any other surface that
+ * wants the same "is this a phone in portrait/landscape" branch. Slightly
+ * wider than {@link PORTRAIT_MOBILE_MQ} so the largest phones / smallest
+ * tablets in portrait still pick up the compact-names treatment.
+ */
+export const MOBILE_NARROW_MQ = '(max-width: 767px)'
+
+/**
  * Below-desktop viewport — phone + tablet (portrait/landscape) where a
  * two-column side-by-side layout no longer reads comfortably. Used by
  * surfaces that want to swap to a tabbed single-column UX across the
@@ -59,6 +68,29 @@ export function useNarrowViewport() {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
     const mq = window.matchMedia(NARROW_VIEWPORT_MQ)
+    const onChange = () => setNarrow(mq.matches)
+    onChange()
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  return narrow
+}
+
+/**
+ * @returns {boolean} true when viewport matches {@link MOBILE_NARROW_MQ}
+ * (≤767px). Shared by Standings Variant C and the Live GW fixture rows so
+ * both surfaces switch to first-word team names at the same breakpoint.
+ */
+export function useMobileNarrowViewport() {
+  const [narrow, setNarrow] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia(MOBILE_NARROW_MQ).matches
+  })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const mq = window.matchMedia(MOBILE_NARROW_MQ)
     const onChange = () => setNarrow(mq.matches)
     onChange()
     mq.addEventListener('change', onChange)

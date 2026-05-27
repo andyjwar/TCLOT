@@ -11424,6 +11424,92 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   letter-spacing: 0.03em;
   text-transform: uppercase;
 }
+/* Score-side wrapper: groups the score number + bracketed (N) remaining /
+   "all done" indicator so they ride together on the row baseline and the
+   `–` separator stays centred between them. Inline-flex with a tiny gap
+   so `44 (3)` reads as a tight cluster, not two free-floating spans. */
+.live-banner-row__score-side {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  white-space: nowrap;
+}
+.live-banner-row--compact .live-banner-row__score-side {
+  gap: 3px;
+}
+/* Bracketed `(N)` indicator — count of starting-XI players still to play
+   this GW. Smaller than the score number, secondary colour, normal weight
+   so the score remains the primary read. Tabular numerals for stable
+   width across polls. */
+.live-banner-row__remaining {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--fm-muted);
+  letter-spacing: 0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.live-banner-row--compact .live-banner-row__remaining {
+  font-size: 0.7rem;
+}
+/* "All done" indicator (Option A — green pulse dot with checkmark). Renders
+   in place of the bracketed `(0)` once every starter has finished their
+   PL fixture. The `--done-pulse` ring expands and fades behind the solid
+   dot to communicate "all clear" without animating the score itself.
+   Reduced-motion users get the static dot without the pulse. */
+.live-banner-row__done {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--data-positive, #12a15a);
+  color: #fff;
+  flex-shrink: 0;
+}
+.live-banner-row--compact .live-banner-row__done {
+  width: 12px;
+  height: 12px;
+}
+.live-banner-row__done-check {
+  position: relative;
+  z-index: 1;
+  font-size: 8px;
+  font-weight: 800;
+  line-height: 1;
+}
+.live-banner-row--compact .live-banner-row__done-check {
+  font-size: 7px;
+}
+.live-banner-row__done-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--data-positive, #12a15a);
+  opacity: 0.55;
+  animation: live-banner-done-pulse 1.6s ease-out infinite;
+}
+@keyframes live-banner-done-pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+  80% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.85);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-banner-row__done-pulse {
+    animation: none;
+    opacity: 0;
+  }
+}
 .live-banner-row__chev {
   position: absolute;
   right: 6px;

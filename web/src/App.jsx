@@ -281,6 +281,8 @@ import { StandingsScheduleSubview } from './StandingsScheduleSubview.jsx'
 import { StandingsStatsSubview } from './StandingsStatsSubview.jsx'
 import { PlayersWorkbench } from './PlayersWorkbench.jsx'
 import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
+import { firstWord } from './teamNameUtils.js'
+import { useMobileNarrowViewport } from './usePortraitMobile.js'
 import './App.css'
 
 /** Last whitespace-delimited segment (e.g. "Toronto Oizo" → "Oizo"). Single-word names unchanged. */
@@ -1083,29 +1085,11 @@ const STANDINGS_SORT_KEYS = /** @type {const} */ (['gf', 'ga', 'gd', 'total'])
 /** Listens to the same `(max-width: 767px)` breakpoint the Standings
  * Variant C CSS uses, so the JSX rendering branches (mobile vs desktop
  * thead/columns/team-name truncation) stay locked to the same line as
- * the visual styling. */
+ * the visual styling. Wraps the shared {@link useMobileNarrowViewport}
+ * hook (also used by the Live GW fixture rows) so both surfaces flip on
+ * the same matchMedia listener. */
 function useIsMobileStandingsViewport() {
-  const getMatch = () => {
-    if (typeof window === 'undefined' || !window.matchMedia) return false
-    return window.matchMedia('(max-width: 767px)').matches
-  }
-  const [isMobile, setIsMobile] = useState(getMatch)
-  useEffect(() => {
-    if (typeof window === 'undefined' || !window.matchMedia) return undefined
-    const mq = window.matchMedia('(max-width: 767px)')
-    const handler = (e) => setIsMobile(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  return isMobile
-}
-
-/** First word of a team name — used on mobile to keep team-cell narrow.
- * "Crouch End Oashisu" → "Crouch", "Hanson of York AFC" → "Hanson". */
-function firstWord(name) {
-  if (!name) return ''
-  const parts = String(name).split(/\s+/)
-  return parts[0] || ''
+  return useMobileNarrowViewport()
 }
 
 /** Sortable header for For / Faced / GD / PTS — `null` sortState = league order. */

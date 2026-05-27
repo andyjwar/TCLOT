@@ -20,6 +20,7 @@ import {
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { bustFplLiveCache, fetchFplJsonCached } from './fplFetchCache.js';
 import { gameWeekSelectLabel } from './gwLabel.js';
+import { countEffectiveXiPlayersRemaining } from './liveScoresDerivations.js';
 
 /** Classic `fantasy.premierleague.com/api` path + query (fixtures, …). */
 function classicResourceUrl(pathAndQuery) {
@@ -310,6 +311,7 @@ function countEffectiveXiLeftToPlayGames(xiRows) {
   return total;
 }
 
+
 /** Same rule as `startersForEffectiveXi` in LiveScores — full bench length match. */
 function xiRowsForLeftToPlayCount(starters, bench, displayStarters, displayBench) {
   const nBench = bench?.length ?? 0;
@@ -510,6 +512,7 @@ export function useLiveScores({
               autosubSource: 'none',
               projectedAutoSubs: [],
               leftToPlayCount: null,
+              xiPlayersRemaining: null,
             };
           }
 
@@ -536,6 +539,7 @@ export function useLiveScores({
               autosubSource: 'none',
               projectedAutoSubs: [],
               leftToPlayCount: null,
+              xiPlayersRemaining: null,
             };
           }
           const picks = picksPayload.picks || [];
@@ -587,6 +591,13 @@ export function useLiveScores({
             displayBench
           );
           const leftToPlayCount = countEffectiveXiLeftToPlayGames(xiForLtp);
+          /**
+           * Distinct-player count for the FPL Live → Live GW fixture row
+           * `(N)` indicator. Derived from the same `xiForLtp` rows as
+           * {@link leftToPlayCount} so the two stay in sync, but DGW players
+           * count as 1 here regardless of how many fixtures they have left.
+           */
+          const xiPlayersRemaining = countEffectiveXiPlayersRemaining(xiForLtp);
 
           return {
             leagueEntryId: t.id,
@@ -603,6 +614,7 @@ export function useLiveScores({
             autosubSource,
             projectedAutoSubs,
             leftToPlayCount,
+            xiPlayersRemaining,
           };
         })
       );

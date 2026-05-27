@@ -20,7 +20,8 @@ import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
-import { useNarrowViewport } from './usePortraitMobile.js';
+import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
+import { firstWord } from './teamNameUtils.js';
 import {
   computeManagerForm,
   liveGwOutcomeDot,
@@ -823,6 +824,15 @@ export function LiveScores({
    * range, replacing the prior 601–880px stacked two-column grid.
    */
   const narrowViewport = useNarrowViewport();
+  /**
+   * Phone-width breakpoint (≤767px) — at this width the H2H fixture rows
+   * collapse team names to their first word (mockup `Toronto 44 (3) – 53 (5)
+   * Hanson` instead of the truncated full-name-with-ellipsis treatment that
+   * read as `Tor… 44 (3) – 53 (5) Hanson o…` on a 390px viewport). Tracked
+   * separately from {@link narrowViewport} so 768–880px tablets keep full
+   * names.
+   */
+  const mobileNarrowViewport = useMobileNarrowViewport();
 
   /** Fixture keys in the set are expanded; default empty = all collapsed. */
   const [expandedFixtures, setExpandedFixtures] = useState(() => new Set());
@@ -1404,10 +1414,41 @@ export function LiveScores({
               const awayId = Number(m.league_entry_2);
               const homeName = teamNameForEntry(teams, homeId);
               const awayName = teamNameForEntry(teams, awayId);
+              /**
+               * Mobile (≤767px) collapses team names to their first word so
+               * the H2H fixture row fits a 390px viewport without
+               * `text-overflow: ellipsis` chewing mid-word; matches the
+               * Standings hero+table treatment via the shared
+               * {@link firstWord} helper.
+               */
+              const homeDisplayName = mobileNarrowViewport
+                ? firstWord(homeName)
+                : homeName;
+              const awayDisplayName = mobileNarrowViewport
+                ? firstWord(awayName)
+                : awayName;
               const homeSquad = squadByLeagueEntry.get(homeId);
               const awaySquad = squadByLeagueEntry.get(awayId);
               const homeLive = liveGwDisplayTotal(homeSquad);
               const awayLive = liveGwDisplayTotal(awaySquad);
+              /**
+               * Distinct-player count (`xiPlayersRemaining`) drives the
+               * bracketed `(N)` indicator next to each side's score. Falls
+               * back to `null` when the squad payload is missing/errored
+               * (orphan / `entry_id` not yet ingested) so the renderer can
+               * skip the chip cleanly. When `N === 0` the renderer swaps
+               * `(0)` for the "all done" green pulse dot.
+               */
+              const homeRemaining =
+                homeSquad && !homeSquad.error &&
+                Number.isFinite(Number(homeSquad.xiPlayersRemaining))
+                  ? Number(homeSquad.xiPlayersRemaining)
+                  : null;
+              const awayRemaining =
+                awaySquad && !awaySquad.error &&
+                Number.isFinite(Number(awaySquad.xiPlayersRemaining))
+                  ? Number(awaySquad.xiPlayersRemaining)
+                  : null;
 
               const homeVillain = villainVictoryEntryIds.has(homeId);
               const awayVillain = villainVictoryEntryIds.has(awayId);
@@ -1469,8 +1510,12 @@ export function LiveScores({
                     awayId={awayId}
                     homeName={homeName}
                     awayName={awayName}
+                    homeDisplayName={homeDisplayName}
+                    awayDisplayName={awayDisplayName}
                     homeLive={homeLive}
                     awayLive={awayLive}
+                    homeRemaining={homeRemaining}
+                    awayRemaining={awayRemaining}
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                     compact={narrowViewport}
