@@ -259,6 +259,31 @@ export function PlayerDetailView({
       className={'pdetail-host' + (mobileLayout ? ' pdetail-host--mobile' : '')}
       aria-label={`${fplElementWebName(playerEl, playerId)} player detail`}
     >
+      {/*
+       * Top header bar — Back chevron + "Player" title. Renders for every
+       * mobile-layout width (≤1080px), not just narrow portrait phones, so
+       * tablets and landscape phones get the same chevron-anchored exit
+       * affordance instead of a bottom "BACK" link. Mockup parity:
+       * `mockup-pdetail-p__h` from the locked PlayerDetailPortrait. Round 3
+       * polish: also serves the swipe-right gesture target on the surface
+       * itself; clicking the chevron closes via the same path
+       * (`onBack` → `requestDetailClose`).
+       */}
+      {mobileLayout ? (
+        <div className="pdetail__topbar">
+          <button
+            type="button"
+            className="pdetail__back"
+            aria-label="Back"
+            onClick={onBack}
+          >
+            <span aria-hidden>‹</span>
+          </button>
+          <span className="pdetail__topbar-title">Player</span>
+          <span aria-hidden />
+        </div>
+      ) : null}
+
       {compareOpen ? null : (
         <PlayerDetailHero
           el={playerEl}
@@ -266,7 +291,6 @@ export function PlayerDetailView({
           ownerLabel={ownerLabel}
           xiKind={xiKind}
           portrait={portrait}
-          onBack={onBack}
           onCompareClick={() => setCompareOpen(true)}
           compareDisabled={false}
         />
@@ -341,22 +365,6 @@ export function PlayerDetailView({
               />
             )}
           </div>
-
-          {mobileLayout ? (
-            <div className="pdetail__footer-back">
-              <button
-                type="button"
-                className="players-detail__stack-back"
-                onClick={onBack}
-                aria-label="Back"
-              >
-                <span className="players-detail__stack-back__arrow" aria-hidden="true">
-                  ←
-                </span>
-                <span className="players-detail__stack-back__label">BACK</span>
-              </button>
-            </div>
-          ) : null}
         </>
       )}
     </div>

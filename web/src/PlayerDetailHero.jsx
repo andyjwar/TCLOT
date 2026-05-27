@@ -63,25 +63,6 @@ function CrestImg({ url, fallback, className = '' }) {
   )
 }
 
-function CompareIcon() {
-  return (
-    <svg
-      width="14"
-      height="14"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M8 3v18M3 8l5-5 5 5" />
-      <path d="M16 21V3M21 16l-5 5-5-5" />
-    </svg>
-  )
-}
-
 /**
  * Desktop hero — 120 px crest with XI status pill stacked under it,
  * meta row + name + owner row in the body, single Compare chip on the
@@ -162,7 +143,6 @@ function PlayerDetailHeroDesktop({
           disabled={compareDisabled}
           title={compareDisabled ? 'Compare unavailable' : 'Compare with another player'}
         >
-          <CompareIcon />
           <span>Compare</span>
         </button>
       </div>
@@ -182,7 +162,6 @@ function PlayerDetailHeroPortrait({
   team,
   ownerLabel,
   xiKind,
-  onBack,
   onCompareClick,
   compareDisabled = false,
 }) {
@@ -195,19 +174,6 @@ function PlayerDetailHeroPortrait({
   const ownerName = ownerLabel?.name ?? null
   return (
     <div className="pdetail-p__chrome">
-      <div className="pdetail-p__h">
-        <button
-          type="button"
-          className="pdetail-p__back"
-          aria-label="Back"
-          onClick={onBack}
-        >
-          ‹
-        </button>
-        <span className="pdetail-p__h-title">Player</span>
-        <span aria-hidden />
-      </div>
-
       <div className="pdetail-p__hero">
         <span className="pdetail-p__hero-crest" aria-hidden>
           <CrestImg
@@ -253,7 +219,6 @@ function PlayerDetailHeroPortrait({
           disabled={compareDisabled}
           title={compareDisabled ? 'Compare unavailable' : 'Compare with another player'}
         >
-          <CompareIcon />
           <span>Compare</span>
         </button>
       </div>
@@ -263,6 +228,10 @@ function PlayerDetailHeroPortrait({
 
 /**
  * Hero shell — chooses desktop or portrait variant based on `portrait`.
+ * The Back-button header bar (formerly inline in the portrait hero) now
+ * lives at `PlayerDetailView` level so it shows for ALL mobile-layout
+ * widths (≤1080px), not just narrow portrait phones (≤600px). See
+ * `PlayerDetailView.jsx` → `pdetail__topbar`.
  *
  * @param {{
  *   el: object,
@@ -270,7 +239,6 @@ function PlayerDetailHeroPortrait({
  *   ownerLabel: { code: string, name: string } | null,
  *   xiKind: 'xi' | 'bench' | 'absent',
  *   onCompareClick: () => void,
- *   onBack?: () => void,
  *   portrait: boolean,
  *   compareDisabled?: boolean,
  * }} props
@@ -281,7 +249,6 @@ export function PlayerDetailHero({
   ownerLabel,
   xiKind,
   onCompareClick,
-  onBack,
   portrait,
   compareDisabled = false,
 }) {
@@ -292,7 +259,6 @@ export function PlayerDetailHero({
         team={team}
         ownerLabel={ownerLabel}
         xiKind={xiKind}
-        onBack={onBack ?? (() => {})}
         onCompareClick={onCompareClick}
         compareDisabled={compareDisabled}
       />

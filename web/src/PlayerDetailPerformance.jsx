@@ -145,6 +145,57 @@ export function PlayerDetailPerformance({ el, summaryPayload, teamById }) {
   const elementType = el?.element_type
   const playerTeamId = Number(el?.team)
 
+  /*
+   * Auto-scroll on Performance tab activation: position the most recent
+   * completed GW row near the top of the visible area so the latest data
+   * is immediately readable instead of forcing the user to scroll past
+   * GW 1. Component remounts when switching tabs, so the effect fires
+   * exactly once per activation; `didAutoScrollRef` guards against firing
+   * twice if `rows` changes mid-mount (e.g. summary payload arrives
+   * after first paint). Subsequent user scrolls aren't fought because
+   * we never re-trigger after the initial scroll for this mount.
+   *
+   * "Last completed GW" = highest `gw` where `kind === 'past'`. Scroll
+   * is applied via manual `scrollTop` on the table-wrap (see effect
+   * below) instead of `scrollIntoView` so the scroll is scoped to the
+   * inner container only.
+   */
+  const tableWrapRef = useRef(null)
+  const lastPastRowRef = useRef(null)
+  const didAutoScrollRef = useRef(false)
+  const lastPastGw = useMemo(() => {
+    let max = null
+    for (const row of rows) {
+      if (row.kind === 'past' && (max == null || row.gw > max)) max = row.gw
+    }
+    return max
+  }, [rows])
+
+  useEffect(() => {
+    if (didAutoScrollRef.current) return
+    if (lastPastGw == null) return
+    const wrap = tableWrapRef.current
+    const row = lastPastRowRef.current
+    if (!wrap || !row) return
+    didAutoScrollRef.current = true
+    /*
+     * Use manual `scrollTop` rather than `scrollIntoView` so the scroll
+     * is scoped to the table-wrap container only. `scrollIntoView`
+     * walks up *every* scrollable ancestor (`.pdetail__main`,
+     * `.pdetail-host`, document) and scrolls each one — that briefly
+     * scrolled the whole panel out from under the user during round-3
+     * verification. `offsetTop` here is relative to the wrap's offset
+     * parent (`<table>`), which itself sits at offsetTop 0 inside the
+     * wrap, so the row's offset within the wrap is `offsetTop`. Sticky
+     * `<th>` height (~38px) is subtracted so the row sits just below
+     * the pinned header rather than under it.
+     */
+    const stickyHeader = wrap.querySelector('thead')
+    const headerHeight = stickyHeader instanceof HTMLElement ? stickyHeader.offsetHeight : 0
+    const target = Math.max(0, row.offsetTop - headerHeight - 4)
+    wrap.scrollTop = target
+  }, [lastPastGw])
+
   return (
     <div className="pperf">
       <div className="pperf__h">
@@ -167,7 +218,7 @@ export function PlayerDetailPerformance({ el, summaryPayload, teamById }) {
         </div>
       </div>
 
-      <div className="pperf__table-wrap">
+      <div ref={tableWrapRef} className="pperf__table-wrap">
         <table className="pperf__table" aria-label="Per-gameweek performance">
           <thead>
             <tr>
@@ -204,9 +255,11 @@ export function PlayerDetailPerformance({ el, summaryPayload, teamById }) {
                 ? Number(performanceStatValue('min', row.history)) || 0
                 : null
               const dnp = isPast && minutes === 0
+              const isLastPast = isPast && row.gw === lastPastGw
               return (
                 <tr
                   key={row.gw}
+                  ref={isLastPast ? lastPastRowRef : undefined}
                   className={
                     'pperf__row' +
                     (row.kind === 'future' ? ' pperf__row--future' : '') +

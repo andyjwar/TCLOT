@@ -126,55 +126,6 @@
   padding-bottom: max(0.35rem, env(safe-area-inset-bottom, 0px));
 }
 
-.players-detail__stack-back {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 0.12rem;
-  margin: 0;
-  padding: 0.2rem 0.45rem 0.35rem;
-  border: none;
-  border-radius: 8px;
-  background: transparent;
-  cursor: pointer;
-  color: color-mix(in srgb, var(--fm-text-strong) 94%, transparent);
-  touch-action: manipulation;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.players-detail__stack-back:hover {
-  background: color-mix(in srgb, var(--fm-muted) 8%, transparent);
-}
-
-.players-detail__stack-back:focus-visible {
-  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple) 55%, transparent);
-  outline-offset: 2px;
-}
-
-.players-detail__stack-back__arrow {
-  display: block;
-  font-size: 1.55rem;
-  font-weight: 900;
-  line-height: 0.85;
-  letter-spacing: -0.02em;
-}
-
-.players-detail__stack-back__label {
-  font-size: 0.5625rem;
-  font-weight: 800;
-  letter-spacing: 0.07em;
-  line-height: 1;
-}
-
-body[data-tclot-theme='dark'] .players-detail__stack-back {
-  color: color-mix(in srgb, var(--fm-text-strong, #fff) 90%, transparent);
-}
-
-body[data-tclot-theme='dark'] .players-detail__stack-back:hover {
-  background: color-mix(in srgb, var(--fm-muted) 14%, transparent);
-}
-
 .players-detail__compare-label {
   flex-shrink: 0;
   font-size: 0.8125rem;
@@ -1546,35 +1497,56 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   flex-direction: column;
   flex-shrink: 0;
 }
-.pdetail-p__h {
+
+/*
+ * Round 3: Top header bar lives at the panel level (not inside the hero)
+ * and renders for every mobile-layout viewport (≤1080px). Larger touch
+ * target (40 × 40px) than the original mockup chevron so it reads as a
+ * primary nav control rather than a tiny glyph; subtle hover tint on
+ * `--surface` matches the redesign-phase-2 button vocabulary. Replaces
+ * the previous bottom "← BACK" link to give the panel one canonical
+ * exit affordance, anchored top-left per the locked
+ * `PlayerDetailPortrait` mockup.
+ */
+.pdetail__topbar {
   display: grid;
-  grid-template-columns: 28px 1fr 28px;
+  grid-template-columns: 40px 1fr 40px;
   align-items: center;
   gap: 8px;
-  padding: 10px 12px;
+  padding: 8px 10px;
   background: var(--surface-2);
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.pdetail-p__back {
-  width: 28px;
-  height: 28px;
+.pdetail__back {
+  width: 40px;
+  height: 40px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background: transparent;
   border: 1px solid var(--border);
-  border-radius: var(--pdetail-r-sm);
+  border-radius: var(--pdetail-r-md);
   color: var(--text);
   cursor: pointer;
-  font-size: 16px;
+  font-size: 22px;
   line-height: 1;
+  font-weight: 600;
+  transition: background-color var(--pdetail-dur-fast) var(--pdetail-ease),
+    border-color var(--pdetail-dur-fast) var(--pdetail-ease);
+  -webkit-tap-highlight-color: transparent;
 }
-.pdetail-p__back:hover {
+.pdetail__back:hover {
   background: var(--surface);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
 }
-.pdetail-p__h-title {
+.pdetail__back:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 55%, transparent);
+  outline-offset: 2px;
+}
+.pdetail__topbar-title {
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.10em;
@@ -1776,14 +1748,6 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   margin-bottom: 0;
 }
 
-.pdetail__footer-back {
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
-  flex-shrink: 0;
-  padding: 0.55rem 0.65rem max(0.35rem, env(safe-area-inset-bottom, 0px));
-}
-
 /* ------------------------------------------------------------------ */
 /* Performance tab                                                      */
 /* ------------------------------------------------------------------ */
@@ -1792,6 +1756,15 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   flex-direction: column;
   padding: var(--pdetail-space-4) var(--pdetail-space-5);
   gap: var(--pdetail-space-3);
+  /*
+   * Round 3: claim the full height of `.pdetail__main` so the table-wrap
+   * below can be the actual scroll container. Without this the table-wrap
+   * collapses to its content height and the outer `.pdetail__main`
+   * scrolls instead, defeating the auto-scroll-to-last-completed-GW
+   * behaviour (sticky thead also wouldn't pin correctly).
+   */
+  flex: 1 1 auto;
+  min-height: 0;
 }
 @media (max-width: 800px) {
   .pperf {
@@ -1957,8 +1930,21 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   border: 1px solid var(--border);
   border-radius: var(--pdetail-r-md);
   background: var(--surface);
-  overflow-x: auto;
+  /*
+   * Round 3: own scroll container so `scrollIntoView` on the last-past-GW
+   * row scrolls the table itself rather than the whole panel. Pairs with
+   * `.pperf` claiming flex height above; the wrap fills remaining space
+   * and overflows on both axes (horizontal for many-column layouts;
+   * vertical so sticky `.pperf__th` pins as the table scrolls). A
+   * conservative `max-height` fallback covers cases where the parent
+   * isn't a flex container with a constrained height (e.g. the desktop
+   * 2-col compare flow rendering performance content).
+   */
+  overflow: auto;
   -webkit-overflow-scrolling: touch;
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
 }
 .pperf__table {
   width: 100%;
