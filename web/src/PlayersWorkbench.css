@@ -1835,7 +1835,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     overflow-wrap: anywhere;
     hyphens: auto;
     min-width: 0;
-    flex: 1 1 auto;
+    flex: 0 1 auto;
   }
 
   /* Small single-letter position chip rendered inline next to the player
