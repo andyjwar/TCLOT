@@ -959,11 +959,11 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   color: var(--text);
 }
 
-/* Vertical group divider — drawn on the FIRST column of each new group */
-.players-table__head-row > .players-table__col--group-start,
-.players-table__row > .players-table__col--group-start {
-  box-shadow: inset 1px 0 0 color-mix(in srgb, var(--brand) 22%, var(--border));
-}
+/* Round-2 polish: vertical group dividers between Player / POS / Pts / stats /
+ * Next-3 have been removed. Only the horizontal row separators below remain.
+ * The `.players-table__col--group-start` class is still applied by the JSX
+ * (kept as a hook in case a future redesign wants the dividers back) but
+ * intentionally has no visual effect. */
 
 /* Body rows */
 .players-table__row {
@@ -1029,10 +1029,10 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   font-weight: 400;
 }
 
-.players-table__cell--stat.is-good {
-  color: var(--data-positive);
-  font-weight: 600;
-}
+/* Round-2 polish: the green `is-good` tone has been retired. Non-zero
+ * stats now render in the default text color (matching Pts) for a more
+ * minimal, FotMob-style look. Zero values still render muted via
+ * `.is-zero` above. */
 
 .players-table__cell--next3 {
   justify-content: center;
@@ -1258,9 +1258,12 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     letter-spacing: 0.03em;
   }
 
+  /* Round-2 polish: tighter left edge on mobile so the player-cell content
+   * (crest + name + indicators) sits further left and reclaims width back
+   * for the stat group. */
   .players-table--portrait .players-table__head-row > *:first-child,
   .players-table--portrait .players-table__row > *:first-child {
-    padding-left: 10px;
+    padding-left: 6px;
   }
 
   .players-table--portrait .players-table__head-row > *:last-child,
@@ -1281,14 +1284,17 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     font-size: 12px;
   }
 
+  /* Round-2 polish: shrink crest + name on mobile so the player-cell content
+   * fits more comfortably on a narrow row without pushing the stat columns
+   * right. Desktop player-cell sizing is unchanged. */
   .players-table--portrait .players-table__kit {
-    width: 18px;
+    width: 14px;
   }
 
   .players-table--portrait .players-table__kit .pl-kit-badge,
   .players-table--portrait .players-table__kit .pl-kit-fallback {
-    width: 18px;
-    height: 18px;
+    width: 14px;
+    height: 14px;
   }
 
   .players-table--portrait .players-table__cell--player {
@@ -1296,7 +1302,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   }
 
   .players-table--portrait .players-table__name {
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
   }
 
@@ -1321,10 +1327,6 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 
   .players-table--portrait .players-table__cell--pts {
     font-size: 13px;
-  }
-
-  .players-table--portrait .players-table__col--group-start {
-    box-shadow: none;
   }
 
   .players-table__row--tappable {

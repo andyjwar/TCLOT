@@ -9,9 +9,13 @@ export const POS_LABEL = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
 /** Abbreviated position labels for portrait wire table (All filter). */
 export const PORTRAIT_POS_LABEL = { 1: 'GK', 2: 'D', 3: 'M', 4: 'F' }
 
-/** Portrait default stat columns per position filter (≤600px) — wire list only. */
+/** Portrait default stat columns per position filter (≤600px) — wire list only.
+ *
+ * The 'all' filter shows Pos + GP + G + A + DC (5 stat cols) on mobile, with
+ * Player/Pts/Next3 as fixed columns flanking the stat group. Per-position
+ * filters keep their 4-stat defaults — only 'all' was widened. */
 export const PORTRAIT_DEFAULT_WIRE_STAT_IDS_BY_POSITION = {
-  all: ['pos', 'goals', 'assists', 'defConHits'],
+  all: ['pos', 'gp', 'goals', 'assists', 'defConHits'],
   '1': ['starts', 'cs', 'savePts', 'bonus'],
   '2': ['goals', 'assists', 'cs', 'defConHits'],
   '3': ['goals', 'assists', 'cs', 'defConHits'],
@@ -382,10 +386,14 @@ export function defaultWireStatIdsForPosition(positionFilter) {
 }
 
 /**
+ * Portrait max stat columns. The 'all' filter fits 5 (Pos + GP + G + A + DC);
+ * per-position filters cap at 4 because they already carry domain-specific
+ * defaults that don't include 'pos'.
+ *
  * @param {PositionFilterId} positionFilter
  */
-export function portraitMaxStatColumns(_positionFilter) {
-  return 4
+export function portraitMaxStatColumns(positionFilter) {
+  return positionFilter === POS_FILTER_ALL ? 5 : 4
 }
 
 /**
@@ -793,39 +801,31 @@ export function dcThresholdForPosition(elementType) {
 /**
  * Pure helper for the Phase-2 stat-cell tone treatment.
  *
- * - `is-good` (green, weight 600): goals/assists > 0; clean sheets > 0 for
- *   GKP/DEF only; defConHits at or above the position threshold.
+ * Round-2 polish: green `is-good` tone retired in favor of FotMob-style
+ * minimal stat coloring. Only zero/placeholder values get a muted tone now —
+ * non-zero values render in the default text color (matching Pts).
+ *
  * - `is-zero` (muted, weight 400): value 0 or non-numeric placeholder.
- * - `''` (no tone): everything else (e.g. small but non-zero xG).
+ * - `''` (default): everything else renders in normal text color.
  *
  * Returns a CSS class name suffix to append to `.players-table__cell--stat`.
  *
- * @param {string} statId
+ * The previous signature took `(statId, value, elementType)` to decide which
+ * non-zero values earned the green tone; with that tone retired the extra
+ * arguments are no longer needed. Existing call sites that still pass three
+ * args continue to work — JS silently ignores the extras.
+ *
  * @param {string | number | null | undefined} value
- * @param {number} elementType
- * @returns {'is-good' | 'is-zero' | ''}
+ * @returns {'is-zero' | ''}
  */
-export function wireStatToneClass(statId, value, elementType) {
+export function wireStatToneClass(value) {
   if (value === '—' || value === '…' || value == null || value === '') {
     return 'is-zero'
   }
   const num = Number(value)
   if (!Number.isFinite(num)) return 'is-zero'
   if (num === 0) return 'is-zero'
-
-  switch (statId) {
-    case 'goals':
-    case 'assists':
-      return num > 0 ? 'is-good' : ''
-    case 'cs': {
-      const isGkOrDef = elementType === 1 || elementType === 2
-      return isGkOrDef && num > 0 ? 'is-good' : ''
-    }
-    case 'defConHits':
-      return num >= dcThresholdForPosition(elementType) ? 'is-good' : ''
-    default:
-      return ''
-  }
+  return ''
 }
 
 /**

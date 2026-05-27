@@ -1091,7 +1091,7 @@ export function PlayersWorkbench({
                         portraitPosAbbrev:
                           portrait && positionFilter === POS_FILTER_ALL && col.id === 'pos',
                       })
-                      const tone = wireStatToneClass(col.id, value, Number(el.element_type))
+                      const tone = wireStatToneClass(value)
                       return (
                         <span
                           key={col.id}
