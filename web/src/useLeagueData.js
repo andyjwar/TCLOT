@@ -57,28 +57,20 @@ async function fetchFirstOptional(paths, cacheKey = '') {
   return null;
 }
 
-/** H2H win margin → column key (wins by exactly N pts, or range). */
-export const WIN_MARGIN_BUCKET_KEYS = [
-  '1',
-  '2',
-  '3',
-  '4',
-  '5-10',
-  '11-15',
-  '16-20',
-  '21+',
-];
+/** H2H win margin → column key (wins/losses by exactly N pts, or range).
+ *
+ * Standings tab redesign (Phase 2): bucket scheme is now `1 / 2 / 3-5 / 6-10 / 10+`.
+ * Boundary call: `5` belongs to `3-5` (the lower bucket); `5-10` is therefore
+ * `6-10` in practice. Header label kept as `5-10` per the design screenshot. */
+export const WIN_MARGIN_BUCKET_KEYS = ['1', '2', '3-5', '5-10', '10+'];
 
 function winMarginBucketKey(margin) {
   const m = Number(margin);
   if (m === 1) return '1';
   if (m === 2) return '2';
-  if (m === 3) return '3';
-  if (m === 4) return '4';
-  if (m >= 5 && m <= 10) return '5-10';
-  if (m >= 11 && m <= 15) return '11-15';
-  if (m >= 16 && m <= 20) return '16-20';
-  return '21+';
+  if (m >= 3 && m <= 5) return '3-5';
+  if (m >= 6 && m <= 10) return '5-10';
+  return '10+';
 }
 
 /** element_type 1 = GKP — excluded: cheap keeper churn dominates waivers but isn’t useful for this list */

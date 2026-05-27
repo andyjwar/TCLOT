@@ -13075,3 +13075,808 @@ button.live-xp__player-name:focus-visible {
     color: transparent;
   }
 }
+
+/* ────────────────────────────────────────────────────────────────────────
+ * Standings tab — Phase 2 redesign (sub-nav, next-GW tile, Schedule sub-tab,
+ * Stats sub-tab). Lives below the standings hero+table tile (which is frozen).
+ * Visual language matches the existing Variant C standings card chrome.
+ * ──────────────────────────────────────────────────────────────────────── */
+
+/* Next gameweek full-width tile — clean borders, brand-tinted heading.
+ * Sits directly below the standings table; replaces the old
+ * "Complete game weeks" / "Future game weeks" select tiles. */
+.tile--standings-next-gw {
+  margin-top: 14px;
+  border-radius: 12px;
+  background: var(--fm-card);
+  border: 1px solid color-mix(in srgb, var(--tclot-logo-purple) 14%, var(--fm-border));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.fotmob[data-theme='dark'] .tile--standings-next-gw {
+  border-color: color-mix(in srgb, var(--tclot-logo-purple) 18%, var(--fm-border));
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.35);
+}
+
+.tile--standings-next-gw__title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  margin: 0;
+}
+
+.tile--standings-next-gw__eyebrow {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.tile--standings-next-gw__sep {
+  color: var(--fm-muted);
+  font-weight: 400;
+}
+
+.tile--standings-next-gw__gw {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--tclot-logo-purple);
+}
+
+.tile--standings-next-gw__list {
+  margin-top: 4px;
+}
+
+/* ─── Standings sub-nav — sticky pill tabs matching Transactions language ── */
+.standings-subnav {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  gap: 22px;
+  align-items: center;
+  margin: 18px 0 12px;
+  padding: 10px 4px;
+  background: var(--fm-bg);
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.standings-subnav__btn {
+  position: relative;
+  flex: 0 0 auto;
+  padding: 6px 4px 10px;
+  margin: 0;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--fm-muted);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: color 0.12s ease;
+}
+
+.standings-subnav__btn:hover {
+  color: var(--fm-text-strong);
+}
+
+.standings-subnav__btn--active {
+  color: var(--tclot-logo-purple);
+  font-weight: 700;
+}
+
+.standings-subnav__btn--active::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: -1px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--tclot-logo-purple);
+}
+
+.standings-subnav__btn:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.standings-subview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* Bumped a11y class so we can hide visually but keep semantics. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ─── Schedule sub-tab — toolbar + GW grouped list + team-filter compact view ── */
+.standings-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.standings-schedule__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 12px;
+  align-items: center;
+  padding: 10px 12px;
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+}
+
+.standings-schedule__picker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.standings-schedule__picker-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.standings-schedule__picker-select {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  padding: 7px 30px 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--fm-border);
+  background-color: color-mix(
+    in srgb,
+    rgba(121, 91, 251, 0.08) 50%,
+    var(--fm-card)
+  );
+  color: var(--fm-text-strong);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.standings-schedule__picker-select:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--tclot-logo-purple) 55%, var(--fm-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tclot-logo-purple) 28%, transparent);
+}
+
+.standings-schedule__seg {
+  display: inline-flex;
+  flex: 0 0 auto;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-muted) 10%, transparent);
+  border: 1px solid var(--fm-border);
+}
+
+.standings-schedule__seg-btn {
+  padding: 6px 12px;
+  margin: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 0;
+  background: transparent;
+  color: var(--fm-muted);
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.standings-schedule__seg-btn:hover {
+  color: var(--fm-text-strong);
+}
+
+.standings-schedule__seg-btn--active {
+  background: var(--fm-card);
+  color: var(--tclot-logo-purple);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.standings-schedule__seg-btn:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: 2px;
+}
+
+.standings-schedule__empty {
+  margin: 6px 0 0;
+}
+
+.standings-schedule__gw-groups {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.standings-schedule__gw-group {
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.standings-schedule__gw-band {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: color-mix(in srgb, var(--tclot-logo-purple) 8%, var(--fm-card));
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.standings-schedule__gw-num {
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--fm-text-strong);
+}
+
+.standings-schedule__gw-status {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.standings-schedule__gw-status--complete {
+  color: var(--fm-win);
+}
+
+.standings-schedule__gw-status--upcoming {
+  color: var(--tclot-logo-purple);
+}
+
+.standings-schedule__fixtures {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+}
+
+.standings-schedule__fixture {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
+}
+
+.standings-schedule__fixture:first-child {
+  border-top: 0;
+}
+
+.standings-schedule__fixture-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.standings-schedule__fixture-side--away {
+  justify-content: flex-end;
+}
+
+.standings-schedule__fixture-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--fm-text-strong);
+}
+
+.standings-schedule__fixture-name--winner {
+  color: var(--fm-text-strong);
+}
+
+.standings-schedule__fixture-name--loser {
+  color: var(--fm-muted);
+}
+
+.standings-schedule__fixture-rank {
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.standings-schedule__fixture-mid {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.standings-schedule__fixture-vs {
+  font-weight: 500;
+  color: var(--fm-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.standings-schedule__fixture-dash {
+  color: var(--fm-muted);
+}
+
+.standings-schedule__fixture-score {
+  display: inline-block;
+  min-width: 1.7em;
+  text-align: center;
+}
+
+.standings-schedule__fixture-score--winner {
+  font-weight: 800;
+  color: var(--fm-text-strong);
+}
+
+.standings-schedule__fixture-score--loser {
+  font-weight: 500;
+  color: var(--fm-muted);
+}
+
+/* ─── Team-filtered compact view: header summary card + per-GW rows ─── */
+.standings-schedule-summary {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  align-items: center;
+  gap: 0;
+  padding: 14px 8px;
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+}
+
+.standings-schedule-summary__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  padding: 0 6px;
+  text-align: center;
+}
+
+.standings-schedule-summary__divider {
+  width: 1px;
+  height: 32px;
+  background: var(--fm-border);
+}
+
+.standings-schedule-summary__num {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  line-height: 1.1;
+}
+
+.standings-schedule-summary__num--win {
+  color: var(--fm-win);
+}
+
+.standings-schedule-summary__num--loss {
+  color: var(--fm-loss);
+}
+
+.standings-schedule-summary__lbl {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.standings-schedule-team {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.standings-schedule-team__row {
+  display: grid;
+  grid-template-columns: minmax(2.6rem, auto) auto auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
+}
+
+.standings-schedule-team__row:first-child {
+  border-top: 0;
+}
+
+.standings-schedule-team__gw {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  letter-spacing: 0.02em;
+}
+
+.standings-schedule-team__loc {
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: 1.2em;
+  color: var(--fm-muted);
+  text-align: center;
+}
+
+.standings-schedule-team__loc--home {
+  color: var(--tclot-logo-purple);
+}
+
+.standings-schedule-team__opp {
+  display: inline-flex;
+  align-items: center;
+}
+
+.standings-schedule-team__score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  justify-content: flex-end;
+  font-size: 0.86rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-text-strong);
+}
+
+.standings-schedule-team__num {
+  display: inline-block;
+  min-width: 1.6em;
+  text-align: right;
+}
+
+.standings-schedule-team__num--winner {
+  font-weight: 800;
+}
+
+.standings-schedule-team__num--loser {
+  color: var(--fm-muted);
+  font-weight: 500;
+}
+
+.standings-schedule-team__num-sep {
+  color: var(--fm-muted);
+}
+
+.standings-schedule-team__vs {
+  font-size: 0.74rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.standings-schedule-team__chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.7em;
+  height: 1.7em;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fm-muted) 14%, transparent);
+  color: var(--fm-text-strong);
+}
+
+.standings-schedule-team__chip--win {
+  background: color-mix(in srgb, var(--fm-win) 24%, transparent);
+  color: var(--fm-win);
+}
+
+.standings-schedule-team__chip--loss {
+  background: color-mix(in srgb, var(--fm-loss) 22%, transparent);
+  color: var(--fm-loss);
+}
+
+.standings-schedule-team__chip--draw {
+  background: color-mix(in srgb, var(--fm-muted) 22%, transparent);
+}
+
+.standings-schedule-team__chip--upcoming {
+  background: transparent;
+  border: 1px dashed var(--fm-border);
+}
+
+@media (min-width: 1280px) {
+  /* Two-column GW group grid on wide desktop reads better than one tall list */
+  .standings-schedule__gw-groups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 14px;
+  }
+}
+
+/* ─── Stats sub-tab — shared chrome (eyebrow + section card) ─── */
+.standings-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.standings-stats__section {
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.standings-stats-eyebrow {
+  margin: 0 0 10px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.standings-stats-hint {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  color: var(--fm-muted);
+  line-height: 1.45;
+}
+
+.standings-stats-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--fm-muted) 10%, transparent);
+  border: 1px solid var(--fm-border);
+  margin-bottom: 12px;
+}
+
+.standings-stats-toggle__btn {
+  padding: 5px 14px;
+  margin: 0;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 0;
+  background: transparent;
+  color: var(--fm-muted);
+  cursor: pointer;
+  transition:
+    background-color 0.12s ease,
+    color 0.12s ease;
+}
+
+.standings-stats-toggle__btn:hover {
+  color: var(--fm-text-strong);
+}
+
+.standings-stats-toggle__btn--active {
+  background: var(--fm-card);
+  color: var(--fm-text-strong);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+.standings-stats-toggle__btn:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: 2px;
+}
+
+.standings-stats-margin-table__zero {
+  color: var(--fm-muted);
+}
+
+/* ─── Stats sub-tab — Section 2: weeks at 1st / last with bar column ─── */
+.standings-stats-weeks-table__bar-head {
+  width: 36%;
+  background: var(--fm-table-head);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--fm-muted);
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.standings-stats-weeks-table__bar-cell {
+  width: 36%;
+  padding: 8px 10px;
+  vertical-align: middle;
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.standings-stats-weeks-table__bar {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--fm-muted) 14%, transparent);
+  overflow: hidden;
+}
+
+.standings-stats-weeks-table__bar-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  display: block;
+  background: var(--tclot-logo-purple);
+  border-radius: 3px;
+  transition: width 0.18s ease;
+}
+
+/* ─── Stats sub-tab — Section 3: schedule luck matrix delta cells ─── */
+.fixture-schedule-matrix--delta .fixture-schedule-matrix__cell {
+  min-width: 2.6rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.fixture-schedule-matrix__col-head--crest {
+  padding: 4px 4px 6px !important;
+  text-align: center;
+  background: var(--fm-table-head);
+}
+
+.fixture-schedule-matrix__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fixture-schedule-matrix__cell--diagonal {
+  background: color-mix(in srgb, var(--fm-muted) 9%, transparent);
+  color: var(--fm-muted);
+  font-weight: 500;
+}
+
+.fixture-schedule-matrix__cell--better-1 {
+  background: color-mix(in srgb, var(--fm-win) 12%, transparent);
+  color: var(--fm-text-strong);
+}
+
+.fixture-schedule-matrix__cell--better-2 {
+  background: color-mix(in srgb, var(--fm-win) 22%, transparent);
+  color: var(--fm-text-strong);
+}
+
+.fixture-schedule-matrix__cell--better-3 {
+  background: color-mix(in srgb, var(--fm-win) 32%, transparent);
+  color: var(--fm-text-strong);
+}
+
+.fixture-schedule-matrix__cell--better-4 {
+  background: color-mix(in srgb, var(--fm-win) 44%, transparent);
+  color: var(--fm-text-strong);
+  font-weight: 700;
+}
+
+.fixture-schedule-matrix__cell--worse-1 {
+  background: color-mix(in srgb, var(--fm-loss) 10%, transparent);
+  color: var(--fm-text-strong);
+}
+
+.fixture-schedule-matrix__cell--worse-2 {
+  background: color-mix(in srgb, var(--fm-loss) 18%, transparent);
+  color: var(--fm-text-strong);
+}
+
+.fixture-schedule-matrix__cell--worse-3 {
+  background: color-mix(in srgb, var(--fm-loss) 26%, transparent);
+  color: var(--fm-text-strong);
+}
+
+.fixture-schedule-matrix__cell--worse-4 {
+  background: color-mix(in srgb, var(--fm-loss) 38%, transparent);
+  color: var(--fm-text-strong);
+  font-weight: 700;
+}
+
+.standings-stats-luck {
+  /* Section is already chrome'd by parent .standings-stats__section */
+}
+
+/* ─── Stats sub-tab — Section 4: H2H rivals (P/W/D/L/PF/PA + team picker) ─ */
+.standings-h2h-rivals {
+  display: block;
+}
+
+.standings-h2h-rivals__picker-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.standings-h2h-rivals__picker-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.standings-h2h-rivals__picker {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.standings-h2h-rivals__select {
+  width: 100%;
+  padding: 8px 30px 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--fm-border);
+  background-color: var(--fm-card);
+  color: var(--fm-text-strong);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+.standings-h2h-rivals__select:focus-visible {
+  outline: none;
+  border-color: color-mix(in srgb, var(--tclot-logo-purple) 55%, var(--fm-border));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--tclot-logo-purple) 28%, transparent);
+}
+
+.standings-h2h-rivals__name-short {
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .standings-h2h-rivals__name-full {
+    display: none;
+  }
+  .standings-h2h-rivals__name-short {
+    display: inline;
+  }
+}
+
+.standings-h2h-rivals__table {
+  min-width: 0;
+}
+

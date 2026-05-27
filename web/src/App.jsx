@@ -240,7 +240,6 @@ function BrandHeader({
 import {
   useLeagueData,
   FORM_LAST_N,
-  FORM_STRIP_N,
   WIN_MARGIN_BUCKET_KEYS,
 } from './useLeagueData'
 import { TeamAvatar } from './TeamAvatar'
@@ -278,39 +277,11 @@ import {
   resolveDefaultWaiverGameweek,
   resolveLiveGameweek,
 } from './h2hScheduleGw.js'
-import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
-import { FormAndH2hSection } from './FormAndH2hSection.jsx'
+import { StandingsScheduleSubview } from './StandingsScheduleSubview.jsx'
+import { StandingsStatsSubview } from './StandingsStatsSubview.jsx'
 import { PlayersWorkbench } from './PlayersWorkbench.jsx'
 import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
 import './App.css'
-
-/** Sorted ascending unique GWs from schedule rows (1–38). */
-function sortedUniqueGwFromMatches(matches, predicate) {
-  const s = new Set()
-  for (const m of matches ?? []) {
-    if (!predicate(m)) continue
-    const g = Number(m.event)
-    if (Number.isFinite(g) && g >= 1 && g <= 38) s.add(g)
-  }
-  return [...s].sort((a, b) => a - b)
-}
-const FORM_STRIP_DESKTOP_N = 7
-
-function useFormStripDisplayCount() {
-  const subscribe = useCallback((onChange) => {
-    if (typeof window === 'undefined') return () => {}
-    const mq = window.matchMedia('(max-width: 560px)')
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  const getSnapshot = useCallback(() => {
-    if (typeof window === 'undefined') return FORM_STRIP_DESKTOP_N
-    return window.matchMedia('(max-width: 560px)').matches
-      ? FORM_STRIP_N
-      : FORM_STRIP_DESKTOP_N
-  }, [])
-  return useSyncExternalStore(subscribe, getSnapshot, () => FORM_STRIP_DESKTOP_N)
-}
 
 /** Last whitespace-delimited segment (e.g. "Toronto Oizo" → "Oizo"). Single-word names unchanged. */
 function teamNameLastWord(name) {
@@ -1229,7 +1200,6 @@ function App() {
   const { data, error, loading } = useLeagueData()
   const {
     tableRows = [],
-    teamFormStripByEntry = {},
     teamsForFormSelect = [],
     nextEvent = null,
     previousGameweek = null,
@@ -1252,7 +1222,6 @@ function App() {
     gwWeeksAtLast = [],
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
-  const [formTeamId, setFormTeamId] = useState(null)
   const [waiverOutTeamFilter, setWaiverOutTeamFilter] = useState('all')
   const [waiverOutGwFilter, setWaiverOutGwFilter] = useState('all')
   const [waiverGwTableMode, setWaiverGwTableMode] = useState('out')
@@ -1282,9 +1251,30 @@ function App() {
   const [waiverGwView, setWaiverGwView] = useState(null)
   /** latest = rich cards; summary = compact share / screenshot layout */
   const [waiverFeedTab, setWaiverFeedTab] = useState(initialWaiverFeedTabForViewport)
-  const [completeGwView, setCompleteGwView] = useState(null)
-  const [futureGwView, setFutureGwView] = useState(null)
-  const formStripDisplayCount = useFormStripDisplayCount()
+  /** Standings sub-tab nav (Phase 2 redesign): `'schedule' | 'stats'`.
+   * Persisted in `sessionStorage` so a refresh keeps the user on the
+   * sub-tab they were viewing. Default `'schedule'`. */
+  const [standingsSubView, setStandingsSubView] = useState(() => {
+    if (typeof window === 'undefined') return 'schedule'
+    try {
+      const v = window.sessionStorage.getItem('standingsSubView')
+      if (v === 'schedule' || v === 'stats') return v
+    } catch {
+      /* ignore */
+    }
+    return 'schedule'
+  })
+  /** Schedule sub-tab — `'all'` shows the full league chronological list;
+   * a number is a `league_entry` id (compact per-team view). Resets on
+   * refresh per spec ("don't persist; resets on refresh"). */
+  const [scheduleTeamFilter, setScheduleTeamFilter] = useState('all')
+  const [scheduleResultsFilter, setScheduleResultsFilter] = useState('all')
+  /** Stats sub-tab — margin direction toggle (`wins | losses`). */
+  const [statsMarginMode, setStatsMarginMode] = useState('wins')
+  /** Stats sub-tab — weeks-at-1st-vs-last toggle (`first | last`). */
+  const [statsWeeksMode, setStatsWeeksMode] = useState('first')
+  /** Stats sub-tab — H2H rivals team picker (defaults to rank-1 once data loads). */
+  const [statsH2hTeamId, setStatsH2hTeamId] = useState(null)
   const [themePref, setThemePref] = useState(() => readStoredThemePref())
   const [systemTheme, setSystemTheme] = useState(() => resolveSystemTheme())
   const colorTheme = themePref === 'system' ? systemTheme : themePref
@@ -1329,6 +1319,18 @@ function App() {
       /* ignore */
     }
   }, [themePref])
+
+  /** Persist Standings sub-tab choice in `sessionStorage` so a refresh keeps
+   * the user where they were. Per spec: only persists `schedule` / `stats`
+   * (no `form` value possible). */
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    try {
+      window.sessionStorage.setItem('standingsSubView', standingsSubView)
+    } catch {
+      /* ignore */
+    }
+  }, [standingsSubView])
 
   /** Listen for OS-level prefers-color-scheme flips so 'system' mode
    * tracks the OS without a reload. No-op when the user picked an
@@ -1510,18 +1512,6 @@ function App() {
     return [...s].sort((a, b) => a - b)
   }, [waiverOutGwRows])
 
-  /** GWs with at least one finished H2H in league schedule. */
-  const processedCompleteGws = useMemo(
-    () => sortedUniqueGwFromMatches(matches, (m) => m.finished),
-    [matches],
-  )
-
-  /** GWs with at least one unfinished H2H in league schedule. */
-  const processedFutureGws = useMemo(
-    () => sortedUniqueGwFromMatches(matches, (m) => !m.finished),
-    [matches],
-  )
-
   const firstUpcomingGw = useMemo(() => {
     const ev = (matches ?? [])
       .filter((m) => !m.finished)
@@ -1534,10 +1524,6 @@ function App() {
   const latestProcessedWaiverGw =
     processedWaiverGws.length > 0
       ? processedWaiverGws[processedWaiverGws.length - 1]
-      : null
-  const latestProcessedCompleteGw =
-    processedCompleteGws.length > 0
-      ? processedCompleteGws[processedCompleteGws.length - 1]
       : null
 
   /**
@@ -1636,34 +1622,13 @@ function App() {
     return opts[opts.length - 1]
   }, [waiverGwView, waiverGwNumericFallback, waiverGwPickerOptions])
 
-  const completeGwEffective = (() => {
-    const fallback =
-      latestProcessedCompleteGw ?? previousGameweek ?? 1
-    const raw = completeGwView ?? fallback
-    if (
-      processedCompleteGws.length > 0 &&
-      !processedCompleteGws.includes(raw)
-    ) {
-      return latestProcessedCompleteGw ?? processedCompleteGws[0]
-    }
-    return raw
-  })()
-
-  const futureGwEffective = (() => {
-    /** Earliest GW with an unfinished fixture — “next” gameweek, not the last in the schedule */
-    const nextFutureGw =
-      firstUpcomingGw ??
-      (processedFutureGws.length > 0 ? processedFutureGws[0] : null)
-    const fallback = nextFutureGw ?? nextEvent ?? 1
-    const raw = futureGwView ?? fallback
-    if (
-      processedFutureGws.length > 0 &&
-      !processedFutureGws.includes(raw)
-    ) {
-      return processedFutureGws[0] ?? nextFutureGw ?? 1
-    }
-    return raw
-  })()
+  /** Next gameweek to be played — drives the "Next gameweek" full-width tile below
+   * the standings table and the cap on the schedule sub-tab "fixtures" filter. */
+  const nextGwForFixtureTile = useMemo(() => {
+    if (Number.isFinite(firstUpcomingGw)) return firstUpcomingGw
+    if (Number.isFinite(nextEvent)) return nextEvent
+    return null
+  }, [firstUpcomingGw, nextEvent])
 
   const entryNameByLeagueId = useMemo(() => {
     const m = new Map()
@@ -1739,23 +1704,11 @@ function App() {
     return (tableRows ?? []).filter((r) => r.rank !== 1)
   }, [tableRows])
 
-  const completeGwFixtures = useMemo(() => {
-    const gw = Number(completeGwEffective)
-    return (matches ?? [])
-      .filter((m) => m.finished && Number(m.event) === gw)
-      .map((m) => ({
-        event: m.event,
-        homeId: m.league_entry_1,
-        awayId: m.league_entry_2,
-        homeName: entryNameByLeagueId.get(m.league_entry_1) ?? '?',
-        awayName: entryNameByLeagueId.get(m.league_entry_2) ?? '?',
-        homePts: m.league_entry_1_points,
-        awayPts: m.league_entry_2_points,
-      }))
-  }, [matches, completeGwEffective, entryNameByLeagueId])
-
-  const futureGwFixtures = useMemo(() => {
-    const gw = Number(futureGwEffective)
+  /** Next-GW H2H fixtures for the full-width "Next gameweek" tile below the
+   * standings table. Hidden entirely when the season is complete. */
+  const nextGwFixtures = useMemo(() => {
+    if (!Number.isFinite(nextGwForFixtureTile)) return []
+    const gw = Number(nextGwForFixtureTile)
     return (matches ?? [])
       .filter((m) => !m.finished && Number(m.event) === gw)
       .map((m) => ({
@@ -1765,7 +1718,7 @@ function App() {
         homeName: entryNameByLeagueId.get(m.league_entry_1) ?? '?',
         awayName: entryNameByLeagueId.get(m.league_entry_2) ?? '?',
       }))
-  }, [matches, futureGwEffective, entryNameByLeagueId])
+  }, [matches, nextGwForFixtureTile, entryNameByLeagueId])
 
   const waiversForSelectedGw = useMemo(() => {
     const rows = waiverOutGwRows
@@ -1826,14 +1779,15 @@ function App() {
     return { gw, groups }
   }, [waiverOutGwRows, teamsForFormSelect, waiverGwEffective])
 
-  const defaultFormEntry = teamsForFormSelect[0]?.id
-  const activeFormEntry = formTeamId ?? defaultFormEntry
-  const formStripRowsRaw =
-    activeFormEntry != null ? teamFormStripByEntry[activeFormEntry] ?? [] : []
-  const formStripRows = useMemo(
-    () => formStripRowsRaw.slice(-formStripDisplayCount),
-    [formStripRowsRaw, formStripDisplayCount],
-  )
+  /** H2H rivals (Stats sub-tab) defaults to rank-1 team once data loads —
+   * matches the spec's "Default to the rank-1 team" guidance. Once the user
+   * picks a different team, their choice sticks for the session. */
+  const effectiveStatsH2hTeamId = useMemo(() => {
+    if (statsH2hTeamId != null) return statsH2hTeamId
+    const leader = (tableRows ?? []).find((r) => r.rank === 1)?.league_entry
+    if (leader != null) return leader
+    return teamsForFormSelect[0]?.id ?? null
+  }, [statsH2hTeamId, tableRows, teamsForFormSelect])
 
   if (loading) {
     return (
@@ -2318,336 +2272,116 @@ function App() {
             )}
           </section>
 
-              <div className="dashboard-stack">
-                <div className="dashboard-gw-two">
-                  <section className="tile tile--compact">
-                    <div className="tile-head-row tile-head-row--tight">
-                      <h2 className="tile-title tile-title--sm tile-title--with-select">
-                        <span className="tile-title__text">Complete game weeks</span>
-                        {processedCompleteGws.length > 0 ? (
-                          <select
-                            className="tile-gw-select tile-gw-select--inline"
-                            aria-label="Complete game week"
-                            value={completeGwEffective}
-                            onChange={(e) => setCompleteGwView(Number(e.target.value))}
-                          >
-                            {processedCompleteGws.map((gw) => (
-                              <option key={gw} value={gw}>
-                                {gameWeekSelectLabel(gw)}
-                              </option>
-                            ))}
-                          </select>
-                        ) : null}
-                      </h2>
-                    </div>
-                    {completeGwFixtures?.length ? (
-                      <ul className="gw-fixture-list gw-fixture-list--tight">
-                        {completeGwFixtures.map(renderGwFixture)}
-                      </ul>
-                    ) : (
-                      <p className="muted muted--tight">No finished matches in this gameweek.</p>
-                    )}
-                  </section>
+              {nextGwForFixtureTile != null && nextGwFixtures.length > 0 ? (
+                <section
+                  className="tile tile--compact tile--standings-next-gw"
+                  aria-labelledby="standings-next-gw-heading"
+                >
+                  <div className="tile-head-row tile-head-row--tight">
+                    <h2
+                      id="standings-next-gw-heading"
+                      className="tile-title tile-title--sm tile--standings-next-gw__title"
+                    >
+                      <span className="tile--standings-next-gw__eyebrow">
+                        Next gameweek
+                      </span>
+                      <span className="tile--standings-next-gw__sep" aria-hidden="true">
+                        ·
+                      </span>
+                      <span className="tile--standings-next-gw__gw tabular">
+                        GW {nextGwForFixtureTile}
+                      </span>
+                    </h2>
+                  </div>
+                  <ul className="gw-fixture-list gw-fixture-list--tight tile--standings-next-gw__list">
+                    {nextGwFixtures.map((fx, i) => renderGwFixture(fx, i))}
+                  </ul>
+                </section>
+              ) : null}
 
-                  <section className="tile tile--compact">
-                    <div className="tile-head-row tile-head-row--tight">
-                      <h2 className="tile-title tile-title--sm tile-title--with-select">
-                        <span className="tile-title__text">Future Game Weeks</span>
-                        {processedFutureGws.length > 0 ? (
-                          <select
-                            className="tile-gw-select tile-gw-select--inline"
-                            aria-label="Future game week"
-                            value={futureGwEffective}
-                            onChange={(e) => setFutureGwView(Number(e.target.value))}
-                          >
-                            {processedFutureGws.map((gw) => (
-                              <option key={gw} value={gw}>
-                                {gameWeekSelectLabel(gw)}
-                              </option>
-                            ))}
-                          </select>
-                        ) : null}
-                      </h2>
-                    </div>
-                    {futureGwFixtures?.length ? (
-                      <ul className="gw-fixture-list gw-fixture-list--tight">
-                        {futureGwFixtures.map((fx, i) => renderGwFixture(fx, i))}
-                      </ul>
-                    ) : (
-                      <p className="muted muted--tight">No upcoming fixtures in data for this gameweek.</p>
-                    )}
-                  </section>
-                </div>
-
-                <FormAndH2hSection
-                  formStripRows={formStripRows}
-                  teamsForFormSelect={teamsForFormSelect}
-                  activeFormEntry={activeFormEntry}
-                  onFormTeamChange={setFormTeamId}
-                  matches={matches}
-                  tableRows={tableRows}
-                  leagueEntries={leagueEntries}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-
-          <FixtureScheduleMatrix
-            matches={matches}
-            leagueEntries={leagueEntries}
-            tableRows={tableRows}
-            teamLogoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-
-          <section
-            className="tile tile--compact"
-            aria-labelledby="win-margin-buckets-heading"
-          >
-            <h2 id="win-margin-buckets-heading" className="tile-title tile-title--sm">
-              Wins by margin
-            </h2>
-            {winMarginBucketRows?.some((r) => r.totalWins > 0) ? (
-              <div className="table-scroll table-scroll--win-margin">
-                <table className="win-margin-table">
-                  <thead>
-                    <tr>
-                      <th scope="col" className="win-margin-table__team">
-                        Team
-                      </th>
-                      {WIN_MARGIN_BUCKET_KEYS.map((k) => (
-                        <th
-                          key={k}
-                          scope="col"
-                          className="win-margin-table__n tabular"
-                          title={
-                            k === '21+'
-                              ? 'Won by 21 or more'
-                              : k.includes('-')
-                                ? `Won by ${k.replace('-', '–')} pts`
-                                : `Won by exactly ${k}`
-                          }
-                        >
-                          {k}
-                        </th>
-                      ))}
-                      <th scope="col" className="win-margin-table__sum tabular" title="Total wins">
-                        Σ
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {winMarginBucketRows.map((row) => (
-                      <tr key={row.league_entry}>
-                        <th scope="row" className="win-margin-table__team">
-                          <span className="win-margin-table__team-inner">
-                            <TeamAvatar
-                              entryId={row.league_entry}
-                              name={row.teamName}
-                              size="sm"
-                              logoMap={teamLogoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                            />
-                            <span className="win-margin-table__name">{row.teamName}</span>
-                          </span>
-                        </th>
-                        {WIN_MARGIN_BUCKET_KEYS.map((k) => (
-                          <td key={k} className="tabular win-margin-table__n">
-                            {row.buckets[k] ?? 0}
-                          </td>
-                        ))}
-                        <td className="tabular win-margin-table__sum">
-                          <strong>{row.totalWins}</strong>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div
+                className="standings-subnav"
+                role="tablist"
+                aria-label="Standings sub-views"
+              >
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-standings-schedule"
+                  aria-selected={standingsSubView === 'schedule'}
+                  aria-controls="standings-subview-panel"
+                  className={
+                    'standings-subnav__btn' +
+                    (standingsSubView === 'schedule'
+                      ? ' standings-subnav__btn--active'
+                      : '')
+                  }
+                  onClick={() => setStandingsSubView('schedule')}
+                >
+                  Schedule
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-standings-stats"
+                  aria-selected={standingsSubView === 'stats'}
+                  aria-controls="standings-subview-panel"
+                  className={
+                    'standings-subnav__btn' +
+                    (standingsSubView === 'stats'
+                      ? ' standings-subnav__btn--active'
+                      : '')
+                  }
+                  onClick={() => setStandingsSubView('stats')}
+                >
+                  Stats
+                </button>
               </div>
-            ) : (
-              <p className="muted muted--tight">No wins in finished matches yet.</p>
-            )}
-          </section>
 
-          <section
-            className="tile tile--compact"
-            aria-labelledby="loss-margin-buckets-heading"
-          >
-            <h2 id="loss-margin-buckets-heading" className="tile-title tile-title--sm">
-              Losses by margin
-            </h2>
-            {lossMarginBucketRows?.some((r) => r.totalLosses > 0) ? (
-              <div className="table-scroll table-scroll--win-margin">
-                <table className="win-margin-table">
-                  <thead>
-                    <tr>
-                      <th scope="col" className="win-margin-table__team">
-                        Team
-                      </th>
-                      {WIN_MARGIN_BUCKET_KEYS.map((k) => (
-                        <th
-                          key={k}
-                          scope="col"
-                          className="win-margin-table__n tabular"
-                          title={
-                            k === '21+'
-                              ? 'Lost by 21 or more'
-                              : k.includes('-')
-                                ? `Lost by ${k.replace('-', '–')} pts`
-                                : `Lost by exactly ${k}`
-                          }
-                        >
-                          {k}
-                        </th>
-                      ))}
-                      <th scope="col" className="win-margin-table__sum tabular" title="Total losses">
-                        Σ
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {lossMarginBucketRows.map((row) => (
-                      <tr key={row.league_entry}>
-                        <th scope="row" className="win-margin-table__team">
-                          <span className="win-margin-table__team-inner">
-                            <TeamAvatar
-                              entryId={row.league_entry}
-                              name={row.teamName}
-                              size="sm"
-                              logoMap={teamLogoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                            />
-                            <span className="win-margin-table__name">{row.teamName}</span>
-                          </span>
-                        </th>
-                        {WIN_MARGIN_BUCKET_KEYS.map((k) => (
-                          <td key={k} className="tabular win-margin-table__n">
-                            {row.buckets[k] ?? 0}
-                          </td>
-                        ))}
-                        <td className="tabular win-margin-table__sum">
-                          <strong>{row.totalLosses}</strong>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <p className="muted muted--tight">No losses in finished matches yet.</p>
-            )}
-          </section>
-
-                <div className="dashboard-gw-two">
-                  <section className="tile tile--compact" aria-labelledby="gw-weeks-first-heading">
-                    <div className="tile-head-row tile-head-row--tight">
-                      <h2 id="gw-weeks-first-heading" className="tile-title tile-title--sm">
-                        Game weeks in 1st
-                      </h2>
-                    </div>
-                    <p className="tile-hint muted tile-hint--tight">
-                      Weeks where this team sat <strong>top</strong> of the cumulative H2H table after
-                      that gameweek (PTS, then For, then Faced).
-                      {gwRankExtremesMeta.maxGw > 0 ? (
-                        <>
-                          {' '}
-                          Through <span className="tabular">GW {gwRankExtremesMeta.maxGw}</span>.
-                        </>
-                      ) : null}
-                    </p>
-                    {gwWeeksAtFirst.length > 0 ? (
-                      <ol className="gw-rank-extremes-list">
-                        {gwWeeksAtFirst.map((r) => (
-                          <li key={r.league_entry} className="gw-rank-extremes-item">
-                            <span className="gw-rank-extremes-item__rank tabular">{r.listRank}</span>
-                            <TeamAvatar
-                              entryId={r.league_entry}
-                              name={r.teamName}
-                              size="sm"
-                              logoMap={teamLogoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                            />
-                            <div className="gw-rank-extremes-item__main">
-                              <span className="gw-rank-extremes-item__team">{r.teamName}</span>
-                              <span
-                                className="gw-rank-extremes-item__weeks muted"
-                                title={r.weeksTitle || undefined}
-                              >
-                                {r.weeksLabel}
-                              </span>
-                            </div>
-                            <span className="gw-rank-extremes-item__count tabular" title="Gameweeks">
-                              {r.count}
-                            </span>
-                          </li>
-                        ))}
-                      </ol>
-                    ) : (
-                      <p className="muted muted--tight">
-                        {gwRankExtremesMeta.maxGw > 0
-                          ? 'No team data for weeks at 1st.'
-                          : 'No finished gameweeks in the schedule yet.'}
-                      </p>
-                    )}
-                  </section>
-
-                  <section className="tile tile--compact" aria-labelledby="gw-weeks-last-heading">
-                    <div className="tile-head-row tile-head-row--tight">
-                      <h2 id="gw-weeks-last-heading" className="tile-title tile-title--sm">
-                        Game weeks in last
-                      </h2>
-                    </div>
-                    <p className="tile-hint muted tile-hint--tight">
-                      Weeks where this team sat <strong>last</strong> in the cumulative H2H table after
-                      that gameweek (same ordering as the standings table).
-                      {gwRankExtremesMeta.teamCount > 0 ? (
-                        <>
-                          {' '}
-                          <span className="tabular">{gwRankExtremesMeta.teamCount}</span>-team league.
-                        </>
-                      ) : null}
-                      {gwRankExtremesMeta.maxGw > 0 ? (
-                        <>
-                          {' '}
-                          Through <span className="tabular">GW {gwRankExtremesMeta.maxGw}</span>.
-                        </>
-                      ) : null}
-                    </p>
-                    {gwWeeksAtLast.length > 0 ? (
-                      <ol className="gw-rank-extremes-list">
-                        {gwWeeksAtLast.map((r) => (
-                          <li key={r.league_entry} className="gw-rank-extremes-item">
-                            <span className="gw-rank-extremes-item__rank tabular">{r.listRank}</span>
-                            <TeamAvatar
-                              entryId={r.league_entry}
-                              name={r.teamName}
-                              size="sm"
-                              logoMap={teamLogoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                            />
-                            <div className="gw-rank-extremes-item__main">
-                              <span className="gw-rank-extremes-item__team">{r.teamName}</span>
-                              <span
-                                className="gw-rank-extremes-item__weeks muted"
-                                title={r.weeksTitle || undefined}
-                              >
-                                {r.weeksLabel}
-                              </span>
-                            </div>
-                            <span className="gw-rank-extremes-item__count tabular" title="Gameweeks">
-                              {r.count}
-                            </span>
-                          </li>
-                        ))}
-                      </ol>
-                    ) : (
-                      <p className="muted muted--tight">
-                        {gwRankExtremesMeta.maxGw > 0
-                          ? 'No team data for weeks at last.'
-                          : 'No finished gameweeks in the schedule yet.'}
-                      </p>
-                    )}
-                  </section>
-                </div>
+              <div
+                id="standings-subview-panel"
+                role="tabpanel"
+                aria-labelledby={
+                  standingsSubView === 'stats'
+                    ? 'tab-standings-stats'
+                    : 'tab-standings-schedule'
+                }
+                className="standings-subview-panel"
+              >
+                {standingsSubView === 'schedule' ? (
+                  <StandingsScheduleSubview
+                    matches={matches}
+                    teamsForFormSelect={teamsForFormSelect}
+                    tableRows={tableRows}
+                    leagueEntries={leagueEntries}
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                    teamFilter={scheduleTeamFilter}
+                    onTeamFilterChange={setScheduleTeamFilter}
+                    resultsFilter={scheduleResultsFilter}
+                    onResultsFilterChange={setScheduleResultsFilter}
+                  />
+                ) : (
+                  <StandingsStatsSubview
+                    winMarginBucketRows={winMarginBucketRows}
+                    lossMarginBucketRows={lossMarginBucketRows}
+                    gwWeeksAtFirst={gwWeeksAtFirst}
+                    gwWeeksAtLast={gwWeeksAtLast}
+                    gwRankExtremesMeta={gwRankExtremesMeta}
+                    matches={matches}
+                    leagueEntries={leagueEntries}
+                    tableRows={tableRows}
+                    teamsForFormSelect={teamsForFormSelect}
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                    marginMode={statsMarginMode}
+                    onMarginModeChange={setStatsMarginMode}
+                    weeksMode={statsWeeksMode}
+                    onWeeksModeChange={setStatsWeeksMode}
+                    h2hTeamId={effectiveStatsH2hTeamId}
+                    onH2hTeamChange={setStatsH2hTeamId}
+                  />
+                )}
               </div>
             </>
           )}
