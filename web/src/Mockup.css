@@ -11025,3 +11025,1079 @@
   text-transform: uppercase;
   color: var(--text-muted);
 }
+
+/* ================================================================== */
+/* STANDINGS · SUB-NAV STRUCTURE + GW SUMMARY TILES                     */
+/* ================================================================== */
+/* Namespace: `mock-standings-nav-` for the new structural chrome
+ * (brand strip, compact table, GW tiles, sub-nav, sub-tab panels);
+ * `mock-standings-nav__` for the showcase wrapper (intro + frame stack). */
+
+.mock-standings-nav {
+  font-family: 'Geist', system-ui, sans-serif;
+}
+
+/* ----- Showcase wrapper: intro + frame stack ----------------------- */
+.mock-standings-nav__intro {
+  max-width: 540px;
+  margin: 16px auto 0;
+  padding: 14px 16px 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.mock-standings-nav__intro-h {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-strong);
+  margin-bottom: 8px;
+}
+.mock-standings-nav__intro-list {
+  margin: 0;
+  padding: 0 0 0 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mock-standings-nav__intro-list strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+.mock-standings-nav__intro-list em {
+  font-style: italic;
+  color: var(--text);
+}
+.mock-standings-nav__intro-shared {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border);
+  color: var(--text-muted);
+}
+
+.mock-standings-nav__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  margin-top: 24px;
+}
+
+.mock-standings-nav__variant {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+}
+.mock-standings-nav__variant-label {
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  text-align: center;
+  max-width: 540px;
+  line-height: 1.45;
+}
+.mock-standings-nav__variant-label strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+/* Phone frame — 390px max-width. Match the A–E frame chrome. */
+.mock-standings-nav__frame {
+  width: 390px;
+  max-width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 26px;
+  background: var(--bg);
+  padding: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+.mock-standings-nav__screen {
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  overflow: hidden;
+  color: var(--text);
+}
+.mock-standings-nav__body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 10px 14px;
+}
+
+/* Sub-nav band — sits just above the sub-tab content. The class is
+ * here so the band itself is restyleable independently of the inner
+ * sub-nav chrome (segmented vs pill). Static for now; a future port
+ * could make this sticky under the standings table. */
+.mock-standings-nav__subnav-band {
+  display: flex;
+  justify-content: center;
+  padding: 6px 0 4px;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+  margin: 4px -10px 6px;
+}
+
+/* ================================================================== */
+/* Brand header strip                                                   */
+/* ================================================================== */
+.mock-standings-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--brand) 8%, var(--surface)),
+      var(--surface));
+  font-size: 11px;
+  color: var(--text);
+}
+.mock-standings-nav-brand__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px 3px 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--border));
+}
+.mock-standings-nav-brand__wordmark {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-strong);
+}
+.mock-standings-nav-brand__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1 1 auto;
+  color: var(--text-muted);
+  font-size: 10px;
+  font-weight: 500;
+}
+.mock-standings-nav-brand__status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 2px color-mix(in srgb, #22c55e 26%, transparent);
+}
+.mock-standings-nav-brand__status-strong {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.mock-standings-nav-brand__status-sep {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+.mock-standings-nav-brand__season {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ================================================================== */
+/* Compact standings table (leader hero + 4 rows + "more" link)         */
+/* ================================================================== */
+.mock-standings-nav-table {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.mock-standings-nav-table__hero {
+  position: relative;
+  padding: 10px 12px 10px;
+  background:
+    linear-gradient(135deg,
+      color-mix(in srgb, var(--brand) 18%, transparent),
+      color-mix(in srgb, var(--brand) 6%, transparent));
+  border-bottom: 1px solid color-mix(in srgb, var(--brand) 25%, var(--border));
+  overflow: hidden;
+}
+.mock-standings-nav-table__hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(120% 80% at 100% 0%,
+      color-mix(in srgb, var(--brand) 22%, transparent),
+      transparent 60%);
+  pointer-events: none;
+}
+.mock-standings-nav-table__hero-eyebrow {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  padding: 3px 7px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.mock-standings-nav-table__hero-eyebrow-dot {
+  font-size: 10px;
+  line-height: 1;
+}
+.mock-standings-nav-table__hero-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mock-standings-nav-table__hero-id {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.mock-standings-nav-table__hero-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-nav-table__hero-mgr {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  line-height: 1.2;
+  margin-top: 3px;
+}
+.mock-standings-nav-table__hero-pts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.mock-standings-nav-table__hero-pts-num {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.mock-standings-nav-table__hero-pts-lbl {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand);
+  margin-top: 2px;
+}
+
+.mock-standings-nav-table__rows {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.mock-standings-nav-table__rows thead th {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 6px 5px;
+  border-bottom: 1px solid var(--border);
+}
+.mock-standings-nav-table__th-rank { text-align: left !important; padding-left: 10px !important; width: 22px; }
+.mock-standings-nav-table__th-team { text-align: left !important; }
+.mock-standings-nav-table__th-pts  { color: var(--text-strong) !important; }
+.mock-standings-nav-table__rows tbody td {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: right;
+  padding: 6px 5px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.mock-standings-nav-table__rows tbody tr:last-child td {
+  border-bottom: none;
+}
+.mock-standings-nav-table__rank {
+  text-align: left !important;
+  padding-left: 10px !important;
+  color: var(--text-muted) !important;
+  font-weight: 600 !important;
+}
+.mock-standings-nav-table__team {
+  text-align: left !important;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.mock-standings-nav-table__name {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-nav-table__pts {
+  color: var(--text-strong) !important;
+  font-weight: 700 !important;
+}
+.mock-standings-nav-table__more {
+  padding: 6px 10px 8px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+}
+
+/* ================================================================== */
+/* Side-by-side LAST GW / NEXT GW mini tiles                           */
+/* ================================================================== */
+.mock-standings-nav-tiles {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.mock-standings-nav-tile {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--brand) 6%, var(--bg)),
+      var(--bg));
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
+  border-radius: 12px;
+  padding: 8px 8px 8px;
+  min-width: 0;
+  overflow: hidden;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--brand) 10%, transparent);
+}
+
+.mock-standings-nav-tile--next {
+  background:
+    linear-gradient(180deg,
+      color-mix(in srgb, var(--brand) 3%, var(--bg)),
+      var(--bg));
+  border-color: var(--border);
+  box-shadow: none;
+}
+
+.mock-standings-nav-tile__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 0 2px 6px;
+  border-bottom: 1px solid color-mix(in srgb, var(--brand) 14%, var(--border));
+  margin-bottom: 6px;
+}
+.mock-standings-nav-tile__head-lbl {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.mock-standings-nav-tile__head-gw {
+  font-size: 10px;
+  font-weight: 800;
+  color: var(--brand);
+  letter-spacing: 0.04em;
+}
+.mock-standings-nav-tile__body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mock-standings-nav-tile__match {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 2px;
+  border-bottom: 1px dashed color-mix(in srgb, var(--border) 80%, transparent);
+}
+.mock-standings-nav-tile__match:last-child {
+  border-bottom: none;
+}
+.mock-standings-nav-tile__row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: 10px;
+  line-height: 1.2;
+}
+.mock-standings-nav-tile__rname {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-nav-tile__rrank {
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.mock-standings-nav-tile__rscore {
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+  flex-shrink: 0;
+  min-width: 18px;
+  text-align: right;
+}
+.mock-standings-nav-tile__row.is-winner .mock-standings-nav-tile__rname {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.mock-standings-nav-tile__row.is-winner .mock-standings-nav-tile__rscore {
+  color: var(--text-strong);
+  font-weight: 800;
+}
+.mock-standings-nav-tile__row.is-loser .mock-standings-nav-tile__rname,
+.mock-standings-nav-tile__row.is-loser .mock-standings-nav-tile__rscore {
+  color: var(--text-muted);
+}
+.mock-standings-nav-tile__vs {
+  font-size: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 0 0 1px;
+  margin-left: 22px; /* align under the team name column */
+}
+
+/* ================================================================== */
+/* Sub-nav — pill-tab (Variant A) + segmented (Variant B)              */
+/* ================================================================== */
+
+.mock-standings-nav-subnav {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mock-standings-nav-subnav__tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  padding: 6px 14px;
+  cursor: pointer;
+  letter-spacing: 0.01em;
+  transition: color 0.12s ease, background 0.12s ease, border-color 0.12s ease;
+}
+
+/* ----- Variant A: pill-tab text-link style ----------------------- */
+.mock-standings-nav-subnav--pill .mock-standings-nav-subnav__tab {
+  border-radius: 0;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px 6px;
+}
+.mock-standings-nav-subnav--pill .mock-standings-nav-subnav__tab.is-active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+  font-weight: 700;
+}
+.mock-standings-nav-subnav--pill .mock-standings-nav-subnav__tab:hover:not(.is-active) {
+  color: var(--text-strong);
+}
+
+/* ----- Variant B: segmented control ------------------------------ */
+.mock-standings-nav-subnav--segmented {
+  padding: 3px;
+  background: var(--surface-2, var(--surface));
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  gap: 2px;
+}
+.mock-standings-nav-subnav--segmented .mock-standings-nav-subnav__tab {
+  border-radius: 7px;
+  padding: 6px 14px;
+  background: transparent;
+  border: 1px solid transparent;
+}
+.mock-standings-nav-subnav--segmented .mock-standings-nav-subnav__tab.is-active {
+  background: var(--bg);
+  color: var(--brand);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  font-weight: 700;
+}
+
+/* ================================================================== */
+/* Panel chrome (eyebrow + body) shared by Schedule / Form / Stats     */
+/* ================================================================== */
+.mock-standings-nav-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mock-standings-nav-panel__eyebrow {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  padding: 0 2px;
+}
+.mock-standings-nav-panel__eyebrow--spaced {
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* ================================================================== */
+/* Schedule sub-tab — segmented Results/Upcoming + GW picker + matches */
+/* ================================================================== */
+.mock-standings-nav-schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+}
+
+.mock-standings-nav-schedule__seg {
+  display: inline-flex;
+  align-self: stretch;
+  padding: 3px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  gap: 2px;
+}
+.mock-standings-nav-schedule__seg-btn {
+  appearance: none;
+  flex: 1 1 0;
+  border: 1px solid transparent;
+  border-radius: 7px;
+  background: transparent;
+  padding: 5px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Geist', system-ui, sans-serif;
+  color: var(--text-muted);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.mock-standings-nav-schedule__seg-btn.is-active {
+  background: var(--bg);
+  color: var(--text-strong);
+  border-color: var(--border);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.mock-standings-nav-schedule__seg-count {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+
+.mock-standings-nav-schedule__picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+.mock-standings-nav-schedule__picker-btn {
+  appearance: none;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 14px;
+  line-height: 1;
+  color: var(--text);
+  cursor: pointer;
+}
+.mock-standings-nav-schedule__picker-btn:hover {
+  border-color: color-mix(in srgb, var(--brand) 35%, var(--border));
+  color: var(--brand);
+}
+.mock-standings-nav-schedule__picker-lbl {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.mock-standings-nav-schedule__matches {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.mock-standings-nav-schedule__match {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  gap: 6px;
+  padding: 6px 4px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+.mock-standings-nav-schedule__side {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.mock-standings-nav-schedule__side--right {
+  justify-content: flex-end;
+}
+.mock-standings-nav-schedule__sname {
+  flex: 0 1 auto;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-nav-schedule__side.is-winner .mock-standings-nav-schedule__sname {
+  color: var(--text-strong);
+  font-weight: 700;
+}
+.mock-standings-nav-schedule__side.is-loser .mock-standings-nav-schedule__sname {
+  color: var(--text-muted);
+}
+.mock-standings-nav-schedule__srank {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+.mock-standings-nav-schedule__score {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+}
+.mock-standings-nav-schedule__sn {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  min-width: 14px;
+  text-align: center;
+}
+.mock-standings-nav-schedule__sn.is-winner {
+  color: var(--text-strong);
+  font-weight: 800;
+}
+.mock-standings-nav-schedule__sn.is-loser {
+  color: var(--text-muted);
+}
+.mock-standings-nav-schedule__dash {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.mock-standings-nav-schedule__foot {
+  font-size: 10px;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 4px 0 0;
+  border-top: 1px dashed var(--border);
+  margin-top: 4px;
+}
+
+/* ================================================================== */
+/* Form sub-tab — league form leaderboard + per-team H2H rivals        */
+/* ================================================================== */
+.mock-standings-nav-form-leader {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 6px 6px;
+}
+.mock-standings-nav-form-leader__row {
+  display: grid;
+  grid-template-columns: 18px 20px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 6px;
+  border-radius: 7px;
+}
+.mock-standings-nav-form-leader__row:nth-child(1) {
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+}
+.mock-standings-nav-form-leader__rank {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.mock-standings-nav-form-leader__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-nav-form-leader__dots {
+  display: inline-flex;
+  align-items: center;
+}
+.mock-standings-nav-form-leader__pts {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 3px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
+}
+.mock-standings-nav-form-leader__pts-lbl {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.mock-standings-nav-form-h2h {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+}
+.mock-standings-nav-form-h2h__picker {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.mock-standings-nav-form-h2h__picker-lbl {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.mock-standings-nav-form-h2h__picker-btn {
+  appearance: none;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  cursor: pointer;
+}
+.mock-standings-nav-form-h2h__picker-name {
+  flex: 1 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+.mock-standings-nav-form-h2h__picker-chev {
+  font-size: 10px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.mock-standings-nav-form-h2h__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Geist', system-ui, sans-serif;
+}
+.mock-standings-nav-form-h2h__table thead th {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 4px 4px;
+  border-bottom: 1px solid var(--border);
+}
+.mock-standings-nav-form-h2h__th-team {
+  text-align: left !important;
+  padding-left: 4px !important;
+}
+.mock-standings-nav-form-h2h__table tbody td {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: right;
+  padding: 5px 4px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.mock-standings-nav-form-h2h__table tbody tr:last-child td {
+  border-bottom: none;
+}
+.mock-standings-nav-form-h2h__team {
+  text-align: left !important;
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.mock-standings-nav-form-h2h__team span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ================================================================== */
+/* Stats sub-tab — toggle + tables + luck matrix                        */
+/* ================================================================== */
+.mock-standings-nav-stats__toggle {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 2px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  gap: 2px;
+}
+.mock-standings-nav-stats__toggle-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: transparent;
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 600;
+  font-family: 'Geist', system-ui, sans-serif;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.mock-standings-nav-stats__toggle-btn.is-active {
+  background: var(--bg);
+  color: var(--text-strong);
+  border-color: var(--border);
+  font-weight: 700;
+}
+
+.mock-standings-nav-margin,
+.mock-standings-nav-weeks {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Geist', system-ui, sans-serif;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.mock-standings-nav-margin thead th,
+.mock-standings-nav-weeks thead th {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  text-align: right;
+  padding: 6px 6px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+}
+.mock-standings-nav-margin__th-team,
+.mock-standings-nav-weeks__th-team {
+  text-align: left !important;
+  padding-left: 10px !important;
+}
+.mock-standings-nav-margin__th-total {
+  color: var(--text-strong) !important;
+}
+
+.mock-standings-nav-margin tbody td,
+.mock-standings-nav-weeks tbody td {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text);
+  text-align: right;
+  padding: 6px 6px;
+  border-bottom: 1px solid var(--border);
+  font-variant-numeric: tabular-nums;
+}
+.mock-standings-nav-margin tbody tr:last-child td,
+.mock-standings-nav-weeks tbody tr:last-child td {
+  border-bottom: none;
+}
+.mock-standings-nav-margin__team,
+.mock-standings-nav-weeks__team {
+  text-align: left !important;
+  display: flex !important;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  padding-left: 10px !important;
+}
+.mock-standings-nav-margin__team span,
+.mock-standings-nav-weeks__team span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mock-standings-nav-margin tbody td.is-zero {
+  color: var(--text-muted);
+  opacity: 0.45;
+}
+.mock-standings-nav-margin__total {
+  color: var(--text-strong) !important;
+  font-weight: 700 !important;
+}
+
+.mock-standings-nav-weeks__weeks {
+  color: var(--text-strong) !important;
+  font-weight: 700 !important;
+}
+.mock-standings-nav-weeks__pct {
+  color: var(--text-muted) !important;
+}
+.mock-standings-nav-weeks__bar-cell {
+  width: 70px;
+  padding-right: 10px !important;
+}
+.mock-standings-nav-weeks__bar {
+  display: block;
+  width: 100%;
+  height: 6px;
+  background: var(--surface);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.mock-standings-nav-weeks__bar-fill {
+  display: block;
+  height: 100%;
+  background: color-mix(in srgb, var(--brand) 75%, transparent);
+  border-radius: 999px;
+}
+
+/* ----- Schedule-luck matrix --------------------------------------- */
+.mock-standings-nav-luck {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.mock-standings-nav-luck__legend {
+  font-size: 10px;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.mock-standings-nav-luck__scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.mock-standings-nav-luck__table {
+  border-collapse: separate;
+  border-spacing: 2px;
+  margin: 0 auto;
+}
+.mock-standings-nav-luck__table thead th,
+.mock-standings-nav-luck__table tbody th {
+  padding: 2px;
+  text-align: center;
+  background: transparent;
+}
+.mock-standings-nav-luck__table tbody td {
+  width: 28px;
+  height: 24px;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: 'Geist Mono', 'Geist', monospace;
+  border-radius: 4px;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  background: var(--surface);
+}
+.mock-standings-nav-luck__table tbody td.is-diag {
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 400;
+}
+.mock-standings-nav-luck__table tbody td.is-pos {
+  background: color-mix(in srgb, #22c55e calc(var(--mock-luck-alpha, 0.5) * 60%), var(--surface));
+  color: #166534;
+}
+.mock-standings-nav-luck__table tbody td.is-neg {
+  background: color-mix(in srgb, #ef4444 calc(var(--mock-luck-alpha, 0.5) * 60%), var(--surface));
+  color: #991b1b;
+}
+.mock-standings-nav-luck__table tbody td.is-neu {
+  background: var(--surface);
+  color: var(--text-muted);
+}
+
+/* Dark-mode tone tweaks for luck cells (use lighter text on tinted bg). */
+.mockup[data-theme='dark'] .mock-standings-nav-luck__table tbody td.is-pos {
+  color: #bbf7d0;
+}
+.mockup[data-theme='dark'] .mock-standings-nav-luck__table tbody td.is-neg {
+  color: #fecaca;
+}

@@ -7561,6 +7561,829 @@ function StandingsPortraitVariants() {
 /* ------------------------------------------------------------------ */
 /* Page                                                                 */
 /* ------------------------------------------------------------------ */
+/* ================================================================== */
+/* STANDINGS · SUB-NAV STRUCTURE + GW SUMMARY TILES                     */
+/* ================================================================== */
+/* User direction (verbatim): "I think building some sub menus in
+ * standings is good - Schedule, Form & Stats. Under the standings
+ * section I want it to show last game week and next game week
+ * results/fixtures in the side by side tiles."
+ *
+ * The redesigned Standings tab stacks:
+ *   1. brand header strip (already shipped, untouched)
+ *   2. standings hero+table tile (already shipped, untouched)
+ *   3. NEW side-by-side Last GW / Next GW mini tiles
+ *   4. NEW sub-nav: Schedule · Form · Stats
+ *   5. sub-tab content body
+ *
+ * Five portrait frames below explore this layout: default landing
+ * (Schedule active), Schedule expanded, Form expanded, Stats expanded,
+ * and an alternative segmented-control sub-nav (Variant B).
+ */
+
+/* Mid-season state (GW 17 played, GW 18 upcoming) ------------------ */
+const STANDINGS_NAV_TEAMS_MID = [
+  { rank: 1, abbr: 'CEO', name: 'Crouch End Oashisu', short: 'Crouch End',   mgr: 'Andy Ward',      color: '#f59e0b', pl: 17, w: 12, d: 3, l: 2, forPts: 824, faced: 712, gd:  112, pts: 92, form: ['W','W','W','D','W'], pts5: 13, nxt: 'PFO' },
+  { rank: 2, abbr: 'SZM', name: 'Soul Ze Moles',       short: 'Soul Ze',     mgr: 'Eddy Webster',   color: '#8b5cf6', pl: 17, w: 11, d: 3, l: 3, forPts: 798, faced: 720, gd:   78, pts: 84, form: ['W','L','W','W','D'], pts5: 10, nxt: 'SCC' },
+  { rank: 3, abbr: 'DBS', name: 'Dalston Bellsprouts', short: 'Bellsprouts', mgr: 'Tom Roe',        color: '#10b981', pl: 17, w:  9, d: 5, l: 3, forPts: 770, faced: 712, gd:   58, pts: 79, form: ['W','D','D','W','W'], pts5: 11, nxt: 'DBN' },
+  { rank: 4, abbr: 'TWG', name: 'Toronto Wiggum',      short: 'Toronto',     mgr: 'Cary Camma',     color: '#3b82f6', pl: 17, w:  9, d: 4, l: 4, forPts: 760, faced: 735, gd:   25, pts: 76, form: ['D','W','L','W','W'], pts5: 10, nxt: 'ESR' },
+  { rank: 5, abbr: 'ESR', name: 'Essex Ratigans',      short: 'Essex',       mgr: 'Chris Newton',   color: '#ef4444', pl: 17, w:  8, d: 5, l: 4, forPts: 748, faced: 730, gd:   18, pts: 72, form: ['L','W','D','W','L'], pts5:  7, nxt: 'TWG' },
+  { rank: 6, abbr: 'DBN', name: 'Dalston Benoit',      short: 'Benoit',      mgr: 'Cole Henderson', color: '#14b8a6', pl: 17, w:  7, d: 5, l: 5, forPts: 716, faced: 746, gd:  -30, pts: 66, form: ['W','L','L','D','W'], pts5:  7, nxt: 'DBS' },
+  { rank: 7, abbr: 'SCC', name: 'Soul Crouch Carrol',  short: 'Soul Crouch', mgr: 'Sam Wilson',     color: '#64748b', pl: 17, w:  6, d: 4, l: 7, forPts: 696, faced: 769, gd:  -73, pts: 60, form: ['L','D','L','L','W'], pts5:  4, nxt: 'SZM' },
+  { rank: 8, abbr: 'PFO', name: 'Pinks Five-O',        short: 'Pinks',       mgr: 'Pat Hooks',      color: '#ec4899', pl: 17, w:  5, d: 3, l: 9, forPts: 664, faced: 812, gd: -148, pts: 48, form: ['L','L','D','L','L'], pts5:  1, nxt: 'CEO' },
+]
+
+const STANDINGS_NAV_TEAM_BY_ABBR = STANDINGS_NAV_TEAMS_MID.reduce(
+  (m, t) => { m[t.abbr] = t; return m },
+  {},
+)
+
+/* Last GW (17) results — user-specified pairings. */
+const STANDINGS_NAV_LAST_GW = {
+  id: 17,
+  matches: [
+    { home: 'CEO', away: 'TWG', homeScore: 58, awayScore: 41 },
+    { home: 'SZM', away: 'ESR', homeScore: 67, awayScore: 49 },
+    { home: 'DBS', away: 'DBN', homeScore: 52, awayScore: 52 },
+    { home: 'SCC', away: 'PFO', homeScore: 38, awayScore: 71 },
+  ],
+}
+
+/* Next GW (18) upcoming — user-specified pairings. */
+const STANDINGS_NAV_NEXT_GW = {
+  id: 18,
+  matches: [
+    { home: 'CEO', away: 'PFO' },
+    { home: 'SZM', away: 'SCC' },
+    { home: 'DBS', away: 'DBN' },
+    { home: 'TWG', away: 'ESR' },
+  ],
+}
+
+/* Form leaderboard — sorted by points from last 5 GWs. */
+const STANDINGS_NAV_FORM_LEADERBOARD = [...STANDINGS_NAV_TEAMS_MID]
+  .sort((a, b) => b.pts5 - a.pts5)
+
+/* H2H record of one team vs each of the other 7 — used in the
+ * Form sub-tab "per-team H2H rivals" deep dive. CEO selected. */
+const STANDINGS_NAV_H2H_FOR_CEO = [
+  { abbr: 'SZM', played: 2, w: 1, d: 1, l: 0, pf: 113, pa:  98 },
+  { abbr: 'DBS', played: 3, w: 2, d: 1, l: 0, pf: 168, pa: 142 },
+  { abbr: 'TWG', played: 2, w: 2, d: 0, l: 0, pf: 116, pa:  78 },
+  { abbr: 'ESR', played: 2, w: 2, d: 0, l: 0, pf: 122, pa:  94 },
+  { abbr: 'DBN', played: 3, w: 2, d: 0, l: 1, pf: 168, pa: 159 },
+  { abbr: 'SCC', played: 2, w: 2, d: 0, l: 0, pf: 132, pa:  76 },
+  { abbr: 'PFO', played: 3, w: 3, d: 0, l: 0, pf: 195, pa: 121 },
+]
+
+/* Wins by margin / Losses by margin — used in the Stats sub-tab. */
+const STANDINGS_NAV_MARGIN_BUCKETS = ['>20', '11–20', '1–10', 'Tie']
+
+const STANDINGS_NAV_WINS_BY_MARGIN = [
+  { abbr: 'CEO', vals: [4, 5, 3, 0] },
+  { abbr: 'SZM', vals: [3, 5, 3, 1] },
+  { abbr: 'DBS', vals: [2, 4, 3, 2] },
+  { abbr: 'TWG', vals: [2, 4, 3, 1] },
+  { abbr: 'ESR', vals: [1, 3, 4, 1] },
+  { abbr: 'DBN', vals: [1, 2, 4, 2] },
+  { abbr: 'SCC', vals: [1, 1, 4, 1] },
+  { abbr: 'PFO', vals: [0, 1, 4, 1] },
+]
+
+/* Weeks at the top — Stats sub-tab. */
+const STANDINGS_NAV_WEEKS_TOP = [
+  { abbr: 'CEO', weeks: 12 },
+  { abbr: 'SZM', weeks:  3 },
+  { abbr: 'DBS', weeks:  2 },
+  { abbr: 'TWG', weeks:  0 },
+  { abbr: 'ESR', weeks:  0 },
+  { abbr: 'DBN', weeks:  0 },
+  { abbr: 'SCC', weeks:  0 },
+  { abbr: 'PFO', weeks:  0 },
+]
+
+/* Schedule-luck matrix — projected points-difference if each team had
+ * played each other team's schedule. Diagonal is "—" (own schedule).
+ * Positive = lucky schedule for that team, negative = unlucky. */
+const STANDINGS_NAV_LUCK_ROWS = ['CEO','SZM','DBS','TWG','ESR','DBN','SCC','PFO']
+const STANDINGS_NAV_LUCK_MATRIX = [
+  /* Row: team's actual season. Cell: actual_pts − pts_if_played_col_schedule. */
+  /* CEO */ [null, +2, +4, +1,  0, +3, +5, +8],
+  /* SZM */ [-2, null, +3, +1, +1, +2, +4, +6],
+  /* DBS */ [-3, -1, null,  0, +1, +2, +3, +5],
+  /* TWG */ [-1,  0, +1, null,  0, +1, +2, +4],
+  /* ESR */ [ 0, -1, -1,  0, null, +1, +2, +3],
+  /* DBN */ [-2, -2, -1, -1, -1, null, +1, +2],
+  /* SCC */ [-4, -3, -2, -2, -1, -1, null,  0],
+  /* PFO */ [-6, -5, -4, -3, -3, -2,  0, null],
+]
+
+/* ------------------------------------------------------------------ */
+/* Shared chrome: brand strip, standings table mini, GW summary tiles   */
+/* ------------------------------------------------------------------ */
+
+function StandingsNavBrandStrip() {
+  return (
+    <div className="mock-standings-nav-brand">
+      <span className="mock-standings-nav-brand__pill" aria-label="TCLOT">
+        <TclotLionIcon size={14} />
+        <span className="mock-standings-nav-brand__wordmark">TCLOT</span>
+      </span>
+      <span className="mock-standings-nav-brand__status">
+        <span className="mock-standings-nav-brand__status-dot" aria-hidden />
+        <span className="mock-standings-nav-brand__status-strong">GW 17</span>
+        <span className="mock-standings-nav-brand__status-sep">·</span>
+        <span>Complete</span>
+      </span>
+      <span className="mock-standings-nav-brand__season">2025/26</span>
+    </div>
+  )
+}
+
+/* Compact standings — leader hero card + 4 condensed rows below.
+ * Mirrors Variant C chrome, just trimmed so it doesn't dominate the
+ * frame and the new GW tiles + sub-nav stay visible without scrolling. */
+function StandingsNavTable({ teams = STANDINGS_NAV_TEAMS_MID }) {
+  const [leader, ...rest] = teams
+  const condensed = rest.slice(0, 4)
+  return (
+    <div className="mock-standings-nav-table">
+      <div className="mock-standings-nav-table__hero">
+        <div className="mock-standings-nav-table__hero-eyebrow">
+          <span className="mock-standings-nav-table__hero-eyebrow-dot" aria-hidden>★</span>
+          Top of the league
+        </div>
+        <div className="mock-standings-nav-table__hero-row">
+          <StandingsCrest team={leader} size={44} fontSize={12} />
+          <div className="mock-standings-nav-table__hero-id">
+            <div className="mock-standings-nav-table__hero-name">{leader.name}</div>
+            <div className="mock-standings-nav-table__hero-mgr">{leader.mgr}</div>
+          </div>
+          <div className="mock-standings-nav-table__hero-pts">
+            <div className="mock-standings-nav-table__hero-pts-num">{leader.pts}</div>
+            <div className="mock-standings-nav-table__hero-pts-lbl">PTS</div>
+          </div>
+        </div>
+      </div>
+      <table className="mock-standings-nav-table__rows">
+        <thead>
+          <tr>
+            <th className="mock-standings-nav-table__th-rank">#</th>
+            <th className="mock-standings-nav-table__th-team">Team</th>
+            <th>PL</th>
+            <th>GD</th>
+            <th className="mock-standings-nav-table__th-pts">PTS</th>
+            <th>Form</th>
+          </tr>
+        </thead>
+        <tbody>
+          {condensed.map((t) => (
+            <tr key={t.abbr}>
+              <td className="mock-standings-nav-table__rank">{t.rank}</td>
+              <td className="mock-standings-nav-table__team">
+                <StandingsCrest team={t} size={18} />
+                <span className="mock-standings-nav-table__name">{t.short}</span>
+              </td>
+              <td>{t.pl}</td>
+              <td>{fmtSigned(t.gd)}</td>
+              <td className="mock-standings-nav-table__pts">{t.pts}</td>
+              <td>
+                <StandingsFormDots form={t.form} size={5} />
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className="mock-standings-nav-table__more">
+        + 3 more · tap to expand full table
+      </div>
+    </div>
+  )
+}
+
+/* Side-by-side LAST GW / NEXT GW mini tiles — the new "at-a-glance"
+ * summary that sits beneath the standings table. Variant-C-style
+ * chrome (rounded card, brand-tinted), half-width each on portrait. */
+function StandingsNavGwTiles() {
+  return (
+    <div className="mock-standings-nav-tiles">
+      <StandingsNavLastGwTile gw={STANDINGS_NAV_LAST_GW} />
+      <StandingsNavNextGwTile gw={STANDINGS_NAV_NEXT_GW} />
+    </div>
+  )
+}
+
+function StandingsNavLastGwTile({ gw }) {
+  return (
+    <div className="mock-standings-nav-tile mock-standings-nav-tile--last">
+      <div className="mock-standings-nav-tile__head">
+        <span className="mock-standings-nav-tile__head-lbl">Last GW</span>
+        <span className="mock-standings-nav-tile__head-gw">GW {gw.id}</span>
+      </div>
+      <div className="mock-standings-nav-tile__body">
+        {gw.matches.map((m, i) => {
+          const home = STANDINGS_NAV_TEAM_BY_ABBR[m.home]
+          const away = STANDINGS_NAV_TEAM_BY_ABBR[m.away]
+          const tie = m.homeScore === m.awayScore
+          const homeWin = m.homeScore > m.awayScore
+          return (
+            <div className="mock-standings-nav-tile__match" key={i}>
+              <div
+                className={
+                  'mock-standings-nav-tile__row' +
+                  (tie ? '' : (homeWin ? ' is-winner' : ' is-loser'))
+                }
+              >
+                <StandingsCrest team={home} size={14} fontSize={7} />
+                <span className="mock-standings-nav-tile__rname">
+                  {home.short}
+                  <span className="mock-standings-nav-tile__rrank">({home.rank})</span>
+                </span>
+                <span className="mock-standings-nav-tile__rscore">{m.homeScore}</span>
+              </div>
+              <div
+                className={
+                  'mock-standings-nav-tile__row' +
+                  (tie ? '' : (homeWin ? ' is-loser' : ' is-winner'))
+                }
+              >
+                <StandingsCrest team={away} size={14} fontSize={7} />
+                <span className="mock-standings-nav-tile__rname">
+                  {away.short}
+                  <span className="mock-standings-nav-tile__rrank">({away.rank})</span>
+                </span>
+                <span className="mock-standings-nav-tile__rscore">{m.awayScore}</span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+function StandingsNavNextGwTile({ gw }) {
+  return (
+    <div className="mock-standings-nav-tile mock-standings-nav-tile--next">
+      <div className="mock-standings-nav-tile__head">
+        <span className="mock-standings-nav-tile__head-lbl">Next GW</span>
+        <span className="mock-standings-nav-tile__head-gw">GW {gw.id}</span>
+      </div>
+      <div className="mock-standings-nav-tile__body">
+        {gw.matches.map((m, i) => {
+          const home = STANDINGS_NAV_TEAM_BY_ABBR[m.home]
+          const away = STANDINGS_NAV_TEAM_BY_ABBR[m.away]
+          return (
+            <div className="mock-standings-nav-tile__match" key={i}>
+              <div className="mock-standings-nav-tile__row">
+                <StandingsCrest team={home} size={14} fontSize={7} />
+                <span className="mock-standings-nav-tile__rname">
+                  {home.short}
+                  <span className="mock-standings-nav-tile__rrank">({home.rank})</span>
+                </span>
+              </div>
+              <div className="mock-standings-nav-tile__vs" aria-hidden>vs</div>
+              <div className="mock-standings-nav-tile__row">
+                <StandingsCrest team={away} size={14} fontSize={7} />
+                <span className="mock-standings-nav-tile__rname">
+                  {away.short}
+                  <span className="mock-standings-nav-tile__rrank">({away.rank})</span>
+                </span>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* Sub-nav — pill-tab text-link style (Variant A) and segmented
+ * control (Variant B). Both render the same tab labels and active
+ * state lookup; only the chrome differs. */
+const STANDINGS_NAV_TABS = [
+  { id: 'schedule', label: 'Schedule' },
+  { id: 'form',     label: 'Form' },
+  { id: 'stats',    label: 'Stats' },
+]
+
+function StandingsNavSubNav({ active = 'schedule', variant = 'pill' }) {
+  const isSegmented = variant === 'segmented'
+  return (
+    <div
+      className={
+        'mock-standings-nav-subnav' +
+        (isSegmented ? ' mock-standings-nav-subnav--segmented' : ' mock-standings-nav-subnav--pill')
+      }
+      role="tablist"
+    >
+      {STANDINGS_NAV_TABS.map((t) => (
+        <button
+          key={t.id}
+          type="button"
+          role="tab"
+          aria-selected={t.id === active}
+          className={
+            'mock-standings-nav-subnav__tab' +
+            (t.id === active ? ' is-active' : '')
+          }
+        >
+          {t.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+/* ---------------- Schedule sub-tab content ----------------------- */
+
+function StandingsNavSchedulePanel() {
+  return (
+    <div className="mock-standings-nav-panel">
+      <div className="mock-standings-nav-panel__eyebrow">All gameweeks</div>
+      <div className="mock-standings-nav-schedule">
+        <div className="mock-standings-nav-schedule__seg" role="tablist">
+          <button
+            type="button"
+            className="mock-standings-nav-schedule__seg-btn is-active"
+            aria-selected="true"
+          >
+            Results
+            <span className="mock-standings-nav-schedule__seg-count">17</span>
+          </button>
+          <button
+            type="button"
+            className="mock-standings-nav-schedule__seg-btn"
+            aria-selected="false"
+          >
+            Upcoming
+            <span className="mock-standings-nav-schedule__seg-count">21</span>
+          </button>
+        </div>
+        <div className="mock-standings-nav-schedule__picker">
+          <button
+            type="button"
+            className="mock-standings-nav-schedule__picker-btn"
+            aria-label="Previous gameweek"
+          >‹</button>
+          <span className="mock-standings-nav-schedule__picker-lbl">GW 17</span>
+          <button
+            type="button"
+            className="mock-standings-nav-schedule__picker-btn"
+            aria-label="Next gameweek"
+          >›</button>
+        </div>
+        <div className="mock-standings-nav-schedule__matches">
+          {STANDINGS_NAV_LAST_GW.matches.map((m, i) => {
+            const home = STANDINGS_NAV_TEAM_BY_ABBR[m.home]
+            const away = STANDINGS_NAV_TEAM_BY_ABBR[m.away]
+            const tie = m.homeScore === m.awayScore
+            const homeWin = m.homeScore > m.awayScore
+            return (
+              <div className="mock-standings-nav-schedule__match" key={i}>
+                <div
+                  className={
+                    'mock-standings-nav-schedule__side' +
+                    (tie ? '' : (homeWin ? ' is-winner' : ' is-loser'))
+                  }
+                >
+                  <StandingsCrest team={home} size={18} fontSize={8} />
+                  <span className="mock-standings-nav-schedule__sname">
+                    {home.short}
+                  </span>
+                  <span className="mock-standings-nav-schedule__srank">({home.rank})</span>
+                </div>
+                <div className="mock-standings-nav-schedule__score">
+                  <span
+                    className={
+                      'mock-standings-nav-schedule__sn' +
+                      (tie ? '' : (homeWin ? ' is-winner' : ' is-loser'))
+                    }
+                  >
+                    {m.homeScore}
+                  </span>
+                  <span className="mock-standings-nav-schedule__dash">–</span>
+                  <span
+                    className={
+                      'mock-standings-nav-schedule__sn' +
+                      (tie ? '' : (homeWin ? ' is-loser' : ' is-winner'))
+                    }
+                  >
+                    {m.awayScore}
+                  </span>
+                </div>
+                <div
+                  className={
+                    'mock-standings-nav-schedule__side mock-standings-nav-schedule__side--right' +
+                    (tie ? '' : (homeWin ? ' is-loser' : ' is-winner'))
+                  }
+                >
+                  <span className="mock-standings-nav-schedule__srank">({away.rank})</span>
+                  <span className="mock-standings-nav-schedule__sname">
+                    {away.short}
+                  </span>
+                  <StandingsCrest team={away} size={18} fontSize={8} />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+        <div className="mock-standings-nav-schedule__foot">
+          ‹ GW 16 · jump to a specific gameweek · GW 18 ›
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Form sub-tab content --------------------------- */
+
+function StandingsNavFormPanel() {
+  return (
+    <div className="mock-standings-nav-panel">
+      <div className="mock-standings-nav-panel__eyebrow">League form · last 5 GWs</div>
+      <div className="mock-standings-nav-form-leader">
+        {STANDINGS_NAV_FORM_LEADERBOARD.map((t, idx) => (
+          <div className="mock-standings-nav-form-leader__row" key={t.abbr}>
+            <span className="mock-standings-nav-form-leader__rank">{idx + 1}</span>
+            <StandingsCrest team={t} size={18} fontSize={8} />
+            <span className="mock-standings-nav-form-leader__name">{t.short}</span>
+            <span className="mock-standings-nav-form-leader__dots">
+              <StandingsFormDots form={t.form} size={6} />
+            </span>
+            <span className="mock-standings-nav-form-leader__pts">
+              {t.pts5}
+              <span className="mock-standings-nav-form-leader__pts-lbl">pts</span>
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <div className="mock-standings-nav-panel__eyebrow mock-standings-nav-panel__eyebrow--spaced">
+        Head-to-head rivals
+      </div>
+      <div className="mock-standings-nav-form-h2h">
+        <div className="mock-standings-nav-form-h2h__picker">
+          <span className="mock-standings-nav-form-h2h__picker-lbl">Team</span>
+          <button
+            type="button"
+            className="mock-standings-nav-form-h2h__picker-btn"
+            aria-haspopup="listbox"
+          >
+            <StandingsCrest
+              team={STANDINGS_NAV_TEAM_BY_ABBR.CEO}
+              size={16}
+              fontSize={7}
+            />
+            <span className="mock-standings-nav-form-h2h__picker-name">
+              Crouch End Oashisu
+            </span>
+            <span className="mock-standings-nav-form-h2h__picker-chev" aria-hidden>▾</span>
+          </button>
+        </div>
+        <table className="mock-standings-nav-form-h2h__table">
+          <thead>
+            <tr>
+              <th className="mock-standings-nav-form-h2h__th-team">vs</th>
+              <th>P</th>
+              <th>W</th>
+              <th>D</th>
+              <th>L</th>
+              <th>PF</th>
+              <th>PA</th>
+            </tr>
+          </thead>
+          <tbody>
+            {STANDINGS_NAV_H2H_FOR_CEO.map((r) => {
+              const t = STANDINGS_NAV_TEAM_BY_ABBR[r.abbr]
+              return (
+                <tr key={r.abbr}>
+                  <td className="mock-standings-nav-form-h2h__team">
+                    <StandingsCrest team={t} size={14} fontSize={7} />
+                    <span>{t.short}</span>
+                  </td>
+                  <td>{r.played}</td>
+                  <td>{r.w}</td>
+                  <td>{r.d}</td>
+                  <td>{r.l}</td>
+                  <td>{r.pf}</td>
+                  <td>{r.pa}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* ---------------- Stats sub-tab content -------------------------- */
+
+function StandingsNavStatsPanel() {
+  return (
+    <div className="mock-standings-nav-panel">
+      <div className="mock-standings-nav-panel__eyebrow">Wins by margin</div>
+      <div className="mock-standings-nav-stats__toggle" role="tablist">
+        <button
+          type="button"
+          className="mock-standings-nav-stats__toggle-btn is-active"
+          aria-selected="true"
+        >Wins</button>
+        <button
+          type="button"
+          className="mock-standings-nav-stats__toggle-btn"
+          aria-selected="false"
+        >Losses</button>
+      </div>
+      <StandingsNavMarginTable rows={STANDINGS_NAV_WINS_BY_MARGIN} tone="win" />
+
+      <div className="mock-standings-nav-panel__eyebrow mock-standings-nav-panel__eyebrow--spaced">
+        Game weeks in 1st place
+      </div>
+      <div className="mock-standings-nav-stats__toggle" role="tablist">
+        <button
+          type="button"
+          className="mock-standings-nav-stats__toggle-btn is-active"
+          aria-selected="true"
+        >1st</button>
+        <button
+          type="button"
+          className="mock-standings-nav-stats__toggle-btn"
+          aria-selected="false"
+        >Last 🧩</button>
+      </div>
+      <StandingsNavWeeksTable rows={STANDINGS_NAV_WEEKS_TOP} totalGw={17} tone="top" />
+
+      <div className="mock-standings-nav-panel__eyebrow mock-standings-nav-panel__eyebrow--spaced">
+        Schedule luck matrix
+      </div>
+      <StandingsNavLuckMatrix />
+    </div>
+  )
+}
+
+function StandingsNavMarginTable({ rows, tone = 'win' }) {
+  return (
+    <table className={'mock-standings-nav-margin mock-standings-nav-margin--' + tone}>
+      <thead>
+        <tr>
+          <th className="mock-standings-nav-margin__th-team">Team</th>
+          {STANDINGS_NAV_MARGIN_BUCKETS.map((b) => (
+            <th key={b}>{b}</th>
+          ))}
+          <th className="mock-standings-nav-margin__th-total">Σ</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => {
+          const t = STANDINGS_NAV_TEAM_BY_ABBR[r.abbr]
+          const total = r.vals.reduce((s, n) => s + n, 0)
+          return (
+            <tr key={r.abbr}>
+              <td className="mock-standings-nav-margin__team">
+                <StandingsCrest team={t} size={14} fontSize={7} />
+                <span>{t.short}</span>
+              </td>
+              {r.vals.map((v, i) => (
+                <td key={i} className={v ? '' : 'is-zero'}>{v}</td>
+              ))}
+              <td className="mock-standings-nav-margin__total">{total}</td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+function StandingsNavWeeksTable({ rows, totalGw, tone = 'top' }) {
+  return (
+    <table className={'mock-standings-nav-weeks mock-standings-nav-weeks--' + tone}>
+      <thead>
+        <tr>
+          <th className="mock-standings-nav-weeks__th-team">Team</th>
+          <th>Weeks</th>
+          <th>%</th>
+          <th>Bar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => {
+          const t = STANDINGS_NAV_TEAM_BY_ABBR[r.abbr]
+          const pct = totalGw > 0 ? Math.round((r.weeks / totalGw) * 100) : 0
+          return (
+            <tr key={r.abbr}>
+              <td className="mock-standings-nav-weeks__team">
+                <StandingsCrest team={t} size={14} fontSize={7} />
+                <span>{t.short}</span>
+              </td>
+              <td className="mock-standings-nav-weeks__weeks">{r.weeks}</td>
+              <td className="mock-standings-nav-weeks__pct">{pct}%</td>
+              <td className="mock-standings-nav-weeks__bar-cell">
+                <span className="mock-standings-nav-weeks__bar">
+                  <span
+                    className="mock-standings-nav-weeks__bar-fill"
+                    style={{ width: pct + '%' }}
+                  />
+                </span>
+              </td>
+            </tr>
+          )
+        })}
+      </tbody>
+    </table>
+  )
+}
+
+function StandingsNavLuckMatrix() {
+  return (
+    <div className="mock-standings-nav-luck">
+      <div className="mock-standings-nav-luck__legend">
+        Cell = actual pts − pts if you played that team&apos;s schedule.
+        Greener = luckier draw.
+      </div>
+      <div className="mock-standings-nav-luck__scroll">
+        <table className="mock-standings-nav-luck__table">
+          <thead>
+            <tr>
+              <th />
+              {STANDINGS_NAV_LUCK_ROWS.map((abbr) => {
+                const t = STANDINGS_NAV_TEAM_BY_ABBR[abbr]
+                return (
+                  <th key={abbr} title={t.name}>
+                    <StandingsCrest team={t} size={14} fontSize={7} />
+                  </th>
+                )
+              })}
+            </tr>
+          </thead>
+          <tbody>
+            {STANDINGS_NAV_LUCK_MATRIX.map((row, i) => {
+              const rowTeam = STANDINGS_NAV_TEAM_BY_ABBR[STANDINGS_NAV_LUCK_ROWS[i]]
+              return (
+                <tr key={i}>
+                  <th title={rowTeam.name}>
+                    <StandingsCrest team={rowTeam} size={14} fontSize={7} />
+                  </th>
+                  {row.map((cell, j) => {
+                    if (cell === null) {
+                      return (
+                        <td key={j} className="is-diag">—</td>
+                      )
+                    }
+                    const tone =
+                      cell > 0 ? 'pos' :
+                      cell < 0 ? 'neg' : 'neu'
+                    const intensity = Math.min(Math.abs(cell), 8)
+                    return (
+                      <td
+                        key={j}
+                        className={'is-' + tone}
+                        style={{
+                          '--mock-luck-alpha': (intensity / 8).toFixed(2),
+                        }}
+                      >
+                        {fmtSigned(cell)}
+                      </td>
+                    )
+                  })}
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* Frame composition — five phone frames                                */
+/* ------------------------------------------------------------------ */
+
+function StandingsNavFrame({ children }) {
+  return (
+    <div className="mock-standings-nav__frame">
+      <div className="mock-standings-nav__screen">
+        {children}
+      </div>
+    </div>
+  )
+}
+
+function StandingsNavFrameShell({
+  eyebrow,
+  caption,
+  subnavVariant = 'pill',
+  active = 'schedule',
+  children,
+}) {
+  return (
+    <div className="mock-standings-nav__variant">
+      <div className="mock-standings-nav__variant-label">
+        <strong>{eyebrow}</strong> · {caption}
+      </div>
+      <StandingsNavFrame>
+        <StandingsNavBrandStrip />
+        <div className="mock-standings-nav__body">
+          <StandingsNavTable />
+          <StandingsNavGwTiles />
+          <div className="mock-standings-nav__subnav-band">
+            <StandingsNavSubNav active={active} variant={subnavVariant} />
+          </div>
+          {children}
+        </div>
+      </StandingsNavFrame>
+    </div>
+  )
+}
+
+function StandingsNavShowcase() {
+  return (
+    <div className="mock-standings-nav">
+      <div className="mock-standings-nav__intro">
+        <div className="mock-standings-nav__intro-h">What&apos;s new vs the A–E set above</div>
+        <ul className="mock-standings-nav__intro-list">
+          <li>
+            <strong>Side-by-side GW tiles</strong> beneath the standings
+            table — half-width <em>Last GW · GW 17</em> results on the left,
+            half-width <em>Next GW · GW 18</em> fixtures on the right.
+            Compact crest + abbreviated name + rank; winner score bold,
+            loser muted.
+          </li>
+          <li>
+            <strong>Sub-nav</strong> with three sections: Schedule · Form ·
+            Stats. Schedule merges the legacy &ldquo;Complete&rdquo; +
+            &ldquo;Future&rdquo; GW lists into one segmented tile. Form
+            owns the team-picker H2H deep-dive plus a new league form
+            leaderboard. Stats consolidates the four legacy miscellaneous
+            tables (wins/losses by margin, weeks at top/bottom, schedule
+            luck matrix).
+          </li>
+          <li>
+            <strong>Frame 1 vs Frame 5</strong> shows two sub-nav
+            chromes side by side — pill-tab text links (A) vs segmented
+            control (B) — for an A/B pick.
+          </li>
+        </ul>
+        <div className="mock-standings-nav__intro-shared">
+          Shared across all five frames: brand header strip, compact
+          leader hero + 4 condensed rows, side-by-side GW tiles, sub-nav
+          band. Sub-tab content body is the only thing that swaps.
+        </div>
+      </div>
+
+      <div className="mock-standings-nav__stack">
+        <StandingsNavFrameShell
+          eyebrow="Frame 1 — Variant A · pill tabs · Schedule active"
+          caption="Default landing. Schedule sub-tab is selected; the content shows the merged GW results / upcoming view."
+          subnavVariant="pill"
+          active="schedule"
+        >
+          <StandingsNavSchedulePanel />
+        </StandingsNavFrameShell>
+
+        <StandingsNavFrameShell
+          eyebrow="Frame 2 — Schedule sub-tab expanded"
+          caption="Segmented Results / Upcoming inside one tile; GW chevron picker; the four H2H matchups for the selected GW with full team names and clear winner emphasis."
+          subnavVariant="pill"
+          active="schedule"
+        >
+          <StandingsNavSchedulePanel />
+        </StandingsNavFrameShell>
+
+        <StandingsNavFrameShell
+          eyebrow="Frame 3 — Form sub-tab expanded"
+          caption="League form leaderboard at the top (last-5 dots + total pts), per-team H2H rivals deep-dive below (team-picker dropdown + compact opponent table)."
+          subnavVariant="pill"
+          active="form"
+        >
+          <StandingsNavFormPanel />
+        </StandingsNavFrameShell>
+
+        <StandingsNavFrameShell
+          eyebrow="Frame 4 — Stats sub-tab expanded"
+          caption="Three sections stacked with eyebrow headings: wins/losses by margin (W/L toggle), weeks at top/bottom (1st/Last toggle), and a compact schedule-luck matrix."
+          subnavVariant="pill"
+          active="stats"
+        >
+          <StandingsNavStatsPanel />
+        </StandingsNavFrameShell>
+
+        <StandingsNavFrameShell
+          eyebrow="Frame 5 — Variant B · segmented control · Schedule active"
+          caption="Same surface as Frame 1, but the sub-nav uses a segmented control (pill-encased rounded rectangles) instead of pill-tab text links. Lets the user A/B the chrome."
+          subnavVariant="segmented"
+          active="schedule"
+        >
+          <StandingsNavSchedulePanel />
+        </StandingsNavFrameShell>
+      </div>
+    </div>
+  )
+}
+
 function readStoredMockupTheme() {
   if (typeof window === 'undefined') return 'light'
   try {
@@ -8417,6 +9240,26 @@ export function Mockup() {
             follow-up worker will port the choice into production.
           </p>
           <StandingsPortraitVariants />
+        </section>
+
+        {/* ============ STANDINGS · SUB-NAV + GW SUMMARY TILES ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Standings · sub-nav structure + GW summary tiles</div>
+          <h2 className="mockup__section-h">Standings · sub-nav structure + GW summary tiles</h2>
+          <p className="mockup__section-sub">
+            User direction: consolidate Standings into a top &ldquo;at-a-glance&rdquo;
+            band (brand header → standings table → Last/Next GW side-by-side mini
+            tiles) followed by a <strong>Schedule · Form · Stats</strong> sub-nav.
+            Schedule merges the legacy Complete + Future GW lists; Form owns the
+            team-picker H2H deep-dive (with a new league form leaderboard at the
+            top); Stats consolidates the four legacy miscellaneous tables
+            (wins/losses by margin, weeks at the top/bottom, schedule-luck matrix).
+            Five portrait frames below: default landing (Frame 1, pill-tab
+            sub-nav), Schedule expanded (Frame 2), Form expanded (Frame 3), Stats
+            expanded (Frame 4), and an alternative segmented-control sub-nav
+            (Frame 5) for an A/B pick.
+          </p>
+          <StandingsNavShowcase />
         </section>
 
         {/* 17. Part 2 surfaces — staged separately, integrated as a batch */}
