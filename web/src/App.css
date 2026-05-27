@@ -819,18 +819,6 @@
     min-width: 0;
   }
 
-  .live-heading--hide-mobile {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-
   .live-toolbar--section-sticky {
     position: sticky;
     top: var(--mobile-section-chrome-h);
@@ -12424,19 +12412,23 @@ button.live-xp__player-name:focus-visible {
  * =================================================================== */
 .gw-nav {
   position: relative;
-  display: inline-flex;
+  display: grid;
+  grid-template-columns: 32px 1fr 32px;
   align-items: center;
-  gap: 2px;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
 }
 
 .gw-nav__chev {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
-  border-radius: var(--r-sm);
-  background: transparent;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface-2);
   border: none;
   color: var(--text-muted);
   cursor: pointer;
@@ -12445,7 +12437,7 @@ button.live-xp__player-name:focus-visible {
     color var(--dur-fast) var(--ease);
 }
 .gw-nav__chev:hover:not(:disabled) {
-  background: var(--surface-2);
+  background: var(--surface-3, var(--surface-2));
   color: var(--text);
 }
 .gw-nav__chev:disabled {
@@ -12456,34 +12448,37 @@ button.live-xp__player-name:focus-visible {
 .gw-nav__label {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 999px;
+  padding: 0;
   background: transparent;
   border: none;
   font: inherit;
-  font-size: var(--text-sm);
-  color: var(--text);
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-strong);
   cursor: pointer;
-  transition:
-    background var(--dur-fast) var(--ease),
-    color var(--dur-fast) var(--ease);
+  transition: color var(--dur-fast) var(--ease);
 }
 .gw-nav__label:hover {
-  background: var(--surface-2);
   color: var(--text-strong);
 }
 .gw-nav__caret {
   color: var(--text-muted);
 }
 
-/* Popover anchored under the center label (offset past the prev chevron). */
+/* Popover anchored centered under the label trigger. The `.gw-nav` band
+ * is full-width, so the label sits in the middle of the row and the
+ * popover follows via `left: 50%; transform: translateX(-50%)`. Width
+ * adapts to narrow phones via `min(280px, calc(100% - 24px))` so it
+ * never overflows the band. */
 .gw-nav__popover {
   position: absolute;
   top: calc(100% + 6px);
-  left: 28px;
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 30;
-  width: 240px;
+  width: min(280px, calc(100% - 24px));
   padding: var(--space-2);
   border: 1px solid var(--border);
   border-radius: var(--r-md);

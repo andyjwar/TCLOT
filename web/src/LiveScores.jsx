@@ -1293,6 +1293,8 @@ export function LiveScores({
 
   const useFixtureLayout = gwMatches.length > 0;
 
+  const liveSectionLabel = projectionsOnly ? 'Projections' : 'Live gameweek';
+
   return (
     <div
       className={
@@ -1304,18 +1306,8 @@ export function LiveScores({
         className={
           compactMobileChrome ? 'live-scores-chrome' : 'tile tile--compact'
         }
-        aria-labelledby="live-heading"
+        aria-label={liveSectionLabel}
       >
-        <h2
-          id="live-heading"
-          className={
-            'tile-title tile-title--sm' +
-            (compactMobileChrome ? ' live-heading--hide-mobile' : '')
-          }
-        >
-          {projectionsOnly ? 'Projections' : 'Live GW'}
-        </h2>
-
         {showNoProxyBuildError ? (
           <div className="data-banner data-banner--error" role="alert">
             <strong>No proxy in this JavaScript build.</strong>{' '}
