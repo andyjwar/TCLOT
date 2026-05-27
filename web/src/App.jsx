@@ -1,4 +1,5 @@
 import {
+  Fragment,
   useState,
   useMemo,
   useCallback,
@@ -1136,15 +1137,6 @@ function firstWord(name) {
   return parts[0] || ''
 }
 
-/** Rank-zone bucket for the left-edge colour bar.
- * 1–4 = top tier (emerald), 5–7 = mid (slate), 8 = wooden spoon (red). */
-function rankZone(rank) {
-  if (rank == null) return 'mid'
-  if (rank <= 4) return 'top'
-  if (rank === 8) return 'bottom'
-  return 'mid'
-}
-
 /** Sortable header for For / Faced / GD / PTS — `null` sortState = league order. */
 function StandingsSortTh({ columnKey, sortState, onSort, label, title, className }) {
   const isPts = columnKey === 'total'
@@ -2011,12 +2003,10 @@ function App() {
                 ? firstWord(leader.teamName)
                 : leader.teamName
               const leaderForm = (leader.form ?? []).slice(-5)
-              const gdStr = leader.gd > 0 ? `+${leader.gd}` : `${leader.gd}`
               return (
                 <button
                   type="button"
                   className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
-                  data-zone={rankZone(leader.rank)}
                   aria-pressed={isSelected}
                   aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, top of the league`}
                   onClick={() => toggleStandingsHighlight(leader.league_entry)}
@@ -2048,29 +2038,16 @@ function App() {
                   </div>
                   <div className="standings-hero-card__sub">
                     <FormCircles form={leaderForm} />
-                    {leader.next ? (
-                      <span className="standings-hero-card__nxt">
-                        <span className="standings-hero-card__nxt-lbl">Next</span>
-                        <span className="standings-hero-card__nxt-crest">
-                          <TeamAvatar
-                            entryId={leader.next.id}
-                            name={leader.next.name}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                        </span>
+                    <div className="standings-hero-card__inline-stats">
+                      <span className="standings-hero-card__inline-stat">
+                        <span className="standings-hero-card__inline-stat-lbl">Played</span>
+                        <span className="standings-hero-card__inline-stat-num tabular">{leader.pl}</span>
                       </span>
-                    ) : null}
-                  </div>
-                  <div className="standings-hero-card__stats" aria-hidden="false">
-                    <div className="standings-hero-card__stat">
-                      <div className="standings-hero-card__stat-lbl">PL</div>
-                      <div className="standings-hero-card__stat-num tabular">{leader.pl}</div>
-                    </div>
-                    <div className="standings-hero-card__stat">
-                      <div className="standings-hero-card__stat-lbl">GD</div>
-                      <div className="standings-hero-card__stat-num tabular">{gdStr}</div>
+                      <span className="standings-hero-card__inline-sep" aria-hidden>·</span>
+                      <span className="standings-hero-card__inline-stat">
+                        <span className="standings-hero-card__inline-stat-lbl">For</span>
+                        <span className="standings-hero-card__inline-stat-num tabular">{leader.gf}</span>
+                      </span>
                     </div>
                   </div>
                 </button>
@@ -2106,10 +2083,9 @@ function App() {
                       const displayName = firstWord(row.teamName)
                       const form5 = (row.form ?? []).slice(-5)
                       return (
+                        <Fragment key={row.league_entry}>
                         <tr
-                          key={row.league_entry}
                           className={rowClass || undefined}
-                          data-zone={rankZone(row.rank)}
                           onClick={() => toggleStandingsHighlight(row.league_entry)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
@@ -2169,6 +2145,19 @@ function App() {
                             )}
                           </td>
                         </tr>
+                        {row.rank === 4 ? (
+                          <tr
+                            className="standings-divider standings-divider--minnows"
+                            aria-hidden="true"
+                          >
+                            <td colSpan={6}>
+                              <span className="standings-divider__label">
+                                Minnows
+                              </span>
+                            </td>
+                          </tr>
+                        ) : null}
+                        </Fragment>
                       )
                     })}
                   </tbody>
@@ -2236,12 +2225,11 @@ function App() {
                       ]
                         .filter(Boolean)
                         .join(' ')
-                      const form5 = (row.form ?? []).slice(-5)
+                      const form7 = (row.form ?? []).slice(-7)
                       return (
+                        <Fragment key={row.league_entry}>
                         <tr
-                          key={row.league_entry}
                           className={rowClass || undefined}
-                          data-zone={rankZone(row.rank)}
                           onClick={() => toggleStandingsHighlight(row.league_entry)}
                           onKeyDown={(e) => {
                             if (e.key === 'Enter' || e.key === ' ') {
@@ -2293,7 +2281,7 @@ function App() {
                             <strong>{row.total}</strong>
                           </td>
                           <td className="col-form">
-                            <FormCircles form={form5} />
+                            <FormCircles form={form7} />
                           </td>
                           <td className="col-next">
                             {row.next ? (
@@ -2309,6 +2297,19 @@ function App() {
                             )}
                           </td>
                         </tr>
+                        {row.rank === 4 ? (
+                          <tr
+                            className="standings-divider standings-divider--minnows"
+                            aria-hidden="true"
+                          >
+                            <td colSpan={12}>
+                              <span className="standings-divider__label">
+                                Minnows
+                              </span>
+                            </td>
+                          </tr>
+                        ) : null}
+                        </Fragment>
                       )
                     })}
                   </tbody>

@@ -12565,26 +12565,17 @@ button.live-xp__player-name:focus-visible {
 /*                                                                     */
 /* Desktop (≥768px): renders the full 12-column sortable table         */
 /* (# · Team · PL · W · D · L · For · Faced · GD · PTS · Form · Nxt).  */
+/* Form-dot styling switches to 8px plain colour circles on desktop    */
+/* (matching mobile + hero), and the desktop slice is last-7 vs the    */
+/* mobile/hero last-5.                                                  */
 /*                                                                     */
-/* Hero card: rank #1 leader. Brand-tinted gradient + radial highlight */
-/* + GREEN rank-zone bar flush to the left edge.                       */
+/* Hero card: rank #1 leader. Brand-tinted gradient + radial top-right */
+/* highlight. Inline form circles + 'Played / For' stat row below the  */
+/* big PTS.                                                            */
 /*                                                                     */
-/* Rank-zone bars (4px, ::before on row's first td or on the hero card */
-/* itself): green for ranks 1–4, neutral slate for 5–7, red for 8.     */
+/* A `MINNOWS` divider tr renders between league-rank 4 and 5 on both  */
+/* breakpoints, mirroring the existing 🧩 divider above rank-8.       */
 /* ================================================================== */
-
-/* Rank-zone palette — local to the Standings tile so the rest of the
- * app keeps its existing token system. Chosen to harmonise with:
- *   - emerald (10b981) matches `--fm-win` lineage / form-win green
- *   - slate (94a3b8) is a neutral muted mid-tier marker
- *   - red (ef4444) is the same hue as `--fm-standings-8th-bg`
- *     (rgba(239, 68, 68, 0.09)), now full-saturation on the edge bar
- */
-.tile.tile--standings-c {
-  --rank-zone-top: #10b981;
-  --rank-zone-mid: #94a3b8;
-  --rank-zone-bottom: #ef4444;
-}
 
 /* ----- Hero leader card -------------------------------------------- */
 
@@ -12593,11 +12584,9 @@ button.live-xp__player-name:focus-visible {
   display: block;
   width: calc(100% - 24px);
   margin: 12px;
-  padding: 14px 14px 12px 18px;
+  padding: 14px;
   box-sizing: border-box;
-  /* Stack the radial top-right highlight on top of the diagonal
-   * brand-tint so the ::before pseudo can be reused for the rank-
-   * zone bar on the left edge. */
+  /* Stacked: radial top-right brand-highlight over diagonal tint. */
   background:
     radial-gradient(
       120% 80% at 100% 0%,
@@ -12618,18 +12607,6 @@ button.live-xp__player-name:focus-visible {
   cursor: pointer;
   overflow: hidden;
   transition: box-shadow 120ms ease, border-color 120ms ease;
-}
-
-/* Rank-zone bar — hero card is always rank 1, so always green. */
-.standings-hero-card::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--rank-zone-top);
-  pointer-events: none;
 }
 
 .standings-hero-card:hover {
@@ -12761,56 +12738,39 @@ button.live-xp__player-name:focus-visible {
   color: transparent;
 }
 
-.standings-hero-card__nxt {
+/* Inline stats at the end of the form row — `Played 38 · For 1842`.
+ * Lighter weight than the big PTS (per round-3 spec), labels in
+ * muted brand-tinted uppercase, values regular-weight tabular-nums. */
+.standings-hero-card__inline-stats {
   display: inline-flex;
-  align-items: center;
+  align-items: baseline;
   gap: 6px;
   flex-shrink: 0;
-}
-
-.standings-hero-card__nxt-lbl {
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--text-muted, var(--fm-muted));
-}
-
-.standings-hero-card__nxt-crest .team-avatar-frame {
-  width: 22px;
-  height: 22px;
-}
-
-/* PL / GD stat strip below the form/next row. */
-.standings-hero-card__stats {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid
-    color-mix(in srgb, var(--brand) 18%, var(--fm-border));
-}
-.standings-hero-card__stat {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  font-size: 12px;
   line-height: 1;
 }
-.standings-hero-card__stat-lbl {
+.standings-hero-card__inline-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.standings-hero-card__inline-stat-lbl {
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--brand, #795bfb);
 }
-.standings-hero-card__stat-num {
-  font-size: 16px;
-  font-weight: 700;
+.standings-hero-card__inline-stat-num {
+  font-size: 13px;
+  font-weight: 500;
   color: var(--text-strong, var(--fm-text-strong));
   font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
+}
+.standings-hero-card__inline-sep {
+  color: var(--text-muted, var(--fm-muted));
+  opacity: 0.55;
+  font-weight: 500;
 }
 
 /* ----- Condensed table — shared (mobile + desktop variants) -------- */
@@ -12859,37 +12819,35 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, var(--brand) 14%, transparent);
 }
 
-/* Rank-zone bar on each row — 4px vertical stripe flush to the
- * row's left edge. Implemented as `::before` on the first cell
- * (table rows can't host abs-positioned pseudos reliably across
- * browsers, but cells can). The cell is sized to its own content
- * + padding; the bar overlays via `position: absolute`. */
-.standings-table--variant-c tbody tr td:first-child {
-  position: relative;
-}
-.standings-table--variant-c tbody tr td:first-child::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background: var(--rank-zone-mid);
-  pointer-events: none;
-}
-.standings-table--variant-c tbody tr[data-zone='top']
-  td:first-child::before {
-  background: var(--rank-zone-top);
-}
-.standings-table--variant-c tbody tr[data-zone='bottom']
-  td:first-child::before {
-  background: var(--rank-zone-bottom);
+/* When a row is selected, draw a thin brand accent stripe on its
+ * left edge (mirrors the legacy standings-table treatment). */
+.standings-table--variant-c tbody tr.is-selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--brand, #795bfb);
 }
 
-/* When a row is selected, draw the brand accent stripe just inside
- * the rank-zone bar so both reads. */
-.standings-table--variant-c tbody tr.is-selected td:first-child {
-  box-shadow: inset 7px 0 0 -3px var(--brand, #795bfb);
+/* Minnows divider — sits between league-rank 4 and rank 5 rows,
+ * mirroring the dashed-line + 🧩 marker treatment above rank 8.
+ * The row is inert (no click, no hover highlight). */
+.standings-table--variant-c tbody tr.standings-divider {
+  cursor: default;
+}
+.standings-table--variant-c tbody tr.standings-divider:hover td {
+  background: transparent;
+}
+.standings-table--variant-c tbody tr.standings-divider td {
+  padding: 10px 10px 4px;
+  border-top: 1px dashed
+    color-mix(in srgb, var(--brand) 30%, var(--fm-border));
+  background: transparent;
+  text-align: left;
+}
+.standings-table--variant-c .standings-divider__label {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--brand) 60%, var(--text-muted));
 }
 
 /* ----- Mobile (≤767px): static 6-col table ------------------------ */
@@ -12927,9 +12885,7 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
-/* Edge breathing room on first/last cells. The first cell carries
- * the rank-zone bar (4px), so leave at least 8px of padding-left so
- * the rank glyph doesn't crowd the bar. */
+/* Edge breathing room on first/last cells. */
 .standings-table--variant-c-mobile thead th:first-child,
 .standings-table--variant-c-mobile tbody td:first-child {
   padding-left: 10px;
@@ -13037,12 +12993,11 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Hero card sizing on mobile — keep current 56px crest defaults from
- * the base rules; tighten margin so the card aligns with the table
- * (which has 0 outer margin inside the tile padding). */
+ * the base rules; tighten margin so the card aligns with the table. */
 @media (max-width: 767px) {
   .standings-hero-card {
     margin: 12px;
-    padding: 14px 14px 12px 18px;
+    padding: 14px;
   }
 }
 
@@ -13066,7 +13021,7 @@ button.live-xp__player-name:focus-visible {
   .standings-hero-card {
     width: calc(100% - 32px);
     margin: 16px;
-    padding: 18px 18px 16px 22px;
+    padding: 18px;
   }
   .standings-hero-card__crest .team-avatar-frame {
     width: 72px;
@@ -13081,7 +13036,25 @@ button.live-xp__player-name:focus-visible {
   .standings-hero-card__pts-num {
     font-size: 36px;
   }
-  .standings-hero-card__stat-num {
-    font-size: 18px;
+  .standings-hero-card__inline-stat-num {
+    font-size: 14px;
+  }
+
+  /* Desktop condensed-row form dots — 8px plain circles matching the
+   * mobile + hero styling (no W/L letter inside). Defeats the legacy
+   * `.standings-table--sidebar .form-dot { width: 22px; height: 22px;
+   * border-radius: 6px; font-size: 0.54rem }` rule with a chained
+   * 3-class selector (0,3,0 > 0,2,0). */
+  .standings-table--variant-c.standings-table--sidebar .form-circles {
+    gap: 3px;
+    justify-content: center;
+  }
+  .standings-table--variant-c.standings-table--sidebar .form-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    font-size: 0;
+    line-height: 0;
+    color: transparent;
   }
 }
