@@ -1859,7 +1859,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   }
 
   .players-wire-tile__sub-row {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 6px;
     min-width: 0;
@@ -1873,6 +1873,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     width: 16px;
     height: 16px;
     flex-shrink: 0;
+    margin-left: auto;
   }
 
   .players-wire-tile__owner .team-avatar-frame {

@@ -892,6 +892,16 @@ function PortraitWireTileList({
                * Next-3 fixtures. Position moved up next to the name; the
                * previous standalone position/owner row was collapsed. */}
               <div className="players-wire-tile__sub-row">
+                <PlayerInlineIndicators
+                  el={el}
+                  owner={null}
+                  rostersHealthy={false}
+                  logoMap={logoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span className="players-wire-tile__fixtures">
+                  <NextFixtureBadges fixtures={nextFixtures} />
+                </span>
                 {rostersHealthy && owner ? (
                   <span
                     className="players-wire-tile__owner"
@@ -908,16 +918,6 @@ function PortraitWireTileList({
                     />
                   </span>
                 ) : null}
-                <PlayerInlineIndicators
-                  el={el}
-                  owner={null}
-                  rostersHealthy={false}
-                  logoMap={logoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-                <span className="players-wire-tile__fixtures">
-                  <NextFixtureBadges fixtures={nextFixtures} />
-                </span>
               </div>
             </div>
             <div
