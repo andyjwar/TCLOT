@@ -1560,10 +1560,19 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     flex-shrink: 0;
   }
 
-  /* Pill-chrome search field on portrait — match Variant C dropdown pills. */
+  /* Pill-chrome search field on portrait — match Variant C dropdown pills.
+   *
+   * The base `.players-bench-search-field` rule sets `min-width: 240px` so
+   * the desktop search reads as a comfortable input. At narrow portrait
+   * widths (≤390px) that 240px floor combined with the Wire/Owned toggle's
+   * ~120px intrinsic width + 8px row gap + 12px row paddings + 16px app
+   * paddings exceeds the viewport, clipping the trailing "d" of "Owned".
+   * Resetting `min-width: 0` here lets the search field shrink to fit so
+   * the flex-shrink:0 toggle stays fully on-screen. */
   .players-bench-search-row--portrait .players-bench-search-field {
     flex: 1 1 auto;
     width: auto;
+    min-width: 0;
     height: 34px;
     padding: 0 14px;
     border-radius: 999px;
