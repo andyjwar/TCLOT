@@ -1162,6 +1162,289 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 }
 
 /* =====================================================
+   Portrait multi-select dropdown pill + segmented toggle
+   (Variant C toolbar — applied via JSX on portrait only; the
+   selectors below are inert on desktop because the markup
+   never renders these classes there.)
+   ===================================================== */
+
+.players-portrait-pill {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+
+.players-portrait-pill__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 12px 0 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease;
+}
+
+.players-portrait-pill__btn:hover {
+  background: var(--row-hi);
+  border-color: color-mix(in srgb, var(--brand) 30%, var(--border));
+}
+
+.players-portrait-pill__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+.players-portrait-pill__btn--active,
+.players-portrait-pill__btn--open {
+  border-color: color-mix(in srgb, var(--brand) 50%, var(--border));
+  background: color-mix(in srgb, var(--brand) 10%, transparent);
+  color: var(--text-strong);
+}
+
+.players-portrait-pill__label {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.players-portrait-pill__btn--active .players-portrait-pill__label,
+.players-portrait-pill__btn--open .players-portrait-pill__label {
+  color: color-mix(in srgb, var(--text-strong) 75%, var(--text-muted));
+}
+
+.players-portrait-pill__sep {
+  color: var(--text-muted);
+  padding: 0 1px;
+}
+
+.players-portrait-pill__value {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.players-portrait-pill__caret {
+  width: 11px;
+  height: 11px;
+  color: var(--text-muted);
+  margin-left: 2px;
+  transition: transform 160ms ease, color 160ms ease;
+}
+
+.players-portrait-pill__caret--open {
+  transform: rotate(180deg);
+  color: color-mix(in srgb, var(--brand) 80%, var(--text-strong));
+}
+
+.players-portrait-pill__pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 180px;
+  max-width: min(280px, 88vw);
+  max-height: min(360px, 60vh);
+  padding: 4px;
+  border-radius: var(--r-md);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+}
+
+.fotmob[data-theme='light'] .players-portrait-pill__pop {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.10);
+}
+
+.players-portrait-pill__pop--grouped {
+  gap: 4px;
+  padding: 6px 4px;
+}
+
+.players-portrait-pill__section {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.players-portrait-pill__section + .players-portrait-pill__section {
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.players-portrait-pill__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 9px 4px;
+}
+
+.players-portrait-pill__section-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.players-portrait-pill__section-toggle {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: color-mix(in srgb, var(--brand) 75%, var(--text-strong));
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+.players-portrait-pill__section-toggle:hover {
+  background: var(--row-hi);
+}
+
+.players-portrait-pill__divider {
+  height: 1px;
+  margin: 4px 6px;
+  background: color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.players-portrait-pill__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 9px;
+  border-radius: var(--r-sm);
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.players-portrait-pill__item:hover {
+  background: var(--row-hi);
+  color: var(--text-strong);
+}
+
+.players-portrait-pill__item--checked {
+  color: var(--text-strong);
+}
+
+.players-portrait-pill__item--disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.players-portrait-pill__item--disabled:hover {
+  background: transparent;
+}
+
+.players-portrait-pill__hint {
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.players-portrait-pill__check {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1px solid color-mix(in srgb, var(--text-muted) 50%, var(--border));
+  background: var(--surface);
+  margin: 0;
+  position: relative;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.players-portrait-pill__check:checked {
+  background: var(--brand);
+  border-color: var(--brand);
+}
+
+.players-portrait-pill__check:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'><polyline points='20 6 9 17 4 12'/></svg>");
+  background-size: 11px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.players-portrait-pill__check:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Wire / Owned segmented toggle */
+.players-portrait-segment {
+  display: inline-flex;
+  flex-shrink: 0;
+  height: 32px;
+  padding: 2px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.players-portrait-segment--disabled {
+  opacity: 0.55;
+}
+
+.players-portrait-segment__btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 0 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  min-width: 56px;
+  transition: background 160ms ease, color 160ms ease;
+}
+
+.players-portrait-segment__btn:hover:not(:disabled):not(.players-portrait-segment__btn--active) {
+  color: var(--text);
+}
+
+.players-portrait-segment__btn:disabled {
+  cursor: not-allowed;
+}
+
+.players-portrait-segment__btn--active {
+  background: color-mix(in srgb, var(--brand) 18%, transparent);
+  color: color-mix(in srgb, var(--brand) 85%, var(--text-strong));
+}
+
+.players-portrait-segment__btn:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* =====================================================
    Portrait (≤600px) chrome + sortable card
    ===================================================== */
 
@@ -1171,12 +1454,37 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     flex-direction: column;
   }
 
-  /* Portrait three-band chrome: title strip → pill scroll-row → search+toggle */
+  /* Variant C — strip outer tile chrome entirely on portrait so rows go
+   * edge-to-edge. The inner header / filter / search bands keep their own
+   * 12px horizontal padding so they don't sit on the screen edge. */
+  .players-bench-tile.tile--standings.players-bench-tile--portrait-list {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    border-radius: 0;
+  }
+
+  /* The sticky chrome wrapper uses `margin: -14px -16px 0` at ≤1080px to
+   * escape the `.tile` default padding (16px 18px). With Variant C
+   * stripping tile padding to 0 on portrait, that negative margin would
+   * push the chrome outside the tile and into horizontal overflow — reset
+   * it here so the inner bands govern the horizontal inset on portrait. */
+  .players-bench-tile--portrait-list .players-bench-chrome.section-chrome--sticky {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border-bottom: none;
+    box-shadow: none;
+  }
+
+  /* Portrait three-band chrome: title strip → search row → pill scroll-row */
   .players-bench-header {
     padding: 12px 12px 8px;
     background: var(--surface-2);
     flex-wrap: nowrap;
     gap: 8px;
+    border-bottom: none;
   }
 
   .players-bench-header__titles {
@@ -1195,56 +1503,78 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     font-size: 10px;
   }
 
-  .players-bench-filters {
-    padding: 10px 12px 8px;
-    gap: 6px;
-    background: var(--surface);
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-  }
-
-  .players-bench-filters::-webkit-scrollbar {
-    display: none;
-  }
-
-  .players-bench-filters > * {
-    flex-shrink: 0;
+  /* Variant C portrait toolbar — search row first, then filter scroll row.
+   * Both rows live on the tinted surface-2 band (same as header). */
+  .players-bench-search-row--portrait {
+    padding: 0 12px 8px;
+    background: var(--surface-2);
+    border-bottom: none;
   }
 
   .players-bench-search-row {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 0 12px 10px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
   }
 
-  .players-bench-search-field {
+  .players-bench-filters--portrait {
+    padding: 0 12px 10px;
+    gap: 6px;
+    background: var(--surface-2);
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: visible;
+    border-bottom: none;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    /* Allow dropdown pops to overlay the table below. */
+    position: relative;
+    z-index: 6;
+  }
+
+  .players-bench-filters--portrait::-webkit-scrollbar {
+    display: none;
+  }
+
+  .players-bench-filters--portrait > * {
+    flex-shrink: 0;
+  }
+
+  /* Pill-chrome search field on portrait — match Variant C dropdown pills. */
+  .players-bench-search-row--portrait .players-bench-search-field {
     flex: 1 1 auto;
     width: auto;
-    height: 32px;
-    padding: 0 10px;
+    height: 34px;
+    padding: 0 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
   }
 
-  .players-bench-search-field__icon {
+  .players-bench-search-row--portrait .players-bench-search-field:focus-within {
+    border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+    background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+  }
+
+  .players-bench-search-row--portrait .players-bench-search-field__icon {
     width: 14px;
     height: 14px;
   }
 
-  .players-bench-search {
-    font-size: 12px;
+  .players-bench-search-row--portrait .players-bench-search {
+    font-size: 13px;
   }
 
-  /* Table card — wrap in a margin'd rounded card */
+  /* Variant C — strip the nested inner card around the table-scroll so rows
+   * extend edge-to-edge. The horizontal row separators inside the table
+   * still keep rhythm. */
   .players-bench-tile--portrait-list .players-table-scroll {
-    margin: 10px 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--r-md);
+    margin: 0;
+    border: none;
+    border-radius: 0;
     background: var(--surface);
-    overflow: hidden;
+    overflow: visible;
+    border-top: 1px solid var(--border);
   }
 
   .players-table--portrait .players-table__head-row {
@@ -1252,10 +1582,11 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   }
 
   .players-table--portrait .players-table__head-row > * {
-    min-height: 32px;
+    min-height: 30px;
     padding: 0.4rem 0.18rem;
     font-size: 11px;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
   }
 
   /* Round-2 polish: tighter left edge on mobile so the player-cell content
@@ -1263,12 +1594,12 @@ body[data-tclot-theme='dark'] .players-table__head-row {
    * for the stat group. */
   .players-table--portrait .players-table__head-row > *:first-child,
   .players-table--portrait .players-table__row > *:first-child {
-    padding-left: 6px;
+    padding-left: 12px;
   }
 
   .players-table--portrait .players-table__head-row > *:last-child,
   .players-table--portrait .players-table__row > *:last-child {
-    padding-right: 10px;
+    padding-right: 12px;
   }
 
   .players-table--portrait .players-table__row > * {

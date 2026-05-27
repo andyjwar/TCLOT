@@ -321,6 +321,377 @@ function ClubFilterPill({ clubFilter, clubOptions, onSelect, compact = false }) 
   )
 }
 
+const PORTRAIT_POSITION_OPTIONS = [
+  { id: '1', label: 'GK' },
+  { id: '2', label: 'DEF' },
+  { id: '3', label: 'MID' },
+  { id: '4', label: 'FWD' },
+]
+
+/**
+ * Caret SVG used for the portrait multi-select pill triggers.
+ */
+function PortraitPillCaret({ open = false }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.4"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className={`players-portrait-pill__caret${open ? ' players-portrait-pill__caret--open' : ''}`}
+    >
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  )
+}
+
+/**
+ * Generic multi-select dropdown pill (portrait). Used for Position and Stats.
+ * For grouped sections (e.g. Club), use `MultiSelectGroupedDropdownPill` below.
+ *
+ * @param {{
+ *   label: string,
+ *   options: { id: string|number, label: string, disabled?: boolean, hint?: string }[],
+ *   selectedIds: Array<string|number>,
+ *   onSelectionChange: (next: Array<string|number>) => void,
+ *   minSelection?: number,
+ *   maxSelection?: number,
+ *   allLabel?: string,
+ *   summaryLabel?: (count: number, total: number) => string,
+ * }} props
+ */
+function MultiSelectDropdownPill({
+  label,
+  options,
+  selectedIds,
+  onSelectionChange,
+  minSelection = 0,
+  maxSelection,
+  allLabel = 'All',
+  summaryLabel,
+}) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  const dismiss = useCallback(() => setOpen(false), [])
+  usePillMenuDismiss(rootRef, open, dismiss)
+
+  const selectedSet = useMemo(
+    () => new Set(selectedIds.map((id) => String(id))),
+    [selectedIds],
+  )
+  const allCount = options.length
+  const selectedCount = options.filter((o) => selectedSet.has(String(o.id))).length
+  const isAll = selectedCount === allCount
+  const isActive = !isAll
+  const atMax = typeof maxSelection === 'number' && selectedCount >= maxSelection
+
+  const value = isAll
+    ? allLabel
+    : summaryLabel
+      ? summaryLabel(selectedCount, allCount)
+      : String(selectedCount)
+
+  const toggleOne = (optId) => {
+    const key = String(optId)
+    const next = new Set(selectedSet)
+    if (next.has(key)) {
+      if (next.size <= minSelection) return
+      next.delete(key)
+    } else {
+      if (atMax) return
+      next.add(key)
+    }
+    const ordered = options
+      .map((o) => String(o.id))
+      .filter((id) => next.has(id))
+    onSelectionChange(ordered)
+  }
+
+  const toggleAll = () => {
+    if (isAll) {
+      // Selecting "All" when already all-selected is a no-op (keeps everything on).
+      // Tapping "All" when partial selection → select everything.
+      return
+    }
+    onSelectionChange(options.map((o) => String(o.id)))
+  }
+
+  return (
+    <div className="players-portrait-pill" ref={rootRef}>
+      <button
+        type="button"
+        className={`players-portrait-pill__btn${
+          isActive ? ' players-portrait-pill__btn--active' : ''
+        }${open ? ' players-portrait-pill__btn--open' : ''}`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`${label}: ${value}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="players-portrait-pill__label">{label}</span>
+        <span className="players-portrait-pill__sep" aria-hidden>·</span>
+        <span className="players-portrait-pill__value">{value}</span>
+        <PortraitPillCaret open={open} />
+      </button>
+      {open ? (
+        <div
+          className="players-portrait-pill__pop"
+          role="dialog"
+          aria-label={`${label} options`}
+        >
+          <label className="players-portrait-pill__item">
+            <input
+              type="checkbox"
+              className="players-portrait-pill__check"
+              checked={isAll}
+              onChange={toggleAll}
+            />
+            <span>All {label.toLowerCase()}</span>
+          </label>
+          <div className="players-portrait-pill__divider" aria-hidden />
+          {options.map((opt) => {
+            const checked = selectedSet.has(String(opt.id))
+            const lockedMin = checked && selectedCount <= minSelection
+            const blocked = !checked && atMax
+            const disabled = Boolean(opt.disabled) || lockedMin || blocked
+            return (
+              <label
+                key={opt.id}
+                className={`players-portrait-pill__item${
+                  disabled ? ' players-portrait-pill__item--disabled' : ''
+                }${checked ? ' players-portrait-pill__item--checked' : ''}`}
+                title={
+                  opt.hint ??
+                  (blocked && typeof maxSelection === 'number'
+                    ? `Deselect another first (${maxSelection} max)`
+                    : undefined)
+                }
+              >
+                <input
+                  type="checkbox"
+                  className="players-portrait-pill__check"
+                  checked={checked}
+                  disabled={Boolean(opt.disabled) || (blocked && !checked)}
+                  onChange={() => toggleOne(opt.id)}
+                />
+                <span>{opt.label}</span>
+                {opt.hint ? (
+                  <span className="players-portrait-pill__hint">{opt.hint}</span>
+                ) : null}
+              </label>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * Multi-select dropdown pill with two grouped sections (used for Club: PL clubs + fantasy teams).
+ *
+ * @param {{
+ *   label: string,
+ *   sections: { id: string, label: string, options: { id: string|number, label: string }[], selectedIds: Array<string|number>, onSelectionChange: (next: Array<string|number>) => void }[],
+ *   allLabel?: string,
+ * }} props
+ */
+function MultiSelectGroupedDropdownPill({ label, sections, allLabel = 'All' }) {
+  const [open, setOpen] = useState(false)
+  const rootRef = useRef(null)
+  const dismiss = useCallback(() => setOpen(false), [])
+  usePillMenuDismiss(rootRef, open, dismiss)
+
+  const sectionSummaries = sections.map((s) => {
+    const set = new Set(s.selectedIds.map((id) => String(id)))
+    const total = s.options.length
+    const selected = s.options.filter((o) => set.has(String(o.id))).length
+    return { id: s.id, set, total, selected }
+  })
+
+  const totalOptions = sectionSummaries.reduce((acc, s) => acc + s.total, 0)
+  const totalSelected = sectionSummaries.reduce((acc, s) => acc + s.selected, 0)
+  const isAll = totalSelected === totalOptions
+  const isActive = !isAll
+  const value = isAll ? allLabel : String(totalSelected)
+
+  const toggleOption = (sectionIdx, optId) => {
+    const s = sections[sectionIdx]
+    const set = new Set(s.selectedIds.map((id) => String(id)))
+    const key = String(optId)
+    if (set.has(key)) set.delete(key)
+    else set.add(key)
+    const ordered = s.options
+      .map((o) => String(o.id))
+      .filter((id) => set.has(id))
+    s.onSelectionChange(ordered)
+  }
+
+  const toggleSectionAll = (sectionIdx) => {
+    const s = sections[sectionIdx]
+    const summary = sectionSummaries[sectionIdx]
+    if (summary.selected === summary.total) {
+      // Tapping "All {section}" when full → clear that section.
+      s.onSelectionChange([])
+    } else {
+      s.onSelectionChange(s.options.map((o) => String(o.id)))
+    }
+  }
+
+  return (
+    <div className="players-portrait-pill" ref={rootRef}>
+      <button
+        type="button"
+        className={`players-portrait-pill__btn${
+          isActive ? ' players-portrait-pill__btn--active' : ''
+        }${open ? ' players-portrait-pill__btn--open' : ''}`}
+        aria-haspopup="dialog"
+        aria-expanded={open}
+        aria-label={`${label}: ${value}`}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="players-portrait-pill__label">{label}</span>
+        <span className="players-portrait-pill__sep" aria-hidden>·</span>
+        <span className="players-portrait-pill__value">{value}</span>
+        <PortraitPillCaret open={open} />
+      </button>
+      {open ? (
+        <div
+          className="players-portrait-pill__pop players-portrait-pill__pop--grouped"
+          role="dialog"
+          aria-label={`${label} options`}
+        >
+          {sections.map((s, sIdx) => {
+            const summary = sectionSummaries[sIdx]
+            if (s.options.length === 0) return null
+            const allOn = summary.selected === summary.total
+            return (
+              <section key={s.id} className="players-portrait-pill__section">
+                <header className="players-portrait-pill__section-head">
+                  <span className="players-portrait-pill__section-label">{s.label}</span>
+                  <button
+                    type="button"
+                    className="players-portrait-pill__section-toggle"
+                    onClick={() => toggleSectionAll(sIdx)}
+                  >
+                    {allOn ? 'Clear' : 'All'}
+                  </button>
+                </header>
+                {s.options.map((opt) => {
+                  const checked = summary.set.has(String(opt.id))
+                  return (
+                    <label
+                      key={opt.id}
+                      className={`players-portrait-pill__item${
+                        checked ? ' players-portrait-pill__item--checked' : ''
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        className="players-portrait-pill__check"
+                        checked={checked}
+                        onChange={() => toggleOption(sIdx, opt.id)}
+                      />
+                      <span>{opt.label}</span>
+                    </label>
+                  )
+                })}
+              </section>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * Wire / Owned segmented toggle (portrait). Binary either/or replacing the
+ * Owned filter pill + Include-drafted toggle.
+ *
+ * @param {{ value: 'wire' | 'owned', onChange: (next: 'wire' | 'owned') => void, disabled?: boolean }} props
+ */
+function WireOwnedSegmentedToggle({ value, onChange, disabled = false }) {
+  return (
+    <div
+      className={`players-portrait-segment${disabled ? ' players-portrait-segment--disabled' : ''}`}
+      role="group"
+      aria-label="Player ownership filter"
+    >
+      <button
+        type="button"
+        className={`players-portrait-segment__btn${
+          value === 'wire' ? ' players-portrait-segment__btn--active' : ''
+        }`}
+        aria-pressed={value === 'wire'}
+        disabled={disabled}
+        onClick={() => onChange('wire')}
+      >
+        Wire
+      </button>
+      <button
+        type="button"
+        className={`players-portrait-segment__btn${
+          value === 'owned' ? ' players-portrait-segment__btn--active' : ''
+        }`}
+        aria-pressed={value === 'owned'}
+        disabled={disabled}
+        onClick={() => onChange('owned')}
+      >
+        Owned
+      </button>
+    </div>
+  )
+}
+
+/**
+ * Stats column multi-select dropdown — portrait variant. Wraps the same
+ * `MultiSelectDropdownPill` pattern around the existing
+ * position-aware stat catalog so the trigger chrome matches the other
+ * portrait pills (Position, Club).
+ *
+ * @param {{
+ *   selectedIds: string[],
+ *   onChange: (ids: string[]) => void,
+ *   positionFilter: import('./playersWireList.js').PositionFilterId,
+ *   maxStatColumns: number,
+ * }} props
+ */
+function PortraitStatsDropdownPill({
+  selectedIds,
+  onChange,
+  positionFilter,
+  maxStatColumns,
+}) {
+  const options = useMemo(() => {
+    const list = []
+    for (const stat of Object.values(WIRE_STAT_CATALOG)) {
+      if (stat.id === 'pos') continue
+      if (stat.hideWhenPos?.length && positionFilter !== POS_FILTER_ALL) {
+        if (stat.hideWhenPos.includes(positionFilter)) continue
+      }
+      list.push({ id: stat.id, label: stat.label })
+    }
+    return list
+  }, [positionFilter])
+
+  return (
+    <MultiSelectDropdownPill
+      label="Stats"
+      options={options}
+      selectedIds={selectedIds}
+      onSelectionChange={onChange}
+      minSelection={1}
+      maxSelection={maxStatColumns}
+      allLabel={String(selectedIds.length)}
+      summaryLabel={(count) => String(count)}
+    />
+  )
+}
+
 /** @param {{ fixtures: object[], nextOnly?: boolean }} props */
 function NextFixtureBadges({ fixtures, nextOnly = false }) {
   const list = nextOnly && fixtures?.length ? [fixtures[0]] : fixtures
@@ -442,6 +813,28 @@ export function PlayersWorkbench({
     readWireStatSelection(POS_FILTER_ALL),
   )
 
+  /* ============================================================
+   * Portrait-only multi-select state. Desktop continues to use the
+   * single-select positionFilter / clubFilter / availableOnly /
+   * myTeamLeagueEntryId state above — this state is layered on top
+   * for the ≤600px toolbar and read only when `portrait === true`.
+   *
+   * For the Club + Fantasy multi-selects, `null` is the "uninitialized,
+   * everything on" sentinel — the option list isn't available until
+   * bootstrap + leagueEntries arrive. As soon as the user makes any
+   * change, the value flips to an explicit `number[]`.
+   * ============================================================ */
+  /** @type {[string[], (ids: string[]) => void]} */
+  const [portraitPositions, setPortraitPositions] = useState(() => [
+    '1', '2', '3', '4',
+  ])
+  /** @type {[number[] | null, (ids: number[] | null) => void]} */
+  const [portraitPlClubs, setPortraitPlClubs] = useState(null)
+  /** @type {[number[] | null, (ids: number[] | null) => void]} */
+  const [portraitFantasyTeams, setPortraitFantasyTeams] = useState(null)
+  /** @type {['wire' | 'owned', (v: 'wire' | 'owned') => void]} */
+  const [portraitWireOwned, setPortraitWireOwned] = useState('wire')
+
   /** Player detail launches via the shared overlay (no inline view). */
   const playerDetailOverlay = usePlayerDetailOverlayOptional()
 
@@ -480,31 +873,43 @@ export function PlayersWorkbench({
     return buildNextFixturesByTeam(bootstrap, teamById, 3)
   }, [bootstrap, teamById])
 
+  /**
+   * Effective position filter — drives column visibility + Stats picker.
+   * Portrait derives this from `portraitPositions` (multi-select): if exactly
+   * one position is selected, treat it as a per-position filter; otherwise
+   * collapse to 'all' (mixed selection → All-style columns).
+   */
+  const effectivePositionFilter = useMemo(() => {
+    if (!portrait) return positionFilter
+    if (portraitPositions.length === 1) return portraitPositions[0]
+    return POS_FILTER_ALL
+  }, [portrait, positionFilter, portraitPositions])
+
   const visibleCols = useMemo(
-    () => visibleWireColumns(positionFilter, selectedStatIds, { portrait }),
-    [positionFilter, selectedStatIds, portrait],
+    () => visibleWireColumns(effectivePositionFilter, selectedStatIds, { portrait }),
+    [effectivePositionFilter, selectedStatIds, portrait],
   )
   const tableGridTemplate = useMemo(
     () => wireTableGridTemplate(visibleCols),
     [visibleCols],
   )
-  const statColumnMax = portrait ? portraitMaxStatColumns(positionFilter) : undefined
+  const statColumnMax = portrait ? portraitMaxStatColumns(effectivePositionFilter) : undefined
   const handleStatSelectionChange = useCallback(
     (ids) => {
       const next = statColumnMax ? ids.slice(0, statColumnMax) : ids
       setSelectedStatIds(next)
-      writeWireStatSelection(positionFilter, next)
+      writeWireStatSelection(effectivePositionFilter, next)
     },
-    [positionFilter, statColumnMax],
+    [effectivePositionFilter, statColumnMax],
   )
 
   useEffect(() => {
     if (portrait) {
-      setSelectedStatIds(portraitDefaultWireStatIdsForPosition(positionFilter))
+      setSelectedStatIds(portraitDefaultWireStatIdsForPosition(effectivePositionFilter))
       return
     }
-    setSelectedStatIds(readWireStatSelection(positionFilter))
-  }, [positionFilter, portrait])
+    setSelectedStatIds(readWireStatSelection(effectivePositionFilter))
+  }, [effectivePositionFilter, portrait])
 
   const clubOptions = useMemo(() => {
     if (!bootstrap?.teams?.length) return []
@@ -512,6 +917,29 @@ export function PlayersWorkbench({
       String(a.short_name || a.name).localeCompare(String(b.short_name || b.name)),
     )
   }, [bootstrap])
+
+  /* Portrait multi-select effective lists.
+   * `portraitPlClubs` / `portraitFantasyTeams` default to `null` meaning
+   * "user hasn't customized, treat as all-on". We materialize the full
+   * id lists here once option data exists so the dropdown UI can show
+   * "All …" checked correctly and the filter logic has a concrete set. */
+  const effectivePortraitPlClubs = useMemo(() => {
+    if (portraitPlClubs != null) return portraitPlClubs
+    return clubOptions.map((t) => Number(t.id))
+  }, [portraitPlClubs, clubOptions])
+
+  const fantasyEntryIds = useMemo(
+    () =>
+      leagueEntries
+        .map((e) => Number(e?.id))
+        .filter((n) => Number.isFinite(n)),
+    [leagueEntries],
+  )
+
+  const effectivePortraitFantasyTeams = useMemo(() => {
+    if (portraitFantasyTeams != null) return portraitFantasyTeams
+    return fantasyEntryIds
+  }, [portraitFantasyTeams, fantasyEntryIds])
 
   const nextFixtureSortKey = useCallback(
     (el) => {
@@ -559,12 +987,63 @@ export function PlayersWorkbench({
   const outfieldList = useMemo(() => {
     if (!bootstrap?.elements?.length) return []
     let list = [...bootstrap.elements]
-    if (positionFilter !== POS_FILTER_ALL) {
-      list = list.filter((el) => String(el.element_type) === positionFilter)
+
+    if (portrait) {
+      // Portrait — multi-select filters. Empty arrays mean "nothing checked"
+      // and produce zero matches (empty state).
+      const posSet = new Set(portraitPositions.map(String))
+      list = list.filter((el) => posSet.has(String(el.element_type)))
+
+      // PL clubs: pre-init (null) is treated as "all on" by the effective
+      // list, so no extra branch needed.
+      if (portraitPlClubs != null) {
+        const plSet = new Set(portraitPlClubs.map(Number))
+        list = list.filter((el) => plSet.has(Number(el.team)))
+      }
+
+      if (rostersHealthy && portraitFantasyTeams != null) {
+        const fantasySet = new Set(portraitFantasyTeams.map(Number))
+        const allFantasyOn =
+          fantasyEntryIds.length > 0 &&
+          fantasyEntryIds.every((id) => fantasySet.has(id))
+        if (!allFantasyOn) {
+          list = list.filter((el) => {
+            const owner = ownerByElementId.get(Number(el.id))
+            if (!owner) {
+              // Free agents only included if "Wire" mode is selected; in
+              // "Owned" mode FAs are excluded by the wire-owned filter below.
+              return portraitWireOwned === 'wire'
+            }
+            return fantasySet.has(Number(owner.leagueEntryId))
+          })
+        }
+      }
+
+      if (rostersHealthy) {
+        if (portraitWireOwned === 'wire') {
+          list = list.filter((el) => !ownedIds.has(Number(el.id)))
+        } else {
+          list = list.filter((el) => ownedIds.has(Number(el.id)))
+        }
+      }
+    } else {
+      if (positionFilter !== POS_FILTER_ALL) {
+        list = list.filter((el) => String(el.element_type) === positionFilter)
+      }
+      if (clubFilter !== 'all') {
+        list = list.filter((el) => Number(el.team) === Number(clubFilter))
+      }
+      if (availableOnly && rostersHealthy) {
+        if (myTeamLeagueEntryId != null) {
+          list = list.filter((el) => !rosterIdsForMine.has(Number(el.id)))
+        } else {
+          list = list.filter((el) => !ownedIds.has(Number(el.id)))
+        }
+      } else if (myTeamLeagueEntryId != null && rostersHealthy) {
+        list = list.filter((el) => rosterIdsForMine.has(Number(el.id)))
+      }
     }
-    if (clubFilter !== 'all') {
-      list = list.filter((el) => Number(el.team) === Number(clubFilter))
-    }
+
     const q = search.trim().toLowerCase()
     if (q) {
       list = list.filter((el) => {
@@ -573,15 +1052,7 @@ export function PlayersWorkbench({
         return known.includes(q) || web.includes(q)
       })
     }
-    if (availableOnly && rostersHealthy) {
-      if (myTeamLeagueEntryId != null) {
-        list = list.filter((el) => !rosterIdsForMine.has(Number(el.id)))
-      } else {
-        list = list.filter((el) => !ownedIds.has(Number(el.id)))
-      }
-    } else if (myTeamLeagueEntryId != null && rostersHealthy) {
-      list = list.filter((el) => rosterIdsForMine.has(Number(el.id)))
-    }
+
     list.sort((a, b) =>
       compareWireElements(a, b, effectiveSortKey, sortDir, {
         extraFor: summaryExtraFor,
@@ -595,10 +1066,17 @@ export function PlayersWorkbench({
     availableOnly,
     rostersHealthy,
     ownedIds,
+    ownerByElementId,
     rosterIdsForMine,
     myTeamLeagueEntryId,
     positionFilter,
     clubFilter,
+    portrait,
+    portraitPositions,
+    portraitPlClubs,
+    portraitFantasyTeams,
+    fantasyEntryIds,
+    portraitWireOwned,
     effectiveSortKey,
     sortDir,
     summaryExtraFor,
@@ -765,21 +1243,35 @@ export function PlayersWorkbench({
 
   /* Header meta line — "2025/26 · GW {gw} · {n} {label}" (e.g. "12 free-agent MIDs"). */
   const positionLabelForMeta = useMemo(() => {
-    if (positionFilter === POS_FILTER_ALL) return 'players'
+    if (effectivePositionFilter === POS_FILTER_ALL) return 'players'
     // POS_LABEL is uppercase ("GKP", "DEF", "MID", "FWD"); pluralize as-is.
-    return `${POS_LABEL[Number(positionFilter)] ?? 'players'}s`
-  }, [positionFilter])
+    return `${POS_LABEL[Number(effectivePositionFilter)] ?? 'players'}s`
+  }, [effectivePositionFilter])
   const headerMeta = useMemo(() => {
     const parts = ['2025/26']
     if (currentGw != null) parts.push(`GW ${currentGw}`)
     if (bootstrap) {
       const n = outfieldList.length
       const noun = positionLabelForMeta
-      const prefix = ownedMode === 'free' ? 'free-agent ' : ''
-      parts.push(`${n} ${prefix}${noun}`)
+      const freeAgentPrefix = portrait
+        ? portraitWireOwned === 'wire'
+          ? 'free-agent '
+          : ''
+        : ownedMode === 'free'
+          ? 'free-agent '
+          : ''
+      parts.push(`${n} ${freeAgentPrefix}${noun}`)
     }
     return parts.join(' · ')
-  }, [currentGw, bootstrap, outfieldList.length, positionLabelForMeta, ownedMode])
+  }, [
+    currentGw,
+    bootstrap,
+    outfieldList.length,
+    positionLabelForMeta,
+    ownedMode,
+    portrait,
+    portraitWireOwned,
+  ])
 
   const searchPlaceholder = portrait ? 'Search players' : '👀 Search players, clubs, owners…'
 
@@ -849,53 +1341,109 @@ export function PlayersWorkbench({
           ) : null}
         </div>
 
-        {/* Filter pill row — Position · Club · Owned · spacer · Sort · Stats */}
-        <div className="players-bench-filters" role="toolbar" aria-label="Player filters">
-          <PositionFilterPill
-            positionFilter={positionFilter}
-            onSelect={setPositionFilter}
-            compact={portrait}
-          />
-          <ClubFilterPill
-            clubFilter={clubFilter}
-            clubOptions={clubOptions}
-            onSelect={setClubFilter}
-            compact={portrait}
-          />
-          <OwnedFilterPill
-            ownedMode={ownedMode}
-            onOwnedModeChange={handleOwnedModeChange}
-            teams={teamsForFormSelect}
-            myFantasyEntryId={null}
-            logoMap={logoMap}
-            kitIndexByEntry={kitIndexByEntry}
-            compact={portrait}
-            rostersHealthy={rostersHealthy}
-          />
-          {!portrait ? <span className="players-bench-filters__spacer" aria-hidden /> : null}
-          <SortPill
-            sortKey={sortKey}
-            sortDir={sortDir}
-            onSortKeyChange={handleSortKeyChange}
-            onSortDirChange={handleSortDirChange}
-            positionFilter={positionFilter}
-          />
-          <StatsColumnsPill
-            selectedIds={selectedStatIds}
-            onChange={handleStatSelectionChange}
-            positionFilter={positionFilter}
-            maxStatColumns={statColumnMax ?? 8}
-            compact={portrait}
-          />
-        </div>
-
-        {/* Portrait-only: search + include-drafted row below the pill row */}
         {portrait ? (
-          <div className="players-bench-search-row">
-            {searchField}
-            {includeDraftedToggle}
+          <>
+            {/* Portrait toolbar — Row 1: full-width search bar */}
+            <div className="players-bench-search-row players-bench-search-row--portrait">
+              {searchField}
+            </div>
+
+            {/* Portrait toolbar — Row 2: scroll row with the four toolbar elements */}
+            <div
+              className="players-bench-filters players-bench-filters--portrait"
+              role="toolbar"
+              aria-label="Player filters"
+            >
+              <MultiSelectDropdownPill
+                label="Position"
+                options={PORTRAIT_POSITION_OPTIONS}
+                selectedIds={portraitPositions}
+                onSelectionChange={(ids) => setPortraitPositions(ids.map(String))}
+                allLabel="All"
+              />
+              <MultiSelectGroupedDropdownPill
+                label="Club"
+                allLabel="All"
+                sections={[
+                  {
+                    id: 'pl',
+                    label: 'Premier League',
+                    options: clubOptions.map((t) => ({
+                      id: Number(t.id),
+                      label: String(t.short_name ?? t.name ?? '?'),
+                    })),
+                    selectedIds: effectivePortraitPlClubs,
+                    onSelectionChange: (ids) => setPortraitPlClubs(ids.map(Number)),
+                  },
+                  {
+                    id: 'fantasy',
+                    label: 'Fantasy teams',
+                    options: leagueEntries
+                      .filter((e) => Number.isFinite(Number(e?.id)))
+                      .map((e) => ({
+                        id: Number(e.id),
+                        label: String(e?.teamName ?? `Team ${e?.id}`),
+                      })),
+                    selectedIds: effectivePortraitFantasyTeams,
+                    onSelectionChange: (ids) =>
+                      setPortraitFantasyTeams(ids.map(Number)),
+                  },
+                ]}
+              />
+              <PortraitStatsDropdownPill
+                selectedIds={selectedStatIds}
+                onChange={handleStatSelectionChange}
+                positionFilter={effectivePositionFilter}
+                maxStatColumns={statColumnMax ?? 5}
+              />
+              <WireOwnedSegmentedToggle
+                value={portraitWireOwned}
+                onChange={setPortraitWireOwned}
+                disabled={!rostersHealthy}
+              />
+            </div>
+          </>
+        ) : (
+          /* Desktop filter pill row — Position · Club · Owned · spacer · Sort · Stats */
+          <div className="players-bench-filters" role="toolbar" aria-label="Player filters">
+            <PositionFilterPill
+              positionFilter={positionFilter}
+              onSelect={setPositionFilter}
+              compact={portrait}
+            />
+            <ClubFilterPill
+              clubFilter={clubFilter}
+              clubOptions={clubOptions}
+              onSelect={setClubFilter}
+              compact={portrait}
+            />
+            <OwnedFilterPill
+              ownedMode={ownedMode}
+              onOwnedModeChange={handleOwnedModeChange}
+              teams={teamsForFormSelect}
+              myFantasyEntryId={null}
+              logoMap={logoMap}
+              kitIndexByEntry={kitIndexByEntry}
+              compact={portrait}
+              rostersHealthy={rostersHealthy}
+            />
+            <span className="players-bench-filters__spacer" aria-hidden />
+            <SortPill
+              sortKey={sortKey}
+              sortDir={sortDir}
+              onSortKeyChange={handleSortKeyChange}
+              onSortDirChange={handleSortDirChange}
+              positionFilter={positionFilter}
+            />
+            <StatsColumnsPill
+              selectedIds={selectedStatIds}
+              onChange={handleStatSelectionChange}
+              positionFilter={positionFilter}
+              maxStatColumns={statColumnMax ?? 8}
+              compact={portrait}
+            />
           </div>
-        ) : null}
+        )}
       </div>
 
       <div className="players-table-scroll">
@@ -1088,8 +1636,8 @@ export function PlayersWorkbench({
                     if (WIRE_STAT_CATALOG[col.id]) {
                       const statDef = WIRE_STAT_CATALOG[col.id]
                       const value = formatWireStatValue(col.id, el, summary, summaryLoading, {
-                        portraitPosAbbrev:
-                          portrait && positionFilter === POS_FILTER_ALL && col.id === 'pos',
+                        portraitPosSingleLetter:
+                          portrait && col.id === 'pos',
                       })
                       const tone = wireStatToneClass(value)
                       return (

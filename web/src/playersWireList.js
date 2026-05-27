@@ -9,6 +9,9 @@ export const POS_LABEL = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
 /** Abbreviated position labels for portrait wire table (All filter). */
 export const PORTRAIT_POS_LABEL = { 1: 'GK', 2: 'D', 3: 'M', 4: 'F' }
 
+/** Single-letter position labels for the portrait wire row body. */
+export const PORTRAIT_POS_LABEL_SINGLE = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' }
+
 /** Portrait default stat columns per position filter (≤600px) — wire list only.
  *
  * The 'all' filter shows Pos + GP + G + A + DC (5 stat cols) on mobile, with
@@ -840,6 +843,9 @@ export function formatWireStatValue(statId, el, summary, summaryLoading = false,
   if (!def || !el) return '—'
 
   if (def.format === 'pos') {
+    if (options.portraitPosSingleLetter) {
+      return PORTRAIT_POS_LABEL_SINGLE[el.element_type] ?? '—'
+    }
     if (options.portraitPosAbbrev) {
       return PORTRAIT_POS_LABEL[el.element_type] ?? '—'
     }
