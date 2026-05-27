@@ -12101,3 +12101,63 @@
 .mockup[data-theme='dark'] .mock-standings-nav-luck__table tbody td.is-neg {
   color: #fecaca;
 }
+
+/* ================================================================== */
+/* Top-level mockup tabs (Standings / Wire / Live / Other)              */
+/* ------------------------------------------------------------------- */
+/* Visual language mirrors .mock-standings-nav-subnav--pill from the    */
+/* standings sub-nav showcase (Frame 1 of bd42767) — brand-tinted       */
+/* underline + bold label on active, muted text on inactive. Sticks     */
+/* just below the .mockup__ribbon so a tab switch is one click away     */
+/* while scrolling within an active tab.                                */
+/* ================================================================== */
+.mockup__tabs {
+  position: sticky;
+  /* Ribbon padding (--space-2 × 2 = 16px) + ~16px text + 1px border ≈ 33px. */
+  top: 33px;
+  z-index: 49;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 0 var(--space-5);
+  /* Bleed across the .mockup__page horizontal padding so the underline
+   * stretches edge-to-edge and the bar reads as page chrome rather than
+   * an inline element. */
+  margin: 0 calc(-1 * var(--space-5)) var(--space-5);
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+
+.mockup__tab {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-family: 'Geist', system-ui, sans-serif;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.01em;
+  padding: 12px 14px 10px;
+  margin-bottom: -1px; /* underline overlaps the bar's border-bottom */
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+  transition: color 0.12s ease, border-color 0.12s ease;
+}
+
+.mockup__tab:hover:not(.is-active) {
+  color: var(--text-strong);
+}
+
+.mockup__tab.is-active {
+  color: var(--brand);
+  border-bottom-color: var(--brand);
+  font-weight: 700;
+}
+
+.mockup__tab:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

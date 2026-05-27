@@ -8393,11 +8393,32 @@ function readStoredMockupTheme() {
   return 'light'
 }
 
+/* Top-level mockup tabs. Default lands on Standings — the active focus
+ * area where new sub-nav frames just shipped. Wire / Live isolate the
+ * recent variant iterations; Other catches everything else (foundations,
+ * design-system explorations, past surfaces). */
+const MOCKUP_TABS = [
+  { id: 'standings', label: 'Standings' },
+  { id: 'wire',      label: 'Wire' },
+  { id: 'live',      label: 'Live' },
+  { id: 'other',     label: 'Other' },
+]
+
+function readStoredMockupTab() {
+  if (typeof window === 'undefined') return 'standings'
+  try {
+    const stored = window.sessionStorage.getItem('mockupActiveTab')
+    if (stored && MOCKUP_TABS.some((t) => t.id === stored)) return stored
+  } catch { /* ignore */ }
+  return 'standings'
+}
+
 export function Mockup() {
   const { data } = useLeagueData()
   const tableRows = data?.tableRows ?? []
   const leagueEntries = data?.leagueEntries ?? []
   const [theme, setTheme] = useState(readStoredMockupTheme)
+  const [activeTab, setActiveTab] = useState(readStoredMockupTab)
 
   const toggleTheme = () => {
     setTheme((t) => {
@@ -8405,6 +8426,11 @@ export function Mockup() {
       try { window.localStorage.setItem('tclot-mockup-theme', next) } catch { /* ignore */ }
       return next
     })
+  }
+
+  const handleTabChange = (id) => {
+    setActiveTab(id)
+    try { window.sessionStorage.setItem('mockupActiveTab', id) } catch { /* ignore */ }
   }
 
   return (
@@ -8432,6 +8458,27 @@ export function Mockup() {
           </p>
         </div>
 
+        {/* Top-level tabs. Sticks just below the .mockup__ribbon so a
+         * tab switch is always one click away while scrolling within an
+         * active tab. Pill-tab visual language mirrors
+         * .mock-standings-nav-subnav--pill (Frame 1 of the standings
+         * sub-nav showcase). */}
+        <nav className="mockup__tabs" role="tablist" aria-label="Mockup sections">
+          {MOCKUP_TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === t.id}
+              className={'mockup__tab' + (activeTab === t.id ? ' is-active' : '')}
+              onClick={() => handleTabChange(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </nav>
+
+        {activeTab === 'other' && (<>
         {/* 0. Design decisions tracker */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Decisions tracker</div>
@@ -8746,7 +8793,9 @@ export function Mockup() {
           </p>
           <IconCompare />
         </section>
+        </>)}
 
+        {activeTab === 'standings' && (<>
         {/* 7. Standings (real data, flush) */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Standings · real data</div>
@@ -8758,7 +8807,9 @@ export function Mockup() {
           </p>
           <FlushStandings rows={tableRows} leagueEntries={leagueEntries} />
         </section>
+        </>)}
 
+        {activeTab === 'other' && (<>
         {/* 8. Schedule matrix */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Schedule luck matrix</div>
@@ -8782,7 +8833,9 @@ export function Mockup() {
           </p>
           <HallTrophies />
         </section>
+        </>)}
 
+        {activeTab === 'live' && (<>
         {/* 10. Live banner — single concept (kept as-is) */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Live banner — single fixture</div>
@@ -8969,7 +9022,9 @@ export function Mockup() {
           </p>
           <ContribStreamingShowcase />
         </section>
+        </>)}
 
+        {activeTab === 'other' && (<>
         {/* 12b. Mobile portrait — other surfaces */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Mobile portrait · other surfaces</div>
@@ -9177,7 +9232,9 @@ export function Mockup() {
           </p>
           <WaiversFeed />
         </section>
+        </>)}
 
+        {activeTab === 'wire' && (<>
         {/* ============ WIRE PORTRAIT LAYOUT VARIANTS ============ */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Wire · portrait layout variants</div>
@@ -9224,7 +9281,9 @@ export function Mockup() {
           </p>
           <WirePortraitTileRightVariants />
         </section>
+        </>)}
 
+        {activeTab === 'standings' && (<>
         {/* ============ STANDINGS — PORTRAIT LAYOUT VARIANTS (A–E) ============ */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Standings · portrait layout variants</div>
@@ -9262,8 +9321,20 @@ export function Mockup() {
           <StandingsNavShowcase />
         </section>
 
+        {/* Part 2 surfaces — Standings tab only renders the standings
+         * portrait surface; the rest (trophy room, schedule, waivers,
+         * trades) live under the Other tab. */}
+        {MOCKUP_PART2_SECTIONS.filter((s) => s.id === 'standings-portrait').map((section) => (
+          <section key={section.id} className="mockup__section">
+            <div className="mockup__eyebrow">{section.label}</div>
+            {section.render()}
+          </section>
+        ))}
+        </>)}
+
+        {activeTab === 'other' && (<>
         {/* 17. Part 2 surfaces — staged separately, integrated as a batch */}
-        {MOCKUP_PART2_SECTIONS.map((section) => (
+        {MOCKUP_PART2_SECTIONS.filter((s) => s.id !== 'standings-portrait').map((section) => (
           <section key={section.id} className="mockup__section">
             <div className="mockup__eyebrow">{section.label}</div>
             {section.render()}
@@ -9280,6 +9351,7 @@ export function Mockup() {
           </p>
           <SettingsShowcase />
         </section>
+        </>)}
 
         <div className="mockup-note">
           <strong style={{ color: 'var(--text-strong)' }}>System coverage:</strong> the
