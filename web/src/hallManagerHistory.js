@@ -389,6 +389,208 @@ export function computeHallAlgorithmRows(tableRows) {
  * "Luke Butcher" → "LB"). Falls back to the display key's two-letter form only
  * when no full name is available (initial render, before `tableRows` load).
  */
+/**
+ * League-wide all-time records derived from `HALL_SEASON_FINAL_TABLES`
+ * (and the live season when `tableRows` is supplied). Returns the
+ * record-holders the Heritage → Trophy Room → Records section renders.
+ *
+ * **Recomputed on every call** — when next season's final table is
+ * appended to `HALL_SEASON_FINAL_TABLES` (or the live season exceeds
+ * the current ceiling/floor), the records update automatically without
+ * any UI edits required.
+ *
+ * **Tie-breaker policy:** within each category we keep the *first*
+ * row encountered after a stable iteration. The reduce loop walks
+ * seasons oldest → newest, so when scores tie the older holder wins
+ * — i.e. records stand until truly broken, not equalled.
+ *
+ * Records 10 + 11 (highest-pts loss / lowest-pts win) require GW-level
+ * fixture history we don't currently archive (HALL_SEASON_FINAL_TABLES
+ * only carries season totals). Those two stay manually curated until
+ * the GW history is wired in — the function returns them via the
+ * `_static` field so the caller can render them in the same grid.
+ *
+ * @param {object[] | null | undefined} tableRows live `useLeagueData`
+ *   rows — when present, the live `2025-26` season is folded into the
+ *   record search so Andy / Luke can break records mid-season.
+ */
+export function computeHallRecords(tableRows) {
+  const liveRows = buildLiveSeasonHallRows(tableRows)
+  const seasons =
+    liveRows.length > 0
+      ? [...HALL_SEASON_FINAL_TABLES, { season: LIVE_HALL_SEASON_LABEL, rows: liveRows }]
+      : HALL_SEASON_FINAL_TABLES
+
+  /** Flat (season, row) pairs for max/min over all entries. */
+  const flat = seasons.flatMap(({ season, rows }) =>
+    (rows ?? []).map((r) => ({ season, ...r })),
+  )
+  if (flat.length === 0) {
+    return { items: [] }
+  }
+
+  /** Stable max — returns the first record reached when scores tie. */
+  const maxBy = (arr, fn) =>
+    arr.reduce((best, cur) => (fn(cur) > fn(best) ? cur : best))
+  const minBy = (arr, fn) =>
+    arr.reduce((best, cur) => (fn(cur) < fn(best) ? cur : best))
+
+  const highestPts = maxBy(flat, (r) => r.pts ?? -Infinity)
+  const lowestPts = minBy(flat, (r) => r.pts ?? Infinity)
+  const highestPf = maxBy(flat, (r) => r.pf ?? -Infinity)
+  const lowestPf = minBy(flat, (r) => r.pf ?? Infinity)
+  const highestSecond = maxBy(
+    flat.filter((r) => r.rank === 2),
+    (r) => r.pts ?? -Infinity,
+  )
+
+  /** Per-season computed margins / ranges. */
+  const seasonMargins = seasons
+    .map(({ season, rows }) => {
+      const sorted = [...(rows ?? [])].sort((a, b) => a.rank - b.rank)
+      if (sorted.length < 2) return null
+      const r1 = sorted[0]
+      const last = sorted[sorted.length - 1]
+      const r2 = sorted[1]
+      const r7 = sorted[sorted.length - 2] ?? null
+      return {
+        season,
+        r1,
+        r2,
+        r7,
+        r8: last,
+        winMargin: (r1.pts ?? 0) - (r2.pts ?? 0),
+        loseMargin: r7 ? (r7.pts ?? 0) - (last.pts ?? 0) : 0,
+        spread: (r1.pts ?? 0) - (last.pts ?? 0),
+      }
+    })
+    .filter(Boolean)
+
+  const biggestWinMargin = maxBy(seasonMargins, (s) => s.winMargin)
+  const biggestLoseMargin = maxBy(seasonMargins, (s) => s.loseMargin)
+  const biggestSpread = maxBy(seasonMargins, (s) => s.spread)
+  const smallestSpread = minBy(seasonMargins, (s) => s.spread)
+
+  /** Tone hints used by the UI to color tiles consistently. */
+  const T = /** @type {const} */ ({
+    APEX: 'apex',
+    NADIR: 'nadir',
+    MARGIN: 'margin',
+    RANGE: 'range',
+    EDGE: 'edge',
+  })
+
+  const items = [
+    {
+      key: 'highest-pts',
+      label: 'Highest points total',
+      value: `${highestPts.pts}`,
+      unit: 'pts',
+      team: highestPts.team,
+      season: highestPts.season,
+      tone: T.APEX,
+    },
+    {
+      key: 'lowest-pts',
+      label: 'Lowest points total',
+      value: `${lowestPts.pts}`,
+      unit: 'pts',
+      team: lowestPts.team,
+      season: lowestPts.season,
+      tone: T.NADIR,
+    },
+    {
+      key: 'highest-for',
+      label: 'Highest For total',
+      value: `${highestPf.pf}`,
+      unit: '',
+      team: highestPf.team,
+      season: highestPf.season,
+      tone: T.APEX,
+    },
+    {
+      key: 'lowest-for',
+      label: 'Lowest For total',
+      value: `${lowestPf.pf}`,
+      unit: '',
+      team: lowestPf.team,
+      season: lowestPf.season,
+      tone: T.NADIR,
+    },
+    {
+      key: 'biggest-title-margin',
+      label: 'Biggest title-winning margin',
+      value: `${biggestWinMargin.winMargin}`,
+      unit: 'pts',
+      team: biggestWinMargin.r1.team,
+      season: biggestWinMargin.season,
+      tone: T.MARGIN,
+    },
+    {
+      key: 'biggest-losing-margin',
+      label: 'Biggest league-losing margin',
+      value: `${biggestLoseMargin.loseMargin}`,
+      unit: 'pts',
+      team: biggestLoseMargin.r8.team,
+      season: biggestLoseMargin.season,
+      tone: T.MARGIN,
+    },
+    {
+      key: 'biggest-spread',
+      label: 'Biggest final points range',
+      value: `${biggestSpread.spread}`,
+      unit: 'pts',
+      team: `${biggestSpread.r1.team} → ${biggestSpread.r8.team}`,
+      season: biggestSpread.season,
+      tone: T.RANGE,
+    },
+    {
+      key: 'smallest-spread',
+      label: 'Smallest final points range',
+      value: `${smallestSpread.spread}`,
+      unit: 'pts',
+      team: `${smallestSpread.r1.team} → ${smallestSpread.r8.team}`,
+      season: smallestSpread.season,
+      tone: T.RANGE,
+    },
+    {
+      key: 'highest-second',
+      label: 'Highest 2nd-place points',
+      value: `${highestSecond.pts}`,
+      unit: 'pts',
+      team: highestSecond.team,
+      season: highestSecond.season,
+      tone: T.APEX,
+    },
+    /* GW-level records — these need fixture history we don't archive
+     * yet. Static entries until that data lands; flagged with `_static`
+     * so future maintainers know to revisit when GW data becomes
+     * available. */
+    {
+      key: 'highest-loss',
+      label: 'Highest losing GW points',
+      value: '47',
+      unit: 'pts',
+      team: 'Ipswich Towelie',
+      season: '2024-25',
+      tone: T.EDGE,
+      _static: true,
+    },
+    {
+      key: 'lowest-win',
+      label: 'Lowest winning GW points',
+      value: '64',
+      unit: 'pts',
+      team: 'Dalston Benoit',
+      season: '2022-23',
+      tone: T.EDGE,
+      _static: true,
+    },
+  ]
+
+  return { items }
+}
+
 export function hallManagerInitials(displayKey, managerFull) {
   const full = String(managerFull ?? '').trim()
   if (full) return managerInitialsFromFull(full)

@@ -14734,6 +14734,157 @@ button.live-xp__player-name:focus-visible {
   }
 }
 
+/* ============ TCLOT Records (Trophy Room sub-tab footer) ============
+ * Grid of all-time record tiles below the trophy carousel. Each tile
+ * carries one of five `--{tone}` accent palettes (apex / nadir / margin
+ * / range / edge) so the section reads as a colorful "facts" panel
+ * without going full rainbow. Tiles share the same shape — eyebrow
+ * label, large value with optional unit, team holder, season — and the
+ * accent shows up as a left-edge bar + tinted icon-chip area.
+ *
+ * Layout: `auto-fit` columns at minmax(240px, 1fr) so the grid fills
+ * 1 col on phones, 2 on tablets, 3-4 on desktop without explicit
+ * breakpoints. */
+.heritage-records {
+  margin-top: 14px;
+  padding: 18px 18px 22px;
+}
+
+.heritage-records__head {
+  margin-bottom: 14px;
+}
+
+.heritage-records__title {
+  margin: 0 0 4px;
+  font-family: 'Cinzel', 'Geist', serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--fm-text-strong);
+}
+
+.heritage-records__sub {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fm-muted);
+}
+
+.heritage-records__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 720px) {
+  .heritage-records__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+}
+
+@media (max-width: 380px) {
+  /* Single-column fallback on the narrowest phones — two-up gets too
+   * tight once team-name strings hit ~12 chars. */
+  .heritage-records__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.heritage-record-tile {
+  /* Per-tone palette — overridden by the `--{tone}` modifier below. */
+  --rec-accent: var(--tclot-logo-purple, #795bfb);
+  --rec-tint:   color-mix(in srgb, var(--rec-accent) 8%, var(--fm-card));
+
+  position: relative;
+  display: grid;
+  grid-template-rows: auto auto auto auto;
+  gap: 4px;
+  padding: 12px 14px 12px 18px;
+  border: 1px solid color-mix(in srgb, var(--rec-accent) 22%, var(--fm-border));
+  border-left: 3px solid var(--rec-accent);
+  border-radius: 10px;
+  background: var(--rec-tint);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.heritage-record-tile__label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heritage-record-tile__value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.32em;
+  font-size: 1.6rem;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--rec-accent);
+  font-variant-numeric: tabular-nums;
+}
+
+.heritage-record-tile__unit {
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.heritage-record-tile__team {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heritage-record-tile__season {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fm-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Per-tone accent palettes ---- */
+.heritage-record-tile--apex {
+  --rec-accent: #c69011;
+}
+.heritage-record-tile--nadir {
+  --rec-accent: #d05a5a;
+}
+.heritage-record-tile--margin {
+  --rec-accent: var(--tclot-logo-purple, #795bfb);
+}
+.heritage-record-tile--range {
+  --rec-accent: #4f8fc2;
+}
+.heritage-record-tile--edge {
+  --rec-accent: #2da59a;
+}
+
+/* Dark-mode lift — boost the tint mix slightly so the cards don't
+ * disappear into the surrounding card chrome. */
+[data-tclot-theme='dark'] .heritage-record-tile,
+:root[data-theme='dark'] .heritage-record-tile {
+  --rec-tint: color-mix(in srgb, var(--rec-accent) 14%, var(--fm-card));
+}
+
 /* ============ Sub-tab 2: Team History ============ */
 
 .heritage-team-history {

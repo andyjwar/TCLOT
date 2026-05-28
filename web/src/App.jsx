@@ -281,6 +281,7 @@ import {
   buildManagerFullNameByHallKey,
   computeHallAlgorithmRows,
   computeHallManagerJourney,
+  computeHallRecords,
   computeLiveHallManagerCareerRows,
   hallManagerDisplayKey,
   hallManagerInitials,
@@ -676,6 +677,62 @@ function HeritageTrophyRoom() {
           />
         </div>
       )}
+    </section>
+  )
+}
+
+/* ---------------- TCLOT Records (sits below the trophy carousel) ----
+ * League-wide all-time records — derived from `HALL_SEASON_FINAL_TABLES`
+ * via `computeHallRecords()`. Records auto-refresh as new seasons land
+ * (or when the live `2025-26` season exceeds an existing ceiling/floor)
+ * — no UI edits required. The two GW-level records (highest losing /
+ * lowest winning GW points) are still manually curated since we don't
+ * archive fixture-level history yet; flagged in the data via `_static`. */
+
+/* Tones drive per-tile color treatment via `heritage-record-tile--{tone}`:
+ *   apex   — peak achievements (highest pts, highest For, highest 2nd) — gold
+ *   nadir  — wooden-spoon / floor records (lowest pts, lowest For)    — muted red
+ *   margin — winning / losing margins (1↔2 gap, 7↔8 gap)              — violet
+ *   range  — end-of-season top-vs-bottom spread (1↔8 gap)             — cyan-violet
+ *   edge   — single-GW outliers (highest losing GW, lowest winning GW)— teal */
+function HeritageRecords({ tableRows }) {
+  const records = useMemo(() => computeHallRecords(tableRows), [tableRows])
+  if (!records?.items?.length) return null
+
+  return (
+    <section
+      className="tile heritage-records"
+      aria-labelledby="heritage-records-heading"
+    >
+      <header className="heritage-records__head">
+        <h2 id="heritage-records-heading" className="heritage-records__title">
+          TCLOT Records
+        </h2>
+        <p className="heritage-records__sub">
+          All-time league bests, worsts, and margins — updated automatically
+          as seasons unfold.
+        </p>
+      </header>
+      <ul className="heritage-records__grid">
+        {records.items.map((rec) => (
+          <li
+            key={rec.key}
+            className={`heritage-record-tile heritage-record-tile--${rec.tone}`}
+          >
+            <span className="heritage-record-tile__label">{rec.label}</span>
+            <span className="heritage-record-tile__value tabular">
+              {rec.value}
+              {rec.unit ? (
+                <span className="heritage-record-tile__unit">{rec.unit}</span>
+              ) : null}
+            </span>
+            <span className="heritage-record-tile__team" title={rec.team}>
+              {rec.team}
+            </span>
+            <span className="heritage-record-tile__season">{rec.season}</span>
+          </li>
+        ))}
+      </ul>
     </section>
   )
 }
@@ -1739,7 +1796,12 @@ function HallOfChampions({ tableRows = [] }) {
         aria-labelledby={`tab-heritage-${tab}`}
         className="heritage-subview-panel"
       >
-        {tab === 'trophy' ? <HeritageTrophyRoom /> : null}
+        {tab === 'trophy' ? (
+          <>
+            <HeritageTrophyRoom />
+            <HeritageRecords tableRows={tableRows} />
+          </>
+        ) : null}
         {tab === 'history' ? (
           <HeritageHistory tableRows={tableRows} fullNameMap={fullNameMap} />
         ) : null}
