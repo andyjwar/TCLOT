@@ -244,8 +244,7 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
 
 /**
  * Column header row above each team's table. Matches mockup
- * `mockup-table__head`. Tiny dots before G / A hint at the colored
- * accent the matching stat columns use.
+ * `mockup-table__head`.
  */
 function LiveExpandedTableHead() {
   return (
@@ -254,12 +253,8 @@ function LiveExpandedTableHead() {
       <div className="live-xp__th live-xp__th--pos">Pos</div>
       <div className="live-xp__th">Min</div>
       <div className="live-xp__th">DC</div>
-      <div className="live-xp__th live-xp__th--g" title="Goals">
-        <span className="live-xp__th-dot live-xp__th-dot--g" />G
-      </div>
-      <div className="live-xp__th live-xp__th--a" title="Assists">
-        <span className="live-xp__th-dot live-xp__th-dot--a" />A
-      </div>
+      <div className="live-xp__th live-xp__th--g" title="Goals">G</div>
+      <div className="live-xp__th live-xp__th--a" title="Assists">A</div>
       <div className="live-xp__th">B</div>
       <div className="live-xp__th live-xp__th--pts">Pts</div>
     </div>
