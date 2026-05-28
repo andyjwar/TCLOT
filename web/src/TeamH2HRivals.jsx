@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { buildH2hRivalsForTeam } from './h2hRivalsTable'
+import { CompactSelectPill } from './CompactSelectPill.jsx'
 
 function firstWord(name) {
   if (typeof name !== 'string') return ''
@@ -83,23 +84,18 @@ export function TeamH2HRivals({
       </h3>
 
       <div className="standings-h2h-rivals__picker-row">
-        <span className="standings-h2h-rivals__picker-label">Team</span>
         <div className="standings-h2h-rivals__picker">
-          <select
-            className="standings-h2h-rivals__select"
-            aria-label="Team for head-to-head rivals table"
-            value={activeTeamId ?? ''}
-            onChange={(e) => {
-              const v = e.target.value
-              onTeamChange(v === '' ? null : Number(v))
-            }}
-          >
-            {teamsForFormSelect.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.teamName}
-              </option>
-            ))}
-          </select>
+          <CompactSelectPill
+            label="Team"
+            ariaLabel="Team for head-to-head rivals table"
+            value={activeTeamId == null ? '' : String(activeTeamId)}
+            onChange={(next) => onTeamChange(next === '' ? null : Number(next))}
+            isActive={activeTeamId != null}
+            options={teamsForFormSelect.map((t) => ({
+              value: String(t.id),
+              label: t.teamName,
+            }))}
+          />
         </div>
       </div>
 

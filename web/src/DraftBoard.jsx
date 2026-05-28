@@ -4,6 +4,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { DraftQuality } from './DraftQuality'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { compareLeagueEntriesByDraftSlot, minOverallPickByEntryId } from './draftTeamOrder'
+import { CompactSelectPill } from './CompactSelectPill.jsx'
 
 const POS_OPTIONS = ['GKP', 'DEF', 'MID', 'FWD']
 
@@ -259,48 +260,54 @@ export function DraftBoard({
           </h2>
           <div className="draft-board-filter-scroll">
             <div className="draft-board-filters" role="group" aria-label="Draft filters">
-              <select
-                className="hall-historic-season-select draft-board-filter-select"
-                aria-label="Filter by team"
+              <CompactSelectPill
+                className="draft-board-filter-pill"
+                label="Team"
+                ariaLabel="Filter by team"
                 value={teamFilter}
-                onChange={(e) => setTeamFilter(e.target.value)}
+                onChange={(next) => setTeamFilter(String(next))}
+                isActive={teamFilter !== ''}
                 disabled={!teamOptions.length}
-              >
-                <option value="">All teams</option>
-                {teamOptions.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="hall-historic-season-select draft-board-filter-select"
-                aria-label="Filter by round"
+                options={[
+                  { value: '', label: 'All teams' },
+                  ...teamOptions.map((o) => ({
+                    value: o.value,
+                    label: o.label,
+                  })),
+                ]}
+              />
+              <CompactSelectPill
+                className="draft-board-filter-pill"
+                label="Round"
+                ariaLabel="Filter by round"
                 value={roundFilter}
-                onChange={(e) => setRoundFilter(e.target.value)}
+                onChange={(next) => setRoundFilter(String(next))}
+                isActive={roundFilter !== ''}
                 disabled={!picks.length}
-              >
-                <option value="">All rounds</option>
-                {Array.from({ length: maxRound }, (_, i) => i + 1).map((r) => (
-                  <option key={r} value={String(r)}>
-                    Round {r}
-                  </option>
-                ))}
-              </select>
-              <select
-                className="hall-historic-season-select draft-board-filter-select"
-                aria-label="Filter by position"
+                options={[
+                  { value: '', label: 'All rounds' },
+                  ...Array.from({ length: maxRound }, (_, i) => i + 1).map((r) => ({
+                    value: String(r),
+                    label: `Round ${r}`,
+                  })),
+                ]}
+              />
+              <CompactSelectPill
+                className="draft-board-filter-pill"
+                label="Pos"
+                ariaLabel="Filter by position"
                 value={posFilter}
-                onChange={(e) => setPosFilter(e.target.value)}
+                onChange={(next) => setPosFilter(String(next))}
+                isActive={posFilter !== ''}
                 disabled={!picks.length}
-              >
-                <option value="">All positions</option>
-                {POS_OPTIONS.map((pos) => (
-                  <option key={pos} value={pos}>
-                    {pos}
-                  </option>
-                ))}
-              </select>
+                options={[
+                  { value: '', label: 'All positions' },
+                  ...POS_OPTIONS.map((pos) => ({
+                    value: pos,
+                    label: pos,
+                  })),
+                ]}
+              />
             </div>
           </div>
         </div>

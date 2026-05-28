@@ -1,8 +1,3 @@
-const HERO_VILLAIN_GLYPH = {
-  hero: '🦸',
-  villain: '🦹',
-};
-
 const HERO_VILLAIN_LABEL = {
   hero: 'HERO DEFEAT',
   villain: 'VILLAIN VICTORY',
@@ -22,16 +17,17 @@ const HERO_VILLAIN_ARIA = {
  * Size variants (different host contexts have different vertical/horizontal
  * room — the avatar treatment compresses accordingly):
  *
- *  - `default`: 2px tinted ring around the avatar + 16px emoji dot at the
- *    bottom-right + caption pill rendered in a slot below. Used by
- *    `LiveFaceOffRow` where the crest column has room for a caption.
- *    The caller controls whether the caption slot occupies space via
- *    `captionSlotVisible` (so both sides of a face-off can reserve the slot
- *    even when only one side has a status, keeping avatars Y-aligned).
+ *  - `default`: 2px tinted ring around the avatar + caption pill rendered in
+ *    a slot below the avatar. The emoji badge dot was removed (round 3
+ *    follow-up) — the pill wording alone carries the narrative and the dot
+ *    pushed alignment on tight crest columns. The caller controls whether
+ *    the caption slot occupies space via `captionSlotVisible` (so both
+ *    sides of a face-off can reserve the slot even when only one side
+ *    has a status, keeping avatars Y-aligned).
  *
- *  - `compact`: 2px tinted ring + 16px emoji dot, NO caption slot rendered.
- *    Used in `live-squad-tile` heads where the team name immediately follows
- *    the avatar and already serves as a caption.
+ *  - `compact`: 2px tinted ring only, NO caption slot rendered. Used in
+ *    `live-squad-tile` heads where the team name immediately follows the
+ *    avatar and already serves as a caption.
  *
  *  - `tiny`: 2px tinted ring only — no dot, no caption. Used in the Live
  *    Table standings row where the cell is tight. Tinted row background and
@@ -55,7 +51,6 @@ export function HeroVillainAvatarFrame({
   captionSlotVisible = false,
   children,
 }) {
-  const showDot = status && size !== 'tiny';
   const showCaptionSlot = size === 'default' && captionSlotVisible;
   const ariaLabel = status ? HERO_VILLAIN_ARIA[status] : undefined;
 
@@ -72,14 +67,6 @@ export function HeroVillainAvatarFrame({
         title={status && size === 'tiny' ? ariaLabel : undefined}
       >
         {children}
-        {showDot ? (
-          <span
-            className={'live-banner-row__badge-dot live-banner-row__badge-dot--' + status}
-            aria-hidden="true"
-          >
-            {HERO_VILLAIN_GLYPH[status]}
-          </span>
-        ) : null}
       </span>
       {showCaptionSlot ? (
         <span className="live-banner-row__caption-slot">

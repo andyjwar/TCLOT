@@ -11,6 +11,7 @@
 
 import { ThemeToggle } from './ThemeToggle'
 import { DEFAULT_TAB_OPTIONS } from './settingsStorage'
+import { CompactSelectPill } from './CompactSelectPill.jsx'
 
 /**
  * @param {{
@@ -43,22 +44,22 @@ export function SettingsPage({
         <div className="settings-row">
           <label
             className="settings-row__label"
+            id="settings-default-tab-label"
             htmlFor="settings-default-tab"
           >
             Default landing tab
           </label>
-          <select
+          <CompactSelectPill
             id="settings-default-tab"
-            className="settings-select"
+            ariaLabel="Default landing tab"
+            align="right"
             value={defaultTab}
-            onChange={(e) => onDefaultTabChange(e.target.value)}
-          >
-            {DEFAULT_TAB_OPTIONS.map((opt) => (
-              <option key={opt.id} value={opt.id}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
+            onChange={(next) => onDefaultTabChange(String(next))}
+            options={DEFAULT_TAB_OPTIONS.map((opt) => ({
+              value: opt.id,
+              label: opt.label,
+            }))}
+          />
         </div>
       </div>
     </section>

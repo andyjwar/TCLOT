@@ -8,6 +8,7 @@ import {
   sortGroupsByTeamName,
   sortMovesWaiverThenFa,
 } from './waiverMovesSort.js'
+import { CompactSelectPill } from './CompactSelectPill.jsx'
 
 function teamFirstToken(teamName) {
   const t = (teamName ?? '').trim()
@@ -220,18 +221,17 @@ export function WaiverSummaryShare({
       <div className="waiver-summary-share__toolbar">
         <div className="waiver-summary-share__toolbar-row waiver-summary-share__toolbar-row--primary">
           {gwPickerOptions.length > 0 && gwValue != null && onGwChange ? (
-            <select
-              className="tile-gw-select tile-gw-select--inline waiver-summary-share__gw-select"
-              aria-label="Waivers game week"
-              value={gwValue}
-              onChange={(e) => onGwChange(Number(e.target.value))}
-            >
-              {gwPickerOptions.map((g) => (
-                <option key={g} value={g}>
-                  {gameWeekSelectLabel(g)}
-                </option>
-              ))}
-            </select>
+            <CompactSelectPill
+              className="waiver-summary-share__gw-select"
+              label="GW"
+              ariaLabel="Waivers game week"
+              value={String(gwValue)}
+              onChange={(next) => onGwChange(Number(next))}
+              options={gwPickerOptions.map((g) => ({
+                value: String(g),
+                label: gameWeekSelectLabel(g),
+              }))}
+            />
           ) : null}
           <div
             className="waiver-summary-share__layout-toggle"

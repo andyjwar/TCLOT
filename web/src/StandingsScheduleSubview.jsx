@@ -5,6 +5,7 @@ import {
   groupScheduleByGw,
   summarizeTeamSchedule,
 } from './standingsScheduleDerivations'
+import { CompactSelectPill } from './CompactSelectPill.jsx'
 
 function pad2(n) {
   const num = Number(n)
@@ -125,25 +126,24 @@ export function StandingsScheduleSubview({
         role="group"
         aria-label="Schedule filters"
       >
-        <label className="standings-schedule__picker">
-          <span className="standings-schedule__picker-label">Team</span>
-          <select
-            className="standings-schedule__picker-select"
-            aria-label="Filter schedule by team"
-            value={teamFilter}
-            onChange={(e) => {
-              const v = e.target.value
-              onTeamFilterChange(v === 'all' ? 'all' : Number(v))
-            }}
-          >
-            <option value="all">All teams</option>
-            {teamsForFormSelect.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.teamName}
-              </option>
-            ))}
-          </select>
-        </label>
+        <div className="standings-schedule__picker">
+          <CompactSelectPill
+            label="Team"
+            ariaLabel="Filter schedule by team"
+            value={teamFilter === 'all' ? 'all' : String(teamFilter)}
+            onChange={(next) =>
+              onTeamFilterChange(next === 'all' ? 'all' : Number(next))
+            }
+            isActive={teamFilter !== 'all'}
+            options={[
+              { value: 'all', label: 'All teams' },
+              ...teamsForFormSelect.map((t) => ({
+                value: String(t.id),
+                label: t.teamName,
+              })),
+            ]}
+          />
+        </div>
 
         <div
           className="standings-schedule__seg"

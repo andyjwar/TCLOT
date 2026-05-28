@@ -3,9 +3,9 @@ import { useLiveScores } from './useLiveScores';
 import { TeamAvatar } from './TeamAvatar';
 import { fetchEspnPremWindow } from './espnPremWindow.js';
 import { buildOwnerByElementId } from './playerContributionEvents.js';
-import { gameWeekSelectLabel } from './gwLabel.js';
-import { GameWeekSelectOptgroups } from './GameWeekSelectOptgroups.jsx';
+import { gameWeekSelectLabel, groupGameWeekOptionsForSelect } from './gwLabel.js';
 import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
+import { CompactSelectPill } from './CompactSelectPill.jsx';
 import {
   fplElementDisplayName,
   fplElementWebName,
@@ -788,6 +788,35 @@ export function PremWindow({
     [gwOptions, gameweek],
   );
 
+  /* Build the flat options + group labels list consumed by
+     CompactSelectPill. Preserves the Past / Current / Upcoming grouping
+     that the previous native <select> got via <optgroup>. */
+  const gwPillOptions = useMemo(() => {
+    if (!gwOptions.length) {
+      return [{ value: String(gameweek), label: gameWeekSelectLabel(gameweek) }];
+    }
+    const { past, current, upcoming } = groupGameWeekOptionsForSelect(gwOptions);
+    const out = [];
+    for (const o of past) {
+      out.push({ value: String(o.id), label: o.label, group: 'Past game weeks' });
+    }
+    for (const o of current) {
+      out.push({
+        value: String(o.id),
+        label: o.label,
+        group: 'Current game week',
+      });
+    }
+    for (const o of upcoming) {
+      out.push({
+        value: String(o.id),
+        label: o.label,
+        group: 'Upcoming game weeks',
+      });
+    }
+    return out;
+  }, [gwOptions, gameweek]);
+
   const [expanded, setExpanded] = useState(() => new Set());
   const toggle = useCallback((/** @type {number | string} */ matchKey) => {
     setExpanded((prev) => {
@@ -804,20 +833,14 @@ export function PremWindow({
         <div className="live-toolbar live-toolbar--section-sticky">
           <div className="live-gw-field">
             <div className="live-gw-input-row">
-              <label className="live-gw-label">
-                <select
-                  className="live-gw-select"
-                  aria-label="Game week"
-                  value={gameweek}
-                  onChange={(e) => onGameweekChange(Number(e.target.value))}
-                >
-                  {gwOptions.length ? (
-                    <GameWeekSelectOptgroups options={gwOptions} />
-                  ) : (
-                    <option value={gameweek}>{gameWeekSelectLabel(gameweek)}</option>
-                  )}
-                </select>
-              </label>
+              <CompactSelectPill
+                className="live-gw-pill-select"
+                label="GW"
+                ariaLabel="Game week"
+                value={String(gameweek)}
+                onChange={(next) => onGameweekChange(Number(next))}
+                options={gwPillOptions}
+              />
               {selectedGwOption?.finished ? (
                 <span
                   className="live-gw-pill"
