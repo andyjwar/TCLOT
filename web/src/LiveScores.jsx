@@ -1,10 +1,12 @@
 import {
+  Fragment,
   useMemo,
   useState,
   useCallback,
   useSyncExternalStore,
 } from 'react';
 import { TeamAvatar } from './TeamAvatar';
+import { PointsCell } from './PointsCell.jsx';
 import { PlayerContributions } from './PlayerContributions';
 import { useLiveScores } from './useLiveScores';
 import { eventNameToGameWeekLabel } from './gwLabel.js';
@@ -20,6 +22,12 @@ import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
+import { GuardOfHonourSplash } from './GuardOfHonourSplash.jsx';
+import {
+  REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
+  REIGNING_CHAMPION_TEAM_NAME,
+  findChampionFixture,
+} from './championOfRecord.js';
 import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
 import { firstWord } from './teamNameUtils.js';
 import {
@@ -787,6 +795,469 @@ function proxyHostLabel() {
 }
 
 /**
+ * Build the row class string shared by mobile + desktop renders of the
+ * Live Table. Mirrors the production Standings variant-c row treatment:
+ * rank-1 row tint (`row-highlight`), rank-8 8th-place band, plus the
+ * Hero / Villain row tints inherited from the previous Live Table.
+ */
+function liveStandingsRowClass(row, isVillainVictory, isHeroDefeat) {
+  return [
+    row.liveRank === 1 ? 'row-highlight' : '',
+    row.liveRank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
+    isVillainVictory ? 'standings-row--villain-victory' : '',
+    isHeroDefeat ? 'standings-row--hero-defeat' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+/**
+ * Render the team cell content (avatar + name + +3/+1 chip + ↑/↓ move
+ * indicator). Used by both the mobile (variant-c-mobile) and desktop
+ * (variant-c sidebar) Live Table renders so the cell internals stay in
+ * sync. On mobile (`mobile === true`) the team name collapses to its
+ * first word via {@link firstWord} so a long club like "Crouch End
+ * Oashisu" fits the 390px viewport without wrapping.
+ */
+function LiveTeamCell({
+  row,
+  isVillainVictory,
+  isHeroDefeat,
+  teamLogoMap,
+  kitIndexByEntry,
+  mobile,
+}) {
+  const displayName = mobile ? firstWord(row.teamName) : row.teamName;
+  const moveUp = row.rankMove > 0;
+  const moveDown = row.rankMove < 0;
+  return (
+    <span className="team-cell">
+      <HeroVillainAvatarFrame
+        status={
+          isVillainVictory ? 'villain' : isHeroDefeat ? 'hero' : null
+        }
+        size="tiny"
+      >
+        <TeamAvatar
+          entryId={row.league_entry}
+          name={row.teamName}
+          size="sm"
+          logoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      </HeroVillainAvatarFrame>
+      <span className="team-name team-name--sidebar live-standings-team-name">
+        {displayName}
+        {moveUp ? (
+          <span
+            className="live-standings-move live-standings-move--up"
+            title={`Up ${row.rankMove} vs league #${row.rank}`}
+            aria-label={`Up ${row.rankMove} places vs league position ${row.rank}`}
+          >
+            ↑
+          </span>
+        ) : null}
+        {moveDown ? (
+          <span
+            className="live-standings-move live-standings-move--down"
+            title={`Down ${-row.rankMove} vs league #${row.rank}`}
+            aria-label={`Down ${-row.rankMove} places vs league position ${row.rank}`}
+          >
+            ↓
+          </span>
+        ) : null}
+      </span>
+      {row.h2hProj && row.h2hProj.value != null ? (
+        <span
+          className={`live-form-margin live-form-margin--${row.h2hProj.kind}`}
+          title={
+            row.h2hProj.kind === 'win'
+              ? `Projected H2H points: +${row.h2hProj.value} (winning this GW)`
+              : `Projected H2H points: +${row.h2hProj.value} (drawing this GW)`
+          }
+          aria-label={
+            row.h2hProj.kind === 'win'
+              ? `Projected H2H points plus ${row.h2hProj.value} (winning)`
+              : `Projected H2H points plus ${row.h2hProj.value} (drawing)`
+          }
+        >
+          +{row.h2hProj.value}
+        </span>
+      ) : null}
+    </span>
+  );
+}
+
+/**
+ * Single `LAST` dot for a Live Table row — collapses the previous
+ * `Last 5 + GW` two-column treatment into a single dot showing the
+ * **current GW's** H2H result. When the GW is in flight (not frozen)
+ * the dot pulses so on-pitch teams visibly read as live; frozen dots
+ * keep their colour but skip the pulse animation.
+ *
+ * Visually matches `.live-form-dot` from the legacy Form column so the
+ * Live Table reads as a single-dot variant of the production Standings
+ * Form column.
+ */
+function LiveLastDot({ row, gwStandingsFrozen, gameweek, teams }) {
+  const kind = row.gwOutcomeDot;
+  const isLive = !gwStandingsFrozen && kind !== 'none';
+  const cls = ['live-gw-dot', `live-gw-dot--${kind}`, isLive ? 'live-gw-dot--live' : '']
+    .filter(Boolean)
+    .join(' ');
+  const label =
+    kind === 'win'
+      ? `GW ${gameweek} winning`
+      : kind === 'draw'
+        ? `GW ${gameweek} drawing`
+        : kind === 'loss'
+          ? `GW ${gameweek} losing`
+          : `GW ${gameweek} not started`;
+  const oppName =
+    row.oppEntryThisGw != null
+      ? teamNameForEntry(teams, Number(row.oppEntryThisGw))
+      : null;
+  const hasScores = row.liveGw != null && row.oppLiveGw != null;
+  let tooltip = null;
+  if (oppName) {
+    if (hasScores) {
+      const liveTag = isLive ? ' · LIVE' : '';
+      tooltip = `GW${gameweek} · ${row.liveGw} − ${row.oppLiveGw} · vs ${oppName}${liveTag}`;
+    } else {
+      tooltip = `GW${gameweek} · vs ${oppName}`;
+    }
+  }
+  return (
+    <span
+      className={cls}
+      role="img"
+      tabIndex={tooltip ? 0 : -1}
+      data-tooltip={tooltip || undefined}
+      aria-label={tooltip ?? label}
+    />
+  );
+}
+
+/**
+ * Live Table — mirrors the production Standings variant-c table for
+ * visual parity (column widths, row padding, Minnows divider between
+ * rank 4 and rank 5, hero/villain row tints). Renders two variants:
+ *
+ *   • mobile (`mobile === true`) — `.standings-table--variant-c-mobile`
+ *     5-column layout (#, Team, For, PTS, Last) sized to fit a 390px
+ *     viewport without horizontal scroll. Team names collapse to the
+ *     first word via {@link firstWord}.
+ *
+ *   • desktop — `.standings-table--variant-c .standings-table--sidebar`
+ *     11-column layout (#, Team, PL, W, D, L, For, Faced, GD, PTS,
+ *     Last), full team names, same column widths as the production
+ *     Standings table.
+ *
+ * Both variants drop the legacy `Last 5` 5-dot column and rename `GW`
+ * to `LAST` (single dot rendered by {@link LiveLastDot}). PTS is
+ * rendered via the shared `<PointsCell size="md" />` so violet PTS
+ * styling stays unified across Live Table, Standings, CofC, and the
+ * algorithm leaderboard.
+ */
+function LiveStandingsTable({
+  liveStandingsRows,
+  gwStandingsFrozen,
+  gameweek,
+  teams,
+  teamLogoMap,
+  kitIndexByEntry,
+  villainVictoryEntryIds,
+  heroDefeatEntryIds,
+  mobile,
+}) {
+  const lastTitle = gwStandingsFrozen
+    ? 'This GW’s H2H result: green win, amber draw, red loss'
+    : 'Live H2H result vs opponent: green winning, amber drawing, red losing, muted pre-kickoff';
+
+  if (mobile) {
+    return (
+      <div className="table-scroll table-scroll--standings-open">
+        <table
+          className="standings-table standings-table--variant-c standings-table--variant-c-mobile standings-table--live-mobile"
+          role="table"
+          aria-label="Live Table — ranks 1 through 8 (sorted by projected points)"
+        >
+          <thead>
+            <tr>
+              <th scope="col" className="col-rank">#</th>
+              <th scope="col" className="col-team">Team</th>
+              <th scope="col" className="col-num col-for">For</th>
+              <th scope="col" className="col-num col-pts">PTS</th>
+              <th
+                scope="col"
+                className="col-last"
+                title={lastTitle}
+              >
+                Last
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {liveStandingsRows.map((row) => {
+              const isVillainVictory = villainVictoryEntryIds.has(
+                Number(row.league_entry),
+              );
+              const isHeroDefeat = heroDefeatEntryIds.has(
+                Number(row.league_entry),
+              );
+              const rowClass = liveStandingsRowClass(
+                row,
+                isVillainVictory,
+                isHeroDefeat,
+              );
+              return (
+                <Fragment key={row.league_entry}>
+                  <tr className={rowClass || undefined}>
+                    <td className="col-rank">
+                      {row.liveRank === 8 ? (
+                        <span
+                          role="img"
+                          className="standings-rank-8"
+                          aria-label="8"
+                        >
+                          🧩
+                        </span>
+                      ) : (
+                        row.liveRank
+                      )}
+                    </td>
+                    <td className="col-team">
+                      <LiveTeamCell
+                        row={row}
+                        isVillainVictory={isVillainVictory}
+                        isHeroDefeat={isHeroDefeat}
+                        teamLogoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                        mobile
+                      />
+                    </td>
+                    <td
+                      className="col-num col-for tabular"
+                      title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
+                    >
+                      {row.projectedFor}
+                    </td>
+                    <td className="col-num col-pts tabular">
+                      <PointsCell
+                        value={row.projectedPts}
+                        size="md"
+                        showLabel={false}
+                      />
+                    </td>
+                    <td className="col-last">
+                      <LiveLastDot
+                        row={row}
+                        gwStandingsFrozen={gwStandingsFrozen}
+                        gameweek={gameweek}
+                        teams={teams}
+                      />
+                    </td>
+                  </tr>
+                  {row.liveRank === 4 ? (
+                    <tr
+                      className="standings-divider standings-divider--minnows"
+                      aria-hidden="true"
+                    >
+                      <td colSpan={5}>
+                        <span className="standings-divider__label">
+                          Minnows
+                        </span>
+                      </td>
+                    </tr>
+                  ) : null}
+                </Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+
+  return (
+    <div className="table-scroll table-scroll--standings-open">
+      <table
+        className="standings-table standings-table--sidebar standings-table--live"
+        role="table"
+        aria-label="Live Table — ranks 1 through 8 (sorted by projected points)"
+      >
+        <thead>
+          <tr>
+            <th
+              className="col-rank"
+              title={
+                gwStandingsFrozen
+                  ? 'League position (this GW is finished)'
+                  : 'Position by projected points including this GW'
+              }
+            >
+              #
+            </th>
+            <th className="col-team">Team</th>
+            <th
+              className="col-num col-pl"
+              title="Season H2H matches played"
+            >
+              PL
+            </th>
+            <th className="col-num col-wdl" title="Season H2H wins">W</th>
+            <th className="col-num col-wdl" title="Season H2H draws">D</th>
+            <th className="col-num col-wdl" title="Season H2H losses">L</th>
+            <th
+              className="col-num col-for"
+              title={
+                gwStandingsFrozen
+                  ? 'Season points for (includes this GW)'
+                  : 'Season points for, plus this GW’s live FPL points'
+              }
+            >
+              For
+            </th>
+            <th
+              className="col-num col-faced"
+              title={
+                gwStandingsFrozen
+                  ? 'Season points against (includes this GW)'
+                  : 'Season points against, plus your opponent’s live GW score vs you (when paired)'
+              }
+            >
+              Faced
+            </th>
+            <th
+              className="col-num col-gd"
+              title={
+                gwStandingsFrozen
+                  ? 'Goal difference: For minus Against'
+                  : 'Projected GD: projected For minus projected Against'
+              }
+            >
+              GD
+            </th>
+            <th
+              className="col-num col-pts"
+              title={
+                gwStandingsFrozen
+                  ? 'Season H2H points (includes this GW)'
+                  : 'Season H2H points plus 3 / 1 / 0 from live score vs opponent this GW'
+              }
+            >
+              PTS
+            </th>
+            <th
+              className="col-last"
+              title={lastTitle}
+            >
+              Last
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {liveStandingsRows.map((row) => {
+            const isVillainVictory = villainVictoryEntryIds.has(
+              Number(row.league_entry),
+            );
+            const isHeroDefeat = heroDefeatEntryIds.has(
+              Number(row.league_entry),
+            );
+            const rowClass = liveStandingsRowClass(
+              row,
+              isVillainVictory,
+              isHeroDefeat,
+            );
+            return (
+              <Fragment key={row.league_entry}>
+                <tr className={rowClass || undefined}>
+                  <td className="col-rank">
+                    {row.liveRank === 8 ? (
+                      <span
+                        role="img"
+                        className="standings-rank-8"
+                        aria-label="8"
+                      >
+                        🧩
+                      </span>
+                    ) : (
+                      row.liveRank
+                    )}
+                  </td>
+                  <td className="col-team">
+                    <LiveTeamCell
+                      row={row}
+                      isVillainVictory={isVillainVictory}
+                      isHeroDefeat={isHeroDefeat}
+                      teamLogoMap={teamLogoMap}
+                      kitIndexByEntry={kitIndexByEntry}
+                      mobile={false}
+                    />
+                  </td>
+                  <td className="col-num col-pl tabular">
+                    {(row.matches_won ?? 0) +
+                      (row.matches_drawn ?? 0) +
+                      (row.matches_lost ?? 0)}
+                  </td>
+                  <td className="col-num col-wdl tabular">{row.matches_won ?? 0}</td>
+                  <td className="col-num col-wdl tabular">{row.matches_drawn ?? 0}</td>
+                  <td className="col-num col-wdl tabular">{row.matches_lost ?? 0}</td>
+                  <td
+                    className="col-num col-for tabular"
+                    title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
+                  >
+                    {row.projectedFor}
+                  </td>
+                  <td
+                    className="col-num col-faced tabular"
+                    title={`Season ${row.ga} + opponent GW${row.oppLiveGw != null ? ` (${row.oppLiveGw})` : ''}`}
+                  >
+                    {row.projectedGa}
+                  </td>
+                  <td className="col-num col-gd tabular">
+                    {row.projectedGd > 0
+                      ? `+${row.projectedGd}`
+                      : row.projectedGd}
+                  </td>
+                  <td className="col-num col-pts tabular">
+                    <PointsCell
+                      value={row.projectedPts}
+                      size="md"
+                      showLabel={false}
+                    />
+                  </td>
+                  <td className="col-last">
+                    <LiveLastDot
+                      row={row}
+                      gwStandingsFrozen={gwStandingsFrozen}
+                      gameweek={gameweek}
+                      teams={teams}
+                    />
+                  </td>
+                </tr>
+                {row.liveRank === 4 ? (
+                  <tr
+                    className="standings-divider standings-divider--minnows"
+                    aria-hidden="true"
+                  >
+                    <td colSpan={11}>
+                      <span className="standings-divider__label">
+                        Minnows
+                      </span>
+                    </td>
+                  </tr>
+                ) : null}
+              </Fragment>
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/**
  * @param {{ teams: Array<{ id: number, teamName: string, fplEntryId: number | null }>, tableRows?: Array<object>, matches?: Array<{ event: number, league_entry_1: number, league_entry_2: number, finished?: boolean, league_entry_1_points?: number, league_entry_2_points?: number }>, gameweek: number, onGameweekChange: (n: number) => void, onBootstrapLiveMeta?: (meta: { currentGw: number | null }) => void, teamLogoMap: object, kitIndexByEntry?: object, leagueId?: number | null, waiverOutGwRows?: object[], fplDraftCurrentGw?: number | null, projectionsOnly?: boolean }}
  */
 export function LiveScores({
@@ -913,6 +1384,56 @@ export function LiveScores({
     }
     return m;
   }, [squads]);
+
+  /**
+   * Guard of Honour splash — top-down 2D match-engine cinematic for the
+   * reigning champion's first fixture of a new season. Production trigger
+   * (`gameweek === 1`) is OR'd with a manual `?gohSplash=1` URL flag so the
+   * splash can be previewed against current (mid-season) data before the
+   * new season opener. Dismiss state is local to the component instance —
+   * resets on page reload, which matches how the FplLiveTripleThreatBanner
+   * promo behaves.
+   */
+  const gohForceFlag = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return new URLSearchParams(window.location.search).get('gohSplash') === '1';
+    } catch {
+      return false;
+    }
+  }, []);
+  const [gohDismissed, setGohDismissed] = useState(false);
+  const championFixtureBundle = useMemo(() => {
+    if (gohDismissed) return null;
+    const shouldRender = gohForceFlag || Number(gameweek) === 1;
+    if (!shouldRender) return null;
+    const fx = findChampionFixture(gwMatches, REIGNING_CHAMPION_LEAGUE_ENTRY_ID);
+    if (!fx) return null;
+    const champSquad = squadByLeagueEntry.get(fx.championLeagueEntryId);
+    const oppSquad = squadByLeagueEntry.get(fx.opponentLeagueEntryId);
+    const champStarters =
+      champSquad?.displayStarters?.length === 11
+        ? champSquad.displayStarters
+        : (champSquad?.starters ?? []);
+    const oppStarters =
+      oppSquad?.displayStarters?.length === 11
+        ? oppSquad.displayStarters
+        : (oppSquad?.starters ?? []);
+    if (champStarters.length < 11 || oppStarters.length < 11) return null;
+    return {
+      championStarters: champStarters,
+      opponentStarters: oppStarters,
+      championTeamName: REIGNING_CHAMPION_TEAM_NAME,
+      opponentTeamName: teamNameForEntry(teams, fx.opponentLeagueEntryId),
+    };
+  }, [
+    gohDismissed,
+    gohForceFlag,
+    gameweek,
+    gwMatches,
+    squadByLeagueEntry,
+    teams,
+  ]);
 
   /** Opponent’s live GW total for this GW (for projected Faced / GD / H2H pts). */
   const oppLiveGwByLeagueEntry = useMemo(() => {
@@ -1403,6 +1924,15 @@ export function LiveScores({
         />
       ) : (
         <>
+      {championFixtureBundle ? (
+        <GuardOfHonourSplash
+          championStarters={championFixtureBundle.championStarters}
+          opponentStarters={championFixtureBundle.opponentStarters}
+          championTeamName={championFixtureBundle.championTeamName}
+          opponentTeamName={championFixtureBundle.opponentTeamName}
+          onDismiss={() => setGohDismissed(true)}
+        />
+      ) : null}
       {useFixtureLayout ? (
         <section
           className="tile tile--compact live-banner-group-tile"
@@ -1711,363 +2241,17 @@ export function LiveScores({
         {!tableRows?.length ? (
           <p className="muted muted--tight">No standings data.</p>
         ) : (
-          <div className="table-scroll table-scroll--standings-open">
-            <table className="standings-table standings-table--sidebar standings-table--live">
-              <thead>
-                <tr>
-                  <th
-                    className="col-rank"
-                    title={
-                      gwStandingsFrozen
-                        ? 'League position (this GW is finished)'
-                        : 'Position by projected points including this GW'
-                    }
-                  >
-                    #
-                  </th>
-                  <th className="col-team">Team</th>
-                  {/* PR #5j — matches-played column rendered on both
-                     desktop and mobile (previously the mobile slot showed
-                     live FPL points under the header `LIVE`; collapsed
-                     into the single `P` column since the live signal is
-                     already carried by the inline +3/+1 chip, the GW
-                     dot, and the live-cumulative FOR value). */}
-                  <th
-                    className="col-num col-played"
-                    title="Season H2H matches played"
-                  >
-                    P
-                  </th>
-                  {/* PR #5h — desktop-only standings columns. Hidden on
-                     mobile (≤880px) via App.css media query so the
-                     condensed PR #5g layout shows there. */}
-                  <th
-                    className="col-num col-wdl"
-                    title="Season H2H wins"
-                  >
-                    W
-                  </th>
-                  <th
-                    className="col-num col-wdl"
-                    title="Season H2H draws"
-                  >
-                    D
-                  </th>
-                  <th
-                    className="col-num col-wdl"
-                    title="Season H2H losses"
-                  >
-                    L
-                  </th>
-                  <th
-                    className="col-num col-for"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Season points for (includes this GW)'
-                        : 'Season points for, plus this GW’s live FPL points'
-                    }
-                  >
-                    FOR
-                  </th>
-                  <th
-                    className="col-num col-against"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Season points against (includes this GW)'
-                        : 'Season points against, plus your opponent’s live GW score vs you (when paired)'
-                    }
-                  >
-                    AGT
-                  </th>
-                  <th
-                    className="col-num col-gd"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Goal difference: For minus Against'
-                        : 'Projected GD: projected For minus projected Against'
-                    }
-                  >
-                    GD
-                  </th>
-                  <th
-                    className="col-live-form"
-                    title="Last 5 finished GWs (oldest to newest)"
-                  >
-                    Last 5
-                  </th>
-                  <th
-                    className="col-live-gw-dot"
-                    title={
-                      gwStandingsFrozen
-                        ? 'This GW’s H2H result: green win, amber draw, red loss'
-                        : 'Live H2H result vs opponent: green winning, amber drawing, red losing, muted pre-kickoff'
-                    }
-                  >
-                    GW
-                  </th>
-                  <th
-                    className="col-num col-pts"
-                    title={
-                      gwStandingsFrozen
-                        ? 'Season H2H points (includes this GW)'
-                        : 'Season H2H points plus 3 / 1 / 0 from live score vs opponent this GW'
-                    }
-                  >
-                    PTS
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {liveStandingsRows.map((row) => {
-                  const isLeader = row.liveRank === 1;
-                  const isVillainVictory = villainVictoryEntryIds.has(
-                    Number(row.league_entry)
-                  );
-                  const isHeroDefeat = heroDefeatEntryIds.has(
-                    Number(row.league_entry)
-                  );
-                  const rowClass = [
-                    isLeader ? 'row-highlight' : '',
-                    row.liveRank === 1 ? 'standings-row--divider-below' : '',
-                    row.liveRank === 8
-                      ? 'standings-row--divider-above standings-row--8th'
-                      : '',
-                    isVillainVictory ? 'standings-row--villain-victory' : '',
-                    isHeroDefeat ? 'standings-row--hero-defeat' : '',
-                  ]
-                    .filter(Boolean)
-                    .join(' ');
-                  const moveUp = row.rankMove > 0;
-                  const moveDown = row.rankMove < 0;
-                  return (
-                    <tr key={row.league_entry} className={rowClass || undefined}>
-                      <td className="col-rank">
-                        {row.liveRank === 8 ? (
-                          <span
-                            role="img"
-                            className="standings-rank-8"
-                            aria-label="8"
-                          >
-                            🧩
-                          </span>
-                        ) : (
-                          row.liveRank
-                        )}
-                      </td>
-                      <td className="col-team">
-                        <span className="team-cell">
-                          <HeroVillainAvatarFrame
-                            status={
-                              isVillainVictory
-                                ? 'villain'
-                                : isHeroDefeat
-                                  ? 'hero'
-                                  : null
-                            }
-                            size="tiny"
-                          >
-                            <TeamAvatar
-                              entryId={row.league_entry}
-                              name={row.teamName}
-                              size="sm"
-                              logoMap={teamLogoMap}
-                              kitIndexByEntry={kitIndexByEntry}
-                            />
-                          </HeroVillainAvatarFrame>
-                          <span className="team-name team-name--sidebar live-standings-team-name">
-                            {row.teamName}
-                            {moveUp ? (
-                              <span
-                                className="live-standings-move live-standings-move--up"
-                                title={`Up ${row.rankMove} vs league #${row.rank}`}
-                                aria-label={`Up ${row.rankMove} places vs league position ${row.rank}`}
-                              >
-                                ↑
-                              </span>
-                            ) : null}
-                            {moveDown ? (
-                              <span
-                                className="live-standings-move live-standings-move--down"
-                                title={`Down ${-row.rankMove} vs league #${row.rank}`}
-                                aria-label={`Down ${-row.rankMove} places vs league position ${row.rank}`}
-                              >
-                                ↓
-                              </span>
-                            ) : null}
-                          </span>
-                          {/* PR #5h — inline projected-H2H chip next to the
-                             team name. Renders `+3` (winning) or `+1`
-                             (drawing); hidden on losing rows and pre-kickoff
-                             so the row's GW dot column carries the loss
-                             signal. Rendered in **both** views (desktop +
-                             mobile) so the chip and the dedicated GW dot
-                             column reinforce each other on desktop. */}
-                          {row.h2hProj && row.h2hProj.value != null ? (
-                            <span
-                              className={`live-form-margin live-form-margin--${row.h2hProj.kind}`}
-                              title={
-                                row.h2hProj.kind === 'win'
-                                  ? `Projected H2H points: +${row.h2hProj.value} (winning this GW)`
-                                  : `Projected H2H points: +${row.h2hProj.value} (drawing this GW)`
-                              }
-                              aria-label={
-                                row.h2hProj.kind === 'win'
-                                  ? `Projected H2H points plus ${row.h2hProj.value} (winning)`
-                                  : `Projected H2H points plus ${row.h2hProj.value} (drawing)`
-                              }
-                            >
-                              +{row.h2hProj.value}
-                            </span>
-                          ) : null}
-                        </span>
-                      </td>
-                      <td className="col-num col-played tabular">
-                        {(row.matches_won ?? 0) +
-                          (row.matches_drawn ?? 0) +
-                          (row.matches_lost ?? 0)}
-                      </td>
-                      <td className="col-num col-wdl tabular">{row.matches_won ?? 0}</td>
-                      <td className="col-num col-wdl tabular">{row.matches_drawn ?? 0}</td>
-                      <td className="col-num col-wdl tabular">{row.matches_lost ?? 0}</td>
-                      <td
-                        className="col-num col-for tabular"
-                        title={`Season ${row.gf} + GW live${row.liveGw != null ? ` (${row.liveGw})` : ''}`}
-                      >
-                        {row.projectedFor}
-                      </td>
-                      <td
-                        className="col-num col-against tabular"
-                        title={`Season ${row.ga} + opponent GW${row.oppLiveGw != null ? ` (${row.oppLiveGw})` : ''}`}
-                      >
-                        {row.projectedGa}
-                      </td>
-                      <td className="col-num col-gd tabular">
-                        {row.projectedGd > 0
-                          ? `+${row.projectedGd}`
-                          : row.projectedGd}
-                      </td>
-                      <td className="col-live-form">
-                        <span
-                          className="live-form-dots"
-                          role="img"
-                          aria-label="Last 5 finished GWs (oldest to newest)"
-                        >
-                          {row.formDotsHistoric.map((dot, i) => {
-                            const kind =
-                              dot.result === 'W'
-                                ? 'win'
-                                : dot.result === 'D'
-                                  ? 'draw'
-                                  : dot.result === 'L'
-                                    ? 'loss'
-                                    : 'none';
-                            const cls = `live-form-dot live-form-dot--${kind}`;
-                            /**
-                             * PR #5j — site-wide form-dot tooltip
-                             * (`GW{N} · {my} − {opp} · vs {OppTeam}`).
-                             * Padded slots (`dot.result == null` and no opp
-                             * data) keep just the GW-number label since we
-                             * can't construct the rich line without scores.
-                             */
-                            const oppName =
-                              dot.oppLeagueEntry != null
-                                ? teamNameForEntry(
-                                    teams,
-                                    Number(dot.oppLeagueEntry),
-                                  )
-                                : null;
-                            const hasScores =
-                              dot.myScore != null && dot.oppScore != null;
-                            const tooltip =
-                              hasScores && oppName
-                                ? `GW${dot.gw} · ${dot.myScore} − ${dot.oppScore} · vs ${oppName}`
-                                : null;
-                            const label = dot.result
-                              ? `GW ${dot.gw} ${dot.result}`
-                              : `GW ${dot.gw} — no result`;
-                            return (
-                              <span
-                                key={`${row.league_entry}-last5-${i}-${dot.gw}`}
-                                className={cls}
-                                tabIndex={tooltip ? 0 : -1}
-                                data-tooltip={tooltip || undefined}
-                                aria-label={tooltip ?? label}
-                              />
-                            );
-                          })}
-                        </span>
-                      </td>
-                      <td className="col-live-gw-dot">
-                        {(() => {
-                          const kind = row.gwOutcomeDot; // 'win' | 'draw' | 'loss' | 'none'
-                          /**
-                           * Pulse only when the GW is live (started but not
-                           * frozen) AND we have a coloured result. Frozen
-                           * dots keep their colour but skip the pulse — the
-                           * @keyframes rule also collapses for
-                           * prefers-reduced-motion via the live-form-dot CSS.
-                           */
-                          const isLive = !gwStandingsFrozen && kind !== 'none';
-                          const cls = [
-                            'live-gw-dot',
-                            `live-gw-dot--${kind}`,
-                            isLive ? 'live-gw-dot--live' : '',
-                          ]
-                            .filter(Boolean)
-                            .join(' ');
-                          const label =
-                            kind === 'win'
-                              ? `GW ${gameweek} winning`
-                              : kind === 'draw'
-                                ? `GW ${gameweek} drawing`
-                                : kind === 'loss'
-                                  ? `GW ${gameweek} losing`
-                                  : `GW ${gameweek} not started`;
-                          /**
-                           * PR #5j — site-wide form-dot tooltip on the GW dot:
-                           *   live + scored: `GW{N} · {my} − {opp} · vs {Opp} · LIVE`
-                           *   final + scored: `GW{N} · {my} − {opp} · vs {Opp}`
-                           *   pre-kickoff with paired opponent: `GW{N} · vs {Opp}`
-                           *   orphan / no opponent paired: fall back to {@link label}.
-                           */
-                          const oppName =
-                            row.oppEntryThisGw != null
-                              ? teamNameForEntry(
-                                  teams,
-                                  Number(row.oppEntryThisGw),
-                                )
-                              : null;
-                          const hasScores =
-                            row.liveGw != null && row.oppLiveGw != null;
-                          let tooltip = null;
-                          if (oppName) {
-                            if (hasScores) {
-                              const liveTag = isLive ? ' · LIVE' : '';
-                              tooltip = `GW${gameweek} · ${row.liveGw} − ${row.oppLiveGw} · vs ${oppName}${liveTag}`;
-                            } else {
-                              tooltip = `GW${gameweek} · vs ${oppName}`;
-                            }
-                          }
-                          return (
-                            <span
-                              className={cls}
-                              role="img"
-                              tabIndex={tooltip ? 0 : -1}
-                              data-tooltip={tooltip || undefined}
-                              aria-label={tooltip ?? label}
-                            />
-                          );
-                        })()}
-                      </td>
-                      <td className="col-num col-pts tabular">
-                        <strong>{row.projectedPts}</strong>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+          <LiveStandingsTable
+            liveStandingsRows={liveStandingsRows}
+            gwStandingsFrozen={gwStandingsFrozen}
+            gameweek={gameweek}
+            teams={teams}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            villainVictoryEntryIds={villainVictoryEntryIds}
+            heroDefeatEntryIds={heroDefeatEntryIds}
+            mobile={mobileNarrowViewport}
+          />
         )}
       </section>
 

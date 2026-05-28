@@ -10011,55 +10011,104 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   background: color-mix(in srgb, var(--fm-muted) 12%, transparent);
 }
 
-/* Hide the form column on narrow phones (portrait) — the +For chip
- * under the team name carries the live-status story there and the
- * extra column makes the table feel cramped. Keep it on tablets
- * (601–880px) where there's still room. */
-@media (orientation: portrait) and (max-width: 600px) {
-  .standings-table--live .col-live-form {
-    display: none;
-  }
-}
-
 /* ============================================================ */
-/* Desktop / mobile column visibility (PR #5j)                  */
+/* Live Table — desktop / mobile rendering (`.standings-table--   */
+/* live` on desktop, `.standings-table--live-mobile` on phones)   */
 /* ============================================================ */
 /*
- * The Live Table renders the full standings column set on desktop
- * (>880px) and a condensed column set on mobile (≤880px). Both
- * layouts share the same `<thead>` / `<tbody>` markup; CSS toggles
- * cell visibility per breakpoint.
+ * The Live Table now mirrors the production Standings variant-c
+ * table for visual parity. Two distinct renders (no shared markup):
  *
- * Render order in JSX is:
- *   # · TEAM · P · W · D · L · FOR · AGT · GD · Last 5 · GW · PTS
+ *   • Desktop (>767px) — `.standings-table--sidebar
+ *     .standings-table--live` with the full column set
+ *     (#, Team, PL, W, D, L, For, Faced, GD, PTS, Last).
  *
- * On desktop the full set renders.
+ *   • Mobile  (≤767px) — `.standings-table--variant-c
+ *     .standings-table--variant-c-mobile .standings-table--live-
+ *     mobile` with the condensed 5-column set
+ *     (#, Team, For, PTS, Last). The variant-c-mobile base sizes
+ *     the row padding and team-name truncation to fit a 390px
+ *     viewport without horizontal scroll; the `--live-mobile`
+ *     suffix carries Live-only overrides (kill the variant-c
+ *     hover/cursor since rows aren't clickable on Live).
  *
- * On mobile (≤880px) the desktop-only columns hide, leaving:
- *   # · TEAM · P · FOR · Last 5 · GW · PTS
- *
- * History (PR #5j): the mobile slot previously labelled `LIVE`
- * (showing live FPL GW points; class `.col-pl`) was collapsed into
- * the single `P` (matches-played) column shown on both viewports.
- * The live signal is still carried on mobile by the inline +3/+1
- * chip next to the team name, the GW dot, and the live-cumulative
- * FOR value, so a dedicated `LIVE` cell was redundant. The `.col-pl`
- * class is gone from the Live Table; the matches-played column is
- * `.col-played` everywhere.
- *
- * We use CSS toggling rather than `useNarrowViewport()`-gated JSX
- * because CSS responds reliably to viewport resizes (the matchMedia
- * hook has had embedded-browser flakiness on this project) and the
- * JSX stays single-source-of-truth.
+ * The legacy `Last 5` 5-dot column was dropped; the `GW` 1-dot
+ * column was renamed `Last`. Single dot drawn with the existing
+ * `.live-gw-dot` (incl. `--live` pulse for in-flight rows).
  */
 
-@media (max-width: 880px) {
-  /* Mobile: hide the desktop-only standings columns. */
-  .standings-table--live .col-wdl,
-  .standings-table--live .col-against,
-  .standings-table--live .col-gd {
-    display: none;
-  }
+/* Live Table rows are not clickable — suppress the variant-c
+ * hover-tint + cursor: pointer rules that apply to the Standings
+ * variant-c table (mobile shares those base classes for column
+ * widths + Minnows divider styling). Specificity matches the
+ * variant-c rule (0,2,3) thanks to the chained `--live-mobile`
+ * class. */
+.standings-table--live tbody tr,
+.standings-table--live-mobile tbody tr {
+  cursor: default;
+}
+.standings-table--live tbody tr:hover td,
+.standings-table--live-mobile tbody tr:hover td {
+  background: inherit;
+}
+.standings-table--live tbody tr.row-highlight:hover td,
+.standings-table--live-mobile tbody tr.row-highlight:hover td {
+  background: var(--fm-table-head, #f2f5fb);
+}
+.standings-table--live tbody tr.standings-row--8th:hover td,
+.standings-table--live-mobile tbody tr.standings-row--8th:hover td {
+  background: var(--fm-standings-8th-bg);
+}
+/* Hero/villain row tints — re-assert the dim-not-saturate treatment
+ * on hover so the variant-c brand-tinted hover doesn't wipe them. */
+.standings-table--live tbody tr.standings-row--villain-victory:hover td,
+.standings-table--live-mobile tbody tr.standings-row--villain-victory:hover td {
+  background: color-mix(in srgb, var(--data-negative, #ef4444) 9%, transparent);
+}
+.standings-table--live tbody tr.standings-row--hero-defeat:hover td,
+.standings-table--live-mobile tbody tr.standings-row--hero-defeat:hover td {
+  background: color-mix(in srgb, var(--data-positive, #12a15a) 9%, transparent);
+}
+
+/* Minnows divider on the Live Table desktop render — the mobile
+ * render inherits the divider treatment from `.standings-table--
+ * variant-c tbody tr.standings-divider`. Desktop opts out of
+ * `--variant-c` to avoid the hover/cursor side effects above, so
+ * style the divider band explicitly here. */
+.standings-table--live tbody tr.standings-divider {
+  cursor: default;
+}
+.standings-table--live tbody tr.standings-divider:hover td {
+  background: transparent;
+}
+.standings-table--live tbody tr.standings-divider td {
+  padding: 10px 10px 4px;
+  border-top: 1px dashed
+    color-mix(in srgb, var(--brand) 30%, var(--fm-border));
+  background: transparent;
+  text-align: left;
+}
+.standings-table--live .standings-divider__label {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--brand) 60%, var(--text-muted));
+}
+
+/* `Last` single-dot column on both renders — centre the dot and
+ * give it the same horizontal padding the form column has on the
+ * Standings variant-c table so columns line up at the same widths. */
+.standings-table--live .col-last,
+.standings-table--live-mobile .col-last {
+  text-align: center;
+  vertical-align: middle;
+}
+.standings-table--live td.col-last,
+.standings-table--live-mobile td.col-last {
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 .standings-table .col-form {
