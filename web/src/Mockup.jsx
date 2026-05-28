@@ -8576,8 +8576,13 @@ function buildMergedHistory() {
     const ranks = seasons.map((s) => s.rank).filter(Boolean)
     const titles = ranks.filter((r) => r === 1).length
     const ru = ranks.filter((r) => r === 2).length
+    /* TITAN = top-half finishes (1st–4th); MINNOW = bottom-half (5th–8th).
+     * These overlap with titles/ru deliberately so the four stats give
+     * a fuller career picture than just championships. */
+    const titan = ranks.filter((r) => r >= 1 && r <= 4).length
+    const minnow = ranks.filter((r) => r >= 5 && r <= 8).length
     const best = ranks.length ? Math.min(...ranks) : null
-    return { key, meta: MERGED_MGR_META[key], seasons, titles, ru, best }
+    return { key, meta: MERGED_MGR_META[key], seasons, titles, ru, titan, minnow, best }
   })
 }
 
@@ -9652,11 +9657,16 @@ function mergedCellPosClass(rank) {
  * shows team name on top + big position below (heatmap-tinted).
  *
  * Locked spec: identity column carries the manager name + a stacked
- * uppercase stats block (TITLES · RUNNER-UP) that mirrors the 25/26
- * year-label treatment (caps, muted, letter-spaced). The BEST #N
- * line was dropped per user feedback — the per-season heatmap cards
- * already make a manager's best finish read at a glance, so the
- * stacked stats focus on the celebratory tallies only. */
+ * uppercase stats block (TITLES · RUNNER-UP · TITAN · MINNOW) that
+ * mirrors the 25/26 year-label treatment (caps, muted, letter-spaced).
+ *   TITLES   — finishes at 1st
+ *   RUNNER-UP — finishes at 2nd
+ *   TITAN    — top-half finishes (1st–4th)
+ *   MINNOW   — bottom-half finishes (5th–8th)
+ * TITAN + MINNOW = seasons played. Tooltips on the TITAN/MINNOW
+ * rows carry the position-range clarification so the inline labels
+ * stay short. BEST #N was retired earlier — the per-season heatmap
+ * cards already make a manager's best finish read at a glance. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
@@ -9681,6 +9691,20 @@ function MergedHistoryTHD() {
                 <li className="merged-history-timeline__mgr-stat">
                   <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
                   <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+                </li>
+                <li
+                  className="merged-history-timeline__mgr-stat"
+                  title="Seasons finishing 1st–4th (top half)"
+                >
+                  <span className="merged-history-timeline__mgr-stat-num">{row.titan}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">titan</span>
+                </li>
+                <li
+                  className="merged-history-timeline__mgr-stat"
+                  title="Seasons finishing 5th–8th (bottom half)"
+                >
+                  <span className="merged-history-timeline__mgr-stat-num">{row.minnow}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">minnow</span>
                 </li>
               </ul>
             </div>

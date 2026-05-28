@@ -13194,7 +13194,9 @@
 }
 .merged-history-timeline__row {
   display: grid;
-  grid-template-columns: 248px 1fr;
+  /* mgr column widened from 248 → 272 to absorb the extra TITAN +
+   * MINNOW rows without crowding the season cards. */
+  grid-template-columns: 272px 1fr;
   gap: var(--space-3);
   align-items: stretch;
   background: var(--surface);
@@ -13244,14 +13246,17 @@
 /* Stacked uppercase stats block — mirrors the year-label treatment
  * on the per-season cards (caps · muted · letter-spaced) so the
  * career summary reads as part of the same visual language. Each
- * stat sits on its own line (TITLES / RUNNER-UP). */
+ * stat sits on its own line (TITLES / RUNNER-UP / TITAN / MINNOW).
+ * Line-height tightened so the 4-row stack still fits within the
+ * card's mgr column without pushing the crest into a different
+ * vertical baseline than the season cards. */
 .merged-history-timeline__mgr-stats {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 .merged-history-timeline__mgr-stat {
   display: flex;
@@ -13259,7 +13264,7 @@
   gap: 6px;
   font-size: 10px;
   font-weight: 700;
-  line-height: 13px;
+  line-height: 12px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-muted);
