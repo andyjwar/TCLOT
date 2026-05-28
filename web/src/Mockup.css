@@ -13445,27 +13445,30 @@
   gap: 6px;
   flex: 0 0 auto;
 }
+/* Inline TITLES chip — number sits flush to label on a single row,
+ * not stacked. User feedback: "Put 2 titles on one row, not stacked".
+ * Desktop TH-D's stacked stats block (.merged-history-timeline__mgr-stats)
+ * is intentionally untouched — only this mobile MV-A chip is inlined. */
 .merged-history-mv__summary-chip {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 5px;
   padding: 0;
-  min-width: 28px;
 }
 .merged-history-mv__summary-chip-num {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
   color: var(--text-strong);
-  line-height: 14px;
+  line-height: 1;
   font-variant-numeric: tabular-nums;
 }
 .merged-history-mv__summary-chip-label {
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--text-muted);
-  line-height: 11px;
+  line-height: 1;
 }
 .merged-history-mv__chevron {
   width: 14px;
