@@ -4,19 +4,19 @@
  * layout from the design exploration (see `LiVariantC` in
  * `web/src/Mockup.jsx`). Sections in order:
  *
- *   1. Hero card        — league name, season label, tagline
- *   2. League Badges    — 2-up roster grid (crest + team name)
- *   3. Managers list    — all 8 managers with crest + full name
- *   4. TCLOT Terminology — glossary of league lore terms (replaced the
- *                         placeholder About + Fast Facts cards; all
- *                         entries are real league-canon terminology)
- *   5. Appearance       — Light / Dark / System segmented pill, drives
- *                         the existing themePref state in App.jsx
- *   6. Settings         — embeds `<SettingsPanelBody>` (shared with the
- *                         standalone /settings route, refactored in this
- *                         commit so the modal and the route render the
- *                         same controls — no duplication)
- *   7. Footer           — tiny credit / version line
+ *   1. Hero card        — league name, tri-continental flag strip,
+ *                         season label, tagline
+ *   2. Settings         — embeds `<SettingsPanelBody>` (shared with the
+ *                         standalone /settings route — no duplication).
+ *                         Promoted to the top so default-tab + theme
+ *                         controls are reachable without scrolling past
+ *                         identity / roster cards. The standalone
+ *                         Appearance pill was removed; theme switching
+ *                         lives inside SettingsPanelBody.
+ *   3. League Badges    — 2-up roster grid (crest + team name)
+ *   4. Managers list    — all 8 managers with crest + full name
+ *   5. TCLOT Terminology — glossary of league lore terms
+ *   6. Footer           — tiny credit / version line
  *
  * The modal portals onto `document.body` (so it clears the
  * `.app.fotmob` stacking context). All design tokens used by the
@@ -30,8 +30,20 @@ import { TeamAvatar } from './TeamAvatar'
 import { SettingsPanelBody } from './SettingsPage'
 import './LeagueInfoModal.css'
 
-const LEAGUE_FULL_NAME = 'The TC League of Titans'
+const LEAGUE_FULL_NAME = 'Tri-Continental League of Titans'
 const LEAGUE_TAGLINE = 'Eight managers. Five seasons. One trophy.'
+
+/** Three continents represented by the league. Rendered as a small
+ * flag strip in the Hero card so the "Tri-Continental" name reads
+ * literally at a glance. Flag glyphs use Unicode regional indicators
+ * which the OS renders as proper country flags on every modern
+ * platform; the country label sits beside each flag in purple
+ * uppercase tracking that matches the rest of the modal. */
+const LEAGUE_REGIONS = [
+  { code: 'KR', flag: '🇰🇷', label: 'Korea' },
+  { code: 'GB', flag: '🇬🇧', label: 'UK' },
+  { code: 'CA', flag: '🇨🇦', label: 'Canada' },
+]
 
 /**
  * League-canon terminology. Order is roughly grouped by theme: scoring /
@@ -210,7 +222,7 @@ export function LeagueInfoModal({
         </button>
 
         <div className="li-modal__body li-modal__body--scroll">
-          {/* 1 · Hero */}
+          {/* 1 · Hero — league identity + tri-continental flag strip */}
           <div className="li-card li-card--hero">
             <div className="li-hero li-hero--large">
               <div className="li-hero__crest">
@@ -219,12 +231,41 @@ export function LeagueInfoModal({
               <h1 id="league-info-modal-title" className="li-hero__name">
                 {LEAGUE_FULL_NAME}
               </h1>
+              <div
+                className="li-hero__flags"
+                aria-label="Three continents represented in the league"
+              >
+                {LEAGUE_REGIONS.map((r, i) => (
+                  <span className="li-hero__flag-item" key={r.code}>
+                    {i > 0 ? (
+                      <span className="li-hero__flag-divider" aria-hidden="true">·</span>
+                    ) : null}
+                    <span className="li-hero__flag" aria-hidden="true">{r.flag}</span>
+                    <span className="li-hero__flag-label">{r.label}</span>
+                  </span>
+                ))}
+              </div>
               <div className="li-hero__season league-info-modal__season">{seasonLabel}</div>
               <div className="li-hero__tagline">{LEAGUE_TAGLINE}</div>
             </div>
           </div>
 
-          {/* 2 · League Badges
+          {/* 2 · Settings — promoted to the top of the modal so the
+              actionable controls (default tab, theme) are reachable
+              without scrolling past the identity / roster cards.
+              Shared with the standalone /settings route via the
+              `<SettingsPanelBody>` component. */}
+          <div className="li-card li-card--settings">
+            <div className="li-card__eyebrow">Settings</div>
+            <SettingsPanelBody
+              themePref={themePref}
+              onThemePrefChange={onThemePrefChange}
+              defaultTab={defaultTab}
+              onDefaultTabChange={onDefaultTabChange}
+            />
+          </div>
+
+          {/* 3 · League Badges
               TODO: replace this roster-style grid with real "league
               badges" once data hooks for defending champion / current
               leader / longest tenure / etc. are available. For now we
@@ -258,7 +299,7 @@ export function LeagueInfoModal({
             )}
           </div>
 
-          {/* 3 · Managers list */}
+          {/* 4 · Managers list */}
           <div className="li-card li-card--managers">
             <div className="li-card__eyebrow">Managers</div>
             {sortedEntries.length === 0 ? (
@@ -294,13 +335,10 @@ export function LeagueInfoModal({
             )}
           </div>
 
-          {/* 4 · TCLOT Terminology — league-canon glossary. Replaces the
-              earlier placeholder About + Fast Facts cards. Each entry is
-              a `<dl>` row with the term in gold Cinzel italic and the
-              definition flowing in prose alongside (desktop) or stacked
-              below (mobile). */}
+          {/* 5 · TCLOT Terminology — league-canon glossary. Each entry
+              is a `<dl>` row with the term in purple uppercase and the
+              definition flowing as prose underneath. */}
           <div className="li-card li-card--terminology">
-            <span className="li-card__quote-mark" aria-hidden>&ldquo;</span>
             <div className="li-card__eyebrow">TCLOT Terminology</div>
             <dl className="li-terms">
               {TCLOT_TERMS.map((t) => (
@@ -312,53 +350,7 @@ export function LeagueInfoModal({
             </dl>
           </div>
 
-          {/* 5 · Appearance toggle — drives the existing themePref
-              state in App.jsx. The same theme system that's already
-              wired into the standalone Settings route, just surfaced
-              with the LP-C segmented-pill chrome. */}
-          <div className="li-card li-card--appearance">
-            <div className="li-card__eyebrow">Appearance</div>
-            <div
-              className="li-appearance"
-              role="radiogroup"
-              aria-label="Appearance"
-            >
-              {/** @type {const} */ ([
-                { id: 'light',  label: 'Light' },
-                { id: 'dark',   label: 'Dark' },
-                { id: 'system', label: 'System' },
-              ]).map((opt) => {
-                const active = themePref === opt.id
-                return (
-                  <button
-                    key={opt.id}
-                    type="button"
-                    role="radio"
-                    aria-checked={active}
-                    className={'li-appearance__opt' + (active ? ' is-active' : '')}
-                    onClick={() => onThemePrefChange(opt.id)}
-                  >
-                    {opt.label}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* 6 · Settings — shared with the standalone /settings route
-              via the `<SettingsPanelBody>` extracted in this commit so
-              the two surfaces never drift. */}
-          <div className="li-card li-card--settings">
-            <div className="li-card__eyebrow">Settings</div>
-            <SettingsPanelBody
-              themePref={themePref}
-              onThemePrefChange={onThemePrefChange}
-              defaultTab={defaultTab}
-              onDefaultTabChange={onDefaultTabChange}
-            />
-          </div>
-
-          {/* 7 · Footer */}
+          {/* 6 · Footer */}
           <div className="li-footer">
             TCLOT · 2025/26 ·{' '}
             <span className="league-info-modal__footer-version">

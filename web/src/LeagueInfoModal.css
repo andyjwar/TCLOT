@@ -211,12 +211,15 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   gap: var(--space-3);
   backdrop-filter: blur(2px);
 }
+/* Section eyebrows — uppercase tracked purple to match the rest of the
+ * site's heading vernacular (vs. the previous muted-grey). Reads as
+ * "this card's title" without competing with the league-name hero. */
 .league-info-modal-shell .li-card__eyebrow {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--text-muted);
+  color: var(--brand);
 }
 
 /* ==================================================================
@@ -254,30 +257,86 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
     0 4px 14px rgba(241, 196, 59, 0.18);
   margin-bottom: var(--space-1);
 }
+/* Hero league name — modernized to drop the Cinzel serif treatment in
+ * favor of the site's primary sans family in purple uppercase tracking.
+ * Lines 1-2 of the wordmark stack vertically on phones (`.li-hero__name`
+ * relies on natural wrapping; `text-wrap: balance` keeps the break
+ * pretty on browsers that support it). */
 .league-info-modal-shell .li-hero__name {
   margin: 0;
-  font-size: 26px;
-  line-height: 32px;
+  font-family: inherit;
+  font-size: 22px;
+  line-height: 1.18;
   font-weight: 700;
-  color: var(--text-strong);
-  letter-spacing: -0.01em;
-  font-family: 'Cinzel', 'Geist', serif;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--brand);
+  text-wrap: balance;
 }
+@media (min-width: 480px) {
+  .league-info-modal-shell .li-hero__name {
+    font-size: 26px;
+  }
+}
+
+/* Tri-continental flag strip — sits directly under the wordmark to give
+ * the "Tri-Continental" name a literal three-flag reading. Flag glyphs
+ * use Unicode regional indicators (rendered natively per-OS); labels
+ * sit beside each flag in purple uppercase tracking matching the eyebrow
+ * vernacular. The dot dividers (`·`) inherit muted text color. */
+.league-info-modal-shell .li-hero__flags {
+  margin-top: var(--space-2);
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-family: inherit;
+}
+.league-info-modal-shell .li-hero__flag-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.league-info-modal-shell .li-hero__flag {
+  font-size: 18px;
+  line-height: 1;
+  /* Some platforms render flag emoji at variable advance widths — pin
+   * a fixed width so the label tracking stays consistent. */
+  display: inline-block;
+  min-width: 22px;
+  text-align: center;
+}
+.league-info-modal-shell .li-hero__flag-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--brand);
+}
+.league-info-modal-shell .li-hero__flag-divider {
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 700;
+  margin-right: 2px;
+}
+
 .league-info-modal-shell .league-info-modal__season {
-  margin-top: var(--space-1);
+  margin-top: var(--space-2);
   font-size: var(--text-xs);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-muted);
-  font-weight: 600;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 .league-info-modal-shell .li-hero__tagline {
-  margin-top: 2px;
+  margin-top: 4px;
   font-size: var(--text-sm);
   line-height: var(--lh-sm);
   color: var(--text-muted);
-  font-style: italic;
-  font-family: 'Geist', serif;
+  font-family: inherit;
+  font-style: normal;
 }
 
 /* ==================================================================
@@ -376,26 +435,10 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
 /* ==================================================================
  * Terminology (league-canon glossary)
  * ==================================================================
- * Replaces the earlier `li-card--blurb` (About) and `li-card--facts`
- * (Fast Facts) cards with a single glossary card. Term = gold Cinzel
- * italic, definition = regular prose. The shared gold-quote-mark
- * decoration (`.li-card__quote-mark`) carries over so the card retains
- * the lore-y typographic flourish. */
-.league-info-modal-shell .li-card--terminology {
-  padding-left: var(--space-5);
-}
-.league-info-modal-shell .li-card__quote-mark {
-  position: absolute;
-  top: -4px;
-  left: 6px;
-  font-family: 'Cinzel', serif;
-  font-size: 46px;
-  line-height: 1;
-  color: color-mix(in srgb, #f1c43b 75%, transparent);
-  opacity: 0.85;
-  pointer-events: none;
-}
-
+ * Term name = purple uppercase tracking (matches the site's heading
+ * vernacular and the eyebrow style above), definition = regular prose
+ * underneath. Gold quote-mark decoration was dropped during the
+ * modernization pass. */
 .league-info-modal-shell .li-terms {
   margin: 0;
   display: flex;
@@ -405,7 +448,7 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
 .league-info-modal-shell .li-term {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
   padding-bottom: var(--space-3);
   border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 }
@@ -415,12 +458,13 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
 }
 .league-info-modal-shell .li-term__name {
   margin: 0;
-  font-family: 'Cinzel', 'Geist', serif;
-  font-style: italic;
-  font-size: var(--text-md);
-  font-weight: 600;
-  letter-spacing: 0.01em;
-  color: color-mix(in srgb, #f1c43b 92%, var(--text-strong));
+  font-family: inherit;
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brand);
 }
 .league-info-modal-shell .li-term__def {
   margin: 0;
@@ -428,45 +472,6 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   line-height: 1.5;
   color: var(--text);
   letter-spacing: 0.005em;
-}
-
-/* ==================================================================
- * Appearance segmented pill
- * ================================================================== */
-.league-info-modal-shell .li-appearance {
-  display: inline-flex;
-  align-items: stretch;
-  padding: 3px;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  width: fit-content;
-  gap: 2px;
-}
-.league-info-modal-shell .li-appearance__opt {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  padding: 6px 14px;
-  border-radius: 999px;
-  font-family: inherit;
-  font-size: var(--text-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
-}
-.league-info-modal-shell .li-appearance__opt:hover {
-  color: var(--text);
-}
-.league-info-modal-shell .li-appearance__opt.is-active {
-  background: var(--surface);
-  color: var(--text-strong);
-  font-weight: 600;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
-}
-.league-info-modal-shell .li-appearance__opt:focus-visible {
-  outline: 2px solid var(--brand);
-  outline-offset: 2px;
 }
 
 /* ==================================================================
