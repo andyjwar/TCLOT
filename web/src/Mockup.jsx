@@ -8626,91 +8626,82 @@ function HofSectionLabel({ children }) {
 }
 
 /* ------------------------------------------------------------------ */
-/* TROPHY ROOM — Variants T-A · T-B · T-C · T-D                         */
+/* TROPHY ROOM — locked spec (T-D carousel + 6-grid toggle)             */
 /* ------------------------------------------------------------------ */
+/* Locked direction from the user:
+ *   - Default state: scrolling/swipe carousel (latest season first)
+ *   - Toggle (subtle, top-right of screen) flips to a view-all grid
+ *   - Grid is 6 cells (2 × 3) — the most recent 6 banners. The full
+ *     8-cell prior spec is retired; older banners are accessible by
+ *     swiping back inside the carousel.
+ * Both views share the same brand-tinted celebratory dark backdrop.
+ * The toggle is rendered as a 2-icon segmented pill: carousel icon
+ * (single image) and grid icon (4 squares). */
 
-/* T-A: 3D / pedestal feel — gold metallic frame, slight tilt, reflection.
- * 8-banner 2×4 grid in the portrait frame. No outside text. */
-function TrophyRoomVariantA() {
+/* Lock the grid to the most-recent 6 banners, latest first. */
+const HOF_GRID_BANNERS = HOF_BANNERS.slice(-6).reverse()
+
+/* Default carousel landing index — latest season. */
+const HOF_CAROUSEL_DEFAULT_IDX = HOF_BANNERS.length - 1
+
+function TrophyRoomViewToggle({ mode, onCarousel, onGrid, size = 'md' }) {
   return (
-    <div className="hof-troom hof-troom--pedestal">
-      <div className="hof-troom__pedestal-grid">
-        {HOF_BANNERS.map((b, i) => (
-          <div
-            className={'hof-troom__pedestal-cell hof-troom__pedestal-cell--' + (i % 2 === 0 ? 'left' : 'right')}
-            key={b.season}
-          >
-            <div className="hof-troom__pedestal-frame">
-              <HofBannerImage banner={b} fit="contain" />
-            </div>
-            <span className="hof-troom__pedestal-reflection" aria-hidden />
-          </div>
-        ))}
-      </div>
+    <div
+      className={
+        'hof-troom__vtoggle hof-troom__vtoggle--' + size
+      }
+      role="group"
+      aria-label="Trophy room view"
+    >
+      <button
+        type="button"
+        className={
+          'hof-troom__vtoggle-btn' + (mode === 'carousel' ? ' is-active' : '')
+        }
+        aria-pressed={mode === 'carousel'}
+        aria-label="Carousel view"
+        onClick={onCarousel}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <rect x="4" y="6" width="16" height="12" rx="2" />
+          <circle cx="9" cy="11" r="1.4" />
+          <path d="M20 16l-3.5-4.5L13 16l-2-2.5L8 16" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className={
+          'hof-troom__vtoggle-btn' + (mode === 'grid' ? ' is-active' : '')
+        }
+        aria-pressed={mode === 'grid'}
+        aria-label="Grid view"
+        onClick={onGrid}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <rect x="3" y="3" width="7" height="7" rx="1.4" />
+          <rect x="14" y="3" width="7" height="7" rx="1.4" />
+          <rect x="3" y="14" width="7" height="7" rx="1.4" />
+          <rect x="14" y="14" width="7" height="7" rx="1.4" />
+        </svg>
+      </button>
     </div>
   )
 }
 
-/* T-B: Flat modern banner gallery — thin brand-tinted border, gold/silver/
- * bronze placement chip in a corner (champion gold by default). */
-function TrophyRoomVariantB() {
-  return (
-    <div className="hof-troom hof-troom--gallery">
-      <div className="hof-troom__gallery-grid">
-        {HOF_BANNERS.map((b) => (
-          <div className="hof-troom__gallery-card" key={b.season}>
-            <span className="hof-troom__gallery-chip" aria-hidden>1st</span>
-            <HofBannerImage banner={b} fit="cover" />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* T-C: Trophy case — wooden / dark backdrop, banners on shelves with
- * ambient glow. Heritage / museum feel. */
-function TrophyRoomVariantC() {
-  /* Group into 4 shelves of 2 banners each. */
-  const shelves = []
-  for (let i = 0; i < HOF_BANNERS.length; i += 2) {
-    shelves.push(HOF_BANNERS.slice(i, i + 2))
-  }
-  return (
-    <div className="hof-troom hof-troom--case">
-      <div className="hof-troom__case-back">
-        {shelves.map((row, idx) => (
-          <div className="hof-troom__case-shelf" key={idx}>
-            <div className="hof-troom__case-row">
-              {row.map((b) => (
-                <div className="hof-troom__case-trophy" key={b.season}>
-                  <span className="hof-troom__case-glow" aria-hidden />
-                  <HofBannerImage banner={b} fit="contain" />
-                </div>
-              ))}
-            </div>
-            <div className="hof-troom__case-plank" aria-hidden />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-}
-
-/* T-D: Mobile fullscreen swipeable carousel — one banner fills the
- * viewport with neighbors peeking on each side; dot indicators at the
- * bottom. Three frames rendered side-by-side to show different active
- * positions, simulating a swipe in progress.
- *
- * `activeIdx` controls which banner is centered. Static at render time;
- * a runtime port would track touch deltas + animate. */
-function TrophyRoomVariantDFrame({ activeIdx }) {
+/* Carousel state — one banner full-bleed, neighbors peek either side,
+ * dot indicators at the bottom. Toggle pill in the top-right corner. */
+function TrophyRoomCarouselFrame({ activeIdx = HOF_CAROUSEL_DEFAULT_IDX, onToggleMode }) {
   const total = HOF_BANNERS.length
   const prev = HOF_BANNERS[(activeIdx - 1 + total) % total]
   const cur = HOF_BANNERS[activeIdx]
   const next = HOF_BANNERS[(activeIdx + 1) % total]
   return (
     <div className="hof-troom hof-troom--swipe">
+      <TrophyRoomViewToggle
+        mode="carousel"
+        onCarousel={() => {}}
+        onGrid={() => onToggleMode && onToggleMode('grid')}
+      />
       <div className="hof-troom__swipe-stage">
         <div className="hof-troom__swipe-peek hof-troom__swipe-peek--prev" aria-hidden>
           <HofBannerImage banner={prev} fit="cover" />
@@ -8736,16 +8727,18 @@ function TrophyRoomVariantDFrame({ activeIdx }) {
   )
 }
 
-/* T-D · "View all" grid — same brand-tinted celebratory dark background
- * as the swipe carousel. 8 banner cards in a 2×4 grid; each card is a
- * shrunk-down copy of the active swipe card (banner art carries its
- * own team name + year — nothing layered on top). Tapping a card in a
- * runtime port would open the swipe view at that index. */
-function TrophyRoomVariantDViewAll() {
+/* View-all grid — 2 cols × 3 rows of the most-recent 6 banners. Same
+ * celebratory backdrop. Toggle pill in the top-right corner. */
+function TrophyRoomGridFrame({ onToggleMode }) {
   return (
     <div className="hof-troom hof-troom--viewall">
-      <div className="hof-troom__viewall-grid">
-        {HOF_BANNERS.map((b) => (
+      <TrophyRoomViewToggle
+        mode="grid"
+        onCarousel={() => onToggleMode && onToggleMode('carousel')}
+        onGrid={() => {}}
+      />
+      <div className="hof-troom__viewall-grid hof-troom__viewall-grid--6">
+        {HOF_GRID_BANNERS.map((b) => (
           <button
             key={b.season}
             type="button"
@@ -8755,6 +8748,54 @@ function TrophyRoomVariantDViewAll() {
             <HofBannerImage banner={b} fit="cover" />
           </button>
         ))}
+      </div>
+    </div>
+  )
+}
+
+/* Stateful wrapper that flips between carousel and grid via the
+ * top-right toggle. Used inside a single PortraitFrame so the
+ * mockup behaves like the runtime experience. */
+function TrophyRoomLockedFrame({ initialMode = 'carousel', initialIdx = HOF_CAROUSEL_DEFAULT_IDX }) {
+  const [mode, setMode] = useState(initialMode)
+  if (mode === 'grid') {
+    return <TrophyRoomGridFrame onToggleMode={setMode} />
+  }
+  return <TrophyRoomCarouselFrame activeIdx={initialIdx} onToggleMode={setMode} />
+}
+
+/* Toggle UX detail — zoomed-in render of just the toggle pill on a
+ * cropped dark backdrop, with annotations for the active/inactive
+ * states. Used in the "toggle UX detail" frame in the mockup. */
+function TrophyRoomToggleDetail() {
+  return (
+    <div className="hof-troom hof-troom--toggle-detail">
+      <div className="hof-troom__toggle-detail-bg" aria-hidden />
+      <div className="hof-troom__toggle-detail-stack">
+        <div className="hof-troom__toggle-detail-row">
+          <TrophyRoomViewToggle mode="carousel" onCarousel={() => {}} onGrid={() => {}} size="lg" />
+          <div className="hof-troom__toggle-detail-caption">
+            <div className="hof-troom__toggle-detail-eyebrow">Carousel mode active</div>
+            <div className="hof-troom__toggle-detail-text">
+              Brand-violet pill behind the carousel icon. Grid icon sits
+              muted on the same dark glass background.
+            </div>
+          </div>
+        </div>
+        <div className="hof-troom__toggle-detail-row">
+          <TrophyRoomViewToggle mode="grid" onCarousel={() => {}} onGrid={() => {}} size="lg" />
+          <div className="hof-troom__toggle-detail-caption">
+            <div className="hof-troom__toggle-detail-eyebrow">Grid mode active</div>
+            <div className="hof-troom__toggle-detail-text">
+              Tap the carousel icon to return to full-bleed swipe.
+            </div>
+          </div>
+        </div>
+        <div className="hof-troom__toggle-detail-note">
+          Toggle sits absolute top-right of the trophy-room screen,
+          inside a subtle dark-glass pill so it never competes with
+          the banner art.
+        </div>
       </div>
     </div>
   )
@@ -8815,9 +8856,26 @@ function TeamHistoryTable({ compact = false }) {
   )
 }
 
+/* Build manager-initial bubbles (e.g. "Andy Ward" → "AW"). Used by the
+ * refined Historic Standings table per the user's locked spec:
+ *   - bubbles carry manager identity (initials in team-color tint)
+ *   - dedicated Manager column is dropped (redundant once the bubble
+ *     identifies the manager) */
+function managerInitialsFromName(name) {
+  const parts = String(name ?? '').trim().split(/\s+/).filter(Boolean)
+  if (!parts.length) return '—'
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
 /* Historic Standings table — full final standings for the selected
- * season. Includes 2025/26 in the dropdown per spec. Dropdown is
- * stateful so the user can play with it inside the mockup. */
+ * season. Refinements per locked spec:
+ *   1. Bubble shows manager initials (e.g. DH, EW), not team-id (CO).
+ *      Team-color background is preserved.
+ *   2. Dedicated Manager column dropped.
+ *   3. Team-cell column is left-aligned (was inheriting right-align).
+ *   4. Current season (25/26) is plain "25/26" in the dropdown — no
+ *      "· live" suffix. */
 function HistoricStandingsTable({ initialSeason = '25/26' }) {
   const [season, setSeason] = useState(initialSeason)
   const rows = HOF_HISTORIC_STANDINGS[season] ?? []
@@ -8832,7 +8890,7 @@ function HistoricStandingsTable({ initialSeason = '25/26' }) {
           onChange={(e) => setSeason(e.target.value)}
         >
           {HOF_SEASONS.slice().reverse().map((s) => (
-            <option key={s} value={s}>{`20${s.replace('/', '/')}`}{s === '25/26' ? ' · live' : ''}</option>
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
       </div>
@@ -8842,7 +8900,6 @@ function HistoricStandingsTable({ initialSeason = '25/26' }) {
             <tr>
               <th className="hof-th-rank">#</th>
               <th className="hof-th-team">Team</th>
-              <th className="hof-th-mgr">Manager</th>
               <th>PL</th>
               <th>W</th>
               <th>D</th>
@@ -8856,20 +8913,24 @@ function HistoricStandingsTable({ initialSeason = '25/26' }) {
           <tbody>
             {rows.map((r) => {
               const team = HOF_TEAM_BY_ID[r.teamId]
+              const mgrInitials = managerInitialsFromName(r.mgr)
               return (
                 <tr key={r.teamId}>
                   <td className="hof-td-rank">{r.rank}</td>
-                  <td>
+                  <td className="hof-td-team">
                     <span className="hof-team-cell">
-                      <span className="hof-team-cell__crest" style={{ background: team.color }}>
-                        {team.id}
+                      <span
+                        className="hof-team-cell__crest"
+                        style={{ background: team.color }}
+                        title={r.mgr}
+                      >
+                        {mgrInitials}
                       </span>
                       <span className="hof-team-cell__text">
                         <span className="hof-team-cell__name">{r.team}</span>
                       </span>
                     </span>
                   </td>
-                  <td className="hof-td-mgr">{r.mgr}</td>
                   <td>{r.pl}</td>
                   <td>{r.w}</td>
                   <td>{r.d}</td>
@@ -8958,131 +9019,16 @@ function CocMatrixTable({ style: mode = 'heatmap', algorithm = false, sticky = t
   )
 }
 
-/* History · Variant H-A — sub-sub-nav (3 sub-tabs within History). */
-function HistoryVariantA() {
-  const [tab, setTab] = useState('team')
-  return (
-    <div className="hof-history-variant">
-      <nav className="hof-history-variant__subnav" aria-label="History sections">
-        {[
-          { id: 'team',  label: 'Team History' },
-          { id: 'std',   label: 'Historic Standings' },
-          { id: 'coc',   label: 'Champions of Champions' },
-        ].map((t) => (
-          <button
-            key={t.id}
-            type="button"
-            role="tab"
-            aria-selected={tab === t.id}
-            className={'hof-history-variant__subnav-pill' + (tab === t.id ? ' is-active' : '')}
-            onClick={() => setTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </nav>
-      {tab === 'team' && <TeamHistoryTable />}
-      {tab === 'std' && <HistoricStandingsTable />}
-      {tab === 'coc' && <CocMatrixTable style="heatmap" />}
-    </div>
-  )
-}
+/* History · Variant H-A is now the locked History sub-menu structure
+ * itself — see HallOfFameHistorySubMenu below. The standalone H-A /
+ * H-B / H-C / H-D1 / H-D2 mockup variants and their hero-scrubber /
+ * stacked-scroll shells have been retired. Hero scrubber, hero card,
+ * and HofSectionLabel are no longer used by the live mockup; they
+ * lived only inside the deleted H-B / H-C shells. */
 
-/* History · Variant H-B — three stacked sections in one scroll. */
-function HistoryVariantB() {
-  return (
-    <div className="hof-history-variant hof-history-variant--stacked">
-      <div className="hof-history-variant__block">
-        <HofSectionLabel>Team History</HofSectionLabel>
-        <TeamHistoryTable />
-      </div>
-      <div className="hof-history-variant__block">
-        <HofSectionLabel>Historic Standings</HofSectionLabel>
-        <HistoricStandingsTable />
-      </div>
-      <div className="hof-history-variant__block">
-        <HofSectionLabel>Champions of Champions</HofSectionLabel>
-        <CocMatrixTable style="heatmap" />
-      </div>
-    </div>
-  )
-}
-
-/* History · Variant H-C — hero "season scrubber" animation at the top
- * + stacked tables below. Scrubber rendered as static year-pills with
- * one highlighted; the hero card celebrates that season's champion.
- *
- * NOTE: animation is DESCRIBED (not implemented). At runtime the hero
- * card would morph between seasons — title sweep, GD counter ticking,
- * banner crossfade. */
-function HistoryVariantC() {
-  const [pickIdx, setPickIdx] = useState(HOF_SEASONS.length - 1)
-  const banner = HOF_BANNERS[pickIdx]
-  const standings = HOF_HISTORIC_STANDINGS[banner.season]
-  const champion = standings[0]
-  const factPts = champion.pts
-  const factGd = champion.gd
-  const factWins = champion.w
-  return (
-    <div className="hof-history-variant hof-history-variant--hero">
-      <div className="hof-hero">
-        <div className="hof-hero__bg" aria-hidden>
-          <HofBannerImage banner={banner} fit="cover" />
-        </div>
-        <div className="hof-hero__overlay" aria-hidden />
-        <div className="hof-hero__content">
-          <div className="hof-hero__eyebrow">Season {banner.season}{banner.isLive ? ' · live' : ' · champion'}</div>
-          <div className="hof-hero__team">{banner.team}</div>
-          <div className="hof-hero__mgr">{banner.mgr}</div>
-          <div className="hof-hero__stats">
-            <div className="hof-hero__stat">
-              <span className="hof-hero__stat-num">{factPts}</span>
-              <span className="hof-hero__stat-label">PTS</span>
-            </div>
-            <div className="hof-hero__stat">
-              <span className="hof-hero__stat-num">{factGd > 0 ? `+${factGd}` : factGd}</span>
-              <span className="hof-hero__stat-label">GD</span>
-            </div>
-            <div className="hof-hero__stat">
-              <span className="hof-hero__stat-num">{factWins}</span>
-              <span className="hof-hero__stat-label">Wins</span>
-            </div>
-          </div>
-          <div className="hof-hero__caption">
-            {banner.isLive
-              ? 'Took the title race in GW37 — clinched in front of the league.'
-              : 'Wire-to-wire run; clinched on the final matchday.'}
-          </div>
-        </div>
-      </div>
-      <div className="hof-scrubber" role="tablist" aria-label="Season scrubber">
-        {HOF_SEASONS.map((s, i) => (
-          <button
-            key={s}
-            type="button"
-            role="tab"
-            aria-selected={i === pickIdx}
-            className={'hof-scrubber__pill' + (i === pickIdx ? ' is-active' : '')}
-            onClick={() => setPickIdx(i)}
-          >
-            <span className="hof-scrubber__pill-year">{s}</span>
-          </button>
-        ))}
-      </div>
-      <div className="hof-history-variant__block">
-        <HofSectionLabel>Team History</HofSectionLabel>
-        <TeamHistoryTable />
-      </div>
-      <div className="hof-history-variant__block">
-        <HofSectionLabel>Historic Standings · live season included</HofSectionLabel>
-        <HistoricStandingsTable />
-      </div>
-    </div>
-  )
-}
-
-/* Live tally view — total titles + runner-ups, no matrix, for A/B
- * compare against the H-D matrix variants. */
+/* Live tally view — preserved as the placeholder treatment for the
+ * Champions of Champions tab (Tab 3) while the visual is being
+ * decided. Renders cumulative titles + runner-ups, no matrix. */
 function CocLiveTally() {
   const rows = HOF_TEAMS
     .map((t) => ({
@@ -9195,174 +9141,21 @@ function mergedCellPosClass(rank) {
   return 'is-pos-' + rank
 }
 
-/* TH-A · Stacked cell — team-name above (tiny, muted), finishing
- * position below (large, heatmapped). Cells are taller than the H-D
- * matrix to fit both. */
-function MergedHistoryTHA() {
-  return (
-    <div className="merged-history merged-history--stacked">
-      <table>
-        <thead>
-          <tr>
-            <th className="merged-history__th-mgr">Manager</th>
-            {MERGED_SEASONS.map((s) => (
-              <th key={s} className="merged-history__th-season">{s}</th>
-            ))}
-            <th className="merged-history__th-meta">Titles</th>
-            <th className="merged-history__th-meta">Best</th>
-          </tr>
-        </thead>
-        <tbody>
-          {MERGED_HISTORY_SORTED.map((row) => (
-            <tr key={row.key}>
-              <td className="merged-history__td-mgr">
-                <MergedMgrCell row={row} />
-              </td>
-              {row.seasons.map((s) => (
-                <td
-                  key={s.season}
-                  className={
-                    'merged-history__td-cell merged-history__td-cell--stacked ' +
-                    mergedCellPosClass(s.rank)
-                  }
-                >
-                  {s.team ? (
-                    <>
-                      <div className="merged-history__cell-team">{s.team}</div>
-                      <div className="merged-history__cell-pos">{s.rank ?? '—'}</div>
-                    </>
-                  ) : (
-                    <div className="merged-history__cell-empty">—</div>
-                  )}
-                </td>
-              ))}
-              <td className="merged-history__td-meta">
-                <strong>{row.titles}</strong>
-              </td>
-              <td className="merged-history__td-meta">
-                <strong>{row.best ?? '—'}</strong>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-/* TH-B · Position prominent; team-name as a thin chip ribbon along
- * the bottom edge of the cell. More compact than TH-A but the team
- * name has less room. */
-function MergedHistoryTHB() {
-  return (
-    <div className="merged-history merged-history--ribbon">
-      <table>
-        <thead>
-          <tr>
-            <th className="merged-history__th-mgr">Manager</th>
-            {MERGED_SEASONS.map((s) => (
-              <th key={s} className="merged-history__th-season">{s}</th>
-            ))}
-            <th className="merged-history__th-meta">Titles</th>
-            <th className="merged-history__th-meta">Best</th>
-          </tr>
-        </thead>
-        <tbody>
-          {MERGED_HISTORY_SORTED.map((row) => (
-            <tr key={row.key}>
-              <td className="merged-history__td-mgr">
-                <MergedMgrCell row={row} />
-              </td>
-              {row.seasons.map((s) => (
-                <td
-                  key={s.season}
-                  className={
-                    'merged-history__td-cell merged-history__td-cell--ribbon ' +
-                    mergedCellPosClass(s.rank)
-                  }
-                >
-                  <div className="merged-history__cell-pos-big">{s.rank ?? '—'}</div>
-                  {s.team && (
-                    <div className="merged-history__cell-ribbon" title={s.team}>
-                      {s.team}
-                    </div>
-                  )}
-                </td>
-              ))}
-              <td className="merged-history__td-meta">
-                <strong>{row.titles}</strong>
-              </td>
-              <td className="merged-history__td-meta">
-                <strong>{row.best ?? '—'}</strong>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
-
-/* TH-C · Two-row band per manager — top row = team names, bottom row =
- * finishing positions (heatmapped). Manager + meta cells span both
- * with rowSpan={2}. Takes 2x vertical space per manager. */
-function MergedHistoryTHC() {
-  return (
-    <div className="merged-history merged-history--band">
-      <table>
-        <thead>
-          <tr>
-            <th className="merged-history__th-mgr">Manager</th>
-            {MERGED_SEASONS.map((s) => (
-              <th key={s} className="merged-history__th-season">{s}</th>
-            ))}
-            <th className="merged-history__th-meta">Titles</th>
-            <th className="merged-history__th-meta">Best</th>
-          </tr>
-        </thead>
-        <tbody>
-          {MERGED_HISTORY_SORTED.map((row) => (
-            <Fragment key={row.key}>
-              <tr className="merged-history__band-top">
-                <td className="merged-history__td-mgr" rowSpan={2}>
-                  <MergedMgrCell row={row} />
-                </td>
-                {row.seasons.map((s) => (
-                  <td key={s.season} className="merged-history__td-band-name">
-                    {s.team ?? '—'}
-                  </td>
-                ))}
-                <td className="merged-history__td-meta" rowSpan={2}>
-                  <strong>{row.titles}</strong>
-                </td>
-                <td className="merged-history__td-meta" rowSpan={2}>
-                  <strong>{row.best ?? '—'}</strong>
-                </td>
-              </tr>
-              <tr className="merged-history__band-bottom">
-                {row.seasons.map((s) => (
-                  <td
-                    key={s.season}
-                    className={
-                      'merged-history__td-band-pos ' + mergedCellPosClass(s.rank)
-                    }
-                  >
-                    {s.rank ?? '—'}
-                  </td>
-                ))}
-              </tr>
-            </Fragment>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )
-}
+/* TH-A · stacked-cell, TH-B · position+ribbon, and TH-C · two-row-band
+ * variants have been retired. TH-D is the locked Team History layout.
+ * MergedMgrCell stays defined — kept for parity even though TH-D
+ * doesn't render the long-form mgr-cell (it composes its own crest +
+ * stacked stats block instead). */
 
 /* TH-D · Manager journey timeline — vertical card row per manager.
  * Manager + crest on the left; season cards stretch right. Each card
- * shows team name on top + big position below (heatmap-tinted). More
- * celebratory, less dense than the table variants. */
+ * shows team name on top + big position below (heatmap-tinted).
+ *
+ * Locked spec: identity column carries the manager name + a stacked
+ * uppercase stats block (TITLES · RUNNER-UP · BEST #N) that mirrors
+ * the 25/26 year-label treatment (caps, muted, letter-spaced). The
+ * inline "N titles · best #1" line was retired so the celebratory
+ * stats stand on their own. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
@@ -9377,9 +9170,22 @@ function MergedHistoryTHD() {
             </span>
             <div className="merged-history-timeline__mgr-text">
               <div className="merged-history-timeline__mgr-name">{row.key}</div>
-              <div className="merged-history-timeline__mgr-sub">
-                {row.titles}{' '}{row.titles === 1 ? 'title' : 'titles'} · best #{row.best ?? '—'}
-              </div>
+              <ul className="merged-history-timeline__mgr-stats" aria-label="Career stats">
+                <li className="merged-history-timeline__mgr-stat">
+                  <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">
+                    {row.titles === 1 ? 'title' : 'titles'}
+                  </span>
+                </li>
+                <li className="merged-history-timeline__mgr-stat">
+                  <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+                </li>
+                <li className="merged-history-timeline__mgr-stat">
+                  <span className="merged-history-timeline__mgr-stat-label">best</span>
+                  <span className="merged-history-timeline__mgr-stat-num">#{row.best ?? '—'}</span>
+                </li>
+              </ul>
             </div>
           </div>
           <div className="merged-history-timeline__cards">
@@ -9491,83 +9297,9 @@ function MergedHistoryMVA() {
   )
 }
 
-/* MV-B · One-manager pager — horizontal manager pills up top, vertical
- * season list below for the active manager. Mocked with the first
- * sorted manager active. */
-function MergedHistoryMVB() {
-  const [activeKey, setActiveKey] = useState(MERGED_HISTORY_SORTED[0].key)
-  const active = MERGED_HISTORY_SORTED.find((r) => r.key === activeKey) ?? MERGED_HISTORY_SORTED[0]
-  return (
-    <div className="merged-history-mv merged-history-mv--pager">
-      <div
-        className="merged-history-mv__pager-pills"
-        role="tablist"
-        aria-label="Manager"
-      >
-        {MERGED_HISTORY_SORTED.map((row) => {
-          const isActive = row.key === active.key
-          return (
-            <button
-              key={row.key}
-              type="button"
-              role="tab"
-              aria-selected={isActive}
-              className={
-                'merged-history-mv__pager-pill' + (isActive ? ' is-active' : '')
-              }
-              style={
-                isActive
-                  ? { background: row.meta.color, borderColor: row.meta.color }
-                  : undefined
-              }
-              onClick={() => setActiveKey(row.key)}
-            >
-              {row.key}
-            </button>
-          )
-        })}
-      </div>
-      <div
-        className="merged-history-mv__pager-head"
-        style={{ borderTopColor: active.meta.color }}
-      >
-        <span
-          className="merged-history-mv__crest merged-history-mv__crest--lg"
-          style={{ background: active.meta.color }}
-        >
-          {active.meta.initials}
-        </span>
-        <div className="merged-history-mv__pager-head-text">
-          <div className="merged-history-mv__pager-head-name">{active.key}</div>
-          <div className="merged-history-mv__pager-head-sub">
-            {active.meta.fullName} · {active.titles}{' '}
-            {active.titles === 1 ? 'title' : 'titles'} · best #{active.best ?? '—'}
-          </div>
-        </div>
-      </div>
-      <ul className="merged-history-mv__pager-list">
-        {active.seasons.map((s) => (
-          <li
-            key={s.season}
-            className={
-              'merged-history-mv__pager-row ' + mergedCellPosClass(s.rank)
-            }
-          >
-            <span className="merged-history-mv__pager-season">{s.season}</span>
-            <span className="merged-history-mv__pager-team">{s.team ?? '—'}</span>
-            <span
-              className={
-                'merged-history-mv__pos-chip ' + mergedCellPosClass(s.rank)
-              }
-            >
-              {s.rank ?? '—'}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
-}
+/* MV-B (one-manager pager) has been retired. Only MV-A (accordion)
+ * and MV-C (transposed matrix) remain — they live behind the locked
+ * MV-A ⇄ MV-C toggle defined further down. */
 
 /* MV-C · Transposed matrix — rows = seasons, columns = managers
  * (8 narrow cells across the phone viewport, ~38-42 px each). Each
@@ -9625,6 +9357,236 @@ function MergedHistoryMVC() {
         Tap a cell to reveal the team name that season. Mock shows
         positions only.
       </p>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* HISTORY · MOBILE MV-A ⇄ MV-C TOGGLE (locked)                        */
+/* ------------------------------------------------------------------ */
+/* User direction: "How can we do both, and switch between the two? I
+ * love both visuals." Render the MV-A accordion list and the MV-C
+ * transposed matrix behind a small segmented pill — list icon swaps
+ * to accordion, matrix icon swaps to the transposed grid. Same visual
+ * language as the Trophy Room carousel ⇄ grid pill so the toggle UX
+ * reads consistently across Hall of Fame surfaces. */
+
+function MobileViewToggle({ mode, onList, onMatrix, size = 'md' }) {
+  return (
+    <div
+      className={'mobile-view-toggle mobile-view-toggle--' + size}
+      role="group"
+      aria-label="History view"
+    >
+      <button
+        type="button"
+        className={'mobile-view-toggle__btn' + (mode === 'list' ? ' is-active' : '')}
+        aria-pressed={mode === 'list'}
+        aria-label="Accordion list view"
+        onClick={onList}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <line x1="8" y1="6" x2="20" y2="6" />
+          <line x1="8" y1="12" x2="20" y2="12" />
+          <line x1="8" y1="18" x2="20" y2="18" />
+          <circle cx="4" cy="6" r="1.4" />
+          <circle cx="4" cy="12" r="1.4" />
+          <circle cx="4" cy="18" r="1.4" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className={'mobile-view-toggle__btn' + (mode === 'matrix' ? ' is-active' : '')}
+        aria-pressed={mode === 'matrix'}
+        aria-label="Transposed matrix view"
+        onClick={onMatrix}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <line x1="3" y1="9" x2="21" y2="9" />
+          <line x1="3" y1="15" x2="21" y2="15" />
+          <line x1="9" y1="3" x2="9" y2="21" />
+          <line x1="15" y1="3" x2="15" y2="21" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+/* Frame: list mode active — toggle pill on top, MV-A accordion below. */
+function MobileHistoryListFrame({ onToggleMode }) {
+  return (
+    <div className="hof-mob-history hof-mob-history--list">
+      <div className="hof-mob-history__bar">
+        <MobileViewToggle
+          mode="list"
+          onList={() => {}}
+          onMatrix={() => onToggleMode && onToggleMode('matrix')}
+        />
+      </div>
+      <div className="hof-mob-history__body">
+        <MergedHistoryMVA />
+      </div>
+    </div>
+  )
+}
+
+/* Frame: matrix mode active — toggle pill on top, MV-C transposed
+ * matrix below. */
+function MobileHistoryMatrixFrame({ onToggleMode }) {
+  return (
+    <div className="hof-mob-history hof-mob-history--matrix">
+      <div className="hof-mob-history__bar">
+        <MobileViewToggle
+          mode="matrix"
+          onList={() => onToggleMode && onToggleMode('list')}
+          onMatrix={() => {}}
+        />
+      </div>
+      <div className="hof-mob-history__body">
+        <MergedHistoryMVC />
+      </div>
+    </div>
+  )
+}
+
+/* Stateful wrapper — flips between MV-A and MV-C inside one PortraitFrame
+ * so the mockup behaves like the runtime experience. */
+function MobileHistoryToggleFrame({ initialMode = 'list' }) {
+  const [mode, setMode] = useState(initialMode)
+  if (mode === 'matrix') return <MobileHistoryMatrixFrame onToggleMode={setMode} />
+  return <MobileHistoryListFrame onToggleMode={setMode} />
+}
+
+/* Zoomed-in detail of the toggle pill — both states stacked so the UX
+ * reads at a glance. Mirrors TrophyRoomToggleDetail. */
+function MobileHistoryToggleDetail() {
+  return (
+    <div className="hof-mob-history hof-mob-history--toggle-detail">
+      <div className="hof-mob-history__detail-stack">
+        <div className="hof-mob-history__detail-row">
+          <MobileViewToggle mode="list" onList={() => {}} onMatrix={() => {}} size="lg" />
+          <div className="hof-mob-history__detail-caption">
+            <div className="hof-mob-history__detail-eyebrow">List mode active</div>
+            <div className="hof-mob-history__detail-text">
+              Brand-violet pill behind the list icon. Accordion list of
+              managers fills the page below.
+            </div>
+          </div>
+        </div>
+        <div className="hof-mob-history__detail-row">
+          <MobileViewToggle mode="matrix" onList={() => {}} onMatrix={() => {}} size="lg" />
+          <div className="hof-mob-history__detail-caption">
+            <div className="hof-mob-history__detail-eyebrow">Matrix mode active</div>
+            <div className="hof-mob-history__detail-text">
+              Transposed grid (season-as-row, 8 manager columns) fills the
+              page so positions line up vertically.
+            </div>
+          </div>
+        </div>
+        <div className="hof-mob-history__detail-note">
+          Pill sits at the top of the Team History sub-tab on mobile,
+          inside a subtle dark-glass surround so it never competes
+          with the heatmap.
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* HALL OF FAME · HISTORY sub-menu (H-A locked)                         */
+/* ------------------------------------------------------------------ */
+/* Locked structure: H-A's tabbed sub-sub-nav is the History sub-menu.
+ * Three tabs — Team History · Historic Standings · Champions of
+ * Champions. Each tab renders its own desktop + mobile mock frames.
+ * Champions of Champions is preserved as-is (TBD label) so the
+ * existing live-tally / matrix mocks aren't lost while the team
+ * decides what wins there. */
+function HallOfFameHistorySubMenu() {
+  const [tab, setTab] = useState('team')
+  return (
+    <div className="hof-history-variant">
+      <nav className="hof-history-variant__subnav" aria-label="History sections">
+        {[
+          { id: 'team', label: 'Team History' },
+          { id: 'std',  label: 'Historic Standings' },
+          { id: 'coc',  label: 'Champions of Champions' },
+        ].map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            className={'hof-history-variant__subnav-pill' + (tab === t.id ? ' is-active' : '')}
+            onClick={() => setTab(t.id)}
+          >
+            {t.label}
+          </button>
+        ))}
+      </nav>
+      {tab === 'team' && (
+        <div className="hof-history-tab hof-history-tab--team">
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 1 · TEAM HISTORY · DESKTOP (TH-D)
+            </div>
+            <MergedHistoryTHD />
+          </div>
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 1 · TEAM HISTORY · MOBILE (MV-A ⇄ MV-C TOGGLE)
+            </div>
+            <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">List view active (MV-A)</div>
+                <PortraitFrame>
+                  <MobileHistoryToggleFrame initialMode="list" />
+                </PortraitFrame>
+              </div>
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">Matrix view active (MV-C)</div>
+                <PortraitFrame>
+                  <MobileHistoryToggleFrame initialMode="matrix" />
+                </PortraitFrame>
+              </div>
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">Toggle UX detail</div>
+                <PortraitFrame>
+                  <MobileHistoryToggleDetail />
+                </PortraitFrame>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {tab === 'std' && (
+        <div className="hof-history-tab hof-history-tab--std">
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 2 · HISTORIC STANDINGS
+            </div>
+            <HistoricStandingsTable />
+          </div>
+        </div>
+      )}
+      {tab === 'coc' && (
+        <div className="hof-history-tab hof-history-tab--coc">
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 3 · CHAMPIONS OF CHAMPIONS · TBD
+            </div>
+            <p className="hof-history-tab__pending">
+              Pending decision on visual treatment. The live tally below is
+              preserved from the earlier mocks while the team decides
+              between cumulative tally, season-as-column matrix
+              (heatmap or chip), or a fused presentation. No layout
+              locked yet.
+            </p>
+            <CocLiveTally />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
@@ -10272,285 +10234,95 @@ export function Mockup() {
 
         {activeTab === 'hall' && (<>
         {/* ============================================================
-         *  HALL OF FAME · Trophy Room (variants T-A · T-B · T-C · T-D)
-         *  + History (variants H-A · H-B · H-C · H-D1 · H-D2 + tally)
-         *  Mock data — disclosed in eyebrows so it's not mistaken for
-         *  real league history. Banners use existing PNGs in
-         *  /hall-champions/ where available, themed fallbacks elsewhere.
+         *  HALL OF FAME · LOCKED STRUCTURE
+         *  ── Trophy Room · T-D carousel + 6-cell grid toggle (locked)
+         *  ── History sub-menu · H-A sub-sub-nav (locked) with three tabs:
+         *     1. Team History → TH-D (desktop) · MV-A ⇄ MV-C (mobile)
+         *     2. Historic Standings → refined table (manager-initial
+         *        bubbles, dedicated Manager column dropped, no "live"
+         *        suffix on 25/26 in the season picker)
+         *     3. Champions of Champions → TBD (live tally preserved
+         *        from the earlier mocks while the team decides)
+         *  All standings/matrix data is mock — eight plausible seasons
+         *  (2018/19 → 2025/26) with Crouch End on 4 titles, Soul Ze
+         *  Moles on 2, Bellsprouts and Wiggum on 1 each.
          * ============================================================ */}
         <section className="mockup__section">
-          <div className="mockup__eyebrow">HALL OF FAME · sub-tabs · spec</div>
+          <div className="mockup__eyebrow">HALL OF FAME · LOCKED STRUCTURE</div>
           <h2 className="mockup__section-h">Two sub-sections — Trophy Room + History</h2>
           <p className="mockup__section-sub">
-            User direction: Hall of Fame splits into <strong>Trophy Room</strong>{' '}
-            (banners-only — no surrounding text) and <strong>History</strong>{' '}
-            (Team History · Historic Standings · Champions of Champions). Mobile
-            Trophy Room must be a fullscreen swipeable carousel. Champions of
-            Champions gets a live · algorithm toggle and a season-as-column
-            matrix. All standings/matrix data below is{' '}
-            <strong>mock</strong> — eight plausible seasons (2018/19 → 2025/26)
-            with Crouch End on 4 titles, Soul Ze Moles on 2, Bellsprouts and
-            Wiggum on 1 each.
+            User-locked direction: Hall of Fame splits into{' '}
+            <strong>Trophy Room</strong> (banners-only carousel with a
+            view-all 6-grid toggle — no surrounding text) and{' '}
+            <strong>History</strong> (a sub-sub-nav with Team History ·
+            Historic Standings · Champions of Champions). The Champions
+            of Champions visual is still pending; everything else below
+            is locked.
           </p>
         </section>
 
-        {/* TROPHY ROOM — variants T-A · T-B · T-C ----------------------- */}
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">TROPHY ROOM · desktop framing options · T-A · T-B · T-C</div>
-          <h2 className="mockup__section-h">Three desktop chrome treatments for the 8 banners</h2>
-          <p className="mockup__section-sub">
-            Same 8 banners, three desktop chrome directions. T-A: pedestal /
-            hung-banner with a metallic frame and slight tilt. T-B: flat modern
-            gallery with thin brand-tinted borders. T-C: museum trophy case on
-            wooden shelves with ambient glow. All three render in 375 px
-            portrait frames so the mobile beat reads — for desktop the same
-            grid widens to 4 cols. The mobile spec (T-D) lives in the next
-            section below.
-          </p>
-          <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
-            <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">T-A · Pedestal · 3D framed</div>
-              <PortraitFrame>
-                <TrophyRoomVariantA />
-              </PortraitFrame>
-            </div>
-            <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">T-B · Banner gallery · flat modern</div>
-              <PortraitFrame>
-                <TrophyRoomVariantB />
-              </PortraitFrame>
-            </div>
-            <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">T-C · Trophy case · museum</div>
-              <PortraitFrame>
-                <TrophyRoomVariantC />
-              </PortraitFrame>
-            </div>
-          </div>
-        </section>
-
-        {/* TROPHY ROOM — variant T-D (mobile fullscreen swipe) ---------- */}
+        {/* TROPHY ROOM — locked T-D · carousel + 6-cell grid toggle ----- */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">
-            TROPHY ROOM · mobile fullscreen swipe · T-D
-            <span className="mockup-variant-picked" aria-label="Recommended"> RECOMMENDED FOR MOBILE</span>
-          </div>
-          <h2 className="mockup__section-h">Full-bleed banner per screen, swipe left/right</h2>
-          <p className="mockup__section-sub">
-            Per the user&apos;s explicit ask: &ldquo;On mobile I want the trophy
-            room to be full screen images that you slide left and right to the
-            next one presented neatly and within the theme of celebration. No
-            additional text outside.&rdquo; Three frames below show the same
-            carousel mid-swipe at three different active positions — neighbors
-            peek on each side; dot indicators sit at the bottom. Background is
-            a brand-tinted celebratory dark wash so the banner pops. No
-            overlay text.
-          </p>
-          <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--4">
-            <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">T-D · banner 1 (18/19) active</div>
-              <PortraitFrame>
-                <TrophyRoomVariantDFrame activeIdx={0} />
-              </PortraitFrame>
-            </div>
-            <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">T-D · banner 4 (21/22) active</div>
-              <PortraitFrame>
-                <TrophyRoomVariantDFrame activeIdx={3} />
-              </PortraitFrame>
-            </div>
-            <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">T-D · banner 8 (25/26 live) active</div>
-              <PortraitFrame>
-                <TrophyRoomVariantDFrame activeIdx={7} />
-              </PortraitFrame>
-            </div>
-            <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">T-D · view all · grid of 8</div>
-              <PortraitFrame>
-                <TrophyRoomVariantDViewAll />
-              </PortraitFrame>
-            </div>
-          </div>
-        </section>
-
-        {/* HISTORY — variants H-A · H-B · H-C ---------------------------- */}
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">HISTORY · layout direction · H-A · H-B · H-C</div>
-          <h2 className="mockup__section-h">How to organise the three History tables</h2>
-          <p className="mockup__section-sub">
-            Three competing layouts for the History tab. H-A uses a{' '}
-            <strong>sub-sub-nav</strong> (one table at a time). H-B{' '}
-            <strong>stacks</strong> all three tables vertically in one scroll.
-            H-C adds a <strong>hero season scrubber</strong> at the top —
-            tap a year and the hero card celebrates that season&apos;s
-            champion (the user&apos;s &ldquo;celebrate the history of the
-            teams&rdquo; ask). Pick a layout direction; the matrix style
-            (H-D1 vs H-D2) is a separate decision below.
-          </p>
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">H-A · TABBED SUB-SUB-NAV (one table at a time)</div>
-          <HistoryVariantA />
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">H-B · THREE STACKED SECTIONS (one scroll)</div>
-          <HistoryVariantB />
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">
-            H-C · HERO SCRUBBER + STACKED TABLES (celebrate the history)
-          </div>
-          <HistoryVariantC />
-          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-4)' }}>
-            <strong>Animation note:</strong> the year-pills above the hero card
-            are a static scrubber in the mockup. At runtime, tapping a pill
-            animates the hero — banner crossfades, champion title sweep,
-            counters tick from the previous season&apos;s value to the new one
-            (PTS / GD / Wins). On idle, the scrubber auto-advances every
-            ~4 s so the hall feels alive when nobody&apos;s touching it.
-          </p>
-        </section>
-
-        {/* HISTORY — Champions of Champions matrix variants ------------- */}
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">CHAMPIONS OF CHAMPIONS · matrix style · H-D1 vs H-D2</div>
-          <h2 className="mockup__section-h">Season-as-column matrix — heatmap or chip</h2>
-          <p className="mockup__section-sub">
-            Per the user: &ldquo;maybe show each season as a column where the
-            team finished with a total score on the right?&rdquo; Rows = teams,
-            columns = seasons (8 of them), each cell shows the finishing
-            position (1–8). Far right column = total titles in the live view,
-            or total algorithmic points (8-7-6-5-4-3-2-1 per season) when the
-            top-of-table toggle is flipped. Two visual treatments below,
-            shown side-by-side at desktop width.
-          </p>
-          <div className="hof-coc-row">
-            <div className="hof-coc-row__col">
-              <div className="mockup-portrait-col__h">H-D1 · Heatmap cells (gold/silver/bronze + greyscale)</div>
-              <CocLiveAlgoToggle style="heatmap" />
-            </div>
-            <div className="hof-coc-row__col">
-              <div className="mockup-portrait-col__h">H-D2 · Chip cells (colored circular chips)</div>
-              <CocLiveAlgoToggle style="chip" />
-            </div>
-          </div>
-        </section>
-
-        {/* HISTORY — Champions of Champions LIVE TALLY (no matrix) ------ */}
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">
-            CHAMPIONS OF CHAMPIONS · LIVE TALLY (reference / A-B compare)
-          </div>
-          <h2 className="mockup__section-h">Just titles + runner-ups, no matrix</h2>
-          <p className="mockup__section-sub">
-            Reference treatment: cumulative trophy + runner-up counts only.
-            For users who don&apos;t want the per-season grid. A/B against the
-            matrix variants above.
-          </p>
-          <CocLiveTally />
-        </section>
-
-        {/* HISTORY — merged team-name + finishing-position variants ---- */}
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">
-            History · Team-name + finishing position merged
+            TROPHY ROOM · LOCKED · MOBILE-FIRST CAROUSEL + 6-GRID TOGGLE
           </div>
           <h2 className="mockup__section-h">
-            Commemorate the team-name evolution AND the finishing position in one table
+            Default to swipe carousel · subtle toggle flips to a 6-cell grid
           </h2>
           <p className="mockup__section-sub">
-            User direction: &ldquo;use a table like this (without horizontal
-            scroll) somehow with their finishing positions instead of this
-            mockup&rdquo; — i.e. fold the team-name-by-season story from the
-            Team History list into the Champions-of-Champions heatmap. All
-            variants anchor on the <strong>manager</strong> (the stable
-            identity — teams rebrand every year) and run 20/21 → 25/26 (six
-            cols; 18/19 + 19/20 dropped — the mocked history doesn&apos;t
-            cover them and an &ldquo;n/a&rdquo; column on the far left
-            cluttered every layout). 25/26 row is mocked — Luke wins, per
-            the team-name-table screenshot.
-          </p>
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">VARIANT TH-A · STACKED CELL (team-name above · position below)</div>
-          <MergedHistoryTHA />
-          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
-            Each cell stacks tiny team-name on top + finishing position
-            (large, heatmap-tinted) below. Reads as &ldquo;{`{team that season}`}{' '}
-            finished {`{position}`}&rdquo; in one glance. Cells are taller
-            (~52 px) than the H-D matrix to fit both rows.
-          </p>
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">VARIANT TH-B · POSITION + RIBBON (team-name as bottom chip)</div>
-          <MergedHistoryTHB />
-          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
-            Position is the focal element (matrix-style); team-name ribbons
-            across the bottom edge in tiny text. More compact than TH-A but
-            long team names truncate with ellipsis.
-          </p>
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">VARIANT TH-C · TWO-ROW BAND (names row above · positions row below)</div>
-          <MergedHistoryTHC />
-          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
-            Each manager occupies two stacked rows: team names on top
-            (small, no heatmap), finishing positions on the bottom (big,
-            heatmapped). Manager + meta columns span both with rowSpan=2.
-            Visually separates the two dimensions but doubles vertical
-            space.
-          </p>
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">VARIANT TH-D · MANAGER JOURNEY TIMELINE (card per season)</div>
-          <MergedHistoryTHD />
-          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
-            Manager + crest on the left, horizontal sequence of season
-            cards stretching right — one card per season with year, team
-            name, and big heatmapped position. More celebratory / heritage
-            feel than the table variants but less dense.
-          </p>
-        </section>
-
-        <section className="mockup__section">
-          <div className="mockup__eyebrow">
-            History · merged · MOBILE PATTERNS · MV-A · MV-B · MV-C (390 px portrait)
-          </div>
-          <h2 className="mockup__section-h">Three mobile patterns for the same merged table</h2>
-          <p className="mockup__section-sub">
-            The matrix doesn&apos;t fit on a phone, so three different
-            patterns below — accordion-per-manager, one-manager-at-a-time
-            pager, and a transposed (season-as-row) matrix that fits 8
-            narrow cells across.
+            Locked direction from the user: T-D wins. Default state is a
+            fullscreen swipeable carousel of championship banners, latest
+            season first, neighbors peeking on each side, dot indicators
+            at the bottom. A subtle 2-icon segmented pill in the top-right
+            (carousel ⇄ grid) flips to a view-all <strong>2-by-3 grid</strong>{' '}
+            of the most-recent 6 banners. Older banners stay accessible by
+            swiping back inside the carousel. T-A pedestal, T-B flat
+            gallery, and T-C trophy-case mocks have been removed.
           </p>
           <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
             <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">MV-A · accordion list · top row expanded</div>
+              <div className="mockup-portrait-col__h">Default carousel · latest banner active</div>
               <PortraitFrame>
-                <MergedHistoryMVA />
+                <TrophyRoomLockedFrame initialMode="carousel" />
               </PortraitFrame>
             </div>
             <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">MV-B · manager pager · pills + season list</div>
+              <div className="mockup-portrait-col__h">View-all grid · 6 most-recent banners</div>
               <PortraitFrame>
-                <MergedHistoryMVB />
+                <TrophyRoomLockedFrame initialMode="grid" />
               </PortraitFrame>
             </div>
             <div className="mockup-portrait-col">
-              <div className="mockup-portrait-col__h">MV-C · transposed matrix · season-as-row</div>
+              <div className="mockup-portrait-col__h">Toggle UX detail</div>
               <PortraitFrame>
-                <MergedHistoryMVC />
+                <TrophyRoomToggleDetail />
               </PortraitFrame>
             </div>
           </div>
+        </section>
+
+        {/* HISTORY — locked H-A sub-sub-nav (3 tabs) -------------------- */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">
+            HISTORY · INTERNAL SUB-SUB-NAV (H-A LOCKED)
+          </div>
+          <h2 className="mockup__section-h">
+            One table at a time · tabs for Team History · Historic Standings · Champions of Champions
+          </h2>
+          <p className="mockup__section-sub">
+            Locked: H-A&apos;s tabbed pattern is the History sub-menu.
+            Tab 1 (Team History) renders the manager-journey timeline
+            (TH-D, refined with stacked uppercase TITLES · RUNNER-UP ·
+            BEST stats) on desktop, and a small List ⇄ Matrix toggle
+            (MV-A accordion ⇄ MV-C transposed matrix) on mobile. Tab 2
+            (Historic Standings) shows the refined per-season table with
+            manager-initial bubbles, the dedicated Manager column
+            dropped, team name left-aligned tight to the bubble, and the
+            season picker without a &ldquo;live&rdquo; suffix on 25/26.
+            Tab 3 (Champions of Champions) is preserved as pending — the
+            live-tally mock stays in place while the visual is decided.
+          </p>
+          <HallOfFameHistorySubMenu />
         </section>
         </>)}
 

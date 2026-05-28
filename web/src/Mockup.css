@@ -12296,154 +12296,72 @@
   position: relative;
 }
 
-/* T-A · Pedestal / 3D banners ---------------------------------------- */
-.hof-troom--pedestal {
-  background:
-    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--brand) 14%, transparent) 0%, transparent 60%),
-    linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
-  padding: 18px 14px 22px;
-}
-.hof-troom__pedestal-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px 14px;
-}
-.hof-troom__pedestal-cell {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  perspective: 600px;
-}
-.hof-troom__pedestal-frame {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  border-radius: 6px;
-  overflow: hidden;
-  /* Metallic gold-leaf frame */
-  padding: 6px;
-  background:
-    linear-gradient(135deg, #f3d56a 0%, #c89c2a 45%, #f9e285 60%, #b7861a 100%);
-  box-shadow:
-    0 14px 24px -10px rgba(0, 0, 0, 0.45),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.15),
-    inset 0 0 0 2px rgba(0, 0, 0, 0.08);
-  transform-origin: center bottom;
-}
-.hof-troom__pedestal-cell--left .hof-troom__pedestal-frame {
-  transform: rotateY(-3deg) rotateX(2deg);
-}
-.hof-troom__pedestal-cell--right .hof-troom__pedestal-frame {
-  transform: rotateY(3deg) rotateX(2deg);
-}
-.hof-troom__pedestal-frame .hof-banner__img,
-.hof-troom__pedestal-frame .hof-banner__fallback {
-  border-radius: 3px;
-  background: var(--surface);
-}
-.hof-troom__pedestal-reflection {
-  position: absolute;
-  left: 12%;
-  right: 12%;
-  bottom: -10px;
-  height: 14px;
-  border-radius: 50%;
-  background: radial-gradient(50% 100% at 50% 0%, rgba(0, 0, 0, 0.32) 0%, transparent 80%);
-  filter: blur(2px);
-}
+/* T-A pedestal / T-B flat gallery / T-C trophy-case variants have
+ * been retired per the locked spec. T-D (carousel + 6-grid toggle) is
+ * the only Trophy Room variant. */
 
-/* T-B · Flat banner gallery ------------------------------------------ */
-.hof-troom--gallery {
-  background: var(--surface);
-  padding: 14px;
-}
-.hof-troom__gallery-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-.hof-troom__gallery-card {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid color-mix(in srgb, var(--brand) 40%, var(--border));
-  background: var(--bg);
-  box-shadow: 0 4px 10px -6px rgba(0, 0, 0, 0.18);
-}
-.hof-troom__gallery-chip {
+/* T-D · LOCKED — mobile-first carousel + view-all 6-cell grid -------- */
+/* Subtle 2-icon segmented pill in the top-right of either view —
+ * carousel icon and grid icon — backed by a translucent dark glass
+ * surface so it never competes with the banner art. Brand-violet fill
+ * marks the active mode; inactive icon stays muted on the same
+ * surface. Used by both the carousel and the grid frame; positioned
+ * absolute inside the .hof-troom container. */
+.hof-troom__vtoggle {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 2;
-  padding: 3px 8px;
-  border-radius: 999px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #1a1306;
-  background: linear-gradient(135deg, #ffd97a 0%, #c8961a 100%);
-  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.4);
-}
-
-/* T-C · Trophy case (wooden) ----------------------------------------- */
-.hof-troom--case {
-  background:
-    radial-gradient(80% 60% at 50% 100%, rgba(40, 18, 6, 0.4) 0%, transparent 70%),
-    linear-gradient(180deg, #2a190d 0%, #1a0d05 100%);
-  padding: 14px 12px;
-}
-.hof-troom__case-back {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.hof-troom__case-shelf {
-  display: flex;
-  flex-direction: column;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
   gap: 0;
-}
-.hof-troom__case-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-  padding-bottom: 8px;
-}
-.hof-troom__case-trophy {
-  position: relative;
-  aspect-ratio: 4 / 5;
-  border-radius: 4px;
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.02);
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(12, 8, 32, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 220, 140, 0.18),
-    0 8px 16px -8px rgba(0, 0, 0, 0.7);
+    0 4px 10px -4px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
 }
-.hof-troom__case-trophy .hof-banner__img,
-.hof-troom__case-trophy .hof-banner__fallback {
-  border-radius: 3px;
+.hof-troom__vtoggle--lg {
+  padding: 5px;
+  gap: 2px;
+  position: static;
 }
-.hof-troom__case-glow {
-  position: absolute;
-  inset: -10px;
-  z-index: 0;
-  background: radial-gradient(60% 40% at 50% 100%, rgba(255, 200, 90, 0.28) 0%, transparent 70%);
-  pointer-events: none;
+.hof-troom__vtoggle-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 5px 9px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
 }
-.hof-troom__case-plank {
-  height: 10px;
-  border-radius: 2px;
-  background:
-    linear-gradient(180deg, #5a3a1d 0%, #3a230f 80%);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 200, 130, 0.18),
-    0 6px 12px -8px rgba(0, 0, 0, 0.7);
+.hof-troom__vtoggle--lg .hof-troom__vtoggle-btn {
+  padding: 9px 14px;
+}
+.hof-troom__vtoggle--lg .hof-troom__vtoggle-btn svg {
+  width: 22px;
+  height: 22px;
+}
+.hof-troom__vtoggle-btn:hover:not(.is-active) {
+  color: #fff;
+}
+.hof-troom__vtoggle-btn.is-active {
+  background: color-mix(in srgb, var(--brand) 80%, transparent);
+  color: #fff;
+  box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--brand) 60%, transparent);
+}
+.hof-troom__vtoggle-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 80%, #fff);
+  outline-offset: 2px;
 }
 
-/* T-D · Mobile fullscreen swipeable carousel ------------------------- */
 .hof-troom--swipe {
   background:
     radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--brand) 22%, transparent) 0%, transparent 65%),
@@ -12525,6 +12443,15 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+/* Locked 2 × 3 layout — most-recent 6 banners only. Padded down from
+ * the top so the toggle pill in the corner doesn't collide with the
+ * first row of cards. */
+.hof-troom__viewall-grid--6 {
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
+  padding-top: 36px;
+  gap: 12px;
+}
 .hof-troom__viewall-card {
   appearance: none;
   border: none;
@@ -12552,6 +12479,65 @@
 .hof-troom__viewall-card:focus-visible {
   outline: 2px solid color-mix(in srgb, var(--brand) 70%, #fff);
   outline-offset: 2px;
+}
+
+/* Trophy Room · toggle UX detail — zoomed-in view of the carousel ⇄
+ * grid pill. Stacks both states on the same dark-glass surface so
+ * the active vs inactive treatment reads at a glance. */
+.hof-troom--toggle-detail {
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--brand) 28%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, #1a0f33 0%, #0c0820 100%);
+  padding: 28px 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.hof-troom__toggle-detail-bg {
+  display: none;
+}
+.hof-troom__toggle-detail-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  width: 100%;
+  max-width: 320px;
+}
+.hof-troom__toggle-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px 14px 16px;
+  box-shadow: 0 6px 14px -6px rgba(0, 0, 0, 0.45);
+}
+.hof-troom__toggle-detail-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: rgba(255, 255, 255, 0.78);
+}
+.hof-troom__toggle-detail-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: color-mix(in srgb, var(--brand) 35%, #fff);
+}
+.hof-troom__toggle-detail-text {
+  font-size: 12px;
+  line-height: 16px;
+  color: rgba(255, 255, 255, 0.72);
+}
+.hof-troom__toggle-detail-note {
+  font-size: 11px;
+  line-height: 15px;
+  color: rgba(255, 255, 255, 0.55);
+  text-align: center;
+  padding-top: 4px;
 }
 
 /* ================================================================== */
@@ -13141,58 +13127,45 @@
   color: var(--text-strong);
 }
 
+/* TH-A stacked-cell, TH-B position+ribbon, and TH-C two-row-band
+ * variant CSS has been retired (variants deleted from JSX). Only
+ * TH-D timeline-card heatmap rules remain, plus the shared
+ * MergedMgrCell crest sizing kept in case the helper is reused. */
 .merged-history__mgr-cell .hof-team-cell__crest { width: 28px; height: 28px; font-size: 10px; }
 
 /* Position heatmap — gold/silver/bronze on top, greyscale middle, red
- * wooden spoon at the bottom. Mirrors the H-D1 matrix (.hof-coc--heatmap)
- * so the merged variants feel like the same family. */
-.merged-history__td-cell.is-pos-1,
-.merged-history__td-band-pos.is-pos-1,
+ * wooden spoon at the bottom. Now only colors the TH-D timeline
+ * cards; the merged-table cell + band selectors have been removed
+ * along with their variants. */
 .merged-history-timeline__card.is-pos-1 {
   background: linear-gradient(180deg, rgba(255, 217, 122, 0.55) 0%, rgba(200, 150, 26, 0.35) 100%);
   color: #6c4a00;
   box-shadow: inset 0 0 0 1px rgba(200, 150, 26, 0.4);
 }
-.merged-history__td-cell.is-pos-2,
-.merged-history__td-band-pos.is-pos-2,
 .merged-history-timeline__card.is-pos-2 {
   background: rgba(195, 195, 200, 0.45);
   color: #2a2a30;
 }
-.merged-history__td-cell.is-pos-3,
-.merged-history__td-band-pos.is-pos-3,
 .merged-history-timeline__card.is-pos-3 {
   background: rgba(214, 138, 60, 0.32);
   color: #5a300d;
 }
-.merged-history__td-cell.is-pos-4,
-.merged-history__td-band-pos.is-pos-4,
 .merged-history-timeline__card.is-pos-4 {
   background: rgba(120, 120, 130, 0.10);
 }
-.merged-history__td-cell.is-pos-5,
-.merged-history__td-band-pos.is-pos-5,
 .merged-history-timeline__card.is-pos-5 {
   background: rgba(120, 120, 130, 0.07);
 }
-.merged-history__td-cell.is-pos-6,
-.merged-history__td-band-pos.is-pos-6,
 .merged-history-timeline__card.is-pos-6 {
   background: rgba(120, 120, 130, 0.04);
 }
-.merged-history__td-cell.is-pos-7,
-.merged-history__td-band-pos.is-pos-7,
 .merged-history-timeline__card.is-pos-7 {
   background: transparent;
 }
-.merged-history__td-cell.is-pos-8,
-.merged-history__td-band-pos.is-pos-8,
 .merged-history-timeline__card.is-pos-8 {
   background: rgba(192, 57, 43, 0.14);
   color: #803020;
 }
-.merged-history__td-cell.is-empty,
-.merged-history__td-band-pos.is-empty,
 .merged-history-timeline__card.is-empty {
   background: repeating-linear-gradient(
     135deg,
@@ -13202,119 +13175,15 @@
   color: var(--text-muted);
 }
 
-[data-theme='dark'] .merged-history__td-cell.is-pos-1,
-[data-theme='dark'] .merged-history__td-band-pos.is-pos-1,
 [data-theme='dark'] .merged-history-timeline__card.is-pos-1 { color: #ffd97a; }
-[data-theme='dark'] .merged-history__td-cell.is-pos-2,
-[data-theme='dark'] .merged-history__td-band-pos.is-pos-2,
 [data-theme='dark'] .merged-history-timeline__card.is-pos-2 {
   background: rgba(220, 220, 230, 0.18);
   color: #d8d8de;
 }
-[data-theme='dark'] .merged-history__td-cell.is-pos-3,
-[data-theme='dark'] .merged-history__td-band-pos.is-pos-3,
 [data-theme='dark'] .merged-history-timeline__card.is-pos-3 { color: #e0a070; }
-[data-theme='dark'] .merged-history__td-cell.is-pos-8,
-[data-theme='dark'] .merged-history__td-band-pos.is-pos-8,
 [data-theme='dark'] .merged-history-timeline__card.is-pos-8 {
   background: rgba(192, 57, 43, 0.22);
   color: #ff9988;
-}
-
-/* TH-A · stacked cell ------------------------------------------------ */
-.merged-history__td-cell--stacked {
-  height: 52px;
-  padding: 6px 8px;
-  vertical-align: middle;
-  position: relative;
-}
-.merged-history__cell-team {
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-muted);
-  line-height: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.01em;
-  margin-bottom: 2px;
-}
-.merged-history__cell-pos {
-  font-size: 20px;
-  font-weight: 800;
-  line-height: 22px;
-  font-variant-numeric: tabular-nums;
-  color: inherit;
-}
-.merged-history__cell-empty {
-  font-size: 14px;
-  color: var(--text-muted);
-  opacity: 0.7;
-}
-
-/* TH-B · position + ribbon ------------------------------------------ */
-.merged-history__td-cell--ribbon {
-  height: 48px;
-  padding: 4px 6px 16px;
-  position: relative;
-  vertical-align: middle;
-}
-.merged-history__cell-pos-big {
-  font-size: 22px;
-  font-weight: 800;
-  line-height: 24px;
-  color: inherit;
-}
-.merged-history__cell-ribbon {
-  position: absolute;
-  left: 4px;
-  right: 4px;
-  bottom: 3px;
-  font-size: 9px;
-  font-weight: 600;
-  line-height: 11px;
-  color: var(--text-muted);
-  background: color-mix(in srgb, var(--surface) 88%, transparent);
-  border-radius: 3px;
-  padding: 1px 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: 0.01em;
-}
-
-/* TH-C · two-row band ----------------------------------------------- */
-.merged-history--band table { table-layout: fixed; }
-.merged-history__band-top td.merged-history__td-band-name {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-muted);
-  padding: 6px 6px 2px;
-  border-bottom: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  background: var(--surface);
-  letter-spacing: 0.01em;
-}
-.merged-history__band-bottom td.merged-history__td-band-pos {
-  font-size: 18px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  padding: 2px 6px 8px;
-  color: inherit;
-  border-bottom: 1px solid var(--border);
-}
-.merged-history--band tbody tr.merged-history__band-top td {
-  border-top: 1px solid var(--border);
-}
-.merged-history--band tbody tr.merged-history__band-top:first-child td {
-  border-top: none;
-}
-.merged-history--band td.merged-history__td-mgr,
-.merged-history--band td.merged-history__td-meta {
-  vertical-align: middle;
-  border-bottom: 1px solid var(--border);
 }
 
 /* TH-D · timeline cards --------------------------------------------- */
@@ -13325,7 +13194,7 @@
 }
 .merged-history-timeline__row {
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 248px 1fr;
   gap: var(--space-3);
   align-items: stretch;
   background: var(--surface);
@@ -13335,9 +13204,10 @@
 }
 .merged-history-timeline__mgr {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  align-items: flex-start;
+  gap: 12px;
   min-width: 0;
+  padding-top: 2px;
 }
 .merged-history-timeline__crest {
   flex: 0 0 auto;
@@ -13364,11 +13234,48 @@
   font-weight: 700;
   color: var(--text-strong);
   line-height: 18px;
+  margin-bottom: 6px;
 }
 .merged-history-timeline__mgr-sub {
   font-size: var(--text-xs);
   color: var(--text-muted);
   line-height: 14px;
+}
+/* Stacked uppercase stats block — mirrors the year-label treatment
+ * on the per-season cards (caps · muted · letter-spaced) so the
+ * career summary reads as part of the same visual language. Each
+ * stat sits on its own line (TITLES / RUNNER-UP / BEST #N). */
+.merged-history-timeline__mgr-stats {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.merged-history-timeline__mgr-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.merged-history-timeline__mgr-stat-num {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-strong);
+}
+.merged-history-timeline__mgr-stat-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 .merged-history-timeline__cards {
   display: grid;
@@ -13600,101 +13507,9 @@
   text-overflow: ellipsis;
 }
 
-/* MV-B · pager ------------------------------------------------------- */
-.merged-history-mv--pager {
-  overflow-y: auto;
-}
-.merged-history-mv__pager-pills {
-  display: flex;
-  gap: 6px;
-  padding: 10px 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  border-bottom: 1px solid var(--border);
-  background: var(--surface-2);
-  scrollbar-width: thin;
-}
-.merged-history-mv__pager-pill {
-  appearance: none;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text-muted);
-  padding: 6px 12px;
-  border-radius: 999px;
-  cursor: pointer;
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-  flex: 0 0 auto;
-  transition: all 0.12s ease;
-}
-.merged-history-mv__pager-pill:hover:not(.is-active) {
-  color: var(--text-strong);
-}
-.merged-history-mv__pager-pill.is-active {
-  color: #fff;
-  font-weight: 700;
-  box-shadow: 0 2px 4px -2px rgba(0, 0, 0, 0.25);
-}
-.merged-history-mv__pager-head {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 14px 14px 12px;
-  border-top: 3px solid var(--brand);
-  background: var(--surface);
-}
-.merged-history-mv__pager-head-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.merged-history-mv__pager-head-name {
-  font-size: 18px;
-  font-weight: 800;
-  color: var(--text-strong);
-  line-height: 22px;
-}
-.merged-history-mv__pager-head-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.merged-history-mv__pager-list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  flex: 1 1 auto;
-  overflow-y: auto;
-}
-.merged-history-mv__pager-row {
-  display: grid;
-  grid-template-columns: 50px 1fr 36px;
-  gap: 8px;
-  align-items: center;
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-}
-.merged-history-mv__pager-row:last-child { border-bottom: none; }
-.merged-history-mv__pager-season {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-  font-variant-numeric: tabular-nums;
-}
-.merged-history-mv__pager-team {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-strong);
-  line-height: 18px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
+/* MV-B (manager pager) has been retired per the locked spec. Only
+ * MV-A (accordion) and MV-C (transposed matrix) remain — see the
+ * .mobile-view-toggle pill above for the wiring. */
 
 /* MV-C · transposed matrix ----------------------------------------- */
 .merged-history-mv--transposed {
@@ -13784,4 +13599,199 @@
   font-size: 11px;
   line-height: 15px;
   color: var(--text-muted);
+}
+
+/* ================================================================== */
+/* HALL OF FAME · HISTORY sub-menu (H-A locked)                         */
+/* ================================================================== */
+/* The History sub-sub-nav uses the same pill rhythm as H-A's older
+ * sub-tabs (.hof-history-variant__subnav-pill). Each tab body is a
+ * stack of "beats" — a small eyebrow + the locked render for that
+ * tab (TH-D timeline, MV-A ⇄ MV-C portrait row, refined Historic
+ * Standings, etc.). */
+.hof-history-tab {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+  padding-top: var(--space-3);
+}
+.hof-history-tab__beat {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.hof-history-tab__beat-eyebrow {
+  font-family: 'Geist Mono', 'Geist', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+.hof-history-tab__pending {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 20px;
+  color: var(--text-muted);
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+  border: 1px dashed color-mix(in srgb, var(--brand) 35%, var(--border));
+}
+
+/* ================================================================== */
+/* HALL OF FAME · HISTORY MOBILE (MV-A ⇄ MV-C toggle)                   */
+/* ================================================================== */
+/* Small segmented pill that swaps the accordion list (MV-A) for the
+ * transposed matrix (MV-C). Same visual language as the Trophy Room
+ * carousel ⇄ grid pill, scaled down for in-content placement at the
+ * top of the History mobile view. Brand-violet active fill keeps the
+ * cross-surface affordance consistent. */
+.mobile-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 8%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--brand) 18%, var(--border));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+.mobile-view-toggle--lg { padding: 5px; }
+.mobile-view-toggle__btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 5px 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.mobile-view-toggle--lg .mobile-view-toggle__btn {
+  padding: 9px 14px;
+}
+.mobile-view-toggle--lg .mobile-view-toggle__btn svg {
+  width: 22px;
+  height: 22px;
+}
+.mobile-view-toggle__btn:hover:not(.is-active) {
+  color: var(--text-strong);
+}
+.mobile-view-toggle__btn.is-active {
+  background: var(--brand);
+  color: #fff;
+  box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--brand) 60%, transparent);
+}
+.mobile-view-toggle__btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 70%, #fff);
+  outline-offset: 2px;
+}
+
+/* Mobile History frames — toggle pill sits in a slim bar at the top
+ * of the portrait area; body fills the rest. */
+.hof-mob-history {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+}
+.hof-mob-history__bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--brand) 4%, var(--surface));
+}
+.hof-mob-history__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+/* Mobile History · toggle UX detail — zoomed-in stack mirroring the
+ * Trophy Room toggle-detail frame so the cross-surface pattern reads
+ * as one decision. */
+.hof-mob-history--toggle-detail {
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--brand) 14%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, var(--surface) 0%, var(--surface-2) 100%);
+  padding: 28px 22px;
+  align-items: center;
+  justify-content: center;
+}
+.hof-mob-history__detail-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 320px;
+  margin: auto;
+}
+.hof-mob-history__detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 10px -6px rgba(0, 0, 0, 0.18);
+}
+.hof-mob-history__detail-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.hof-mob-history__detail-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--brand);
+}
+.hof-mob-history__detail-text {
+  font-size: 12px;
+  line-height: 16px;
+  color: var(--text-muted);
+}
+.hof-mob-history__detail-note {
+  font-size: 11px;
+  line-height: 15px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+/* The MV accordion/matrix bodies were sized to fill an entire 720 px
+ * portrait frame on their own; inside the locked toggle wrapper they
+ * sit below a slim bar instead, so cap their min-height to the
+ * remaining viewport. */
+.hof-mob-history .merged-history-mv {
+  height: auto;
+  min-height: 0;
+}
+
+/* ================================================================== */
+/* HISTORIC STANDINGS · refined column alignment (Tab 2)                */
+/* ================================================================== */
+/* Locked spec: bubble (manager initials) + team name read as one
+ * unit, left-aligned tightly together at the left edge of the TEAM
+ * column. `.hof-td-team` is the new td class added when the dedicated
+ * Manager column was dropped; the inherited right-align from
+ * `.hof-table th, td` is reset here. */
+.hof-table .hof-td-team .hof-team-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.hof-table .hof-td-team .hof-team-cell__text {
+  align-items: flex-start;
+}
+.hof-table .hof-td-team .hof-team-cell__name {
+  text-align: left;
 }
