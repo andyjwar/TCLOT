@@ -269,9 +269,13 @@ import {
 } from './waiverMovesSort.js'
 import {
   HALL_SEASON_FINAL_TABLES,
-  computeHallManagerCareerRows,
-  computeHallManagerTeamHistory,
+  LIVE_HALL_SEASON_LABEL,
+  buildManagerFullNameByHallKey,
+  computeHallAlgorithmRows,
+  computeHallManagerJourney,
   computeLiveHallManagerCareerRows,
+  hallManagerDisplayKey,
+  hallManagerInitials,
 } from './hallManagerHistory'
 import {
   resolveDefaultWaiverGameweek,
@@ -280,6 +284,7 @@ import {
 import { StandingsScheduleSubview } from './StandingsScheduleSubview.jsx'
 import { StandingsStatsSubview } from './StandingsStatsSubview.jsx'
 import { PlayersWorkbench } from './PlayersWorkbench.jsx'
+import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
 import { firstWord } from './teamNameUtils.js'
 import { useMobileNarrowViewport } from './usePortraitMobile.js'
@@ -344,319 +349,721 @@ function usePortraitTradeTeamAbbrev() {
 }
 
 /**
- * Past champions — optional `entryId` (team-logos-web), or `bannerImage`.
- * Use `bannerLayout: 'centerImage'` when art should stay centred with title above & season below
- * (`bannerImage`). Otherwise full-bleed cover (titles often baked into the PNG).
+ * Past champions — sorted latest-season first. Each record carries the central
+ * artwork PNG plus the dominant solid background color (`bg`) and Bebas Neue
+ * overlay color (`ink`). Per-banner `artScale` and `artY` let us tune the
+ * transform-scale crop on each PNG so the baked-in script text at top/bottom
+ * stays masked off behind the HTML overlay.
  *
  * @type {Array<{
  *   season: string,
  *   team: string,
- *   bannerImage?: string,
- *   bannerLayout?: 'centerImage',
+ *   bannerImage: string,
+ *   bg: string,
+ *   ink: string,
+ *   artScale?: number,
+ *   artY?: string,
  * }>}
  */
 const HALL_OF_CHAMPIONS = [
   {
-    season: '2020-21',
-    team: 'Essex Ratigans',
-    bannerImage: 'hall-champions/essex-ratigans.png',
-  },
-  {
-    season: '2021-22',
-    team: 'Dalston Bellsprouts',
-    bannerImage: 'hall-champions/dalston-bellsprouts.png',
-  },
-  {
-    season: '2022-23',
-    team: 'Dalston Benoit',
-    bannerImage: 'hall-champions/dalston-benoit.png',
-  },
-  {
-    season: '2023-24',
-    team: 'Toronto Wiggum',
-    bannerImage: 'hall-champions/toronto-wiggum.png',
+    season: '2025-26',
+    team: 'Crouch End Oashisu',
+    bannerImage: 'hall-champions/crouch-end-oashisu.png',
+    bg: '#b6c6d3',
+    ink: '#f0c441',
+    artScale: 1.32,
+    artY: '50%',
   },
   {
     season: '2024-25',
     team: 'Soul Ze Moles',
     bannerImage: 'hall-champions/soul-ze-moles.png',
+    bg: '#d6196e',
+    ink: '#f0c441',
+    artScale: 1.32,
+    artY: '50%',
   },
   {
-    season: '2025-26',
-    team: 'Crouch End Oashisu',
-    bannerImage: 'hall-champions/crouch-end-oashisu.png',
+    season: '2023-24',
+    team: 'Toronto Wiggum',
+    bannerImage: 'hall-champions/toronto-wiggum.png',
+    bg: '#2d7fc4',
+    ink: '#f0c441',
+    artScale: 1.32,
+    artY: '50%',
+  },
+  {
+    season: '2022-23',
+    team: 'Dalston Benoit',
+    bannerImage: 'hall-champions/dalston-benoit.png',
+    bg: '#1a1a1a',
+    ink: '#f0c441',
+    artScale: 1.32,
+    artY: '50%',
+  },
+  {
+    season: '2021-22',
+    team: 'Dalston Bellsprouts',
+    bannerImage: 'hall-champions/dalston-bellsprouts.png',
+    bg: '#2c5d3f',
+    ink: '#f0c441',
+    artScale: 1.32,
+    artY: '50%',
+  },
+  {
+    season: '2020-21',
+    team: 'Essex Ratigans',
+    bannerImage: 'hall-champions/essex-ratigans.png',
+    bg: '#a16ba6',
+    ink: '#f0c441',
+    artScale: 1.32,
+    artY: '50%',
   },
 ]
 
-/** Sortable career-totals header (Hall of Champions manager table). */
-function HallManagerSortTh({ columnKey, sortState, onSort, label, title, className, stringSort = false }) {
-  const active = sortState.key === columnKey
-  const dir = active ? sortState.dir : null
-  let arrowGlyph = '↕'
-  let arrowClass = 'standings-sort-arrow'
-  if (active) {
-    arrowGlyph = dir === 'asc' ? '↑' : '↓'
-    arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
-  }
-  const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined
-  const ariaLabel = active
-    ? stringSort
-      ? `${label}: sorted ${dir === 'asc' ? 'A to Z' : 'Z to A'}. Click to reverse.`
-      : `${label}: sorted ${dir === 'desc' ? 'high to low' : 'low to high'}. Click to reverse.`
-    : `Sort by ${label}`
+/* ------------------------------------------------------------------ */
+/* TCLOT Heritage — sub-nav + 3 sub-tabs (ported from Mockup variants)  */
+/* ------------------------------------------------------------------ */
 
+const HERITAGE_TABS = [
+  { key: 'trophy', label: 'Trophy Room' },
+  { key: 'history', label: 'History' },
+  { key: 'cofc', label: 'Champion of Champions' },
+]
+
+function HeritageSubnav({ active, onSelect }) {
   return (
-    <th scope="col" className={className} title={title}>
-      <button
-        type="button"
-        className="standings-sort-btn hall-manager-sort-btn"
-        onClick={() => onSort(columnKey)}
-        aria-sort={ariaSort}
-        aria-label={ariaLabel}
+    <div className="heritage-subnav-strip">
+      <div
+        className="subnav heritage-subnav"
+        role="tablist"
+        aria-label="TCLOT Heritage sub-views"
       >
-        <span className="standings-sort-btn__label">{label}</span>
-        <span className={arrowClass} aria-hidden>
-          {arrowGlyph}
-        </span>
-      </button>
-    </th>
+        {HERITAGE_TABS.map((tab) => (
+          <button
+            key={tab.key}
+            type="button"
+            role="tab"
+            id={`tab-heritage-${tab.key}`}
+            aria-selected={active === tab.key}
+            aria-controls="heritage-subview-panel"
+            className={
+              'subnav__tab' + (active === tab.key ? ' subnav__tab--active' : '')
+            }
+            onClick={() => onSelect(tab.key)}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
+    </div>
   )
 }
 
-function HallManagerCareerTable({ title, headingId, explanation, careerRows }) {
-  const [sort, setSort] = useState({ key: 'totalPts', dir: 'desc' })
+/* ---------------- Trophy Room (sub-tab 1) ---------------- */
 
-  const handleSort = useCallback((columnKey) => {
-    setSort((prev) => {
-      if (prev.key === columnKey) {
-        return { key: columnKey, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
-      }
-      const defaultDir = columnKey === 'key' ? 'asc' : 'desc'
-      return { key: columnKey, dir: defaultDir }
-    })
+/** Single trophy banner card — HTML-composed layout that masks the script
+ * text baked into each PNG (top + bottom bands) by zooming `object-fit:
+ * cover` past those bands, then overlays uniform Bebas Neue HTML text in
+ * the top and bottom strips. `--banner-bg` / `--banner-ink` plus the
+ * per-banner `--art-scale` / `--art-y` tuning vars come from the record's
+ * `bg`, `ink`, `artScale`, `artY` fields. */
+function TrophyBannerCard({ row }) {
+  const style = {
+    '--banner-bg': row.bg,
+    '--banner-ink': row.ink,
+    '--art-scale': row.artScale ?? 1.32,
+    '--art-y': row.artY ?? '50%',
+  }
+  return (
+    <article className="hof-banner-card" style={style}>
+      <div className="hof-banner-card__top">
+        <h3 className="hof-banner-card__team">{row.team}</h3>
+      </div>
+      <div className="hof-banner-card__art">
+        <img
+          className="hof-banner-card__img"
+          src={`${import.meta.env.BASE_URL}${row.bannerImage}`}
+          alt=""
+          aria-hidden="true"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
+      <div className="hof-banner-card__bottom">
+        <span className="hof-banner-card__season">{row.season}</span>
+      </div>
+    </article>
+  )
+}
+
+/** Detects desktop layout for Trophy Room (≥1024px). Desktop locks the wide
+ * carousel — no toggle pill, no swipe gestures, cross-fade with scale
+ * between slides. */
+function useTrophyRoomDesktopLayout() {
+  const subscribe = useCallback((onChange) => {
+    if (typeof window === 'undefined') return () => {}
+    const mq = window.matchMedia('(min-width: 1024px)')
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
   }, [])
+  const getSnapshot = useCallback(() => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(min-width: 1024px)').matches
+  }, [])
+  return useSyncExternalStore(subscribe, getSnapshot, () => false)
+}
 
-  const sortedRows = useMemo(() => {
-    const { key: sk, dir } = sort
-    const mult = dir === 'asc' ? 1 : -1
-    const out = [...careerRows]
-    out.sort((a, b) => {
-      switch (sk) {
-        case 'key':
-          return mult * a.key.localeCompare(b.key, undefined, { sensitivity: 'base' })
-        case 'seasons':
-          return mult * (a.seasons - b.seasons)
-        case 'titles':
-          return mult * (a.titles - b.titles)
-        case 'lastPlaceCount':
-          return mult * (a.lastPlaceCount - b.lastPlaceCount)
-        case 'avgRank':
-          return mult * (a.avgRank - b.avgRank)
-        case 'totalPf':
-          return mult * (a.totalPf - b.totalPf)
-        case 'totalPts':
-          return mult * (a.totalPts - b.totalPts)
-        case 'totalPlacementPts':
-          return mult * (a.totalPlacementPts - b.totalPlacementPts)
-        default:
-          return 0
-      }
-    })
-    return out
-  }, [careerRows, sort])
+function TrophyRoomCarouselArrow({ direction, onClick }) {
+  return (
+    <button
+      type="button"
+      className={'hof-troom-dt__arrow hof-troom-dt__arrow--' + direction}
+      aria-label={direction === 'prev' ? 'Previous banner' : 'Next banner'}
+      onClick={onClick}
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+        {direction === 'prev' ? (
+          <polyline points="15 6 9 12 15 18" />
+        ) : (
+          <polyline points="9 6 15 12 9 18" />
+        )}
+      </svg>
+    </button>
+  )
+}
+
+function TrophyRoomCarouselDots({ count, activeIdx, onSelect, idPrefix }) {
+  return (
+    <div className="hof-troom-dt__dots" role="tablist" aria-label="Banner">
+      {Array.from({ length: count }).map((_, i) => (
+        <button
+          key={i}
+          type="button"
+          className={'hof-troom-dt__dot' + (i === activeIdx ? ' is-active' : '')}
+          role="tab"
+          aria-selected={i === activeIdx}
+          aria-label={`Show banner ${i + 1}`}
+          aria-controls={idPrefix ? `${idPrefix}-active` : undefined}
+          onClick={() => onSelect(i)}
+        />
+      ))}
+    </div>
+  )
+}
+
+function HeritageTrophyRoom() {
+  const banners = HALL_OF_CHAMPIONS
+  const total = banners.length
+  /* Banners are sorted latest-first, so the default active card is index 0
+   * (the most recent champion). */
+  const [activeIdx, setActiveIdx] = useState(0)
+  const isDesktop = useTrophyRoomDesktopLayout()
+
+  const goPrev = useCallback(
+    () => setActiveIdx((i) => (i - 1 + total) % total),
+    [total],
+  )
+  const goNext = useCallback(
+    () => setActiveIdx((i) => (i + 1) % total),
+    [total],
+  )
+
+  /* Touch-swipe handlers for the mobile carousel. Threshold 40px so casual
+   * scrolls don't accidentally advance the banner. */
+  const touchStartRef = useRef(null)
+  const onTouchStart = (e) => {
+    touchStartRef.current = e.touches?.[0]?.clientX ?? null
+  }
+  const onTouchEnd = (e) => {
+    if (touchStartRef.current == null) return
+    const endX = e.changedTouches?.[0]?.clientX ?? touchStartRef.current
+    const dx = endX - touchStartRef.current
+    touchStartRef.current = null
+    if (Math.abs(dx) < 40) return
+    if (dx < 0) goNext()
+    else goPrev()
+  }
+
+  const onKeyDown = (e) => {
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault()
+      goPrev()
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault()
+      goNext()
+    }
+  }
+
+  if (total === 0) return null
+
+  const cur = banners[activeIdx]
+  const prev = banners[(activeIdx - 1 + total) % total]
+  const next = banners[(activeIdx + 1) % total]
 
   return (
     <section
-      className="tile hall-of-champions tile--standings hall-standings-sheet"
-      aria-labelledby={headingId}
+      className="tile hall-of-champions heritage-trophy-room"
+      aria-labelledby="heritage-trophy-heading"
     >
-      <div className="tile-head-row tile-head-row--tight">
-        <div className="hall-standings-sheet__headstack">
-          <h2 id={headingId} className="tile-title tile-title--sm hall-standings-sheet__title">
-            {title}
-          </h2>
-          {explanation ? (
-            <p className="hall-standings-sheet__explanation muted">{explanation}</p>
-          ) : null}
+      <h2 id="heritage-trophy-heading" className="sr-only">Trophy Room</h2>
+      {isDesktop ? (
+        <div
+          className="hof-troom-dt hof-troom-dt--wide"
+          tabIndex={0}
+          onKeyDown={onKeyDown}
+        >
+          <TrophyRoomCarouselArrow direction="prev" onClick={goPrev} />
+          <div className="hof-troom-dt__stage" id="heritage-troom-dt-active">
+            {banners.map((b, i) => (
+              <div
+                key={b.season}
+                className={
+                  'hof-troom-dt__slide' +
+                  (i === activeIdx ? ' is-active' : '')
+                }
+                aria-hidden={i === activeIdx ? 'false' : 'true'}
+              >
+                <TrophyBannerCard row={b} />
+              </div>
+            ))}
+          </div>
+          <TrophyRoomCarouselArrow direction="next" onClick={goNext} />
+          <TrophyRoomCarouselDots
+            count={total}
+            activeIdx={activeIdx}
+            onSelect={setActiveIdx}
+            idPrefix="heritage-troom-dt"
+          />
         </div>
-      </div>
-      <div className="table-scroll table-scroll--standings-open">
-        <table className="standings-table standings-table--sidebar standings-table--hall-career">
+      ) : (
+        <div
+          className="hof-troom hof-troom--swipe"
+          onTouchStart={onTouchStart}
+          onTouchEnd={onTouchEnd}
+          tabIndex={0}
+          onKeyDown={onKeyDown}
+        >
+          <div className="hof-troom__swipe-stage">
+            <div className="hof-troom__swipe-peek hof-troom__swipe-peek--prev" aria-hidden="true">
+              <TrophyBannerCard row={prev} />
+            </div>
+            <div className="hof-troom__swipe-active">
+              <TrophyBannerCard row={cur} />
+            </div>
+            <div className="hof-troom__swipe-peek hof-troom__swipe-peek--next" aria-hidden="true">
+              <TrophyBannerCard row={next} />
+            </div>
+          </div>
+          <TrophyRoomCarouselDots
+            count={total}
+            activeIdx={activeIdx}
+            onSelect={setActiveIdx}
+            idPrefix="heritage-troom-mob"
+          />
+        </div>
+      )}
+    </section>
+  )
+}
+
+/* ---------------- Team History (sub-tab 2) ---------------- */
+
+/** `2020-21` → `20/21` for the manager-journey card season chips. */
+function shortenHallSeasonLabel(season) {
+  const m = /^(\d{2})(\d{2})-(\d{2})$/.exec(String(season))
+  return m ? `${m[2]}/${m[3]}` : String(season)
+}
+
+function MobileViewToggle({ mode, onList, onMatrix }) {
+  return (
+    <div
+      className="mobile-view-toggle"
+      role="group"
+      aria-label="Team history view"
+    >
+      <button
+        type="button"
+        className={'mobile-view-toggle__btn' + (mode === 'list' ? ' is-active' : '')}
+        aria-pressed={mode === 'list'}
+        aria-label="Accordion list view"
+        onClick={onList}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <line x1="8" y1="6" x2="20" y2="6" />
+          <line x1="8" y1="12" x2="20" y2="12" />
+          <line x1="8" y1="18" x2="20" y2="18" />
+          <circle cx="4" cy="6" r="1.4" />
+          <circle cx="4" cy="12" r="1.4" />
+          <circle cx="4" cy="18" r="1.4" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className={'mobile-view-toggle__btn' + (mode === 'matrix' ? ' is-active' : '')}
+        aria-pressed={mode === 'matrix'}
+        aria-label="Transposed matrix view"
+        onClick={onMatrix}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3" y="3" width="18" height="18" rx="2" />
+          <line x1="3" y1="9" x2="21" y2="9" />
+          <line x1="3" y1="15" x2="21" y2="15" />
+          <line x1="9" y1="3" x2="9" y2="21" />
+          <line x1="15" y1="3" x2="15" y2="21" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+/** Same CSS hook as the mockup so position-based heatmap tints apply. */
+function heritageCellPosClass(rank) {
+  if (!rank) return 'is-empty'
+  return 'is-pos-' + rank
+}
+
+function ManagerCrest({ displayKey, managerFull, className = 'heritage-mgr-crest' }) {
+  return (
+    <span className={className} aria-hidden="true">
+      {hallManagerInitials(displayKey, managerFull)}
+    </span>
+  )
+}
+
+/** Resolve a manager's full name from a `Map<displayKey, fullName>` lookup. */
+function resolveManagerFull(displayKey, fallbackFull, fullNameMap) {
+  if (fallbackFull) return fallbackFull
+  if (fullNameMap && displayKey && fullNameMap.get(displayKey)) {
+    return fullNameMap.get(displayKey)
+  }
+  return null
+}
+
+function TeamHistoryDesktop({ journey, fullNameMap }) {
+  return (
+    <div className="merged-history-timeline">
+      {journey.map((row) => {
+        const seasonsPlayed = row.seasons.length
+        const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+        return (
+          <div key={row.key} className="merged-history-timeline__row">
+            <div className="merged-history-timeline__mgr">
+              <div className="merged-history-timeline__mgr-head">
+                <ManagerCrest
+                  displayKey={row.key}
+                  managerFull={managerFull}
+                  className="merged-history-timeline__crest"
+                />
+                <div className="merged-history-timeline__mgr-name">
+                  {managerFull ?? row.key}
+                </div>
+              </div>
+              <div
+                className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
+                role="group"
+                aria-label={`Career stats for ${row.key}`}
+              >
+                <div className="merged-history-timeline__mgr-stat">
+                  <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">
+                    {row.titles === 1 ? 'title' : 'titles'}
+                  </span>
+                </div>
+                <div className="merged-history-timeline__mgr-stat">
+                  <span className="merged-history-timeline__mgr-stat-num">{row.runnerUps}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+                </div>
+                <div
+                  className="merged-history-timeline__mgr-stat"
+                  title="Seasons finishing 1st–4th (top half)"
+                >
+                  <span className="merged-history-timeline__mgr-stat-num">{row.titanCount}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">titan</span>
+                </div>
+                <div
+                  className="merged-history-timeline__mgr-stat"
+                  title="Seasons finishing 5th–8th (bottom half)"
+                >
+                  <span className="merged-history-timeline__mgr-stat-num">{row.minnowCount}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">minnow</span>
+                </div>
+              </div>
+              <div className="merged-history-timeline__mgr-meta muted tabular">
+                {seasonsPlayed} {seasonsPlayed === 1 ? 'season' : 'seasons'}
+              </div>
+            </div>
+            <div className="merged-history-timeline__cards">
+              {row.seasons.map((s) => (
+                <div
+                  key={s.season}
+                  className={
+                    'merged-history-timeline__card ' + heritageCellPosClass(s.rank)
+                  }
+                  title={s.team ?? ''}
+                >
+                  <div className="merged-history-timeline__card-season">
+                    {shortenHallSeasonLabel(s.season)}
+                  </div>
+                  <div className="merged-history-timeline__card-team">{s.team ?? '—'}</div>
+                  <div className="merged-history-timeline__card-pos">{s.rank ?? '—'}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
+function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
+  const [openKey, setOpenKey] = useState(() => journey[0]?.key ?? null)
+  return (
+    <div className="merged-history-mv merged-history-mv--accordion">
+      <ul className="merged-history-mv__accordion-list">
+        {journey.map((row) => {
+          const open = openKey === row.key
+          const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+          return (
+            <li key={row.key} className="merged-history-mv__accordion-item">
+              <button
+                type="button"
+                aria-expanded={open}
+                className={
+                  'merged-history-mv__accordion-toggle' + (open ? ' is-open' : '')
+                }
+                onClick={() => setOpenKey(open ? null : row.key)}
+              >
+                <span className="merged-history-mv__accordion-mgr">
+                  <ManagerCrest
+                    displayKey={row.key}
+                    managerFull={managerFull}
+                    className="merged-history-mv__crest"
+                  />
+                  <span className="merged-history-mv__accordion-mgr-text">
+                    <span className="merged-history-mv__accordion-mgr-name">
+                      {managerFull ?? row.key}
+                    </span>
+                    {managerFull && managerFull !== row.key ? (
+                      <span className="merged-history-mv__accordion-mgr-sub muted">
+                        {row.key}
+                      </span>
+                    ) : null}
+                  </span>
+                </span>
+                <span className="merged-history-mv__accordion-meta">
+                  <span className="merged-history-mv__summary-chip">
+                    <span className="merged-history-mv__summary-chip-num">{row.titles}</span>
+                    <span className="merged-history-mv__summary-chip-label">titles</span>
+                  </span>
+                  <span
+                    className="merged-history-mv__chevron"
+                    aria-hidden="true"
+                    style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >
+                    ›
+                  </span>
+                </span>
+              </button>
+              {open ? (
+                <ul className="merged-history-mv__journey">
+                  {row.seasons.map((s) => (
+                    <li
+                      key={s.season}
+                      className={
+                        'merged-history-mv__journey-row ' + heritageCellPosClass(s.rank)
+                      }
+                    >
+                      <span className="merged-history-mv__journey-season tabular">
+                        {shortenHallSeasonLabel(s.season)}
+                      </span>
+                      <span className="merged-history-mv__journey-team">{s.team ?? '—'}</span>
+                      <span
+                        className={
+                          'merged-history-mv__pos-chip ' + heritageCellPosClass(s.rank)
+                        }
+                      >
+                        {s.rank ?? '—'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+function TeamHistoryMobileMatrix({ journey, fullNameMap }) {
+  /* Build (season → manager → entry) lookup from journey. */
+  const allSeasonsSet = new Set()
+  for (const row of journey) {
+    for (const s of row.seasons) allSeasonsSet.add(s.season)
+  }
+  const seasons = [...allSeasonsSet].sort()
+  return (
+    <div className="merged-history-mv merged-history-mv--transposed">
+      <div className="merged-history-mv__transposed-scroll">
+        <table>
           <thead>
             <tr>
-              <th scope="col" className="col-team" title="Manager">
-                Manager
-              </th>
-              <HallManagerSortTh
-                columnKey="seasons"
-                sortState={sort}
-                onSort={handleSort}
-                label="Seasons"
-                title="Seasons in TCLOT"
-                className="col-num tabular hall-manager-th--num"
-              />
-              <HallManagerSortTh
-                columnKey="titles"
-                sortState={sort}
-                onSort={handleSort}
-                label="Titles"
-                title="League titles (finished 1st)"
-                className="col-num tabular hall-manager-th--num"
-              />
-              <HallManagerSortTh
-                columnKey="lastPlaceCount"
-                sortState={sort}
-                onSort={handleSort}
-                label="Last"
-                title="Times finished last in the table that season"
-                className="col-num tabular hall-manager-th--num hall-manager-col--hide-portrait"
-              />
-              <HallManagerSortTh
-                columnKey="avgRank"
-                sortState={sort}
-                onSort={handleSort}
-                label="Average Rank"
-                title="Mean finishing position (lower is better)"
-                className="col-num tabular hall-manager-th--num hall-manager-col--hide-portrait"
-              />
-              <HallManagerSortTh
-                columnKey="totalPf"
-                sortState={sort}
-                onSort={handleSort}
-                label="For"
-                title="Total FPL points scored (sum of For across seasons)"
-                className="col-num tabular hall-manager-th--num"
-              />
-              <HallManagerSortTh
-                columnKey="totalPts"
-                sortState={sort}
-                onSort={handleSort}
-                label="Total Pts"
-                title="Total table points (3 / 1 / 0 per H2H), summed across seasons"
-                className="col-num tabular hall-manager-th--num col-pts"
-              />
-              <HallManagerSortTh
-                columnKey="totalPlacementPts"
-                sortState={sort}
-                onSort={handleSort}
-                label="Algorithm"
-                title="Placement score: 8 for 1st, 7 for 2nd, … 1 for 8th each season"
-                className="col-num tabular hall-manager-th--num"
-              />
+              <th className="merged-history-mv__transposed-corner" />
+              {journey.map((row) => {
+                const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+                return (
+                  <th
+                    key={row.key}
+                    className="merged-history-mv__transposed-th-mgr"
+                    title={`${row.key}${managerFull ? ' · ' + managerFull : ''}`}
+                  >
+                    <ManagerCrest
+                      displayKey={row.key}
+                      managerFull={managerFull}
+                      className="merged-history-mv__transposed-crest"
+                    />
+                  </th>
+                )
+              })}
             </tr>
           </thead>
           <tbody>
-            {sortedRows.map((r) => (
-              <tr key={r.key}>
-                <th scope="row" className="col-team hall-career-mgr hall-manager-name--gold">
-                  {r.key}
+            {seasons.map((season) => (
+              <tr key={season}>
+                <th className="merged-history-mv__transposed-th-season tabular">
+                  {shortenHallSeasonLabel(season)}
                 </th>
-                <td className="col-num tabular">{r.seasons}</td>
-                <td className="col-num tabular">{r.titles}</td>
-                <td className="col-num tabular hall-manager-col--hide-portrait">
-                  {r.lastPlaceCount}
-                </td>
-                <td className="col-num tabular hall-manager-col--hide-portrait">
-                  {r.avgRank.toFixed(2)}
-                </td>
-                <td className="col-num tabular">{r.totalPf}</td>
-                <td className="col-num col-pts tabular">
-                  <strong>{r.totalPts}</strong>
-                </td>
-                <td className="col-num tabular">
-                  <strong>{r.totalPlacementPts}</strong>
-                </td>
+                {journey.map((row) => {
+                  const entry = row.seasons.find((s) => s.season === season)
+                  const rank = entry?.rank ?? null
+                  return (
+                    <td
+                      key={row.key}
+                      className={
+                        'merged-history-mv__transposed-cell ' +
+                        heritageCellPosClass(rank)
+                      }
+                      title={entry?.team ?? '—'}
+                    >
+                      {rank ?? '—'}
+                    </td>
+                  )
+                })}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+      <p className="merged-history-mv__transposed-note muted">
+        Tap a cell to reveal the team name that season.
+      </p>
+    </div>
+  )
+}
+
+function HeritageTeamHistory({ tableRows, fullNameMap, isStandalone = true }) {
+  const journey = useMemo(() => computeHallManagerJourney(tableRows), [tableRows])
+  const [mobileMode, setMobileMode] = useState('list')
+
+  return (
+    <section
+      className={
+        'heritage-team-history' + (isStandalone ? ' tile hall-of-champions' : '')
+      }
+      aria-labelledby={
+        isStandalone ? 'heritage-team-history-heading' : undefined
+      }
+    >
+      {isStandalone ? (
+        <h2 id="heritage-team-history-heading" className="sr-only">
+          Team Journeys
+        </h2>
+      ) : null}
+      <div className="heritage-team-history__mobile-bar">
+        <MobileViewToggle
+          mode={mobileMode}
+          onList={() => setMobileMode('list')}
+          onMatrix={() => setMobileMode('matrix')}
+        />
+      </div>
+      <div className="heritage-team-history__desktop">
+        <TeamHistoryDesktop journey={journey} fullNameMap={fullNameMap} />
+      </div>
+      <div className="heritage-team-history__mobile">
+        {mobileMode === 'matrix' ? (
+          <TeamHistoryMobileMatrix journey={journey} fullNameMap={fullNameMap} />
+        ) : (
+          <TeamHistoryMobileAccordion journey={journey} fullNameMap={fullNameMap} />
+        )}
+      </div>
     </section>
   )
 }
 
-function HallManagerCareerDashboard({ tableRows = [] }) {
-  const staticRows = useMemo(() => computeHallManagerCareerRows(), [])
-  const liveRows = useMemo(
-    () => computeLiveHallManagerCareerRows(tableRows),
-    [tableRows],
-  )
+/* ---------------- Historic Standings (sub-tab 3) ---------------- */
 
-  return (
-    <>
-      <HallManagerCareerTable
-        headingId="hall-champions-static-heading"
-        title="TCLOT Champion of Champions"
-        careerRows={staticRows}
-      />
-      <HallManagerCareerTable
-        headingId="hall-champions-live-heading"
-        title="Live Champions of Champions"
-        explanation="Includes current 2025/26 season"
-        careerRows={liveRows}
-      />
-    </>
-  )
-}
-
-/** e.g. "2024-25" → "2024/25" for season labels */
-function formatHallSeasonLabel(seasonKey) {
+/** e.g. "2024-25" → "2024/25" — re-export of the old helper without renaming. */
+function formatHeritageSeasonLabel(seasonKey) {
   const [y1, y2] = String(seasonKey ?? '').split('-')
   if (y1 && y2) return `${y1}/${y2}`
   return seasonKey
 }
 
-function HistoricStandingsSection() {
+/** When rendered embedded inside the History sub-tab, `headingTag` is `'h3'`. */
+function HeritageHistoricStandings({ fullNameMap, headingTag = 'h3' }) {
+  /* Completed historic seasons only — current 25/26 lives on the Standings tab. */
   const seasonOptions = useMemo(
     () => [...HALL_SEASON_FINAL_TABLES].reverse(),
     [],
   )
   const [selectedSeason, setSelectedSeason] = useState(
-    () =>
-      HALL_SEASON_FINAL_TABLES[HALL_SEASON_FINAL_TABLES.length - 1]?.season ?? '',
+    () => HALL_SEASON_FINAL_TABLES[HALL_SEASON_FINAL_TABLES.length - 1]?.season ?? '',
   )
-
   const activeTable = useMemo(
     () => HALL_SEASON_FINAL_TABLES.find((s) => s.season === selectedSeason),
     [selectedSeason],
   )
   const rows = activeTable?.rows ?? []
   const nTeams = rows.length
+  const HeadingTag = headingTag === 'h2' ? 'h2' : 'h3'
 
   return (
     <section
-      className="tile hall-of-champions tile--standings hall-standings-sheet"
-      aria-labelledby="hall-historic-standings-heading"
+      className="heritage-historic-standings"
+      aria-labelledby="heritage-historic-standings-heading"
     >
-      <div className="tile-head-row tile-head-row--tight">
-        <h2
-          id="hall-historic-standings-heading"
-          className="tile-title tile-title--sm tile-title--with-select hall-standings-sheet__title"
+      <div className="heritage-history__section-head">
+        <HeadingTag
+          id="heritage-historic-standings-heading"
+          className="tile-title tile-title--sm heritage-history__section-title"
         >
-          <span className="tile-title__text">Historic Standings</span>
-          {seasonOptions.length > 0 ? (
-            <select
-              className="hall-historic-season-select"
-              aria-label="Completed season"
-              value={selectedSeason}
-              onChange={(e) => setSelectedSeason(e.target.value)}
-            >
-              {seasonOptions.map(({ season }) => (
-                <option key={season} value={season}>
-                  Season {formatHallSeasonLabel(season)}
-                </option>
-              ))}
-            </select>
-          ) : null}
-        </h2>
+          Historic Standings
+        </HeadingTag>
+        {seasonOptions.length > 0 ? (
+          <CompactSelectPill
+            label="Season"
+            ariaLabel="Completed season"
+            align="right"
+            value={selectedSeason}
+            onChange={(next) => setSelectedSeason(String(next))}
+            options={seasonOptions.map(({ season }) => ({
+              value: season,
+              label: formatHeritageSeasonLabel(season),
+            }))}
+          />
+        ) : null}
       </div>
       <div className="table-scroll table-scroll--standings-open">
-        <table className="standings-table standings-table--sidebar standings-table--historic">
+        <table className="standings-table standings-table--sidebar standings-table--historic heritage-historic-standings__table">
           <thead>
             <tr>
               <th className="col-rank">#</th>
               <th className="col-team">Team</th>
-              <th className="col-num col-pl">PL</th>
+              <th className="col-num col-pl heritage-col--hide-portrait">PL</th>
               <th className="col-num col-wdl">W</th>
               <th className="col-num col-wdl">D</th>
               <th className="col-num col-wdl">L</th>
@@ -686,6 +1093,8 @@ function HistoricStandingsSection() {
               ]
                 .filter(Boolean)
                 .join(' ')
+              const displayKey = hallManagerDisplayKey(row.team, row.manager)
+              const managerFull = resolveManagerFull(displayKey, null, fullNameMap)
               return (
                 <tr
                   key={`${selectedSeason}-${row.team}-${row.rank}`}
@@ -705,14 +1114,23 @@ function HistoricStandingsSection() {
                     )}
                   </td>
                   <td className="col-team">
-                    <span className="historic-standings-team">
-                      <span className="historic-standings-team__name">{row.team}</span>
-                      <span className="historic-standings-team__mgr muted tabular">
-                        {row.manager}
+                    <span className="heritage-team-cell">
+                      <span
+                        className="heritage-team-cell__crest"
+                        aria-hidden="true"
+                        title={managerFull ?? displayKey}
+                      >
+                        {hallManagerInitials(displayKey, managerFull)}
+                      </span>
+                      <span className="heritage-team-cell__name">
+                        <span className="heritage-team-cell__name-full">{row.team}</span>
+                        <span className="heritage-team-cell__name-short">
+                          {firstWord(row.team)}
+                        </span>
                       </span>
                     </span>
                   </td>
-                  <td className="col-num col-pl tabular">{pl}</td>
+                  <td className="col-num col-pl tabular heritage-col--hide-portrait">{pl}</td>
                   <td className="col-num col-wdl">{row.w}</td>
                   <td className="col-num col-wdl">{row.d}</td>
                   <td className="col-num col-wdl">{row.l}</td>
@@ -732,149 +1150,540 @@ function HistoricStandingsSection() {
   )
 }
 
-function HallTeamHistorySection({ tableRows = [] }) {
-  const rows = useMemo(
-    () => computeHallManagerTeamHistory(tableRows),
-    [tableRows],
-  )
-
+/** Combined History sub-tab: Historic Standings (top) + Team Journeys (bottom). */
+function HeritageHistory({ tableRows, fullNameMap }) {
   return (
     <section
-      className="tile hall-of-champions tile--compact hall-team-history"
-      aria-labelledby="hall-team-history-heading"
+      className="tile hall-of-champions heritage-history"
+      aria-label="History"
     >
-      <div className="tile-head-row tile-head-row--tight">
-        <h2
-          id="hall-team-history-heading"
-          className="tile-title tile-title--sm hall-manager-dash__title"
-        >
-          Team History
-        </h2>
-      </div>
-      <div className="latest-waivers hall-team-history__list">
-        {rows.map(({ key, entries }) => (
-          <div key={key} className="latest-waivers__team-block hall-team-history__block">
-            <h3 className="latest-waivers__team-title hall-team-history__manager">
-              <span>{key}</span>
-            </h3>
-            <ul
-              className="latest-waivers__move-list hall-team-history__teams"
-              aria-label={`Teams managed by ${key}, chronological`}
-            >
-              {entries.map((e) => (
-                <li
-                  key={`${e.season}-${e.team}`}
-                  className="latest-waivers__move hall-team-history__team-cell"
-                >
-                  <div className="hall-team-history__team-stack">
-                    <span className="hall-team-history__team-name">{e.team}</span>
-                    <span className="hall-team-history__season muted tabular">{e.season}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-        ))}
+      <HeritageHistoricStandings fullNameMap={fullNameMap} headingTag="h3" />
+      <div className="heritage-history__divider" aria-hidden="true" />
+      <div className="heritage-history__journeys">
+        <h3 className="tile-title tile-title--sm heritage-history__section-title">
+          Team Journeys
+        </h3>
+        <HeritageTeamHistory
+          tableRows={tableRows}
+          fullNameMap={fullNameMap}
+          isStandalone={false}
+        />
       </div>
     </section>
   )
 }
 
-function HallOfChampions({ logoMap, kitIndexByEntry = {}, tableRows = [] }) {
+/* ---------------- Champion of Champions (sub-tab 4) ---------------- */
+
+const COFC_LIVE_COLUMNS = [
+  { key: 'key', label: 'Manager', numeric: false, align: 'left', mobile: true },
+  { key: 'seasons', label: 'Seasons', numeric: true, align: 'right', mobile: false },
+  { key: 'totalW', label: 'W', numeric: true, align: 'right', mobile: true, title: 'Wins (cumulative)' },
+  { key: 'totalD', label: 'D', numeric: true, align: 'right', mobile: true, title: 'Draws (cumulative)' },
+  { key: 'totalL', label: 'L', numeric: true, align: 'right', mobile: true, title: 'Losses (cumulative)' },
+  { key: 'totalPf', label: 'For', numeric: true, align: 'right', mobile: true, title: 'Total FPL points scored' },
+  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (live season only — historic data not yet transcribed)' },
+  { key: 'totalPts', label: 'PTS', numeric: true, align: 'right', mobile: true, title: 'League points (3 / 1 / 0 per H2H)' },
+  { key: 'titles', label: 'Titles', numeric: true, align: 'right', mobile: false, title: 'Seasons finished 1st' },
+  { key: 'lastRank', label: 'Last', numeric: true, align: 'right', mobile: false, title: 'Most recent finishing position' },
+  { key: 'avgRank', label: 'Avg Rank', numeric: true, align: 'right', mobile: false, title: 'Mean finishing position (lower is better)' },
+]
+
+function sortCofcLiveRows(rows, sort) {
+  if (!sort) return rows
+  const col = COFC_LIVE_COLUMNS.find((c) => c.key === sort.key)
+  if (!col) return rows
+  const dir = sort.dir === 'asc' ? 1 : -1
+  const arr = [...rows]
+  arr.sort((a, b) => {
+    const av = a[col.key]
+    const bv = b[col.key]
+    if (col.numeric) {
+      const an = Number(av ?? 0)
+      const bn = Number(bv ?? 0)
+      return (an - bn) * dir
+    }
+    return String(av ?? '').localeCompare(String(bv ?? '')) * dir
+  })
+  return arr
+}
+
+function CofcLiveSortTh({ col, sort, onSort }) {
+  const active = sort?.key === col.key
+  const dir = active ? sort.dir : null
+  let arrowGlyph = '↕'
+  let arrowClass = 'standings-sort-arrow'
+  if (active) {
+    arrowGlyph = dir === 'asc' ? '↑' : '↓'
+    arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
+  }
+  const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined
+  const ariaLabel = active
+    ? `${col.label}: sorted ${dir === 'asc' ? 'low to high' : 'high to low'}. Click to reverse.`
+    : `Sort by ${col.label}`
+  return (
+    <th
+      scope="col"
+      className={
+        'heritage-cofc__th heritage-cofc__th--' + col.align +
+        (col.key === 'totalPts' ? ' heritage-cofc__th--pts' : '') +
+        (col.mobile ? '' : ' heritage-col--hide-portrait') +
+        (active ? ' is-active' : '')
+      }
+      aria-sort={ariaSort}
+      title={col.title || undefined}
+    >
+      <button
+        type="button"
+        className="standings-sort-btn heritage-cofc__sort-btn"
+        onClick={() => onSort(col.key)}
+        aria-label={ariaLabel}
+      >
+        <span className="standings-sort-btn__label">{col.label}</span>
+        <span className={arrowClass} aria-hidden="true">{arrowGlyph}</span>
+      </button>
+    </th>
+  )
+}
+
+function CofcLiveTable({ rows, fullNameMap }) {
+  const [sort, setSort] = useState({ key: 'totalPts', dir: 'desc' })
+  const sortedRows = useMemo(() => sortCofcLiveRows(rows, sort), [rows, sort])
+  const handleSort = useCallback((key) => {
+    setSort((prev) => {
+      if (prev?.key === key) {
+        return { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+      }
+      const col = COFC_LIVE_COLUMNS.find((c) => c.key === key)
+      const defaultDir = col?.numeric ? 'desc' : 'asc'
+      return { key, dir: defaultDir }
+    })
+  }, [])
+
+  return (
+    <div className="table-scroll table-scroll--standings-open">
+      <table className="standings-table standings-table--sidebar standings-table--hall-career heritage-cofc__table">
+        <thead>
+          <tr>
+            {COFC_LIVE_COLUMNS.map((col) => (
+              <CofcLiveSortTh
+                key={col.key}
+                col={col}
+                sort={sort}
+                onSort={handleSort}
+              />
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {sortedRows.map((r) => (
+            <tr key={r.key}>
+              {COFC_LIVE_COLUMNS.map((col) => {
+                const isMobileOnly = col.mobile
+                const tdClass =
+                  'heritage-cofc__td heritage-cofc__td--' + col.align +
+                  (isMobileOnly ? '' : ' heritage-col--hide-portrait') +
+                  (col.key === 'totalPts' ? ' col-pts' : '')
+                if (col.key === 'key') {
+                  const managerFull = resolveManagerFull(r.key, r.managerFull, fullNameMap)
+                  return (
+                    <th key={col.key} scope="row" className={tdClass + ' heritage-cofc__td-mgr'}>
+                      <span className="heritage-cofc__mgr-cell" title={managerFull ?? r.key}>
+                        <ManagerCrest
+                          displayKey={r.key}
+                          managerFull={managerFull}
+                          className="heritage-cofc__crest"
+                        />
+                        <span className="heritage-cofc__mgr-name">
+                          <span className="heritage-cofc__mgr-name-full">
+                            {managerFull ?? r.key}
+                          </span>
+                          <span className="heritage-cofc__mgr-name-short">{r.key}</span>
+                        </span>
+                      </span>
+                    </th>
+                  )
+                }
+                if (col.key === 'avgRank') {
+                  return (
+                    <td key={col.key} className={tdClass + ' tabular'}>
+                      {Number(r.avgRank ?? 0).toFixed(2)}
+                    </td>
+                  )
+                }
+                if (col.key === 'lastRank') {
+                  return (
+                    <td key={col.key} className={tdClass + ' tabular'}>
+                      {r.lastRank ?? '—'}
+                    </td>
+                  )
+                }
+                if (col.key === 'totalPa') {
+                  return (
+                    <td key={col.key} className={tdClass + ' tabular'}>
+                      {r.hasFaced ? r.totalPa : '—'}
+                    </td>
+                  )
+                }
+                if (col.key === 'totalPts') {
+                  return (
+                    <td key={col.key} className={tdClass + ' tabular'}>
+                      <strong>{r[col.key]}</strong>
+                    </td>
+                  )
+                }
+                return (
+                  <td key={col.key} className={tdClass + ' tabular'}>
+                    {r[col.key]}
+                  </td>
+                )
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+function CofcAlgorithmMatrix({ rows, seasonLabels, fullNameMap }) {
+  const sortedRows = useMemo(
+    () => [...rows].sort((a, b) => a.total - b.total),
+    [rows],
+  )
+  /* Mobile uses the leaderboard variant (Option A: tap row → detail sheet). */
+  const [selectedKey, setSelectedKey] = useState(null)
+  const selectedRow = useMemo(
+    () => sortedRows.find((r) => r.key === selectedKey) ?? null,
+    [sortedRows, selectedKey],
+  )
+  const closeDetail = useCallback(() => setSelectedKey(null), [])
+
+  useEffect(() => {
+    if (!selectedKey) return undefined
+    const onKey = (e) => {
+      if (e.key === 'Escape') closeDetail()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [selectedKey, closeDetail])
+
   return (
     <>
-      <section
-        className="tile hall-of-champions"
-        aria-labelledby="hall-champions-heading"
-      >
-        <h2
-          id="hall-champions-heading"
-          className="tile-title tile-title--sm hall-of-champions__main-title"
-        >
-          TCLOT Hall of Champions
-        </h2>
-        <div className="hall-of-champions__rule" aria-hidden="true" />
-        <ul className="hall-of-champions__list">
-          {HALL_OF_CHAMPIONS.map((row) => {
-            const centerImageLayout = row.bannerLayout === 'centerImage'
-            const sheetMods = [
-              'hall-champion-banner__sheet',
-              row.bannerImage && !centerImageLayout
-                ? 'hall-champion-banner__sheet--fullbleed'
-                : null,
-              row.bannerImage && centerImageLayout
-                ? 'hall-champion-banner__sheet--center-image'
-                : null,
-            ]
-              .filter(Boolean)
-              .join(' ')
-            return (
-              <li key={row.season} className="hall-champion-banner">
-                <div className="hall-champion-banner__rigging" aria-hidden="true">
-                  <div className="hall-champion-banner__rod" />
-                  <div className="hall-champion-banner__cords">
-                    <span className="hall-champion-banner__cord" />
-                    <span className="hall-champion-banner__cord" />
-                  </div>
-                </div>
-                <div className={sheetMods}>
-                  {row.bannerImage && !centerImageLayout ? (
-                    <img
-                      className="hall-champion-banner__fullbleed-img"
-                      src={`${import.meta.env.BASE_URL}${row.bannerImage}`}
-                      alt={`${row.team}, ${row.season} season champion`}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  ) : null}
-                  <div
-                    className={
-                      'hall-champion-banner__sheet-content' +
-                      (centerImageLayout ? ' hall-champion-banner__sheet-content--center-image' : '')
-                    }
+      <div className="heritage-cofc-algo__desktop">
+        <div className="table-scroll heritage-cofc-algo__scroll">
+          <table className="standings-table heritage-cofc-algo__table">
+            <thead>
+              <tr>
+                <th scope="col" className="heritage-cofc-algo__th heritage-cofc-algo__th-mgr">
+                  Manager
+                </th>
+                {seasonLabels.map((s) => (
+                  <th
+                    key={s}
+                    scope="col"
+                    className="heritage-cofc-algo__th heritage-cofc-algo__th-season tabular"
                   >
-                    <p className="hall-champion-banner__team">{row.team}</p>
-                    {row.bannerImage && centerImageLayout ? (
-                      <div className="hall-champion-banner__center-image-wrap">
-                        <img
-                          className="hall-champion-banner__center-image-img"
-                          src={`${import.meta.env.BASE_URL}${row.bannerImage}`}
-                          alt=""
-                          aria-hidden="true"
-                          loading="lazy"
-                          decoding="async"
+                    {shortenHallSeasonLabel(s)}
+                  </th>
+                ))}
+                <th
+                  scope="col"
+                  className="heritage-cofc-algo__th heritage-cofc-algo__th-total"
+                  title="Sum of finishing positions (lowest wins)"
+                >
+                  Total
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedRows.map((row) => {
+                const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+                return (
+                  <tr key={row.key}>
+                    <th scope="row" className="heritage-cofc-algo__td heritage-cofc-algo__td-mgr">
+                      <span className="heritage-cofc__mgr-cell">
+                        <ManagerCrest
+                          displayKey={row.key}
+                          managerFull={managerFull}
+                          className="heritage-cofc__crest"
                         />
-                      </div>
-                    ) : row.bannerImage ? (
-                      <div
-                        className="hall-champion-banner__sheet-spacer"
-                        aria-hidden="true"
-                      />
-                    ) : (
-                      <div className="hall-champion-banner__avatar">
-                        <TeamAvatar
-                          entryId={row.entryId ?? null}
-                          name={row.team}
-                          size="lg"
-                          logoMap={logoMap ?? {}}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                      </div>
-                    )}
-                    <p className="hall-champion-banner__season">
-                      {centerImageLayout ? row.season : `${row.season} season`}
-                    </p>
-                  </div>
-                </div>
+                        <span className="heritage-cofc__mgr-name">
+                          {managerFull ?? row.key}
+                        </span>
+                      </span>
+                    </th>
+                    {row.ranks.map((rank, i) => (
+                      <td
+                        key={seasonLabels[i]}
+                        className={
+                          'heritage-cofc-algo__td heritage-cofc-algo__td-cell ' +
+                          heritageCellPosClass(rank)
+                        }
+                        title={rank ? `Finished ${rank} → ${rank} pts (lower = better)` : '—'}
+                      >
+                        {rank ?? '—'}
+                      </td>
+                    ))}
+                    <td className="heritage-cofc-algo__td heritage-cofc-algo__td-total tabular">
+                      <strong>{row.total}</strong>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div className="heritage-cofc-algo__mobile">
+        <CofcAlgorithmMobileLeaderboard
+          sortedRows={sortedRows}
+          fullNameMap={fullNameMap}
+          onSelect={setSelectedKey}
+        />
+        {selectedRow ? (
+          <CofcAlgorithmDetailSheet
+            row={selectedRow}
+            seasonLabels={seasonLabels}
+            fullNameMap={fullNameMap}
+            onClose={closeDetail}
+          />
+        ) : null}
+      </div>
+    </>
+  )
+}
+
+function CofcAlgorithmMobileLeaderboard({ sortedRows, fullNameMap, onSelect }) {
+  return (
+    <ul className="heritage-cofc-algo-lb" role="list">
+      {sortedRows.map((row, idx) => {
+        const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+        const place = idx + 1
+        return (
+          <li key={row.key} className="heritage-cofc-algo-lb__item">
+            <button
+              type="button"
+              className="heritage-cofc-algo-lb__btn"
+              onClick={() => onSelect(row.key)}
+              aria-label={`${managerFull ?? row.key}, total ${row.total}. Tap for season breakdown.`}
+            >
+              <span
+                className={
+                  'heritage-cofc-algo-lb__place is-pos-' +
+                  Math.max(1, Math.min(8, place))
+                }
+                aria-hidden="true"
+              >
+                {place}
+              </span>
+              <ManagerCrest
+                displayKey={row.key}
+                managerFull={managerFull}
+                className="heritage-cofc-algo-lb__crest"
+              />
+              <span className="heritage-cofc-algo-lb__name">
+                {managerFull ?? row.key}
+              </span>
+              <span className="heritage-cofc-algo-lb__total tabular">
+                <strong>{row.total}</strong>
+                <span className="heritage-cofc-algo-lb__total-label">pts</span>
+              </span>
+              <span className="heritage-cofc-algo-lb__chev" aria-hidden="true">›</span>
+            </button>
+          </li>
+        )
+      })}
+      <li className="heritage-cofc-algo-lb__hint muted">
+        Tap a row to view per-season scoring.
+      </li>
+    </ul>
+  )
+}
+
+function CofcAlgorithmDetailSheet({ row, seasonLabels, fullNameMap, onClose }) {
+  const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+  return (
+    <div
+      className="heritage-cofc-algo-sheet"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="heritage-cofc-algo-sheet-title"
+    >
+      <button
+        type="button"
+        className="heritage-cofc-algo-sheet__backdrop"
+        aria-label="Close season breakdown"
+        onClick={onClose}
+      />
+      <div className="heritage-cofc-algo-sheet__card">
+        <div className="heritage-cofc-algo-sheet__head">
+          <ManagerCrest
+            displayKey={row.key}
+            managerFull={managerFull}
+            className="heritage-cofc-algo-sheet__crest"
+          />
+          <h4
+            id="heritage-cofc-algo-sheet-title"
+            className="heritage-cofc-algo-sheet__name"
+          >
+            {managerFull ?? row.key}
+          </h4>
+          <button
+            type="button"
+            className="heritage-cofc-algo-sheet__close"
+            aria-label="Close"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        </div>
+        <ul className="heritage-cofc-algo-sheet__list" role="list">
+          {seasonLabels.map((season, i) => {
+            const rank = row.ranks[i]
+            return (
+              <li
+                key={season}
+                className={
+                  'heritage-cofc-algo-sheet__row ' + heritageCellPosClass(rank)
+                }
+              >
+                <span className="heritage-cofc-algo-sheet__row-season tabular">
+                  {shortenHallSeasonLabel(season)}
+                </span>
+                <span className="heritage-cofc-algo-sheet__row-rank tabular">
+                  {rank ?? '—'}
+                </span>
+                <span className="heritage-cofc-algo-sheet__row-pts muted tabular">
+                  {rank ? `${rank} pt${rank === 1 ? '' : 's'}` : '—'}
+                </span>
               </li>
             )
           })}
+          <li className="heritage-cofc-algo-sheet__row heritage-cofc-algo-sheet__row--total">
+            <span className="heritage-cofc-algo-sheet__row-season">Total</span>
+            <span className="heritage-cofc-algo-sheet__row-rank tabular">
+              <strong>{row.total}</strong>
+            </span>
+            <span className="heritage-cofc-algo-sheet__row-pts muted">
+              lowest wins
+            </span>
+          </li>
         </ul>
-      </section>
-      <HistoricStandingsSection />
-      <HallManagerCareerDashboard tableRows={tableRows} />
-      <HallTeamHistorySection tableRows={tableRows} />
-    </>
+      </div>
+    </div>
+  )
+}
+
+function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
+  const [view, setView] = useState('live')
+  const liveRows = useMemo(
+    () => computeLiveHallManagerCareerRows(tableRows),
+    [tableRows],
+  )
+  const algoData = useMemo(
+    () => computeHallAlgorithmRows(tableRows),
+    [tableRows],
+  )
+
+  return (
+    <section
+      className="tile hall-of-champions tile--standings heritage-cofc"
+      aria-labelledby="heritage-cofc-heading"
+    >
+      <div className="heritage-cofc__head">
+        <div className="heritage-cofc__headstack">
+          <h2
+            id="heritage-cofc-heading"
+            className="tile-title tile-title--sm heritage-cofc__title"
+          >
+            Champion of Champions
+          </h2>
+          <p className="heritage-cofc__explanation muted">
+            All seasons cumulative · includes current {formatHeritageSeasonLabel(LIVE_HALL_SEASON_LABEL)} season
+          </p>
+        </div>
+        <div
+          className="subnav heritage-cofc__viewtoggle"
+          role="tablist"
+          aria-label="Champion of Champions view"
+        >
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === 'live'}
+            className={'subnav__tab' + (view === 'live' ? ' subnav__tab--active' : '')}
+            onClick={() => setView('live')}
+          >
+            Live
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={view === 'algorithm'}
+            className={'subnav__tab' + (view === 'algorithm' ? ' subnav__tab--active' : '')}
+            onClick={() => setView('algorithm')}
+          >
+            Algorithm
+          </button>
+        </div>
+      </div>
+      {view === 'live' ? (
+        <CofcLiveTable rows={liveRows} fullNameMap={fullNameMap} />
+      ) : (
+        <div className="heritage-cofc-algo">
+          <h3 className="tile-title tile-title--sm heritage-cofc-algo__heading">
+            Algorithm
+          </h3>
+          <p className="heritage-cofc-algo__caption muted">
+            1 pt for 1st · 2 for 2nd · … · 8 for 8th. Lowest total wins (golf-style).
+          </p>
+          <CofcAlgorithmMatrix
+            rows={algoData.rows}
+            seasonLabels={algoData.seasonLabels}
+            fullNameMap={fullNameMap}
+          />
+        </div>
+      )}
+    </section>
+  )
+}
+
+/* Top-level Heritage view: sub-nav + 3 sub-tabs. `dashboardView === 'hall'` continues
+ * to mount this component (view ID is unchanged). The big "TCLOT Heritage" eyebrow
+ * heading lives in this wrapper; each sub-tab supplies its own sr-only h2 so the
+ * outline stays informative without visual heading clutter. */
+function HallOfChampions({ tableRows = [] }) {
+  const [tab, setTab] = useState('trophy')
+
+  /* Map<displayKey, fullName> sourced from the live FPL roster; falls back to the
+   * static `HISTORIC_MANAGER_FULL_NAMES` table for archived managers / initial render. */
+  const fullNameMap = useMemo(
+    () => buildManagerFullNameByHallKey(tableRows),
+    [tableRows],
+  )
+
+  return (
+    <div className="heritage-shell">
+      <HeritageSubnav active={tab} onSelect={setTab} />
+      <div
+        id="heritage-subview-panel"
+        role="tabpanel"
+        aria-labelledby={`tab-heritage-${tab}`}
+        className="heritage-subview-panel"
+      >
+        {tab === 'trophy' ? <HeritageTrophyRoom /> : null}
+        {tab === 'history' ? (
+          <HeritageHistory tableRows={tableRows} fullNameMap={fullNameMap} />
+        ) : null}
+        {tab === 'cofc' ? (
+          <HeritageChampionOfChampions
+            tableRows={tableRows}
+            fullNameMap={fullNameMap}
+          />
+        ) : null}
+      </div>
+    </div>
   )
 }
 
@@ -2005,17 +2814,36 @@ function App() {
                     ? firstWord(leader.teamName)
                     : leader.teamName
                   const leaderForm = (leader.form ?? []).slice(-5)
+                  const seasonEnded = nextGwForFixtureTile == null && (leader.pl ?? 0) > 0
                   return (
                     <button
                       type="button"
                       className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
                       aria-pressed={isSelected}
-                      aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, top of the league`}
+                      aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, ${seasonEnded ? 'champion' : 'top of the league'}`}
                       onClick={() => toggleStandingsHighlight(leader.league_entry)}
                     >
-                      <span className="standings-hero-card__eyebrow">
-                        <span aria-hidden>★</span>
-                        Top of the league
+                      <span className={`standings-hero-card__eyebrow${seasonEnded ? ' standings-hero-card__eyebrow--champion' : ''}`}>
+                        {seasonEnded ? (
+                          <>
+                            <svg
+                              aria-hidden="true"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              focusable="false"
+                            >
+                              <path d="M19 4h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v1H5a2 2 0 0 0-2 2v2a4 4 0 0 0 4 4h.36A6 6 0 0 0 11 14.91V17H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.09A6 6 0 0 0 16.64 11H17a4 4 0 0 0 4-4V6a2 2 0 0 0-2-2ZM5 6h2v3a4 4 0 0 0 .07.74A2 2 0 0 1 5 8Zm14 2a2 2 0 0 1-2.07 2A4 4 0 0 0 17 9V6h2Z" />
+                            </svg>
+                            Champion
+                          </>
+                        ) : (
+                          <>
+                            <span aria-hidden>★</span>
+                            Top of the league
+                          </>
+                        )}
                       </span>
                       <div className="standings-hero-card__row">
                         <span className="standings-hero-card__crest">
@@ -2386,11 +3214,7 @@ function App() {
           )}
 
           {dashboardView === 'hall' ? (
-            <HallOfChampions
-              logoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-              tableRows={tableRows}
-            />
+            <HallOfChampions tableRows={tableRows} />
           ) : null}
 
           {dashboardView === 'players' ? (
@@ -2510,18 +3334,17 @@ function App() {
                       </button>
                     </span>
                     {waiverGwPickerOptions.length > 0 && waiverFeedTab === 'latest' ? (
-                      <select
-                        className="tile-gw-select tile-gw-select--inline"
-                        aria-label="Waivers game week"
-                        value={waiverGwEffective}
-                        onChange={(e) => setWaiverGwView(Number(e.target.value))}
-                      >
-                        {waiverGwPickerOptions.map((gw) => (
-                          <option key={gw} value={gw}>
-                            {gameWeekSelectLabel(gw)}
-                          </option>
-                        ))}
-                      </select>
+                      <CompactSelectPill
+                        label="GW"
+                        ariaLabel="Waivers game week"
+                        align="right"
+                        value={String(waiverGwEffective)}
+                        onChange={(next) => setWaiverGwView(Number(next))}
+                        options={waiverGwPickerOptions.map((gw) => ({
+                          value: String(gw),
+                          label: gameWeekSelectLabel(gw),
+                        }))}
+                      />
                     ) : null}
                   </h2>
                 </div>
@@ -2871,53 +3694,50 @@ function App() {
             </div>
             {waiverOutRowsWaiverOnly.length ? (
               <>
-                <div className="waiver-out-filters">
-                  <div className="waiver-out-filter">
-                    <label htmlFor="waiver-gw-mode-filter">Type</label>
-                    <select
-                      id="waiver-gw-mode-filter"
-                      className="waiver-out-filter__select"
-                      value={waiverGwTableMode}
-                      onChange={(e) =>
-                        setWaiverGwTableMode(e.target.value === 'in' ? 'in' : 'out')
-                      }
-                    >
-                      <option value="out">Waivers out</option>
-                      <option value="in">Waivers in</option>
-                    </select>
-                  </div>
-                  <div className="waiver-out-filter">
-                    <label htmlFor="waiver-out-team-filter">Team</label>
-                    <select
-                      id="waiver-out-team-filter"
-                      className="waiver-out-filter__select"
-                      value={waiverOutTeamFilter}
-                      onChange={(e) => setWaiverOutTeamFilter(e.target.value)}
-                    >
-                      <option value="all">All teams</option>
-                      {waiverOutTeamOptions.map(([entry, name]) => (
-                        <option key={entry} value={String(entry)}>
-                          {name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="waiver-out-filter">
-                    <select
-                      id="waiver-out-gw-filter"
-                      className="waiver-out-filter__select"
-                      aria-label="Gameweek filter"
-                      value={waiverOutGwFilter}
-                      onChange={(e) => setWaiverOutGwFilter(e.target.value)}
-                    >
-                      <option value="all">All gameweeks</option>
-                      {waiverOutGwOptions.map((gw) => (
-                        <option key={gw} value={String(gw)}>
-                          GW {gw}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="waiver-out-filters waiver-out-filters--pills">
+                  <CompactSelectPill
+                    id="waiver-gw-mode-filter"
+                    label="Type"
+                    ariaLabel="Waiver type"
+                    value={waiverGwTableMode}
+                    onChange={(next) =>
+                      setWaiverGwTableMode(next === 'in' ? 'in' : 'out')
+                    }
+                    options={[
+                      { value: 'out', label: 'Waivers out' },
+                      { value: 'in', label: 'Waivers in' },
+                    ]}
+                  />
+                  <CompactSelectPill
+                    id="waiver-out-team-filter"
+                    label="Team"
+                    ariaLabel="Filter by team"
+                    value={waiverOutTeamFilter}
+                    onChange={(next) => setWaiverOutTeamFilter(String(next))}
+                    isActive={waiverOutTeamFilter !== 'all'}
+                    options={[
+                      { value: 'all', label: 'All teams' },
+                      ...waiverOutTeamOptions.map(([entry, name]) => ({
+                        value: String(entry),
+                        label: name,
+                      })),
+                    ]}
+                  />
+                  <CompactSelectPill
+                    id="waiver-out-gw-filter"
+                    label="GW"
+                    ariaLabel="Gameweek filter"
+                    value={waiverOutGwFilter}
+                    onChange={(next) => setWaiverOutGwFilter(String(next))}
+                    isActive={waiverOutGwFilter !== 'all'}
+                    options={[
+                      { value: 'all', label: 'All gameweeks' },
+                      ...waiverOutGwOptions.map((gw) => ({
+                        value: String(gw),
+                        label: `GW ${gw}`,
+                      })),
+                    ]}
+                  />
                 </div>
                 {waiverOutTeamPointsTotal && (
                   <p className="waiver-out-sum-banner">

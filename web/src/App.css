@@ -1,3 +1,6 @@
+/* Bebas Neue — Trophy Room banner overlay font (team name + season). */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
 /* FotMob-inspired: dark shell (#121212 / #1e1e1e), white type, pitch green accents */
 .fotmob {
   --fm-bg: #121212;
@@ -494,6 +497,17 @@
 
 .dashboard-nav__btn--active .dashboard-nav__icon {
   color: inherit;
+}
+
+/* FPL Live's pulsing dot is the only icon with a hardcoded fill colour
+   (green = "Live"). When the tab itself is active, the button picks up the
+   brand-purple selection treatment (purple text + 40px tinted pill behind
+   the icon). Without this override the green dot sits on the purple pill
+   and reads as a stray green pip rather than "this tab is selected".
+   Match the selection language by flipping the dot's fill to brand purple
+   when active; idle FPL Live tabs keep their green "Live" affordance. */
+.dashboard-nav__btn--active .dashboard-nav__icon--pulse {
+  --nav-pulse-dot-fill: var(--tclot-logo-purple);
 }
 
 /* Pulse animation for the FPL Live indicator. Targets the inner <g> so the
@@ -1932,10 +1946,11 @@
 }
 
 .draft-board-filters {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   width: 100%;
+  align-items: center;
 }
 
 .draft-board-filter-select {
@@ -1945,6 +1960,13 @@
   min-height: 38px;
   font-size: 0.84rem;
   box-sizing: border-box;
+}
+
+/* CompactSelectPill variant used inside the Draft board filter row —
+   each pill's trigger sizes to its content, and the value text is
+   truncated so a long team name doesn't push siblings off the row. */
+.draft-board-filter-pill .cpsp__value {
+  max-width: 8rem;
 }
 
 .draft-board-hint {
@@ -3835,6 +3857,14 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   align-items: flex-end;
   margin-top: 10px;
   margin-bottom: 8px;
+}
+
+/* Compact-pill row variant — switches from the labels-above stacked layout
+   to a single-line row of CompactSelectPill triggers so they don't drag
+   across the full panel width. */
+.waiver-out-filters--pills {
+  align-items: center;
+  gap: 8px 10px;
 }
 
 .waiver-out-filter {
@@ -11241,13 +11271,18 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row__side--away {
   justify-content: flex-end;
 }
+/* `position: relative` anchors the absolutely-positioned caption pill
+   (HERO DEFEAT / VILLAIN VICTORY) BELOW the avatar without participating
+   in this column's intrinsic width. Previously the pill (wider than the
+   avatar) inflated the crest column and pushed the team name into a
+   single-char ellipsis ("T..." for "Toronto Wiggum"). Round 3 follow-up. */
 .live-banner-row__crest {
+  position: relative;
   flex-shrink: 0;
   line-height: 0;
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
 }
 /* Avatar wrapper — wraps the existing TeamAvatar so the V1 ring is applied
    to a rounded container around the avatar (the avatar itself is unchanged)
@@ -11281,50 +11316,45 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row__avatar-wrap--size-tiny.live-banner-row__avatar-wrap--villain {
   box-shadow: 0 0 0 1.5px var(--live-villain-color);
 }
-/* 16px floating badge dot at the avatar's bottom-right with hero/villain
-   emoji glyph. Border matches the tile surface so it reads as a separate
-   pip rather than merging into the ring. */
-.live-banner-row__badge-dot {
-  position: absolute;
-  bottom: -2px;
-  right: -4px;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  line-height: 1;
-  color: #fff;
-  border: 1.5px solid var(--fm-card);
-  pointer-events: none;
-}
-/* Compact variant: shrink the dot proportionally for smaller avatars (28px
-   `team-badge--sm` used by squad-tile heads — a 16px dot covers >55% of the
-   avatar there and reads as an overlay rather than a pip). */
-.live-banner-row__avatar-wrap--size-compact .live-banner-row__badge-dot {
-  width: 13px;
-  height: 13px;
-  font-size: 7px;
-  bottom: -1px;
-  right: -3px;
-  border-width: 1px;
-}
-.live-banner-row__badge-dot--hero {
-  background: var(--live-hero-color);
-}
-.live-banner-row__badge-dot--villain {
-  background: var(--live-villain-color);
-}
-/* Caption slot — ALWAYS rendered when EITHER side has a status badge so
-   both crest columns are the same height, keeping the two avatars on a
-   shared Y baseline. The slot is empty on the side without a status. */
+/* Caption slot — absolutely positioned BELOW the avatar so the pill text
+   (HERO DEFEAT / VILLAIN VICTORY) can be wider than the avatar without
+   inflating the crest column width. Vertical space is reserved on the
+   row itself via `.live-banner-row--has-status { padding-bottom }` so
+   the pill doesn't clip out of the row edge.
+
+   Horizontal anchoring depends on which side of the row the crest sits
+   on: avatars on the home side hug the row's left padding, so a pill
+   centered on the avatar would overflow past the card's left edge. We
+   instead flush the pill to the SAME edge as the team name (left of the
+   avatar on home, right of the avatar on away) so it always extends
+   inward into the card. */
 .live-banner-row__caption-slot {
+  position: absolute;
+  top: calc(100% + 4px);
   display: inline-flex;
   align-items: center;
-  justify-content: center;
   height: 14px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.live-banner-row__side--home .live-banner-row__caption-slot {
+  left: 0;
+  right: auto;
+  justify-content: flex-start;
+}
+.live-banner-row__side--away .live-banner-row__caption-slot {
+  left: auto;
+  right: 0;
+  justify-content: flex-end;
+}
+/* Reserve vertical space for the absolute caption pill (only when a status
+   is present on either side). Without this the pill would render outside
+   the row's padded area. */
+.live-banner-row--has-status {
+  padding-bottom: 22px;
+}
+.live-banner-row--compact.live-banner-row--has-status {
+  padding-bottom: 20px;
 }
 .live-banner-row__caption-pill {
   font-family: 'Geist Mono', monospace;
@@ -11437,25 +11467,64 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row--compact .live-banner-row__score-side {
   gap: 3px;
 }
-/* Bracketed `(N)` indicator — count of starting-XI players still to play
-   this GW. Smaller than the score number, secondary colour, normal weight
-   so the score remains the primary read. Tabular numerals for stable
-   width across polls. */
-.live-banner-row__remaining {
-  font-size: 0.78rem;
-  font-weight: 500;
+/* "X to play" sub-row — rendered under each team name (inside `__names`).
+   Amber pulse dot reads "still in play"; flips to green pulse + "All done"
+   once every starter has finished. Replaces the older bracketed `(N)` /
+   inline green check next to the score (round 3 follow-up: count belongs
+   under the team it describes, not bolted onto the score number). */
+.live-banner-row__to-play {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  max-width: 100%;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
   color: var(--fm-muted);
-  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.live-banner-row--compact .live-banner-row__to-play {
+  font-size: 0.66rem;
+  gap: 4px;
+}
+.live-banner-row__to-play--done {
+  color: var(--data-positive, #12a15a);
+}
+.live-banner-row__to-play-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--data-warning, #f59e0b);
+  flex-shrink: 0;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--data-warning, #f59e0b) 25%, transparent);
+}
+.live-banner-row__to-play-dot--done {
+  background: var(--data-positive, #12a15a);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--data-positive, #12a15a) 25%, transparent);
+  animation: live-banner-to-play-done-pulse 2.4s ease-in-out infinite;
+}
+@keyframes live-banner-to-play-done-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--data-positive, #12a15a) 25%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px color-mix(in srgb, var(--data-positive, #12a15a) 8%, transparent);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-banner-row__to-play-dot--done {
+    animation: none;
+  }
+}
+.live-banner-row__to-play-text {
   font-variant-numeric: tabular-nums;
 }
-.live-banner-row--compact .live-banner-row__remaining {
-  font-size: 0.7rem;
-}
-/* "All done" indicator (Option A — green pulse dot with checkmark). Renders
-   in place of the bracketed `(0)` once every starter has finished their
-   PL fixture. The `--done-pulse` ring expands and fades behind the solid
-   dot to communicate "all clear" without animating the score itself.
-   Reduced-motion users get the static dot without the pulse. */
+/* DEPRECATED — retained to avoid breaking external CSS overrides; rendered
+   by nothing in production after round 3 follow-up. */
+.live-banner-row__remaining,
 .live-banner-row__done {
   position: relative;
   display: inline-flex;
@@ -11730,20 +11799,6 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-xp__th--pts {
   color: var(--fm-text-strong);
 }
-.live-xp__th-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  display: inline-block;
-}
-.live-xp__th-dot--g {
-  background: var(--fm-win);
-}
-.live-xp__th-dot--a {
-  background: var(--tclot-logo-purple);
-  opacity: 0.75;
-}
-
 /* STARTING XI / BENCH divider row */
 .live-xp__group {
   padding: 6px 12px;
@@ -14134,3 +14189,1826 @@ button.live-xp__player-name:focus-visible {
     padding: 6px 4px;
   }
 }
+
+/* ================================================================== */
+/* TCLOT HERITAGE — sub-nav + 4 sub-tabs                                */
+/* ================================================================== */
+
+.heritage-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  /* Shared brand-violet position heatmap palette — single source of truth referenced
+   * by Team Journey cards, MV-A position chips, MV-C transposed matrix cells, and the
+   * CofC Algorithm grid. Dark-mode safe via color-mix against --fm-card. */
+  --heritage-pos-1-bg: var(--tclot-logo-purple, #795bfb);
+  --heritage-pos-1-fg: #ffffff;
+  --heritage-pos-2-bg: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 40%, var(--fm-card));
+  --heritage-pos-2-fg: var(--fm-text-strong);
+  --heritage-pos-3-bg: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  --heritage-pos-3-fg: var(--fm-text-strong);
+  --heritage-pos-4-bg: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 10%, var(--fm-card));
+  --heritage-pos-4-fg: var(--fm-text-strong);
+  --heritage-pos-5-bg: transparent;
+  --heritage-pos-5-fg: var(--fm-text-strong);
+  --heritage-pos-6-bg: transparent;
+  --heritage-pos-6-fg: var(--fm-muted);
+  --heritage-pos-7-bg: color-mix(in srgb, #c0392b 14%, var(--fm-card));
+  --heritage-pos-7-fg: var(--fm-text-strong);
+  --heritage-pos-8-bg: color-mix(in srgb, #c0392b 24%, var(--fm-card));
+  --heritage-pos-8-fg: var(--fm-text-strong);
+}
+
+.heritage-subnav-strip {
+  display: flex;
+}
+
+.heritage-subnav {
+  flex-wrap: wrap;
+}
+
+.heritage-subview-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+.heritage-subview-panel > .tile {
+  margin: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 720px) {
+  /* `Champion of Champions` is too long to share a 360px row with the other 2 pills
+   * without ellipses, so the strip keeps `overflow-x: auto` and only the strip
+   * scrolls horizontally — the page beneath does not. */
+  .heritage-subnav-strip {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .heritage-subnav-strip::-webkit-scrollbar { display: none; }
+  .heritage-subnav {
+    flex-wrap: nowrap;
+    max-width: 100%;
+  }
+  .heritage-subnav .subnav__tab {
+    padding-inline: 12px;
+    font-size: 12px;
+  }
+}
+
+/* Manager-initial bubble shared by Historic Standings + CofC + Team History */
+.heritage-mgr-crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
+}
+
+/* ============ History sub-tab spacing — Historic Standings + divider + Team Journeys === */
+
+.heritage-history__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.heritage-history__divider {
+  height: 1px;
+  background: var(--fm-border);
+  margin: 22px -14px;
+}
+
+.heritage-history__journeys {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.heritage-history__section-title {
+  margin: 0;
+}
+
+/* ============ Sub-tab 1: Trophy Room (mobile T-D + desktop TR-DT-A) === */
+
+.heritage-trophy-room {
+  padding: 0;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.heritage-trophy-room .sr-only,
+.heritage-team-history .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- HTML-composed banner card (Bebas Neue overlay) ----
+ * Each banner is a 3-row grid: solid-color top band with team name (Bebas
+ * Neue), central artwork band, solid-color bottom band with season label.
+ * The PNG is cropped via `transform: scale(var(--art-scale))` so the script
+ * text baked into the top/bottom of the source art gets pushed off-frame
+ * and the HTML overlay text stays uniform across every banner. Per-banner
+ * tuning lives on `--banner-bg`, `--banner-ink`, `--art-scale`, `--art-y`. */
+.hof-banner-card {
+  --banner-bg: #1a1a1a;
+  --banner-ink: #f0c441;
+  --art-scale: 1.32;
+  --art-y: 50%;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  background: var(--banner-bg);
+  border-radius: inherit;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.hof-banner-card__top,
+.hof-banner-card__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 16px;
+  background: var(--banner-bg);
+  position: relative;
+  z-index: 2;
+}
+
+.hof-banner-card__team {
+  margin: 0;
+  font-family: 'Bebas Neue', 'Oswald', 'Impact', system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  color: var(--banner-ink);
+  font-size: clamp(1.5rem, 3.4vw, 2.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.hof-banner-card__season {
+  font-family: 'Bebas Neue', 'Oswald', 'Impact', system-ui, sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  color: var(--banner-ink);
+  font-size: clamp(1rem, 2vw, 1.4rem);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.hof-banner-card__art {
+  position: relative;
+  overflow: hidden;
+  background: var(--banner-bg);
+  z-index: 1;
+}
+
+.hof-banner-card__img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center var(--art-y);
+  transform: scale(var(--art-scale));
+  transform-origin: center var(--art-y);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---- Trophy Room — mobile (swipeable carousel, full-bleed on phones) ---- */
+.hof-troom {
+  position: relative;
+  display: block;
+  height: 100%;
+}
+
+.hof-troom--swipe {
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, #1a0f33 0%, #0c0820 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 18px 16px 22px;
+  outline: none;
+  border-radius: 12px;
+}
+
+.hof-troom__swipe-stage {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 18px 0 22px;
+}
+
+.hof-troom__swipe-active {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 80%;
+  margin: 0 auto;
+  aspect-ratio: 3 / 4;
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--banner-bg, rgba(255, 255, 255, 0.02));
+  box-shadow:
+    0 24px 48px -16px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.hof-troom__swipe-peek {
+  position: absolute;
+  z-index: 1;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50%;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  opacity: 0.45;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+.hof-troom__swipe-peek--prev { left: -28%; }
+.hof-troom__swipe-peek--next { right: -28%; }
+
+/* ---- Trophy Room — desktop wide carousel (TR-DT-A) ----
+ * Single big banner card, cross-fade + scale transition between slides,
+ * arrows pinned to the dark backdrop's side gutters and vertically
+ * centered against the active card, dots below. No grid toggle. */
+.hof-troom-dt {
+  position: relative;
+  width: 100%;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, #1a0f33 0%, #0c0820 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 32px 28px 22px;
+  outline: none;
+  border-radius: 12px;
+  min-height: 560px;
+}
+
+/* Stage hosts every banner stacked absolutely; only the active slide
+ * is visible at opacity:1 / scale:1. Outgoing slides fade out + shrink
+ * to 0.96; incoming slides fade in from 1.04 → 1.0. */
+.hof-troom-dt__stage {
+  position: relative;
+  flex: 1 1 auto;
+  width: var(--troom-card-w, 380px);
+  max-width: 100%;
+  aspect-ratio: 4 / 5;
+  margin: 0 auto;
+}
+
+.hof-troom-dt__slide {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow:
+    0 28px 56px -20px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  opacity: 0;
+  transform: scale(1.04);
+  transition:
+    opacity 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
+  will-change: opacity, transform;
+}
+
+.hof-troom-dt__slide.is-active {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hof-troom-dt__slide {
+    transition: opacity 120ms linear;
+    transform: none;
+  }
+  .hof-troom-dt__slide.is-active {
+    transform: none;
+  }
+}
+
+/* Arrows live in the side gutter of the stage container and are vertically
+ * centered on the card via `top: 50%; transform: translateY(-50%)`. We pin
+ * their left/right offset to the stage container's edge so they sit
+ * symmetrically just outside the card. */
+.hof-troom-dt__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(12, 8, 32, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 12px -4px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: background 0.15s ease, color 0.15s ease;
+  z-index: 4;
+}
+
+.hof-troom-dt__arrow:hover {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 60%, rgba(12, 8, 32, 0.5));
+  color: #fff;
+}
+
+.hof-troom-dt__arrow:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 80%, #fff);
+  outline-offset: 2px;
+}
+
+.hof-troom-dt__arrow--prev { left: 18px; }
+.hof-troom-dt__arrow--next { right: 18px; }
+
+/* Dots — shared across desktop + mobile. Mobile bumps tap target. */
+.hof-troom-dt__dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding-top: 18px;
+}
+
+.hof-troom-dt__dot {
+  appearance: none;
+  border: none;
+  padding: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.32);
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.hof-troom-dt__dot.is-active {
+  background: #fff;
+  transform: scale(1.5);
+}
+
+.hof-troom-dt__dot:hover:not(.is-active) {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.hof-troom-dt__dot:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 80%, #fff);
+  outline-offset: 3px;
+}
+
+/* Mobile carousel dots — bigger tap targets via padding, larger circle
+ * for cleaner active state. */
+@media (max-width: 720px) {
+  .hof-troom-dt__dots {
+    gap: 6px;
+    padding: 14px 16px 0;
+  }
+  .hof-troom-dt__dot {
+    width: 10px;
+    height: 10px;
+    /* Larger invisible tap target while keeping the visual circle tight. */
+    box-shadow: 0 0 0 6px transparent;
+  }
+  .hof-troom-dt__dot.is-active {
+    transform: scale(1.35);
+  }
+}
+
+/* Mobile full-bleed: the Trophy Room sub-tab is the only Heritage
+ * surface that wants to escape the surrounding 16px gutter on portrait
+ * phones — the dark themed background should fill the viewport
+ * edge-to-edge so the banner sits in its own little room. The selector
+ * is scoped tighter than `.heritage-subview-panel > .tile { margin: 0 }`
+ * so the negative margin wins. */
+@media (max-width: 720px) {
+  .heritage-subview-panel > .tile.heritage-trophy-room {
+    margin-inline: -16px;
+    border-radius: 0;
+    max-width: none;
+  }
+  .hof-troom--swipe {
+    border-radius: 0;
+    padding: 18px 16px 8px;
+  }
+}
+
+/* ============ Sub-tab 2: Team History ============ */
+
+.heritage-team-history {
+  padding: 14px;
+}
+
+.heritage-team-history__mobile-bar {
+  display: none;
+  margin-bottom: 12px;
+}
+
+.heritage-team-history__desktop { display: block; }
+.heritage-team-history__mobile { display: none; }
+
+@media (max-width: 720px) {
+  .heritage-team-history__mobile-bar { display: flex; }
+  .heritage-team-history__desktop { display: none; }
+  .heritage-team-history__mobile { display: block; }
+}
+
+.mobile-view-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 8%, var(--fm-card));
+  border: 1px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 18%, var(--fm-border));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.mobile-view-toggle__btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fm-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.mobile-view-toggle__btn:hover:not(.is-active) {
+  color: var(--fm-text-strong);
+}
+
+.mobile-view-toggle__btn.is-active {
+  background: var(--tclot-logo-purple, #795bfb);
+  color: #fff;
+  box-shadow: 0 2px 6px -2px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 60%, transparent);
+}
+
+.mobile-view-toggle__btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 70%, #fff);
+  outline-offset: 2px;
+}
+
+/* TH-D timeline (desktop) */
+.merged-history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.merged-history-timeline__row {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  align-items: stretch;
+  background: var(--fm-card);
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.merged-history-timeline__mgr {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+  padding-top: 2px;
+}
+
+.merged-history-timeline__mgr-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.merged-history-timeline__crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 25%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 35%, var(--fm-border));
+}
+
+.merged-history-timeline__mgr-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  line-height: 1.2;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merged-history-timeline__mgr-stats--grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--fm-border);
+  border: 1px solid var(--fm-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.merged-history-timeline__mgr-stats--grid .merged-history-timeline__mgr-stat {
+  background: var(--fm-card);
+  padding: 7px 10px;
+}
+
+.merged-history-timeline__mgr-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--fm-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.merged-history-timeline__mgr-stat-num {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+}
+
+.merged-history-timeline__mgr-stat-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--fm-muted);
+}
+
+.merged-history-timeline__mgr-meta {
+  font-size: 11px;
+}
+
+.merged-history-timeline__cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 8px;
+}
+
+.merged-history-timeline__card {
+  border-radius: 8px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: center;
+  border: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+  min-height: 76px;
+  justify-content: space-between;
+  background: color-mix(in srgb, var(--fm-surface-2, var(--fm-card)) 40%, transparent);
+}
+
+.merged-history-timeline__card-season {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--fm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.merged-history-timeline__card-team {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  line-height: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merged-history-timeline__card-pos {
+  font-size: 22px;
+  font-weight: 800;
+  line-height: 24px;
+  font-variant-numeric: tabular-nums;
+  color: inherit;
+}
+
+/* Position heatmap tints — single brand-violet ladder shared across heritage surfaces.
+ * Values resolve from `--heritage-pos-N-bg/fg` declared on `.heritage-shell`.
+ * Selectors are scoped under `.heritage-shell` so they outweigh the reference-only
+ * palette defined in `Mockup.css` (which uses the same .is-pos-N class names but
+ * loads later in the cascade — keeping these rules limited to the production
+ * heritage view is the cleanest separation). */
+.heritage-shell .merged-history-timeline__card.is-pos-1,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-1,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-1,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-1,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-1 {
+  background: var(--heritage-pos-1-bg);
+  color: var(--heritage-pos-1-fg);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 60%, transparent);
+}
+
+.heritage-shell .merged-history-timeline__card.is-pos-2,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-2,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-2,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-2,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-2 {
+  background: var(--heritage-pos-2-bg);
+  color: var(--heritage-pos-2-fg);
+}
+
+.heritage-shell .merged-history-timeline__card.is-pos-3,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-3,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-3,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-3,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-3 {
+  background: var(--heritage-pos-3-bg);
+  color: var(--heritage-pos-3-fg);
+}
+
+.heritage-shell .merged-history-timeline__card.is-pos-4,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-4,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-4,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-4,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-4 {
+  background: var(--heritage-pos-4-bg);
+  color: var(--heritage-pos-4-fg);
+}
+
+.heritage-shell .merged-history-timeline__card.is-pos-5,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-5,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-5,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-5,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-5 {
+  background: var(--heritage-pos-5-bg);
+  color: var(--heritage-pos-5-fg);
+}
+
+.heritage-shell .merged-history-timeline__card.is-pos-6,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-6,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-6,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-6,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-6 {
+  background: var(--heritage-pos-6-bg);
+  color: var(--heritage-pos-6-fg);
+}
+
+.heritage-shell .merged-history-timeline__card.is-pos-7,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-7,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-7,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-7,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-7 {
+  background: var(--heritage-pos-7-bg);
+  color: var(--heritage-pos-7-fg);
+}
+
+.heritage-shell .merged-history-timeline__card.is-pos-8,
+.heritage-shell .merged-history-mv__pos-chip.is-pos-8,
+.heritage-shell .merged-history-mv__transposed-cell.is-pos-8,
+.heritage-shell .heritage-cofc-algo__td-cell.is-pos-8,
+.heritage-shell .heritage-cofc-algo-sheet__row.is-pos-8 {
+  background: var(--heritage-pos-8-bg);
+  color: var(--heritage-pos-8-fg);
+}
+
+/* The Algorithm detail sheet renders to document.body via `position: fixed`, so
+ * it sits OUTSIDE the .heritage-shell parent. Mirror the rule unscoped so the
+ * modal's sheet rows still receive the brand-violet ladder. */
+.heritage-cofc-algo-sheet__row.is-pos-1 {
+  background: var(--heritage-pos-1-bg, var(--tclot-logo-purple, #795bfb));
+  color: var(--heritage-pos-1-fg, #ffffff);
+}
+.heritage-cofc-algo-sheet__row.is-pos-2 { background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 40%, var(--fm-card)); color: var(--fm-text-strong); }
+.heritage-cofc-algo-sheet__row.is-pos-3 { background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card)); color: var(--fm-text-strong); }
+.heritage-cofc-algo-sheet__row.is-pos-4 { background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 10%, var(--fm-card)); color: var(--fm-text-strong); }
+.heritage-cofc-algo-sheet__row.is-pos-5 { background: transparent; color: var(--fm-text-strong); }
+.heritage-cofc-algo-sheet__row.is-pos-6 { background: transparent; color: var(--fm-muted); }
+.heritage-cofc-algo-sheet__row.is-pos-7 { background: color-mix(in srgb, #c0392b 14%, var(--fm-card)); color: var(--fm-text-strong); }
+.heritage-cofc-algo-sheet__row.is-pos-8 { background: color-mix(in srgb, #c0392b 24%, var(--fm-card)); color: var(--fm-text-strong); }
+
+.heritage-shell .merged-history-timeline__card.is-empty,
+.heritage-shell .merged-history-mv__transposed-cell.is-empty,
+.heritage-shell .heritage-cofc-algo__td-cell.is-empty {
+  color: var(--fm-muted);
+  opacity: 0.55;
+}
+
+/* MV-A accordion (mobile) */
+.merged-history-mv {
+  display: flex;
+  flex-direction: column;
+  background: var(--fm-card);
+  font-family: inherit;
+}
+
+.merged-history-mv__crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
+}
+
+.merged-history-mv__pos-chip {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-text-strong);
+  background: rgba(120, 120, 130, 0.08);
+}
+
+.merged-history-mv--accordion {
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.merged-history-mv__accordion-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.merged-history-mv__accordion-item {
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.merged-history-mv__accordion-item:last-child { border-bottom: none; }
+
+.merged-history-mv__accordion-toggle {
+  appearance: none;
+  background: var(--fm-card);
+  border: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+}
+
+.merged-history-mv__accordion-toggle.is-open {
+  background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 6%, var(--fm-card)));
+}
+
+.merged-history-mv__accordion-toggle:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple, #795bfb);
+  outline-offset: -2px;
+}
+
+.merged-history-mv__accordion-mgr {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.merged-history-mv__accordion-mgr-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.merged-history-mv__accordion-mgr-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  line-height: 18px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merged-history-mv__accordion-mgr-sub {
+  font-size: 11px;
+  color: var(--fm-muted);
+  line-height: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merged-history-mv__accordion-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+.merged-history-mv__summary-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 5px;
+}
+
+.merged-history-mv__summary-chip-num {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+  font-variant-numeric: tabular-nums;
+}
+
+.merged-history-mv__summary-chip-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fm-muted);
+}
+
+.merged-history-mv__chevron {
+  width: 14px;
+  text-align: center;
+  font-size: 14px;
+  color: var(--fm-muted);
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.merged-history-mv__journey {
+  list-style: none;
+  margin: 0;
+  padding: 4px 14px 12px;
+  background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 4%, var(--fm-card)));
+}
+
+.merged-history-mv__journey-row {
+  display: grid;
+  grid-template-columns: 44px 1fr 32px;
+  gap: 8px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px dashed color-mix(in srgb, var(--fm-border) 70%, transparent);
+}
+
+.merged-history-mv__journey-row:last-child { border-bottom: none; }
+
+.merged-history-mv__journey-season {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fm-muted);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+
+.merged-history-mv__journey-team {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* MV-C transposed matrix */
+.merged-history-mv--transposed {
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--fm-card);
+}
+
+.merged-history-mv__transposed-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.merged-history-mv--transposed table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-variant-numeric: tabular-nums;
+  table-layout: fixed;
+}
+
+.merged-history-mv__transposed-corner {
+  width: 40px;
+  background: var(--fm-surface-2, var(--fm-card));
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.merged-history-mv__transposed-th-mgr {
+  padding: 4px 2px;
+  background: var(--fm-surface-2, var(--fm-card));
+  border-bottom: 1px solid var(--fm-border);
+}
+
+.merged-history-mv__transposed-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
+}
+
+.merged-history-mv__transposed-th-season {
+  width: 38px;
+  padding: 6px 2px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fm-muted);
+  letter-spacing: 0.04em;
+  background: var(--fm-surface-2, var(--fm-card));
+  border-bottom: 1px solid var(--fm-border);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.merged-history-mv__transposed-cell {
+  height: 32px;
+  padding: 0;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-text-strong);
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+}
+
+.merged-history-mv__transposed-note {
+  margin: 10px 14px;
+  font-size: 11px;
+  line-height: 15px;
+}
+
+/* ============ Sub-tab 3: Historic Standings refinements ============ */
+
+.heritage-team-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.heritage-team-cell__crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
+}
+
+.heritage-team-cell__name {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.heritage-team-cell__name-full {
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heritage-team-cell__name-short {
+  display: none;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+/* Mobile: drop PL column + use first-word team names */
+.heritage-col--hide-portrait { display: table-cell; }
+
+@media (max-width: 720px) {
+  .heritage-col--hide-portrait { display: none; }
+  .heritage-team-cell__name-full { display: none; }
+  .heritage-team-cell__name-short { display: inline; }
+}
+
+/* ============ Sub-tab 4: Champion of Champions ============ */
+
+.heritage-cofc__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.heritage-cofc__viewtoggle {
+  align-self: center;
+  flex-wrap: nowrap;
+}
+
+.heritage-cofc__table .heritage-cofc__th {
+  background: var(--fm-surface-2, var(--fm-card));
+  padding: 0;
+}
+
+.heritage-cofc__th--right { text-align: right; }
+.heritage-cofc__th--left { text-align: left; }
+
+.heritage-cofc__sort-btn { width: 100%; }
+
+.heritage-cofc__th--pts.is-active .standings-sort-btn__label { color: var(--tclot-logo-purple, #795bfb); }
+
+.heritage-cofc__td-mgr {
+  text-align: left;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+}
+
+.heritage-cofc__mgr-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.heritage-cofc__mgr-name { white-space: nowrap; }
+
+/* Desktop: full name. Mobile portrait: compact display key ("Nick M") so the
+ * 5 numeric columns fit without horizontal scroll. */
+.heritage-cofc__mgr-name-full { display: inline; }
+.heritage-cofc__mgr-name-short { display: none; }
+
+@media (max-width: 720px) {
+  .heritage-cofc__mgr-name-full { display: none; }
+  .heritage-cofc__mgr-name-short { display: inline; }
+}
+
+.heritage-cofc__crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
+}
+
+.heritage-cofc__mgr-name {
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Algorithm view */
+.heritage-cofc-algo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.heritage-cofc-algo__heading {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  color: var(--fm-text-strong);
+  font-size: 0.98rem;
+  font-weight: 700;
+}
+
+.heritage-cofc-algo__caption {
+  margin: 0 0 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--fm-muted);
+}
+
+/* Desktop / mobile split */
+.heritage-cofc-algo__desktop { display: block; }
+.heritage-cofc-algo__mobile { display: none; }
+
+@media (max-width: 720px) {
+  .heritage-cofc-algo__desktop { display: none; }
+  .heritage-cofc-algo__mobile { display: block; }
+}
+
+/* ---- Algorithm desktop matrix ---- */
+.heritage-cofc-algo__scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-top: 1px solid var(--fm-border);
+}
+
+.heritage-cofc-algo__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  min-width: 540px;
+}
+
+.heritage-cofc-algo__th,
+.heritage-cofc-algo__td {
+  border-bottom: 1px solid var(--fm-border);
+  padding: 10px 8px;
+  white-space: nowrap;
+  vertical-align: middle;
+  height: 44px;
+}
+
+.heritage-cofc-algo__table thead th {
+  background: var(--fm-surface-2, var(--fm-card));
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fm-muted);
+}
+
+.heritage-cofc-algo__th-mgr { text-align: left; min-width: 180px; }
+.heritage-cofc-algo__th-season { text-align: center; width: 56px; }
+.heritage-cofc-algo__th-total {
+  text-align: right;
+  border-left: 1px solid var(--fm-border);
+  width: 76px;
+}
+
+.heritage-cofc-algo__td-mgr {
+  text-align: left;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+}
+
+.heritage-cofc-algo__td-cell {
+  text-align: center;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  width: 56px;
+  font-variant-numeric: tabular-nums;
+}
+
+.heritage-cofc-algo__td-total {
+  text-align: right;
+  border-left: 1px solid var(--fm-border);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 6%, var(--fm-card));
+  font-variant-numeric: tabular-nums;
+}
+
+.heritage-cofc-algo__td-total strong {
+  font-size: var(--text-lg, 16px);
+  font-weight: 800;
+  color: var(--tclot-logo-purple, #795bfb);
+}
+
+/* ---- Algorithm mobile leaderboard (Option A) ---- */
+.heritage-cofc-algo-lb {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.heritage-cofc-algo-lb__item { display: block; }
+
+.heritage-cofc-algo-lb__btn {
+  appearance: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px 28px minmax(0, 1fr) auto 14px;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  background: var(--fm-card);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  min-height: 52px;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.heritage-cofc-algo-lb__btn:hover {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 5%, var(--fm-card));
+  border-color: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
+}
+
+.heritage-cofc-algo-lb__btn:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple, #795bfb);
+  outline-offset: -2px;
+}
+
+.heritage-cofc-algo-lb__place {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 10%, var(--fm-card));
+}
+
+.heritage-cofc-algo-lb__place.is-pos-1 {
+  background: var(--heritage-pos-1-bg);
+  color: var(--heritage-pos-1-fg);
+}
+
+.heritage-cofc-algo-lb__crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 30%, var(--fm-border));
+}
+
+.heritage-cofc-algo-lb__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.heritage-cofc-algo-lb__total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.heritage-cofc-algo-lb__total strong {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--tclot-logo-purple, #795bfb);
+}
+
+.heritage-cofc-algo-lb__total-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fm-muted);
+}
+
+.heritage-cofc-algo-lb__chev {
+  font-size: 18px;
+  color: var(--fm-muted);
+  font-weight: 600;
+  justify-self: end;
+}
+
+.heritage-cofc-algo-lb__hint {
+  margin-top: 4px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--fm-muted);
+}
+
+/* ---- Algorithm mobile detail sheet ---- */
+.heritage-cofc-algo-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.heritage-cofc-algo-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  appearance: none;
+  border: none;
+  padding: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  cursor: pointer;
+}
+
+.heritage-cofc-algo-sheet__card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: var(--fm-card);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  border: 1px solid var(--fm-border);
+  border-bottom: none;
+  padding: 16px 14px 22px;
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.45);
+}
+
+.heritage-cofc-algo-sheet__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.heritage-cofc-algo-sheet__crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 25%, var(--fm-card));
+  color: var(--fm-text-strong);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 35%, var(--fm-border));
+}
+
+.heritage-cofc-algo-sheet__name {
+  margin: 0;
+  flex: 1 1 auto;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--fm-text-strong);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heritage-cofc-algo-sheet__close {
+  appearance: none;
+  border: none;
+  background: transparent;
+  width: 32px;
+  height: 32px;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--fm-muted);
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.heritage-cofc-algo-sheet__close:hover { color: var(--fm-text-strong); background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 8%, transparent); }
+
+.heritage-cofc-algo-sheet__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.heritage-cofc-algo-sheet__row {
+  display: grid;
+  grid-template-columns: 72px 1fr 88px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-text-strong);
+}
+
+.heritage-cofc-algo-sheet__row-season {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fm-muted);
+}
+
+.heritage-cofc-algo-sheet__row.is-pos-1 .heritage-cofc-algo-sheet__row-season,
+.heritage-cofc-algo-sheet__row.is-pos-1 .heritage-cofc-algo-sheet__row-pts {
+  color: var(--heritage-pos-1-fg);
+  opacity: 0.85;
+}
+
+.heritage-cofc-algo-sheet__row-rank {
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.heritage-cofc-algo-sheet__row-pts {
+  font-size: 11px;
+  text-align: right;
+  font-weight: 600;
+}
+
+.heritage-cofc-algo-sheet__row--total {
+  margin-top: 6px;
+  border-top: 1px solid var(--fm-border);
+  padding-top: 14px;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 6%, var(--fm-card));
+}
+
+.heritage-cofc-algo-sheet__row--total .heritage-cofc-algo-sheet__row-season {
+  color: var(--fm-text-strong);
+  font-size: 13px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.heritage-cofc-algo-sheet__row--total .heritage-cofc-algo-sheet__row-rank strong {
+  color: var(--tclot-logo-purple, #795bfb);
+  font-size: 22px;
+}
+
+/* ============================================================ */
+/* CompactSelectPill (.cpsp)                                    */
+/* Shared "Label · Value ▾" pill that replaces wide native      */
+/* <select> elements site-wide. Mirrors the visual + keyboard    */
+/* conventions of the Players workbench filter pills.            */
+/* ============================================================ */
+
+.cpsp {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+.cpsp__btn {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 30px;
+  margin: 0;
+  padding: 6px 10px 6px 12px;
+  border-radius: 14px;
+  border: 1px solid color-mix(in srgb, var(--fm-border) 78%, transparent);
+  background-color: var(--fm-card);
+  color: var(--fm-text-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    color 0.15s ease;
+  /* Stop the chevron / value from being grabbed for text selection on
+     long-press / double-click — feels button-y, not text-y. */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.cpsp__btn:hover:not(:disabled) {
+  background-color: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 6%,
+    var(--fm-card)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 35%,
+    var(--fm-border)
+  );
+}
+
+.cpsp__btn:focus-visible {
+  outline: none;
+  border-color: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 55%,
+    var(--fm-border)
+  );
+  box-shadow:
+    0 0 0 3px
+      color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 28%, transparent);
+}
+
+.cpsp__btn--open {
+  border-color: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 55%,
+    var(--fm-border)
+  );
+  background-color: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 8%,
+    var(--fm-card)
+  );
+  box-shadow:
+    inset 0 0 0 1px
+      color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 35%, transparent),
+    0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.cpsp__btn--active {
+  background-color: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 12%,
+    var(--fm-card)
+  );
+  border-color: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 45%,
+    var(--fm-border)
+  );
+}
+
+.cpsp__btn--disabled,
+.cpsp__btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.cpsp__label {
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+  white-space: nowrap;
+}
+
+.cpsp__sep {
+  flex: 0 0 auto;
+  font-size: 11px;
+  line-height: 1;
+  color: color-mix(in srgb, var(--fm-muted) 70%, transparent);
+}
+
+.cpsp__value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 14rem;
+}
+
+.cpsp__chev {
+  flex: 0 0 auto;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-left: 2px;
+  color: color-mix(in srgb, var(--fm-text-strong) 62%, var(--fm-muted));
+  transition: transform 0.12s ease;
+}
+
+.cpsp__btn--open .cpsp__chev {
+  color: var(--fm-text-strong);
+  transform: rotate(180deg);
+}
+
+.cpsp__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 100%;
+  max-width: 240px;
+  max-height: min(22rem, 60vh);
+  margin: 0;
+  padding: 5px;
+  list-style: none;
+  overflow: auto;
+  border-radius: 12px;
+  border: 1px solid var(--fm-border);
+  background: var(--fm-card);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  scrollbar-width: thin;
+}
+
+.cpsp--align-right .cpsp__menu {
+  left: auto;
+  right: 0;
+}
+
+.cpsp__option {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  margin: 0;
+  padding: 7px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--fm-text-strong);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.cpsp__option:hover:not(:disabled),
+.cpsp__option--highlighted {
+  background: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 10%,
+    transparent
+  );
+}
+
+.cpsp__option--active {
+  background: color-mix(
+    in srgb,
+    var(--tclot-logo-purple, #795bfb) 18%,
+    transparent
+  );
+  color: var(--fm-text-strong);
+  font-weight: 600;
+}
+
+.cpsp__option--disabled,
+.cpsp__option:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.cpsp__option-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Small uppercase header that precedes the first option in each group.
+   Replaces native <optgroup label="…"> for the live GW dropdown so the
+   Past / Current / Upcoming buckets stay visually distinct. */
+.cpsp__group-header {
+  padding: 8px 10px 4px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+  pointer-events: none;
+  list-style: none;
+}
+
+.cpsp__group-header:not(:first-child) {
+  margin-top: 2px;
+  border-top: 1px solid color-mix(in srgb, var(--fm-border) 75%, transparent);
+}
+
+/* ============================================================ */
+/* Historic Standings — heading + season pill on one row        */
+/* (consumes the new .cpsp component above)                      */
+/* ============================================================ */
+
+.heritage-history__section-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 12px;
+  margin-bottom: 10px;
+}
+
+.heritage-history__section-head .heritage-history__section-title {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.heritage-history__section-head .cpsp {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 360px) {
+  .heritage-history__section-head {
+    gap: 6px 10px;
+  }
+
+  .heritage-history__section-head .cpsp__btn {
+    padding: 5px 8px 5px 10px;
+  }
+}
+
