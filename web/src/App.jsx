@@ -827,52 +827,69 @@ function TeamHistoryDesktop({ journey, fullNameMap }) {
 }
 
 function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
-  const [openKey, setOpenKey] = useState(() => journey[0]?.key ?? null)
+  /* MV-A list view — titles leaderboard. Stable sort by titles desc so
+   * the lone champion sits at the top and unproven first-season
+   * managers stack at the bottom. Original input order is preserved on
+   * ties courtesy of `Array.prototype.sort` being stable in ES2019+. */
+  const sortedJourney = useMemo(() => {
+    return [...journey].sort(
+      (a, b) => (b.titles ?? 0) - (a.titles ?? 0),
+    )
+  }, [journey])
+
+  /* Default to the leader (most titles) — re-evaluate when the sorted
+   * order changes so the open row tracks the top-of-leaderboard manager
+   * across live-season updates. */
+  const [openKey, setOpenKey] = useState(
+    () => sortedJourney[0]?.key ?? null,
+  )
+
   return (
-    <div className="merged-history-mv merged-history-mv--accordion">
+    <div className="merged-history-mv merged-history-mv--accordion merged-history-mv--leaderboard">
       <ul className="merged-history-mv__accordion-list">
-        {journey.map((row) => {
+        {sortedJourney.map((row, idx) => {
           const open = openKey === row.key
           const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+          const place = idx + 1
           return (
             <li key={row.key} className="merged-history-mv__accordion-item">
               <button
                 type="button"
                 aria-expanded={open}
+                aria-label={`${managerFull ?? row.key}, ${row.titles ?? 0} titles. Tap for per-season journey.`}
                 className={
                   'merged-history-mv__accordion-toggle' + (open ? ' is-open' : '')
                 }
                 onClick={() => setOpenKey(open ? null : row.key)}
               >
-                <span className="merged-history-mv__accordion-mgr">
-                  <ManagerCrest
-                    displayKey={row.key}
-                    managerFull={managerFull}
-                    className="merged-history-mv__crest"
-                  />
-                  <span className="merged-history-mv__accordion-mgr-text">
-                    <span className="merged-history-mv__accordion-mgr-name">
-                      {managerFull ?? row.key}
-                    </span>
-                    {managerFull && managerFull !== row.key ? (
-                      <span className="merged-history-mv__accordion-mgr-sub muted">
-                        {row.key}
-                      </span>
-                    ) : null}
-                  </span>
+                <span
+                  className={
+                    'merged-history-mv__accordion-place is-pos-' +
+                    Math.max(1, Math.min(8, place))
+                  }
+                  aria-hidden="true"
+                >
+                  {place}
                 </span>
-                <span className="merged-history-mv__accordion-meta">
-                  <span className="merged-history-mv__summary-chip">
-                    <span className="merged-history-mv__summary-chip-num">{row.titles}</span>
-                    <span className="merged-history-mv__summary-chip-label">titles</span>
-                  </span>
-                  <span
-                    className="merged-history-mv__chevron"
-                    aria-hidden="true"
-                    style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}
-                  >
-                    ›
-                  </span>
+                <ManagerCrest
+                  displayKey={row.key}
+                  managerFull={managerFull}
+                  className="merged-history-mv__crest"
+                />
+                <span className="merged-history-mv__accordion-mgr-name">
+                  {managerFull ?? row.key}
+                </span>
+                <PointsCell
+                  value={row.titles ?? 0}
+                  label="TITLES"
+                  size="md"
+                  className="merged-history-mv__accordion-titles"
+                />
+                <span
+                  className="merged-history-mv__chevron"
+                  aria-hidden="true"
+                >
+                  ›
                 </span>
               </button>
               {open ? (
@@ -3287,13 +3304,13 @@ function App() {
           {dashboardView === 'teamSelection' && (
             <section
               className="tile tile--compact tile--team-selection"
-              aria-label="Transactions"
+              aria-label="Moves"
             >
               <div className="section-chrome section-chrome--sticky">
               <div
                 className="team-selection-submenu"
                 role="tablist"
-                aria-label="Transactions views"
+                aria-label="Moves views"
               >
                 <button
                   type="button"

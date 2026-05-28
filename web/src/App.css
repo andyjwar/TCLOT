@@ -15079,38 +15079,68 @@ button.live-xp__player-name:focus-visible {
   background: rgba(120, 120, 130, 0.08);
 }
 
+/*
+ * MV-A list view (mobile) — Titles leaderboard.
+ *
+ * Restyled to mirror the Champion of Champions → Algorithm mobile
+ * leaderboard (`.heritage-cofc-algo-lb*`). Each row is its own bordered
+ * card (no shared container border), and tapping the row expands the
+ * per-season journey beneath the leaderboard cell.
+ *
+ * Grid layout (matches `.heritage-cofc-algo-lb__btn`):
+ *   28px (rank pill) · 28px (manager crest) · 1fr (full name) · auto
+ *   (PointsCell · "TITLES") · 14px (chevron)
+ */
 .merged-history-mv--accordion {
-  border: 1px solid var(--fm-border);
-  border-radius: 10px;
-  overflow: hidden;
+  /* Reset the legacy single-container border — the leaderboard variant
+   * uses per-row cards. (Stays intact for any non-leaderboard variant
+   * that future MV-A surfaces might want.) */
+}
+
+.merged-history-mv--leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: transparent;
 }
 
 .merged-history-mv__accordion-list {
   list-style: none;
   margin: 0;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .merged-history-mv__accordion-item {
-  border-bottom: 1px solid var(--fm-border);
+  display: block;
+  border: 1px solid var(--fm-border);
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--fm-card);
 }
-
-.merged-history-mv__accordion-item:last-child { border-bottom: none; }
 
 .merged-history-mv__accordion-toggle {
   appearance: none;
   background: var(--fm-card);
   border: none;
   width: 100%;
-  display: flex;
+  display: grid;
+  grid-template-columns: 28px 28px minmax(0, 1fr) auto 14px;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 12px 14px;
+  gap: 10px;
+  padding: 10px 12px;
+  min-height: 56px;
   cursor: pointer;
   text-align: left;
   font: inherit;
   color: inherit;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.merged-history-mv__accordion-toggle:hover {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 5%, var(--fm-card));
 }
 
 .merged-history-mv__accordion-toggle.is-open {
@@ -15122,18 +15152,25 @@ button.live-xp__player-name:focus-visible {
   outline-offset: -2px;
 }
 
-.merged-history-mv__accordion-mgr {
-  display: flex;
+/* Rank pill — mirrors `.heritage-cofc-algo-lb__place`. Place 1 gets the
+ * gold heritage tint; everyone else uses the muted purple background. */
+.merged-history-mv__accordion-place {
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
-  min-width: 0;
-  flex: 1 1 auto;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 10%, var(--fm-card));
 }
 
-.merged-history-mv__accordion-mgr-text {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+.merged-history-mv__accordion-place.is-pos-1 {
+  background: var(--heritage-pos-1-bg);
+  color: var(--heritage-pos-1-fg);
 }
 
 .merged-history-mv__accordion-mgr-name {
@@ -15144,51 +15181,30 @@ button.live-xp__player-name:focus-visible {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
-.merged-history-mv__accordion-mgr-sub {
-  font-size: 11px;
-  color: var(--fm-muted);
-  line-height: 14px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.merged-history-mv__accordion-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex: 0 0 auto;
-}
-
-.merged-history-mv__summary-chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
-}
-
-.merged-history-mv__summary-chip-num {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--fm-text-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-.merged-history-mv__summary-chip-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--fm-muted);
+/* Position shim for the PointsCell — mirrors
+ * `.heritage-cofc-algo-lb__total` so the value + label stay right-
+ * aligned against the chevron. Visual styling lives on `.pts-cell*`. */
+.merged-history-mv__accordion-titles {
+  text-align: right;
+  justify-self: end;
 }
 
 .merged-history-mv__chevron {
   width: 14px;
   text-align: center;
-  font-size: 14px;
+  font-size: 18px;
   color: var(--fm-muted);
+  font-weight: 600;
+  justify-self: end;
   transition: transform 0.15s ease;
   display: inline-block;
+}
+
+.merged-history-mv__accordion-toggle.is-open .merged-history-mv__chevron {
+  transform: rotate(90deg);
 }
 
 .merged-history-mv__journey {
