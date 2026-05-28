@@ -3,7 +3,7 @@ import { NavIcon } from './NavIcon'
 
 /** @typedef {'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
 
-/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'trophy' | 'more' | 'settings'} NavIconName */
+/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'more' | 'settings'} NavIconName */
 
 /**
  * Note: the view ID for the Transactions tab stays `teamSelection` to keep
@@ -55,6 +55,12 @@ function NavButton({ item, active, onSelect, variant }) {
 export function DashboardNav({ variant, dashboardView, onSelect }) {
   const isBottom = variant === 'bottom'
 
+  // Single source of truth for nav order (left → right on desktop, also the
+  // mobile bottom-pill order): FPL Live · Standings · Transactions ·
+  // Players · TCLOT Heritage · More. `More` is `bottomOnly` so it only
+  // renders in the mobile bottom nav; desktop gets a separate Settings gear
+  // button (rendered below the .map() loop), kept out of this array so its
+  // hairline-divider + margin-left:auto styling stays local to that button.
   const primaryItems = [
     {
       id: /** @type {const} */ ('fplLive'),
@@ -82,6 +88,12 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
       icon: /** @type {const} */ ('shuffle'),
     },
     {
+      id: /** @type {const} */ ('hall'),
+      label: 'TCLOT Heritage',
+      shortLabel: 'Heritage',
+      icon: /** @type {const} */ ('column'),
+    },
+    {
       id: /** @type {const} */ ('more'),
       label: 'More',
       shortLabel: 'More',
@@ -90,34 +102,12 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
     },
   ]
 
-  // Desktop nav order (left → right): FPL Live · Standings · Transactions ·
-  // Hall of Champions · Players. The right edge gets a separate Settings gear
-  // button (rendered below the .map() loop) — kept out of this array so its
-  // hairline-divider + margin-left:auto styling stays local to that button.
-  const topItems = [
-    primaryItems.find((i) => i.id === 'fplLive'),
-    primaryItems.find((i) => i.id === 'standings'),
-    primaryItems.find((i) => i.id === 'teamSelection'),
-    {
-      id: /** @type {const} */ ('hall'),
-      label: 'Hall of Champions',
-      shortLabel: 'Hall',
-      icon: /** @type {const} */ ('trophy'),
-    },
-    primaryItems.find((i) => i.id === 'players'),
-  ].filter(Boolean)
-
-  const items = isBottom
-    ? primaryItems.filter((i) => i.bottomOnly || !i.bottomOnly)
-    : topItems
+  const topItems = primaryItems.filter((i) => !i.bottomOnly)
+  const items = isBottom ? primaryItems : topItems
 
   const isActive = (id) => {
     if (id === 'more') {
-      return (
-        dashboardView === 'more' ||
-        dashboardView === 'hall' ||
-        dashboardView === 'settings'
-      )
+      return dashboardView === 'more' || dashboardView === 'settings'
     }
     return dashboardView === id
   }
@@ -166,7 +156,6 @@ export function DashboardMorePanel({
   kitIndexByEntry = {},
 }) {
   const rows = [
-    { id: /** @type {const} */ ('hall'), label: 'Hall of Champions', emoji: '🏆' },
     { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },
   ]
 

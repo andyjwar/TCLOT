@@ -3,13 +3,16 @@
  *
  * SVG paths are duplicated from Mockup.jsx's `LucideIcon` rather than imported
  * because Mockup.jsx is a temporary design spec slated for removal after
- * Phase 2 lands. Seven cases cover the live nav set:
+ * Phase 2 lands. Eight cases cover the live nav set:
  *
  *   - pulsing-dot  : FPL Live (filled #16a34a circle, no stroke; animated by CSS)
  *   - bar-chart-3  : Standings
  *   - users        : Transactions (formerly "Team Selection")
  *   - shuffle      : Players
- *   - trophy       : Hall of Champions
+ *   - column       : TCLOT Heritage (Doric Greek column — Titans-mythology nod)
+ *   - trophy       : retained for backwards compatibility (Mockup spec only;
+ *                    no longer wired into the live nav as of TCLOT Heritage
+ *                    rename — the heritage tab now uses `column`)
  *   - more         : More menu (three horizontal dots)
  *   - settings     : Settings gear (desktop-only entry on right edge of nav)
  *
@@ -20,7 +23,7 @@
 
 /**
  * @param {{
- *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'trophy' | 'more' | 'settings',
+ *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings',
  *   className?: string,
  *   size?: number,
  * }} props
@@ -41,10 +44,24 @@ export function NavIcon({ name, className, size = 20 }) {
   }
   switch (name) {
     case 'pulsing-dot':
+      // The dot's green carries meaning ("Live") while idle. When the FPL
+      // Live tab is *active*, the button's selection state (brand purple
+      // text colour + tinted pill) clashed with the green fill, leaving a
+      // green dot on a purple background. We expose the fill via a CSS
+      // custom property (default #16a34a) so `.dashboard-nav__btn--active
+      // .dashboard-nav__icon--pulse` in App.css can override it to brand
+      // purple — keeping the selected-tab indicator visually consistent
+      // with the other nav icons.
       return (
         <svg {...common}>
           <g className="nav-icon__pulse-target">
-            <circle cx="12" cy="12" r="5" fill="#16a34a" stroke="none" />
+            <circle
+              cx="12"
+              cy="12"
+              r="5"
+              style={{ fill: 'var(--nav-pulse-dot-fill, #16a34a)' }}
+              stroke="none"
+            />
           </g>
         </svg>
       )
@@ -85,6 +102,24 @@ export function NavIcon({ name, className, size = 20 }) {
           <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
           <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
           <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+        </svg>
+      )
+    case 'column':
+      // Doric Greek column. Mobile bottom nav renders this at 22px, and the
+      // earlier version (capital 16 wide, shaft 14 wide) was too subtle to
+      // read as a column. Capital and base now extend a full 18 units
+      // (x=3→21), 4 wider than the shaft (x=5→19), giving an obvious
+      // overhang on each side. Three flutes at x = 8 / 12 / 16 run the
+      // full shaft height.
+      return (
+        <svg {...common}>
+          <path d="M3 4h18" />
+          <path d="M5 7h14" />
+          <path d="M8 7v10" />
+          <path d="M12 7v10" />
+          <path d="M16 7v10" />
+          <path d="M5 17h14" />
+          <path d="M3 20h18" />
         </svg>
       )
     case 'more':
