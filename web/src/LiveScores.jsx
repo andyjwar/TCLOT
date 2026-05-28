@@ -27,6 +27,7 @@ import {
   REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
   REIGNING_CHAMPION_TEAM_NAME,
   findChampionFixture,
+  managerSurnameFromFullName,
 } from './championOfRecord.js';
 import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
 import { firstWord } from './teamNameUtils.js';
@@ -1420,11 +1421,13 @@ export function LiveScores({
         ? oppSquad.displayStarters
         : (oppSquad?.starters ?? []);
     if (champStarters.length < 11 || oppStarters.length < 11) return null;
+    const opponentTeam = teams?.find((t) => Number(t.id) === fx.opponentLeagueEntryId);
     return {
       championStarters: champStarters,
       opponentStarters: oppStarters,
       championTeamName: REIGNING_CHAMPION_TEAM_NAME,
       opponentTeamName: teamNameForEntry(teams, fx.opponentLeagueEntryId),
+      opponentManagerSurname: managerSurnameFromFullName(opponentTeam?.manager),
     };
   }, [
     gohDismissed,
@@ -1930,6 +1933,7 @@ export function LiveScores({
           opponentStarters={championFixtureBundle.opponentStarters}
           championTeamName={championFixtureBundle.championTeamName}
           opponentTeamName={championFixtureBundle.opponentTeamName}
+          opponentManagerSurname={championFixtureBundle.opponentManagerSurname}
           onDismiss={() => setGohDismissed(true)}
         />
       ) : null}
