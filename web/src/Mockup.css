@@ -13194,9 +13194,10 @@
 }
 .merged-history-timeline__row {
   display: grid;
-  /* mgr column widened from 248 → 272 to absorb the extra TITAN +
-   * MINNOW rows without crowding the season cards. */
-  grid-template-columns: 272px 1fr;
+  /* mgr column widened to 300px so the 2×2 stat grid + full manager
+   * name (e.g. "Nick Mottershead") have room without crowding the
+   * season cards. */
+  grid-template-columns: 300px 1fr;
   gap: var(--space-3);
   align-items: stretch;
   background: var(--surface);
@@ -13243,20 +13244,29 @@
   color: var(--text-muted);
   line-height: 14px;
 }
-/* Stacked uppercase stats block — mirrors the year-label treatment
- * on the per-season cards (caps · muted · letter-spaced) so the
- * career summary reads as part of the same visual language. Each
- * stat sits on its own line (TITLES / RUNNER-UP / TITAN / MINNOW).
- * Line-height tightened so the 4-row stack still fits within the
- * card's mgr column without pushing the crest into a different
- * vertical baseline than the season cards. */
+/* 2×2 stats grid — TITLES / RUNNER-UP on row 1, TITAN / MINNOW on
+ * row 2. Treatment A: clean grid with hairline cross dividers, no
+ * per-cell background. Each cell renders inline `<count> <LABEL>`
+ * matching the year-label treatment elsewhere (caps · muted ·
+ * letter-spaced) so the career summary reads as part of the same
+ * visual language. */
 .merged-history-timeline__mgr-stats {
   list-style: none;
-  margin: 0;
+  margin: 6px 0 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+}
+.merged-history-timeline__mgr-stats--grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--border);
+  border-left: 1px solid var(--border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.merged-history-timeline__mgr-stats--grid .merged-history-timeline__mgr-stat {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 6px 10px;
 }
 .merged-history-timeline__mgr-stat {
   display: flex;
@@ -13425,6 +13435,8 @@
   min-width: 0;
   flex: 1 1 auto;
 }
+/* Single-line full name only (the muted short-name second line was
+ * dropped per user feedback — the bold full name does the work). */
 .merged-history-mv__accordion-mgr-text {
   display: flex;
   flex-direction: column;
@@ -13434,12 +13446,7 @@
   font-size: 14px;
   font-weight: 700;
   color: var(--text-strong);
-  line-height: 16px;
-}
-.merged-history-mv__accordion-mgr-sub {
-  font-size: 11px;
-  color: var(--text-muted);
-  line-height: 13px;
+  line-height: 18px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
