@@ -15,8 +15,8 @@
  *     `useLayoutEffect` block that mirrors the theme onto <body>).
  *
  *  2. **Self-contained `.li-*` ports.** The `.li-modal`, `.li-card`,
- *     `.li-hero`, `.li-badges-grid`, `.li-managers-list`, `.li-blurb`,
- *     `.li-facts-grid`, `.li-appearance`, and `.li-footer` rules
+ *     `.li-hero`, `.li-badges-grid`, `.li-managers-list`, `.li-terms`,
+ *     `.li-appearance`, and `.li-footer` rules
  *     originate in `Mockup.css`, but that stylesheet is only loaded
  *     when the user hits the standalone mockup route. To keep the
  *     production modal self-sufficient we re-declare just the bits we
@@ -374,9 +374,14 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
 }
 
 /* ==================================================================
- * Blurb (About TCLOT)
- * ================================================================== */
-.league-info-modal-shell .li-card--blurb {
+ * Terminology (league-canon glossary)
+ * ==================================================================
+ * Replaces the earlier `li-card--blurb` (About) and `li-card--facts`
+ * (Fast Facts) cards with a single glossary card. Term = gold Cinzel
+ * italic, definition = regular prose. The shared gold-quote-mark
+ * decoration (`.li-card__quote-mark`) carries over so the card retains
+ * the lore-y typographic flourish. */
+.league-info-modal-shell .li-card--terminology {
   padding-left: var(--space-5);
 }
 .league-info-modal-shell .li-card__quote-mark {
@@ -390,48 +395,39 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   opacity: 0.85;
   pointer-events: none;
 }
-.league-info-modal-shell .li-blurb {
+
+.league-info-modal-shell .li-terms {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.league-info-modal-shell .li-term {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.league-info-modal-shell .li-term:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+.league-info-modal-shell .li-term__name {
   margin: 0;
   font-family: 'Cinzel', 'Geist', serif;
   font-style: italic;
   font-size: var(--text-md);
-  line-height: 1.55;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, #f1c43b 92%, var(--text-strong));
+}
+.league-info-modal-shell .li-term__def {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 1.5;
   color: var(--text);
   letter-spacing: 0.005em;
-}
-
-/* ==================================================================
- * Fast Facts
- * ================================================================== */
-.league-info-modal-shell .li-facts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-2);
-}
-.league-info-modal-shell .li-fact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: var(--space-3);
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--r-md);
-  min-width: 0;
-}
-.league-info-modal-shell .li-fact__label {
-  font-size: 10px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 600;
-}
-.league-info-modal-shell .li-fact__value {
-  font-size: var(--text-md);
-  line-height: 1.25;
-  color: var(--text-strong);
-  font-weight: 600;
-  letter-spacing: -0.005em;
-  font-variant-numeric: tabular-nums;
 }
 
 /* ==================================================================

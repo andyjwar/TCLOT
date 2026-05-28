@@ -7,15 +7,16 @@
  *   1. Hero card        — league name, season label, tagline
  *   2. League Badges    — 2-up roster grid (crest + team name)
  *   3. Managers list    — all 8 managers with crest + full name
- *   4. About TCLOT      — short lore blurb (placeholder; flagged TODO)
- *   5. Fast Facts       — small key/value grid (placeholder; flagged TODO)
- *   6. Appearance       — Light / Dark / System segmented pill, drives
+ *   4. TCLOT Terminology — glossary of league lore terms (replaced the
+ *                         placeholder About + Fast Facts cards; all
+ *                         entries are real league-canon terminology)
+ *   5. Appearance       — Light / Dark / System segmented pill, drives
  *                         the existing themePref state in App.jsx
- *   7. Settings         — embeds `<SettingsPanelBody>` (shared with the
+ *   6. Settings         — embeds `<SettingsPanelBody>` (shared with the
  *                         standalone /settings route, refactored in this
  *                         commit so the modal and the route render the
  *                         same controls — no duplication)
- *   8. Footer           — tiny credit / version line
+ *   7. Footer           — tiny credit / version line
  *
  * The modal portals onto `document.body` (so it clears the
  * `.app.fotmob` stacking context). All design tokens used by the
@@ -31,19 +32,28 @@ import './LeagueInfoModal.css'
 
 const LEAGUE_FULL_NAME = 'The TC League of Titans'
 const LEAGUE_TAGLINE = 'Eight managers. Five seasons. One trophy.'
-/* TODO: replace with actual league lore copy (search for `About TCLOT`
- * / `league lore` in the repo — nothing canonical found at commit time). */
-const LEAGUE_BLURB =
-  'Founded in 2020 by a handful of friends across Toronto, London, and Yorkshire, TCLOT is an 8-team head-to-head FPL Draft league named after the mythic Titans. Five seasons in, three different managers have lifted the trophy. Each season writes another chapter into the Heritage.'
 
-/* TODO: source from real league records (champions table, longest title
- * drought, all-time For total, etc.) — placeholder copy matches the
- * mockup so the visual rhythm holds until a data source is wired in. */
-const LEAGUE_FACTS = [
-  { label: 'Founded',     value: '2020' },
-  { label: 'Format',      value: '8-team H2H draft' },
-  { label: 'Trade rules', value: 'Free trade window · weekly' },
-  { label: 'Waivers',     value: 'FAAB · reverse standings tiebreak' },
+/**
+ * League-canon terminology. Order is roughly grouped by theme: scoring /
+ * GW outcomes first, then season-arc accolades, then manager-personality
+ * jokes. Definitions are quoted verbatim from the league chat so the
+ * voice stays authentic.
+ */
+const TCLOT_TERMS = [
+  { term: 'Villains Victory',     def: 'Winning with the 7th highest score of the GW.' },
+  { term: 'Heroes Defeat',        def: 'Losing with the 2nd highest score of the GW.' },
+  { term: 'The Motty',            def: 'Winning thanks to a bench player coming in.' },
+  { term: 'Douchebag Sneak',      def: 'Winning with the 5th highest score.' },
+  { term: 'Stallions Stalemate',  def: 'The top 2 scorers of the GW drawing.' },
+  { term: 'The Ream',             def: 'Picking an insanely poor first waiver.' },
+  { term: 'The Sancho',           def: 'Terrible first draft pick.' },
+  { term: 'La Decima',            def: 'The first to win 10 game weeks in a season.' },
+  { term: 'The Golden Circuit',   def: 'Defeating all other seven managers consecutively.' },
+  { term: 'La Gran Vergüenza',    def: 'Losing to all other seven managers consecutively.' },
+  { term: 'Box Office',           def: 'Michael Alan Sutton and his ability to mince through life while consistently meeting the highest levels of glory.' },
+  { term: 'Grumpy Goodacre',      def: "Declaring your chances in a GW over when they're clearly not." },
+  { term: 'Dr Ward',              def: 'Declaring a player heading off injured in a wildly incorrect manner.' },
+  { term: 'TTAT',                 def: 'Tery Talks About Tery — when Webster pops up to chime in about his own team in spite of the chatter at the time.' },
 ]
 
 /**
@@ -284,31 +294,25 @@ export function LeagueInfoModal({
             )}
           </div>
 
-          {/* 4 · About TCLOT */}
-          <div className="li-card li-card--blurb">
+          {/* 4 · TCLOT Terminology — league-canon glossary. Replaces the
+              earlier placeholder About + Fast Facts cards. Each entry is
+              a `<dl>` row with the term in gold Cinzel italic and the
+              definition flowing in prose alongside (desktop) or stacked
+              below (mobile). */}
+          <div className="li-card li-card--terminology">
             <span className="li-card__quote-mark" aria-hidden>&ldquo;</span>
-            <div className="li-card__eyebrow">About TCLOT</div>
-            {/* TODO: replace with actual league lore copy */}
-            <p className="li-blurb">{LEAGUE_BLURB}</p>
-          </div>
-
-          {/* 5 · Fast Facts
-              TODO: source from league records (founding season, format,
-              trade rules, waiver rules) — placeholder copy mirrors the
-              mockup until a single source of truth is wired up. */}
-          <div className="li-card li-card--facts">
-            <div className="li-card__eyebrow">Fast Facts</div>
-            <div className="li-facts-grid">
-              {LEAGUE_FACTS.map((f) => (
-                <div className="li-fact" key={f.label}>
-                  <div className="li-fact__label">{f.label}</div>
-                  <div className="li-fact__value">{f.value}</div>
+            <div className="li-card__eyebrow">TCLOT Terminology</div>
+            <dl className="li-terms">
+              {TCLOT_TERMS.map((t) => (
+                <div className="li-term" key={t.term}>
+                  <dt className="li-term__name">{t.term}</dt>
+                  <dd className="li-term__def">{t.def}</dd>
                 </div>
               ))}
-            </div>
+            </dl>
           </div>
 
-          {/* 6 · Appearance toggle — drives the existing themePref
+          {/* 5 · Appearance toggle — drives the existing themePref
               state in App.jsx. The same theme system that's already
               wired into the standalone Settings route, just surfaced
               with the LP-C segmented-pill chrome. */}
@@ -341,7 +345,7 @@ export function LeagueInfoModal({
             </div>
           </div>
 
-          {/* 7 · Settings — shared with the standalone /settings route
+          {/* 6 · Settings — shared with the standalone /settings route
               via the `<SettingsPanelBody>` extracted in this commit so
               the two surfaces never drift. */}
           <div className="li-card li-card--settings">
@@ -354,7 +358,7 @@ export function LeagueInfoModal({
             />
           </div>
 
-          {/* 8 · Footer */}
+          {/* 7 · Footer */}
           <div className="li-footer">
             TCLOT · 2025/26 ·{' '}
             <span className="league-info-modal__footer-version">
