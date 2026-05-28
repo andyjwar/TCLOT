@@ -4176,6 +4176,14 @@ function App() {
       <LeagueInfoModal
         open={leagueInfoOpen}
         onClose={() => setLeagueInfoOpen(false)}
+        leagueEntries={leagueEntries}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+        gw={liveGameweek}
+        themePref={themePref}
+        onThemePrefChange={setThemePref}
+        defaultTab={defaultTabPref}
+        onDefaultTabChange={setDefaultTabPref}
       />
       <footer className="page-footer--script">Tery is a Racist</footer>
     </div>

@@ -1,25 +1,39 @@
-/* LeagueInfoModal — production modal shell. Inherits the `.li-modal`
- * + `.li-card` visual atoms from Mockup.css (kept centrally so the
- * design exploration and production stay visually aligned). This file
- * carries only the *production-specific* delta from the inline mockup
- * preview: full-viewport portal, position:fixed shell, real-world
- * mobile sheet behaviour at ≤720px, and z-index that clears the
- * brand-header strip.
+/**
+ * LeagueInfoModal — LP-C sectioned-card layout, portaled to
+ * `document.body`.
+ *
+ * Two structural concerns are handled here:
+ *
+ *  1. **Token mirroring.** The modal is portaled onto `document.body`,
+ *     outside the `.app.fotmob` ancestor where the design-token
+ *     variables (`--surface`, `--brand`, `--space-*`, …) are defined.
+ *     We therefore mirror the full token set on
+ *     `.league-info-modal-shell` so the cascade keeps working in the
+ *     portal context — same pattern as `.live-player-slide` in
+ *     `App.css`. Light-mode overrides hang off
+ *     `body[data-tclot-theme='light']` (set in App.jsx via the
+ *     `useLayoutEffect` block that mirrors the theme onto <body>).
+ *
+ *  2. **Self-contained `.li-*` ports.** The `.li-modal`, `.li-card`,
+ *     `.li-hero`, `.li-badges-grid`, `.li-managers-list`, `.li-blurb`,
+ *     `.li-facts-grid`, `.li-appearance`, and `.li-footer` rules
+ *     originate in `Mockup.css`, but that stylesheet is only loaded
+ *     when the user hits the standalone mockup route. To keep the
+ *     production modal self-sufficient we re-declare just the bits we
+ *     use, scoped under `.league-info-modal-shell` so they never
+ *     collide with the mockup page when both are loaded in the same
+ *     session.
  */
 
-/* Portal mounts on document.body (outside `.app.fotmob`) — must
- * supply the full design-token set used by the LP-C `.li-modal` +
- * `.li-card` atoms imported from Mockup.css, otherwise tokens like
- * `var(--surface)` / `var(--brand)` resolve to empty and the modal
- * paints transparent. Same pattern as `.live-player-slide` in
- * App.css. Dark is the default; light overrides follow below. */
 .league-info-modal-shell {
+  /* ---- spacing / sizing tokens ----------------------------------- */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
   --space-4: 16px;
   --space-5: 20px;
   --space-6: 24px;
+
   --text-xs: 11px;
   --text-sm: 13px;
   --text-md: 14px;
@@ -29,18 +43,20 @@
   --lh-md: 20px;
   --lh-lg: 22px;
   --lh-xl: 26px;
+
   --r-sm: 6px;
   --r-md: 10px;
   --r-lg: 14px;
   --r-circle: 999px;
+
   --ease: cubic-bezier(0.32, 0.72, 0, 1);
   --dur-fast: 120ms;
   --dur-base: 200ms;
   --dur-md: 240ms;
-  --brand: #795bfb;
-  --data-positive: #12a15a;
 
-  /* Dark defaults — mirror `:root .fotmob` */
+  --brand: #795bfb;
+
+  /* ---- dark defaults — mirror `:root .fotmob` --------------------- */
   --surface: #14141a;
   --surface-2: #1c1c24;
   --border: #2a2a35;
@@ -56,9 +72,9 @@
   animation: league-info-modal-fade-in var(--dur-base) var(--ease);
 }
 
-/* Light theme — App.jsx writes `data-tclot-theme` on <body> for the
- * portal context (see `useLayoutEffect` block in App.jsx around
- * `document.body.dataset.tclotTheme = colorTheme`). */
+/* Light theme — App.jsx mirrors `themePref` onto `<body>` as
+ * `data-tclot-theme` so portal-rendered components like this one can
+ * theme themselves outside `.app.fotmob`. */
 body[data-tclot-theme='light'] .league-info-modal-shell {
   --surface: #ffffff;
   --surface-2: #f1f1f5;
@@ -73,11 +89,9 @@ body[data-tclot-theme='light'] .league-info-modal-shell {
   to { opacity: 1; }
 }
 
-/* Desktop default: centered floating card. We re-anchor the mockup's
- * `.li-modal` absolute centering to the new fixed shell. Selector is
- * scoped under `.league-info-modal-shell` to win specificity against
- * the Mockup.css rules and the `[data-theme='light'] .li-modal`
- * theme override (both `(0,1,0)` and `(0,2,0)` respectively). */
+/* ==================================================================
+ * Modal shell — desktop centered, mobile full-sheet
+ * ================================================================== */
 .league-info-modal-shell .league-info-modal {
   position: absolute;
   top: 50%;
@@ -89,56 +103,493 @@ body[data-tclot-theme='light'] .league-info-modal-shell {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.45),
+    0 4px 12px rgba(0, 0, 0, 0.30);
+  box-sizing: border-box;
   animation: league-info-modal-rise var(--dur-md) var(--ease);
 }
 
 @keyframes league-info-modal-rise {
-  from { opacity: 0; transform: translate(-50%, calc(-50% + 6px)) scale(0.985); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 12px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
 }
 
-/* Mobile: edge-to-edge full-screen sheet at ≤720px. */
+/* ==================================================================
+ * Close button
+ * ================================================================== */
+.league-info-modal-shell .li-modal__close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  appearance: none;
+  background: color-mix(in srgb, var(--surface-2) 70%, transparent);
+  border: 1px solid var(--border);
+  color: var(--text);
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-circle);
+  font-size: 22px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  z-index: 2;
+  transition: background var(--dur-fast) var(--ease), transform var(--dur-fast) var(--ease);
+}
+.league-info-modal-shell .li-modal__close:hover {
+  background: var(--surface-2);
+}
+.league-info-modal-shell .li-modal__close:active {
+  transform: translateY(1px);
+}
+.league-info-modal-shell .li-modal__close:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ==================================================================
+ * Body — scrollable, padded
+ * ================================================================== */
+.league-info-modal-shell .li-modal__body {
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.league-info-modal-shell .li-modal__body--scroll {
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.league-info-modal-shell .li-modal__body--scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.league-info-modal-shell .li-modal__body--scroll::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+}
+
+/* ==================================================================
+ * LP-C themed shell — purple radial top, gradient base
+ * ================================================================== */
+.league-info-modal-shell .li-modal--lp-c {
+  background:
+    radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--brand) 22%, transparent), transparent 70%),
+    linear-gradient(180deg, #1a1626 0%, #14121d 100%);
+  border-color: color-mix(in srgb, var(--brand) 24%, var(--border));
+}
+body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
+  background:
+    radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--brand) 14%, transparent), transparent 70%),
+    linear-gradient(180deg, #f4f1fb 0%, #ece8f6 100%);
+  border-color: color-mix(in srgb, var(--brand) 20%, var(--border));
+}
+
+/* ==================================================================
+ * Card primitive
+ * ================================================================== */
+.league-info-modal-shell .li-card {
+  position: relative;
+  background: color-mix(in srgb, var(--surface) 92%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  border-radius: var(--r-md);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  backdrop-filter: blur(2px);
+}
+.league-info-modal-shell .li-card__eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* ==================================================================
+ * Hero card
+ * ================================================================== */
+.league-info-modal-shell .li-card--hero {
+  padding: var(--space-5);
+  align-items: center;
+  text-align: center;
+  background:
+    radial-gradient(80% 80% at 50% 0%, rgba(241, 196, 59, 0.18), transparent 70%),
+    color-mix(in srgb, var(--surface) 92%, transparent);
+  border-color: color-mix(in srgb, #f1c43b 30%, var(--border));
+}
+.league-info-modal-shell .li-hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  text-align: center;
+  padding: 0;
+}
+.league-info-modal-shell .li-hero__crest {
+  width: 104px;
+  height: 104px;
+  border-radius: var(--r-circle);
+  background:
+    radial-gradient(60% 60% at 50% 35%, rgba(255, 220, 120, 0.30), transparent 70%),
+    var(--surface-2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, #f1c43b 35%, transparent),
+    0 4px 14px rgba(241, 196, 59, 0.18);
+  margin-bottom: var(--space-1);
+}
+.league-info-modal-shell .li-hero__name {
+  margin: 0;
+  font-size: 26px;
+  line-height: 32px;
+  font-weight: 700;
+  color: var(--text-strong);
+  letter-spacing: -0.01em;
+  font-family: 'Cinzel', 'Geist', serif;
+}
+.league-info-modal-shell .league-info-modal__season {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.league-info-modal-shell .li-hero__tagline {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  line-height: var(--lh-sm);
+  color: var(--text-muted);
+  font-style: italic;
+  font-family: 'Geist', serif;
+}
+
+/* ==================================================================
+ * Badges grid (LP-C: 2-up on desktop, 4-up on mobile)
+ * ================================================================== */
+.league-info-modal-shell .li-badges-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.league-info-modal-shell .li-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.league-info-modal-shell .league-info-modal__badge-crest {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--r-circle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+  overflow: hidden;
+  background: var(--surface-2);
+}
+.league-info-modal-shell .li-badge__name {
+  font-size: 11px;
+  line-height: 1.25;
+  text-align: center;
+  color: var(--text);
+  letter-spacing: -0.005em;
+  word-break: break-word;
+}
+
+/* ==================================================================
+ * Managers list
+ * ================================================================== */
+.league-info-modal-shell .li-managers-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.league-info-modal-shell .li-mgr-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 8px 0;
+}
+.league-info-modal-shell .li-mgr-row + .li-mgr-row {
+  border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+.league-info-modal-shell .league-info-modal__mgr-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--r-circle);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-2);
+  flex: 0 0 auto;
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10);
+}
+.league-info-modal-shell .li-mgr-row__body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 auto;
+}
+.league-info-modal-shell .li-mgr-row__name {
+  font-size: var(--text-md);
+  line-height: 1.2;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.league-info-modal-shell .li-mgr-row__descriptor {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  letter-spacing: 0.005em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.league-info-modal-shell .li-mgr-row__initials {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================
+ * Blurb (About TCLOT)
+ * ================================================================== */
+.league-info-modal-shell .li-card--blurb {
+  padding-left: var(--space-5);
+}
+.league-info-modal-shell .li-card__quote-mark {
+  position: absolute;
+  top: -4px;
+  left: 6px;
+  font-family: 'Cinzel', serif;
+  font-size: 46px;
+  line-height: 1;
+  color: color-mix(in srgb, #f1c43b 75%, transparent);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.league-info-modal-shell .li-blurb {
+  margin: 0;
+  font-family: 'Cinzel', 'Geist', serif;
+  font-style: italic;
+  font-size: var(--text-md);
+  line-height: 1.55;
+  color: var(--text);
+  letter-spacing: 0.005em;
+}
+
+/* ==================================================================
+ * Fast Facts
+ * ================================================================== */
+.league-info-modal-shell .li-facts-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+.league-info-modal-shell .li-fact {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--space-3);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  min-width: 0;
+}
+.league-info-modal-shell .li-fact__label {
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+.league-info-modal-shell .li-fact__value {
+  font-size: var(--text-md);
+  line-height: 1.25;
+  color: var(--text-strong);
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ==================================================================
+ * Appearance segmented pill
+ * ================================================================== */
+.league-info-modal-shell .li-appearance {
+  display: inline-flex;
+  align-items: stretch;
+  padding: 3px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  width: fit-content;
+  gap: 2px;
+}
+.league-info-modal-shell .li-appearance__opt {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+.league-info-modal-shell .li-appearance__opt:hover {
+  color: var(--text);
+}
+.league-info-modal-shell .li-appearance__opt.is-active {
+  background: var(--surface);
+  color: var(--text-strong);
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.20);
+}
+.league-info-modal-shell .li-appearance__opt:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+}
+
+/* ==================================================================
+ * Settings card — overrides for the embedded SettingsPanelBody so it
+ * sits flush inside the LP-C card chrome.
+ *
+ * The standalone tile applies `.settings-card` styles via App.css; we
+ * re-shape it to match the LP-C card aesthetic and override `.tile`
+ * leakage.
+ * ================================================================== */
+.league-info-modal-shell .li-card--settings .settings-card {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.league-info-modal-shell .li-card--settings .settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: 8px 0;
+}
+.league-info-modal-shell .li-card--settings .settings-row + .settings-row {
+  border-top: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+}
+.league-info-modal-shell .li-card--settings .settings-row__label {
+  font-size: var(--text-md);
+  color: var(--text);
+}
+
+/* ==================================================================
+ * Footer
+ * ================================================================== */
+.league-info-modal-shell .li-footer {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  text-align: center;
+  padding: var(--space-2) 0 var(--space-1);
+  letter-spacing: 0.02em;
+}
+.league-info-modal-shell .league-info-modal__footer-version {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: 'tnum';
+}
+
+.league-info-modal-shell .league-info-modal__placeholder {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* ==================================================================
+ * Mobile sheet (≤720px) — full-screen, no horizontal padding chrome
+ * ================================================================== */
 @media (max-width: 720px) {
   .league-info-modal-shell .league-info-modal {
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    max-height: 100%;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
-    width: auto;
-    max-width: none;
-    max-height: none;
     transform: none;
     border-radius: 0;
-    border-left: 0;
-    border-right: 0;
+    border: 0;
     animation: league-info-modal-rise-mobile var(--dur-md) var(--ease);
+  }
+  .league-info-modal-shell .li-modal__close {
+    top: 12px;
+    right: 12px;
+  }
+  .league-info-modal-shell .li-modal__body {
+    padding: var(--space-3);
+    padding-top: var(--space-5);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + var(--space-4));
+    gap: var(--space-3);
+  }
+  .league-info-modal-shell .li-card {
+    padding: var(--space-3);
+  }
+  .league-info-modal-shell .li-card--hero {
+    padding: var(--space-4);
+  }
+  .league-info-modal-shell .li-hero__crest {
+    width: 88px;
+    height: 88px;
+  }
+  .league-info-modal-shell .li-hero__name {
+    font-size: 22px;
+    line-height: 26px;
+  }
+  .league-info-modal-shell .li-mgr-row__name {
+    font-size: var(--text-sm);
+  }
+  /* LP-C on mobile: badges go to 4-wide so the row reads at a glance. */
+  .league-info-modal-shell .li-card--badges .li-badges-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
 @keyframes league-info-modal-rise-mobile {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* Close button — production override to sit above the scroll body and
- * pick up the LP-C dark hero background. Reuses `.li-modal__close`
- * sizing/iconography from Mockup.css. */
-.league-info-modal__close {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 3;
-  background: rgba(0, 0, 0, 0.35);
-  border-color: rgba(255, 255, 255, 0.18);
-  color: #ffffff;
-}
-.league-info-modal__close:hover {
-  background: rgba(0, 0, 0, 0.50);
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .league-info-modal-shell,
-  .league-info-modal {
+  .league-info-modal-shell .league-info-modal {
     animation: none;
   }
 }
