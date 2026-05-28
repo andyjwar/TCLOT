@@ -9115,6 +9115,506 @@ function CocLiveAlgoToggle({ style: mode = 'heatmap' }) {
 }
 
 /* ------------------------------------------------------------------ */
+/* CHAMPIONS OF CHAMPIONS · LOCKED (Tab 3)                              */
+/* ------------------------------------------------------------------ */
+/* Locked spec: two views behind a Live ⇄ Algorithm pill.
+ *  · Live cumulative — manager-anchored career totals across all 6
+ *    completed/in-progress seasons (228 H2H matches per manager).
+ *    11 sortable columns; default sort is PTS desc.
+ *  · Algorithm matrix — finishing position per season translated to
+ *    8-7-6-5-4-3-2-1 (1st = 8 pts ... 8th = 1 pt). Heatmap-tinted
+ *    cells reuse the same .merged-history-timeline__card pos-* tints
+ *    as TH-D so the cumulative story reads consistently with Team
+ *    History. Default sort is TOTAL desc.
+ *
+ * Mock data is user-provided (W+D+L = 228 per manager, PTS = 3W+1D).
+ * Manager keys align with MERGED_MGR_KEYS / MERGED_MGR_META so the
+ * crests and tints can be looked up directly. */
+const HOF_COC_LIVE_ROWS = [
+  { mgr: 'Andy',   seasons: 6, w: 110, d: 48, l: 70, gf: 10335, ga: 9852,  pts: 378, titles: 1, last: 0, avgRank: 3.83 },
+  { mgr: 'Nick M', seasons: 6, w: 100, d: 56, l: 72, gf: 10445, ga: 10110, pts: 356, titles: 2, last: 0, avgRank: 3.33 },
+  { mgr: 'Luke',   seasons: 6, w: 100, d: 55, l: 73, gf: 10252, ga: 10005, pts: 355, titles: 1, last: 1, avgRank: 3.83 },
+  { mgr: 'Mike',   seasons: 6, w: 98,  d: 54, l: 76, gf: 9752,  ga: 10412, pts: 348, titles: 1, last: 1, avgRank: 4.67 },
+  { mgr: 'David',  seasons: 6, w: 98,  d: 53, l: 77, gf: 10316, ga: 9985,  pts: 347, titles: 1, last: 0, avgRank: 3.50 },
+  { mgr: 'Nick G', seasons: 6, w: 92,  d: 50, l: 86, gf: 10301, ga: 10287, pts: 326, titles: 0, last: 0, avgRank: 4.67 },
+  { mgr: 'Eddy',   seasons: 6, w: 88,  d: 47, l: 93, gf: 9685,  ga: 10688, pts: 311, titles: 0, last: 1, avgRank: 5.67 },
+  { mgr: 'Jon',    seasons: 6, w: 80,  d: 50, l: 98, gf: 9934,  ga: 10198, pts: 290, titles: 0, last: 3, avgRank: 6.50 },
+]
+
+/* Full column set for the desktop Live cumulative table — keyed so the
+ * sortable header component can reach into HOF_COC_LIVE_ROWS without
+ * duplicating field metadata. `numeric: false` flips the sort to
+ * ascending-first (alphabetical for MANAGER). */
+const HOF_COC_LIVE_COLUMNS = [
+  { key: 'mgr',     label: 'Manager',      numeric: false, align: 'left',  className: 'hof-coc-live__th-mgr' },
+  { key: 'seasons', label: 'Seasons',      numeric: true,  align: 'right' },
+  { key: 'w',       label: 'W',            numeric: true,  align: 'right' },
+  { key: 'd',       label: 'D',            numeric: true,  align: 'right' },
+  { key: 'l',       label: 'L',            numeric: true,  align: 'right' },
+  { key: 'gf',      label: 'For',          numeric: true,  align: 'right' },
+  { key: 'ga',      label: 'Faced',        numeric: true,  align: 'right' },
+  { key: 'pts',     label: 'Pts',          numeric: true,  align: 'right', className: 'hof-coc-live__th-pts' },
+  { key: 'titles',  label: 'Titles',       numeric: true,  align: 'right' },
+  { key: 'last',    label: 'Last',         numeric: true,  align: 'right' },
+  { key: 'avgRank', label: 'Average rank', numeric: true,  align: 'right', formatter: (v) => v.toFixed(2) },
+]
+
+/* Subset rendered on mobile by default — primary career-impact stats.
+ * Tapping a row reveals the full per-manager block (the other 6 stats
+ * stacked as a mini grid). Matches the Standings A–E "tap row to
+ * expand" pattern. */
+const HOF_COC_LIVE_MOBILE_COLUMNS = ['mgr', 'pts', 'titles', 'last', 'avgRank']
+
+function cocLiveMgrCrest(mgr) {
+  const meta = MERGED_MGR_META[mgr]
+  if (!meta) {
+    return (
+      <span className="hof-coc-live__crest" style={{ background: 'var(--surface-2)' }}>
+        ?
+      </span>
+    )
+  }
+  return (
+    <span
+      className="hof-coc-live__crest"
+      style={{ background: meta.color }}
+      title={meta.fullName}
+    >
+      {meta.initials}
+    </span>
+  )
+}
+
+function sortCocLiveRows(rows, sort) {
+  if (!sort) return rows
+  const col = HOF_COC_LIVE_COLUMNS.find((c) => c.key === sort.key)
+  if (!col) return rows
+  const dir = sort.dir === 'asc' ? 1 : -1
+  const arr = [...rows]
+  arr.sort((a, b) => {
+    const av = a[col.key]
+    const bv = b[col.key]
+    if (col.numeric) return (av - bv) * dir
+    return String(av).localeCompare(String(bv)) * dir
+  })
+  return arr
+}
+
+/* Sortable column header — chevron treatment matches StandingsSortTh
+ * (inactive ↕, active ↑/↓ tinted brand). Header is a button so the
+ * sort affordance is obvious at the keyboard layer too. */
+function CocLiveSortTh({ col, sort, onSort }) {
+  const active = sort?.key === col.key
+  const dir = active ? sort.dir : null
+  let arrowGlyph = '↕'
+  let arrowClass = 'hof-coc-live__sort-arrow'
+  if (active) {
+    arrowGlyph = dir === 'asc' ? '↑' : '↓'
+    arrowClass += ' hof-coc-live__sort-arrow--active hof-coc-live__sort-arrow--' + dir
+  }
+  const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined
+  return (
+    <th
+      scope="col"
+      className={
+        'hof-coc-live__th hof-coc-live__th--' + col.align +
+        (col.className ? ' ' + col.className : '') +
+        (active ? ' is-active' : '')
+      }
+      aria-sort={ariaSort}
+    >
+      <button
+        type="button"
+        className="hof-coc-live__sort-btn"
+        onClick={() => onSort(col.key)}
+        aria-label={
+          active
+            ? `${col.label}: sorted ${dir === 'asc' ? 'low to high' : 'high to low'}. Click to reverse.`
+            : `Sort by ${col.label}`
+        }
+      >
+        <span className="hof-coc-live__sort-label">{col.label}</span>
+        <span className={arrowClass} aria-hidden>{arrowGlyph}</span>
+      </button>
+    </th>
+  )
+}
+
+/* Desktop · Live cumulative table.
+ * 11 sortable columns. Default sort = PTS desc (chevron-down). */
+function CocLiveCumulativeTable() {
+  const [sort, setSort] = useState({ key: 'pts', dir: 'desc' })
+  const rows = sortCocLiveRows(HOF_COC_LIVE_ROWS, sort)
+  const handleSort = (key) => {
+    setSort((prev) => {
+      if (prev?.key === key) {
+        return { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+      }
+      const col = HOF_COC_LIVE_COLUMNS.find((c) => c.key === key)
+      const defaultDir = col?.numeric ? 'desc' : 'asc'
+      return { key, dir: defaultDir }
+    })
+  }
+  return (
+    <div className="hof-coc-live">
+      <div className="hof-coc-live__subhead">
+        Includes current 25/26 season · 6 historic seasons · 228 H2H matches per manager
+      </div>
+      <div className="hof-coc-live__scroll">
+        <table className="hof-coc-live__table">
+          <thead>
+            <tr>
+              {HOF_COC_LIVE_COLUMNS.map((col) => (
+                <CocLiveSortTh
+                  key={col.key}
+                  col={col}
+                  sort={sort}
+                  onSort={handleSort}
+                />
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.mgr}>
+                {HOF_COC_LIVE_COLUMNS.map((col) => {
+                  const isMgr = col.key === 'mgr'
+                  const isPts = col.key === 'pts'
+                  const raw = row[col.key]
+                  const display = col.formatter ? col.formatter(raw) : raw
+                  return (
+                    <td
+                      key={col.key}
+                      className={
+                        'hof-coc-live__td hof-coc-live__td--' + col.align +
+                        (isMgr ? ' hof-coc-live__td-mgr' : '') +
+                        (isPts ? ' hof-coc-live__td-pts' : '') +
+                        (sort?.key === col.key ? ' is-active' : '')
+                      }
+                    >
+                      {isMgr ? (
+                        <span className="hof-coc-live__mgr-cell">
+                          {cocLiveMgrCrest(row.mgr)}
+                          <span className="hof-coc-live__mgr-name">{row.mgr}</span>
+                        </span>
+                      ) : display}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* Mobile · Live cumulative subset. Shows 5 columns by default; tapping
+ * a row expands an inline mini-grid with the other 6 stats. The first
+ * row is rendered expanded so the user sees both states at once. */
+function CocLiveMobileSubset() {
+  const [openMgr, setOpenMgr] = useState(HOF_COC_LIVE_ROWS[0].mgr)
+  const rows = HOF_COC_LIVE_ROWS
+  const subset = HOF_COC_LIVE_COLUMNS.filter((c) => HOF_COC_LIVE_MOBILE_COLUMNS.includes(c.key))
+  return (
+    <div className="hof-coc-live-mob">
+      <div className="hof-coc-live-mob__head">
+        <div className="hof-coc-live-mob__title">Champions of Champions</div>
+        <div className="hof-coc-live-mob__sub">All-seasons cumulative · sort by Pts ↓</div>
+      </div>
+      <div className="hof-coc-live-mob__list">
+        <div className="hof-coc-live-mob__col-head">
+          {subset.map((col) => (
+            <span
+              key={col.key}
+              className={
+                'hof-coc-live-mob__col-h hof-coc-live-mob__col-h--' + col.key +
+                (col.key === 'pts' ? ' is-pts' : '')
+              }
+            >
+              {col.key === 'avgRank' ? 'Avg' : col.label}
+              {col.key === 'pts' && <span className="hof-coc-live-mob__chev" aria-hidden>↓</span>}
+            </span>
+          ))}
+        </div>
+        {rows.map((row) => {
+          const isOpen = openMgr === row.mgr
+          return (
+            <div key={row.mgr} className={'hof-coc-live-mob__item' + (isOpen ? ' is-open' : '')}>
+              <button
+                type="button"
+                className="hof-coc-live-mob__row"
+                aria-expanded={isOpen}
+                onClick={() => setOpenMgr(isOpen ? null : row.mgr)}
+              >
+                <span className="hof-coc-live-mob__cell hof-coc-live-mob__cell--mgr">
+                  {cocLiveMgrCrest(row.mgr)}
+                  <span className="hof-coc-live-mob__mgr-name">{row.mgr}</span>
+                </span>
+                <span className="hof-coc-live-mob__cell hof-coc-live-mob__cell--pts">{row.pts}</span>
+                <span className="hof-coc-live-mob__cell hof-coc-live-mob__cell--titles">{row.titles}</span>
+                <span className="hof-coc-live-mob__cell hof-coc-live-mob__cell--last">{row.last}</span>
+                <span className="hof-coc-live-mob__cell hof-coc-live-mob__cell--avg">{row.avgRank.toFixed(2)}</span>
+                <span
+                  className="hof-coc-live-mob__chevron"
+                  aria-hidden
+                  style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                >
+                  ›
+                </span>
+              </button>
+              {isOpen && (
+                <dl className="hof-coc-live-mob__expand">
+                  <div className="hof-coc-live-mob__expand-pair">
+                    <dt>Seasons</dt><dd>{row.seasons}</dd>
+                  </div>
+                  <div className="hof-coc-live-mob__expand-pair">
+                    <dt>W</dt><dd>{row.w}</dd>
+                  </div>
+                  <div className="hof-coc-live-mob__expand-pair">
+                    <dt>D</dt><dd>{row.d}</dd>
+                  </div>
+                  <div className="hof-coc-live-mob__expand-pair">
+                    <dt>L</dt><dd>{row.l}</dd>
+                  </div>
+                  <div className="hof-coc-live-mob__expand-pair">
+                    <dt>For</dt><dd>{row.gf.toLocaleString()}</dd>
+                  </div>
+                  <div className="hof-coc-live-mob__expand-pair">
+                    <dt>Faced</dt><dd>{row.ga.toLocaleString()}</dd>
+                  </div>
+                </dl>
+              )}
+            </div>
+          )
+        })}
+      </div>
+      <div className="hof-coc-live-mob__note">
+        Tap a manager to expand the full stat block.
+      </div>
+    </div>
+  )
+}
+
+/* Build the per-season algorithm-score rows from MERGED_HISTORY so the
+ * matrix stays in lockstep with TH-D's finishing positions. Each cell
+ * = 9 - rank (1st = 8 ... 8th = 1, missing season = 0). Total = sum
+ * across the 6 seasons. Sorted by Total desc by default. */
+function buildCocAlgoRows() {
+  return MERGED_HISTORY.map((row) => {
+    const scores = MERGED_SEASONS.map((season) => {
+      const entry = row.seasons.find((s) => s.season === season)
+      return entry?.rank ? 9 - entry.rank : 0
+    })
+    const ranks = MERGED_SEASONS.map((season) => {
+      const entry = row.seasons.find((s) => s.season === season)
+      return entry?.rank ?? null
+    })
+    const total = scores.reduce((s, v) => s + v, 0)
+    return { mgr: row.key, meta: row.meta, scores, ranks, total }
+  })
+}
+
+function sortCocAlgoRows(rows, sort) {
+  if (!sort) return rows
+  const arr = [...rows]
+  const dir = sort.dir === 'asc' ? 1 : -1
+  if (sort.key === 'mgr') {
+    arr.sort((a, b) => a.mgr.localeCompare(b.mgr) * dir)
+    return arr
+  }
+  if (sort.key === 'total') {
+    arr.sort((a, b) => (a.total - b.total) * dir)
+    return arr
+  }
+  /* Per-season sort: key is the season label string. */
+  const idx = MERGED_SEASONS.indexOf(sort.key)
+  if (idx === -1) return arr
+  arr.sort((a, b) => (a.scores[idx] - b.scores[idx]) * dir)
+  return arr
+}
+
+/* Desktop · Algorithm matrix.
+ * 8 columns (manager + 6 seasons + total). Season cells reuse the
+ * TH-D pos-* tints (gold for 1st ... red for 8th). */
+function CocAlgorithmMatrix() {
+  const [sort, setSort] = useState({ key: 'total', dir: 'desc' })
+  const rows = sortCocAlgoRows(buildCocAlgoRows(), sort)
+  const handleSort = (key) => {
+    setSort((prev) => {
+      if (prev?.key === key) {
+        return { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
+      }
+      const defaultDir = key === 'mgr' ? 'asc' : 'desc'
+      return { key, dir: defaultDir }
+    })
+  }
+  const arrowFor = (key) => {
+    const active = sort?.key === key
+    if (!active) return { glyph: '↕', cls: 'hof-coc-live__sort-arrow' }
+    const dir = sort.dir
+    return {
+      glyph: dir === 'asc' ? '↑' : '↓',
+      cls: 'hof-coc-live__sort-arrow hof-coc-live__sort-arrow--active hof-coc-live__sort-arrow--' + dir,
+    }
+  }
+  return (
+    <div className="hof-coc-algo">
+      <div className="hof-coc-algo__subhead">
+        Algorithm: 8 pts for 1st · 7 for 2nd · 6 for 3rd · … · 1 for 8th. Sum across all seasons.
+      </div>
+      <div className="hof-coc-algo__scroll">
+        <table className="hof-coc-algo__table">
+          <thead>
+            <tr>
+              <th scope="col" className={'hof-coc-algo__th hof-coc-algo__th-mgr' + (sort?.key === 'mgr' ? ' is-active' : '')}>
+                <button type="button" className="hof-coc-live__sort-btn" onClick={() => handleSort('mgr')}>
+                  <span className="hof-coc-live__sort-label">Manager</span>
+                  <span className={arrowFor('mgr').cls} aria-hidden>{arrowFor('mgr').glyph}</span>
+                </button>
+              </th>
+              {MERGED_SEASONS.map((season) => (
+                <th
+                  key={season}
+                  scope="col"
+                  className={'hof-coc-algo__th hof-coc-algo__th-season' + (sort?.key === season ? ' is-active' : '')}
+                >
+                  <button type="button" className="hof-coc-live__sort-btn" onClick={() => handleSort(season)}>
+                    <span className="hof-coc-live__sort-label">{season}</span>
+                    <span className={arrowFor(season).cls} aria-hidden>{arrowFor(season).glyph}</span>
+                  </button>
+                </th>
+              ))}
+              <th scope="col" className={'hof-coc-algo__th hof-coc-algo__th-total' + (sort?.key === 'total' ? ' is-active' : '')}>
+                <button type="button" className="hof-coc-live__sort-btn" onClick={() => handleSort('total')}>
+                  <span className="hof-coc-live__sort-label">Total</span>
+                  <span className={arrowFor('total').cls} aria-hidden>{arrowFor('total').glyph}</span>
+                </button>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row) => (
+              <tr key={row.mgr}>
+                <td className="hof-coc-algo__td hof-coc-algo__td-mgr">
+                  <span className="hof-coc-live__mgr-cell">
+                    {cocLiveMgrCrest(row.mgr)}
+                    <span className="hof-coc-live__mgr-name">{row.mgr}</span>
+                  </span>
+                </td>
+                {row.scores.map((score, i) => {
+                  const rank = row.ranks[i]
+                  return (
+                    <td
+                      key={MERGED_SEASONS[i]}
+                      className={'hof-coc-algo__td hof-coc-algo__td-cell ' + mergedCellPosClass(rank)}
+                      title={rank ? `Finished ${rank} → ${score} pts` : '—'}
+                    >
+                      {score || '—'}
+                    </td>
+                  )
+                })}
+                <td className="hof-coc-algo__td hof-coc-algo__td-total">
+                  <strong>{row.total}</strong>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* Mobile · Algorithm matrix.
+ *   manager (96px) + 6 seasons × 32px + TOTAL (48px) = 336px
+ * — fits a 360px viewport with 12px padding. Same heatmap tints as
+ * desktop, just compressed cell sizing. */
+function CocAlgoMobileMatrix() {
+  const rows = sortCocAlgoRows(buildCocAlgoRows(), { key: 'total', dir: 'desc' })
+  return (
+    <div className="hof-coc-algo-mob">
+      <div className="hof-coc-algo-mob__head">
+        <div className="hof-coc-algo-mob__title">Algorithm · 8-7-6-5-4-3-2-1</div>
+        <div className="hof-coc-algo-mob__sub">
+          1st = 8 · 8th = 1 · Sum across seasons
+        </div>
+      </div>
+      <table className="hof-coc-algo-mob__table">
+        <thead>
+          <tr>
+            <th className="hof-coc-algo-mob__th-mgr">Mgr</th>
+            {MERGED_SEASONS.map((season) => {
+              const short = season.replace('/', '/')
+              return <th key={season} className="hof-coc-algo-mob__th-season">{short}</th>
+            })}
+            <th className="hof-coc-algo-mob__th-total">Tot</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.mgr}>
+              <td className="hof-coc-algo-mob__td-mgr">
+                <span className="hof-coc-algo-mob__crest" style={{ background: row.meta.color }}>
+                  {row.meta.initials}
+                </span>
+              </td>
+              {row.scores.map((score, i) => {
+                const rank = row.ranks[i]
+                return (
+                  <td
+                    key={MERGED_SEASONS[i]}
+                    className={'hof-coc-algo-mob__cell ' + mergedCellPosClass(rank)}
+                  >
+                    {score || '—'}
+                  </td>
+                )
+              })}
+              <td className="hof-coc-algo-mob__td-total">
+                <strong>{row.total}</strong>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* Top-of-section view toggle pill — Live (default) ⇄ Algorithm.
+ * Stateless: the toggle is mocked side-by-side with both views below
+ * so the user can see each locked state. Each frame in the section
+ * renders this pill with the relevant button active. */
+function CocLockedToggle({ active = 'live' }) {
+  return (
+    <div className="hof-coc-toggle hof-coc-locked-toggle">
+      <div className="hof-coc-toggle__row">
+        <span className="hof-coc-toggle__label">View</span>
+        <div className="hof-coc-toggle__seg" role="tablist" aria-label="Champions of Champions view">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={active === 'live'}
+            className={'hof-coc-toggle__seg-btn' + (active === 'live' ? ' is-active' : '')}
+          >
+            Live
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={active === 'algo'}
+            className={'hof-coc-toggle__seg-btn' + (active === 'algo' ? ' is-active' : '')}
+          >
+            Algorithm
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
 /* MERGED HISTORY — team-name + finishing position variants             */
 /* TH-A · TH-B · TH-C · TH-D (desktop) + MV-A · MV-B · MV-C (mobile)    */
 /* ------------------------------------------------------------------ */
@@ -9574,16 +10074,80 @@ function HallOfFameHistorySubMenu() {
         <div className="hof-history-tab hof-history-tab--coc">
           <div className="hof-history-tab__beat">
             <div className="hof-history-tab__beat-eyebrow">
-              HISTORY · TAB 3 · CHAMPIONS OF CHAMPIONS · TBD
+              HISTORY · TAB 3 · CHAMPIONS OF CHAMPIONS · LOCKED
             </div>
-            <p className="hof-history-tab__pending">
-              Pending decision on visual treatment. The live tally below is
-              preserved from the earlier mocks while the team decides
-              between cumulative tally, season-as-column matrix
-              (heatmap or chip), or a fused presentation. No layout
-              locked yet.
+            <p className="hof-history-tab__lede">
+              Cumulative all-seasons table by default · toggle to the
+              algorithm matrix to see season-by-season finishing-score
+              breakdowns. Two views, one pill — same visual language as
+              the MV-A ⇄ MV-C and Trophy Room carousel ⇄ grid toggles.
             </p>
-            <CocLiveTally />
+          </div>
+
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 3 · TOGGLE UI (LIVE DEFAULT · ALGORITHM SECONDARY)
+            </div>
+            <div className="hof-coc-locked-toggle-row">
+              <div className="hof-coc-locked-toggle-row__pair">
+                <div className="hof-coc-locked-toggle-row__label">Default state</div>
+                <CocLockedToggle active="live" />
+              </div>
+              <div className="hof-coc-locked-toggle-row__pair">
+                <div className="hof-coc-locked-toggle-row__label">Algorithm active</div>
+                <CocLockedToggle active="algo" />
+              </div>
+            </div>
+          </div>
+
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 3 · DESKTOP · LIVE CUMULATIVE TABLE (DEFAULT)
+            </div>
+            <CocLockedToggle active="live" />
+            <CocLiveCumulativeTable />
+          </div>
+
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 3 · DESKTOP · ALGORITHM MATRIX (TOGGLE ACTIVE)
+            </div>
+            <CocLockedToggle active="algo" />
+            <CocAlgorithmMatrix />
+          </div>
+
+          <div className="hof-history-tab__beat">
+            <div className="hof-history-tab__beat-eyebrow">
+              HISTORY · TAB 3 · MOBILE
+            </div>
+            <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">Live cumulative · subset + tap-expand</div>
+                <PortraitFrame>
+                  <div className="hof-coc-mob-frame">
+                    <div className="hof-coc-mob-frame__bar">
+                      <CocLockedToggle active="live" />
+                    </div>
+                    <div className="hof-coc-mob-frame__body">
+                      <CocLiveMobileSubset />
+                    </div>
+                  </div>
+                </PortraitFrame>
+              </div>
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">Algorithm matrix · tight</div>
+                <PortraitFrame>
+                  <div className="hof-coc-mob-frame">
+                    <div className="hof-coc-mob-frame__bar">
+                      <CocLockedToggle active="algo" />
+                    </div>
+                    <div className="hof-coc-mob-frame__body">
+                      <CocAlgoMobileMatrix />
+                    </div>
+                  </div>
+                </PortraitFrame>
+              </div>
+            </div>
           </div>
         </div>
       )}

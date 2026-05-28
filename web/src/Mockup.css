@@ -13777,6 +13777,550 @@
 }
 
 /* ================================================================== */
+/* CHAMPIONS OF CHAMPIONS · LOCKED (Tab 3)                              */
+/* ================================================================== */
+/* Two locked views behind a Live ⇄ Algorithm pill. Reuses the same
+ * .hof-coc-toggle__seg pill as the legacy CocLiveAlgoToggle, plus the
+ * TH-D heatmap tints (.merged-history-timeline__card.is-pos-N) on the
+ * algorithm matrix so the cumulative + per-season visuals share a
+ * single tint palette. */
+
+/* Section lede + toggle showcase row -------------------------------- */
+.hof-history-tab__lede {
+  margin: 0;
+  font-size: var(--text-sm);
+  line-height: 20px;
+  color: var(--text-muted);
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--brand) 6%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--brand) 22%, var(--border));
+}
+
+.hof-coc-locked-toggle-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-5);
+  align-items: flex-start;
+}
+.hof-coc-locked-toggle-row__pair {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hof-coc-locked-toggle-row__label {
+  font-family: 'Geist Mono', 'Geist', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+/* Live cumulative table --------------------------------------------- */
+.hof-coc-live {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hof-coc-live__subhead {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+.hof-coc-live__scroll {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.hof-coc-live__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+  min-width: 880px;
+}
+.hof-coc-live__table th,
+.hof-coc-live__table td {
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.hof-coc-live__table tbody tr:last-child td { border-bottom: none; }
+.hof-coc-live__table thead th {
+  background: var(--surface-2);
+}
+.hof-coc-live__th {
+  padding: 0;
+}
+.hof-coc-live__th--left { text-align: left; }
+.hof-coc-live__th--right { text-align: right; }
+.hof-coc-live__sort-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 10px;
+  cursor: pointer;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  width: 100%;
+  transition: color 0.12s ease;
+}
+.hof-coc-live__th--left .hof-coc-live__sort-btn {
+  justify-content: flex-start;
+  padding-left: 14px;
+}
+.hof-coc-live__th--right .hof-coc-live__sort-btn {
+  justify-content: flex-end;
+  padding-right: 12px;
+}
+.hof-coc-live__sort-btn:hover { color: var(--text-strong); }
+.hof-coc-live__th.is-active .hof-coc-live__sort-btn { color: var(--brand); }
+.hof-coc-live__sort-label { letter-spacing: inherit; }
+.hof-coc-live__sort-arrow {
+  font-size: 12px;
+  line-height: 1;
+  opacity: 0.5;
+  font-weight: 700;
+}
+.hof-coc-live__sort-arrow--active {
+  opacity: 1;
+  color: var(--brand);
+}
+.hof-coc-live__th-pts .hof-coc-live__sort-btn { color: var(--text-strong); }
+.hof-coc-live__th-pts.is-active .hof-coc-live__sort-btn { color: var(--brand); }
+
+.hof-coc-live__td {
+  padding: 11px 12px;
+  color: var(--text-strong);
+}
+.hof-coc-live__td--left { text-align: left; padding-left: 14px; }
+.hof-coc-live__td--right { text-align: right; }
+.hof-coc-live__td-mgr { font-weight: 600; }
+.hof-coc-live__td-pts { font-weight: 700; }
+.hof-coc-live__td.is-active { background: color-mix(in srgb, var(--brand) 5%, transparent); }
+
+.hof-coc-live__mgr-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.hof-coc-live__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #fff;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.hof-coc-live__mgr-name { font-weight: 600; }
+
+/* Algorithm matrix (desktop) ---------------------------------------- */
+.hof-coc-algo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.hof-coc-algo__subhead {
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+.hof-coc-algo__scroll {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.hof-coc-algo__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-md);
+  font-variant-numeric: tabular-nums;
+  min-width: 640px;
+}
+.hof-coc-algo__table th,
+.hof-coc-algo__table td {
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.hof-coc-algo__table tbody tr:last-child td { border-bottom: none; }
+.hof-coc-algo__table thead th { background: var(--surface-2); padding: 0; }
+.hof-coc-algo__th-mgr { text-align: left; min-width: 180px; }
+.hof-coc-algo__th-season { text-align: center; }
+.hof-coc-algo__th-season .hof-coc-live__sort-btn { justify-content: center; }
+.hof-coc-algo__th-total {
+  text-align: right;
+  border-left: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.hof-coc-algo__th-total .hof-coc-live__sort-btn { justify-content: flex-end; padding-right: 14px; }
+.hof-coc-algo__th-mgr .hof-coc-live__sort-btn { padding-left: 14px; justify-content: flex-start; }
+
+.hof-coc-algo__td { padding: 10px 12px; }
+.hof-coc-algo__td-mgr {
+  text-align: left;
+  padding-left: 14px;
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.hof-coc-algo__td-cell {
+  text-align: center;
+  font-weight: 700;
+  color: var(--text-strong);
+  width: 64px;
+}
+.hof-coc-algo__td-total {
+  text-align: right;
+  padding-right: 14px;
+  border-left: 1px solid var(--border);
+  background: color-mix(in srgb, var(--brand) 5%, var(--surface));
+}
+.hof-coc-algo__td-total strong {
+  font-size: var(--text-lg);
+  font-weight: 800;
+  color: var(--brand);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Reuse TH-D heatmap tints on the algorithm matrix cells. The tints
+ * live on .merged-history-timeline__card.is-pos-N; pull the same
+ * background/color into these tds. Keeping the rules colocated here
+ * (vs adding a shared class on the TH-D side) avoids touching the
+ * locked Team History styles. */
+.hof-coc-algo__td-cell.is-pos-1 {
+  background: linear-gradient(180deg, rgba(255, 217, 122, 0.55) 0%, rgba(200, 150, 26, 0.35) 100%);
+  color: #6c4a00;
+  box-shadow: inset 0 0 0 1px rgba(200, 150, 26, 0.4);
+}
+.hof-coc-algo__td-cell.is-pos-2 {
+  background: rgba(195, 195, 200, 0.45);
+  color: #2a2a30;
+}
+.hof-coc-algo__td-cell.is-pos-3 {
+  background: rgba(214, 138, 60, 0.32);
+  color: #5a300d;
+}
+.hof-coc-algo__td-cell.is-pos-4 { background: rgba(120, 120, 130, 0.10); color: var(--text-strong); }
+.hof-coc-algo__td-cell.is-pos-5 { background: rgba(120, 120, 130, 0.07); color: var(--text-strong); }
+.hof-coc-algo__td-cell.is-pos-6 { background: rgba(120, 120, 130, 0.04); color: var(--text-muted); }
+.hof-coc-algo__td-cell.is-pos-7 { background: rgba(192, 57, 43, 0.10); color: #6f2519; }
+.hof-coc-algo__td-cell.is-pos-8 {
+  background: rgba(192, 57, 43, 0.18);
+  color: #803020;
+}
+.hof-coc-algo__td-cell.is-empty {
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+[data-theme='dark'] .hof-coc-algo__td-cell.is-pos-1 { color: #ffd97a; }
+[data-theme='dark'] .hof-coc-algo__td-cell.is-pos-2 {
+  background: rgba(220, 220, 230, 0.18);
+  color: #d8d8de;
+}
+[data-theme='dark'] .hof-coc-algo__td-cell.is-pos-3 { color: #e0a070; }
+[data-theme='dark'] .hof-coc-algo__td-cell.is-pos-7 {
+  background: rgba(192, 57, 43, 0.18);
+  color: #ff9988;
+}
+[data-theme='dark'] .hof-coc-algo__td-cell.is-pos-8 {
+  background: rgba(192, 57, 43, 0.28);
+  color: #ff9988;
+}
+
+/* Mobile · Live cumulative subset (5 cols + tap-expand) ------------- */
+.hof-coc-mob-frame {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+}
+.hof-coc-mob-frame__bar {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--brand) 4%, var(--surface));
+}
+.hof-coc-mob-frame__bar .hof-coc-toggle__row { gap: 8px; }
+.hof-coc-mob-frame__bar .hof-coc-toggle__label { font-size: 10px; }
+.hof-coc-mob-frame__bar .hof-coc-toggle__seg-btn { padding: 5px 12px; font-size: 12px; }
+.hof-coc-mob-frame__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+}
+
+.hof-coc-live-mob {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+}
+.hof-coc-live-mob__head {
+  padding: 12px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hof-coc-live-mob__title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.hof-coc-live-mob__sub {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.hof-coc-live-mob__list {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+.hof-coc-live-mob__col-head {
+  display: grid;
+  grid-template-columns: 1.6fr 36px 36px 36px 44px 14px;
+  gap: 6px;
+  align-items: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-2);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.hof-coc-live-mob__col-h { text-align: right; }
+.hof-coc-live-mob__col-h--mgr { text-align: left; }
+.hof-coc-live-mob__col-h.is-pts { color: var(--brand); }
+.hof-coc-live-mob__chev { margin-left: 2px; font-size: 11px; }
+
+.hof-coc-live-mob__item {
+  border-bottom: 1px solid var(--border);
+}
+.hof-coc-live-mob__item.is-open {
+  background: color-mix(in srgb, var(--brand) 5%, transparent);
+}
+.hof-coc-live-mob__row {
+  appearance: none;
+  background: transparent;
+  border: none;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1.6fr 36px 36px 36px 44px 14px;
+  gap: 6px;
+  align-items: center;
+  padding: 10px 12px;
+  text-align: right;
+  font: inherit;
+  color: var(--text-strong);
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+.hof-coc-live-mob__row:hover { background: color-mix(in srgb, var(--brand) 3%, transparent); }
+.hof-coc-live-mob__cell { font-size: 13px; }
+.hof-coc-live-mob__cell--mgr {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+.hof-coc-live-mob__mgr-name { font-weight: 600; }
+.hof-coc-live-mob__cell--pts { font-weight: 700; color: var(--brand); }
+.hof-coc-live-mob__chevron {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  transition: transform 0.15s ease;
+}
+
+.hof-coc-live-mob__expand {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px 14px;
+  padding: 4px 14px 12px 50px;
+  margin: 0;
+}
+.hof-coc-live-mob__expand-pair {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  border-bottom: 1px dashed var(--border);
+  padding: 4px 0;
+  font-variant-numeric: tabular-nums;
+}
+.hof-coc-live-mob__expand dt {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin: 0;
+}
+.hof-coc-live-mob__expand dd {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.hof-coc-live-mob__note {
+  padding: 8px 14px 12px;
+  font-size: 10px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+/* Mobile · Algorithm matrix (tight 336px layout) -------------------- */
+.hof-coc-algo-mob {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--surface);
+}
+.hof-coc-algo-mob__head {
+  padding: 12px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hof-coc-algo-mob__title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.hof-coc-algo-mob__sub {
+  font-size: 10px;
+  color: var(--text-muted);
+}
+.hof-coc-algo-mob__table {
+  width: calc(100% - 8px);
+  margin: 0 4px 12px;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  table-layout: fixed;
+}
+.hof-coc-algo-mob__table th,
+.hof-coc-algo-mob__table td {
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+}
+.hof-coc-algo-mob__table tbody tr:last-child td { border-bottom: none; }
+.hof-coc-algo-mob__th-mgr {
+  width: 50px;
+  text-align: left;
+  padding: 6px 4px 6px 8px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+.hof-coc-algo-mob__th-season {
+  width: 32px;
+  text-align: center;
+  padding: 6px 0;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+}
+.hof-coc-algo-mob__th-total {
+  width: 40px;
+  text-align: right;
+  padding: 6px 8px 6px 4px;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border-left: 1px solid var(--border);
+}
+.hof-coc-algo-mob__td-mgr {
+  padding: 6px 4px 6px 8px;
+  text-align: left;
+}
+.hof-coc-algo-mob__crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.18);
+}
+.hof-coc-algo-mob__cell {
+  text-align: center;
+  padding: 8px 0;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.hof-coc-algo-mob__td-total {
+  text-align: right;
+  padding: 6px 8px 6px 4px;
+  border-left: 1px solid var(--border);
+  background: color-mix(in srgb, var(--brand) 5%, var(--surface));
+}
+.hof-coc-algo-mob__td-total strong {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--brand);
+}
+
+/* Reuse the same TH-D heatmap tints on the mobile algo cells too. */
+.hof-coc-algo-mob__cell.is-pos-1 {
+  background: linear-gradient(180deg, rgba(255, 217, 122, 0.55) 0%, rgba(200, 150, 26, 0.35) 100%);
+  color: #6c4a00;
+  box-shadow: inset 0 0 0 1px rgba(200, 150, 26, 0.4);
+}
+.hof-coc-algo-mob__cell.is-pos-2 { background: rgba(195, 195, 200, 0.45); color: #2a2a30; }
+.hof-coc-algo-mob__cell.is-pos-3 { background: rgba(214, 138, 60, 0.32); color: #5a300d; }
+.hof-coc-algo-mob__cell.is-pos-4 { background: rgba(120, 120, 130, 0.10); color: var(--text-strong); }
+.hof-coc-algo-mob__cell.is-pos-5 { background: rgba(120, 120, 130, 0.07); color: var(--text-strong); }
+.hof-coc-algo-mob__cell.is-pos-6 { background: rgba(120, 120, 130, 0.04); color: var(--text-muted); }
+.hof-coc-algo-mob__cell.is-pos-7 { background: rgba(192, 57, 43, 0.10); color: #6f2519; }
+.hof-coc-algo-mob__cell.is-pos-8 { background: rgba(192, 57, 43, 0.18); color: #803020; }
+.hof-coc-algo-mob__cell.is-empty { color: var(--text-muted); opacity: 0.5; }
+[data-theme='dark'] .hof-coc-algo-mob__cell.is-pos-1 { color: #ffd97a; }
+[data-theme='dark'] .hof-coc-algo-mob__cell.is-pos-2 {
+  background: rgba(220, 220, 230, 0.18);
+  color: #d8d8de;
+}
+[data-theme='dark'] .hof-coc-algo-mob__cell.is-pos-3 { color: #e0a070; }
+[data-theme='dark'] .hof-coc-algo-mob__cell.is-pos-7 {
+  background: rgba(192, 57, 43, 0.18);
+  color: #ff9988;
+}
+[data-theme='dark'] .hof-coc-algo-mob__cell.is-pos-8 {
+  background: rgba(192, 57, 43, 0.28);
+  color: #ff9988;
+}
+
+/* ================================================================== */
 /* HISTORIC STANDINGS · refined column alignment (Tab 2)                */
 /* ================================================================== */
 /* Locked spec: bubble (manager initials) + team name read as one
