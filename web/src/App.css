@@ -10141,6 +10141,40 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   .standings-table.standings-table--historic .col-wdl {
     display: table-cell !important;
   }
+
+  /* Historic standings mobile fit (Task 6a/b) — 7 columns (# / Team / W / D /
+   * L / For / PTS) were spilling beyond the viewport, chopping PTS off as
+   * "PT?". Two-part fix:
+   *   (a) Tighter cell padding on the narrow numeric cells so the row stops
+   *       reserving the legacy 10px×2 padding for every column.
+   *   (b) A right-side breathing buffer on `L` so the visible eye-distance
+   *       between the W/D/L cluster and `For` reads as a real column gap
+   *       rather than a single wide L→For run-on.
+   * The PointsCell inside `td.col-pts` is rendered at 1.25rem so the column
+   * stays readable even at the tighter padding. */
+  .standings-table.standings-table--historic th,
+  .standings-table.standings-table--historic td {
+    padding: 8px 4px;
+  }
+  .standings-table.standings-table--historic .col-wdl {
+    padding-left: 3px;
+    padding-right: 3px;
+  }
+  /* Adds a visible gap between the L cell and the For cell without bloating
+   * the For/PTS columns themselves. */
+  .standings-table.standings-table--historic .col-wdl:nth-of-type(6) {
+    padding-right: 10px;
+  }
+  .standings-table.standings-table--historic .col-for,
+  .standings-table.standings-table--historic .col-pts {
+    padding-left: 6px;
+    padding-right: 6px;
+  }
+  /* Defeat the global `td.col-num.col-pts { text-align: center }` rule so
+   * the violet PointsCell sits flush right with the column header. */
+  .standings-table.standings-table--historic td.col-num.col-pts {
+    text-align: right;
+  }
 }
 
 .tabular {
@@ -15216,12 +15250,62 @@ button.live-xp__player-name:focus-visible {
   font-variant-numeric: tabular-nums;
   color: var(--fm-text-strong);
   border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+  cursor: pointer;
+  /* iOS / Android tap-highlight cleanup so the tap-to-reveal feels native. */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Tap-to-reveal — swap rank → first-word team name with a soft violet ring
+ * so the user understands what they triggered. Z-index/position keep the
+ * revealed cell on top in case of edge wrap. */
+.merged-history-mv__transposed-cell.is-revealed {
+  position: relative;
+  z-index: 1;
+  box-shadow: inset 0 0 0 2px var(--tclot-logo-purple, #795bfb);
+}
+
+.merged-history-mv__transposed-cell-team {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--fm-text-strong);
+  text-transform: none;
+  /* The cell is 32px tall; this keeps a 2-3 letter team word vertically
+   * centred without overflowing into the next row. */
+  line-height: 1.15;
+  padding: 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
 .merged-history-mv__transposed-note {
   margin: 10px 14px;
   font-size: 11px;
   line-height: 15px;
+}
+
+/* Task 3a — edge-to-edge full-bleed on mobile portrait. The matrix tile
+ * previously sat inside the heritage tile's side padding, so the row of
+ * 8 manager columns was forced to scroll horizontally just to clear the
+ * gutter. Negative inline margin escapes the wrapping tile padding (14px
+ * to either side, matching `.tile { padding-inline: 14px }`), drops the
+ * border-radius/border so the matrix reads as a full-bleed band, and
+ * trims internal padding to claw back a few more pixels for cell width.
+ *
+ * Scope: only mobile portrait — desktop keeps the tidy bordered card. */
+@media (max-width: 720px) {
+  .merged-history-mv--transposed {
+    margin-inline: -14px;
+    border-left: none;
+    border-right: none;
+    border-radius: 0;
+  }
+  .merged-history-mv__transposed-note {
+    margin-inline: 14px;
+  }
 }
 
 /* ============ Sub-tab 3: Historic Standings refinements ============ */
@@ -15302,6 +15386,25 @@ button.live-xp__player-name:focus-visible {
 
 .heritage-cofc__th--right { text-align: right; }
 .heritage-cofc__th--left { text-align: left; }
+
+/* td alignment to mirror th — without these the data cells default to the
+ * <td> baseline `text-align: left` and digits drift away from their right-
+ * aligned headers. `font-variant-numeric: tabular-nums` keeps digits at a
+ * common advance so columns stack cleanly. */
+.heritage-cofc__td--right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.heritage-cofc__td--left { text-align: left; }
+
+/* The PTS column carries `col-pts` for the violet-arrow sort affordance —
+ * but the global `.standings-table td.col-num.col-pts { text-align: center }`
+ * rule would pull the content back to the centre. The CofC table doesn't add
+ * `col-num` here, so this is mostly defensive, but it keeps PointsCell
+ * flush-right next to a right-aligned header. */
+.heritage-cofc__table td.col-pts {
+  text-align: right;
+}
 
 .heritage-cofc__sort-btn { width: 100%; }
 

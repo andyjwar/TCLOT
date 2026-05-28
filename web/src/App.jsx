@@ -256,6 +256,7 @@ import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
+import { MobileBottomNav } from './MobileBottomNav'
 import { SettingsPage } from './SettingsPage'
 import { PointsCell } from './PointsCell.jsx'
 import {
@@ -907,6 +908,16 @@ function TeamHistoryMobileMatrix({ journey, fullNameMap }) {
     for (const s of row.seasons) allSeasonsSet.add(s.season)
   }
   const seasons = [...allSeasonsSet].sort()
+  /* Task 3b — tap-to-reveal. The footer copy ("Tap a cell to reveal the
+   * team name that season.") promised this behaviour, but cells previously
+   * only carried an HTML `title` attribute (desktop hover tooltip only —
+   * mobile taps produced nothing). We now track a single revealed cell:
+   * key is `${season}::${managerKey}`, tapping toggles. On desktop the
+   * title attribute still provides the hover tooltip; mobile taps swap the
+   * cell content from rank → team name (with rank in a small caption).
+   * Tapping anywhere else (including the same cell again) closes. */
+  const [revealedCellKey, setRevealedCellKey] = useState(null)
+
   return (
     <div className="merged-history-mv merged-history-mv--transposed">
       <div className="merged-history-mv__transposed-scroll">
@@ -941,16 +952,32 @@ function TeamHistoryMobileMatrix({ journey, fullNameMap }) {
                 {journey.map((row) => {
                   const entry = row.seasons.find((s) => s.season === season)
                   const rank = entry?.rank ?? null
+                  const cellKey = `${season}::${row.key}`
+                  const isRevealed = revealedCellKey === cellKey
+                  const teamName = entry?.team ?? null
                   return (
                     <td
                       key={row.key}
                       className={
                         'merged-history-mv__transposed-cell ' +
-                        heritageCellPosClass(rank)
+                        heritageCellPosClass(rank) +
+                        (isRevealed ? ' is-revealed' : '') +
+                        (teamName ? '' : ' is-empty')
                       }
-                      title={entry?.team ?? '—'}
+                      title={teamName ?? '—'}
+                      onClick={() =>
+                        setRevealedCellKey((prev) =>
+                          prev === cellKey ? null : cellKey,
+                        )
+                      }
                     >
-                      {rank ?? '—'}
+                      {isRevealed && teamName ? (
+                        <span className="merged-history-mv__transposed-cell-team">
+                          {firstWord(teamName)}
+                        </span>
+                      ) : (
+                        rank ?? '—'
+                      )}
                     </td>
                   )
                 })}
@@ -1139,7 +1166,11 @@ function HeritageHistoricStandings({ fullNameMap, headingTag = 'h3' }) {
                     {row.pf}
                   </td>
                   <td className="col-num col-pts tabular">
-                    <strong>{row.pts}</strong>
+                    <PointsCell
+                      value={row.pts}
+                      size="md"
+                      showLabel={false}
+                    />
                   </td>
                 </tr>
               )
@@ -1329,7 +1360,11 @@ function CofcLiveTable({ rows, fullNameMap }) {
                 if (col.key === 'totalPts') {
                   return (
                     <td key={col.key} className={tdClass + ' tabular'}>
-                      <strong>{r[col.key]}</strong>
+                      <PointsCell
+                        value={r[col.key]}
+                        size="md"
+                        showLabel={false}
+                      />
                     </td>
                   )
                 }
@@ -1578,7 +1613,10 @@ function CofcAlgorithmDetailSheet({ row, seasonLabels, fullNameMap, onClose }) {
 }
 
 function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
-  const [view, setView] = useState('live')
+  /* Default to "Algorithm" view — the at-a-glance leaderboard reads as the
+   * primary scoreboard for the tab; the cumulative ("Live") career table
+   * is a deeper drill-down users opt into. */
+  const [view, setView] = useState('algorithm')
   const liveRows = useMemo(
     () => computeLiveHallManagerCareerRows(tableRows),
     [tableRows],
@@ -4118,8 +4156,7 @@ function App() {
 
         </div>
       </main>
-      <DashboardNav
-        variant="bottom"
+      <MobileBottomNav
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
       />
