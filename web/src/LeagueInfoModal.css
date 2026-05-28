@@ -1,0 +1,144 @@
+/* LeagueInfoModal — production modal shell. Inherits the `.li-modal`
+ * + `.li-card` visual atoms from Mockup.css (kept centrally so the
+ * design exploration and production stay visually aligned). This file
+ * carries only the *production-specific* delta from the inline mockup
+ * preview: full-viewport portal, position:fixed shell, real-world
+ * mobile sheet behaviour at ≤720px, and z-index that clears the
+ * brand-header strip.
+ */
+
+/* Portal mounts on document.body (outside `.app.fotmob`) — must
+ * supply the full design-token set used by the LP-C `.li-modal` +
+ * `.li-card` atoms imported from Mockup.css, otherwise tokens like
+ * `var(--surface)` / `var(--brand)` resolve to empty and the modal
+ * paints transparent. Same pattern as `.live-player-slide` in
+ * App.css. Dark is the default; light overrides follow below. */
+.league-info-modal-shell {
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 14px;
+  --text-lg: 16px;
+  --text-xl: 18px;
+  --lh-sm: 16px;
+  --lh-md: 20px;
+  --lh-lg: 22px;
+  --lh-xl: 26px;
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+  --r-circle: 999px;
+  --ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --dur-fast: 120ms;
+  --dur-base: 200ms;
+  --dur-md: 240ms;
+  --brand: #795bfb;
+  --data-positive: #12a15a;
+
+  /* Dark defaults — mirror `:root .fotmob` */
+  --surface: #14141a;
+  --surface-2: #1c1c24;
+  --border: #2a2a35;
+  --text: #d8d8e0;
+  --text-strong: #ffffff;
+  --text-muted: #8a8a97;
+
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  animation: league-info-modal-fade-in var(--dur-base) var(--ease);
+}
+
+/* Light theme — App.jsx writes `data-tclot-theme` on <body> for the
+ * portal context (see `useLayoutEffect` block in App.jsx around
+ * `document.body.dataset.tclotTheme = colorTheme`). */
+body[data-tclot-theme='light'] .league-info-modal-shell {
+  --surface: #ffffff;
+  --surface-2: #f1f1f5;
+  --border: #e4e4ea;
+  --text: #1c1c24;
+  --text-strong: #0a0a0d;
+  --text-muted: #6b6b78;
+}
+
+@keyframes league-info-modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Desktop default: centered floating card. We re-anchor the mockup's
+ * `.li-modal` absolute centering to the new fixed shell. Selector is
+ * scoped under `.league-info-modal-shell` to win specificity against
+ * the Mockup.css rules and the `[data-theme='light'] .li-modal`
+ * theme override (both `(0,1,0)` and `(0,2,0)` respectively). */
+.league-info-modal-shell .league-info-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 64px);
+  max-width: 520px;
+  max-height: calc(100vh - 64px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: league-info-modal-rise var(--dur-md) var(--ease);
+}
+
+@keyframes league-info-modal-rise {
+  from { opacity: 0; transform: translate(-50%, calc(-50% + 6px)) scale(0.985); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* Mobile: edge-to-edge full-screen sheet at ≤720px. */
+@media (max-width: 720px) {
+  .league-info-modal-shell .league-info-modal {
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-width: none;
+    max-height: none;
+    transform: none;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+    animation: league-info-modal-rise-mobile var(--dur-md) var(--ease);
+  }
+}
+
+@keyframes league-info-modal-rise-mobile {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Close button — production override to sit above the scroll body and
+ * pick up the LP-C dark hero background. Reuses `.li-modal__close`
+ * sizing/iconography from Mockup.css. */
+.league-info-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  background: rgba(0, 0, 0, 0.35);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+}
+.league-info-modal__close:hover {
+  background: rgba(0, 0, 0, 0.50);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .league-info-modal-shell,
+  .league-info-modal {
+    animation: none;
+  }
+}

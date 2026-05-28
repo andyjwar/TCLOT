@@ -165,6 +165,8 @@ function BrandHeader({
   teamLogoMap,
   kitIndexByEntry,
   liveStatus,
+  leagueInfoOpen = false,
+  onOpenLeagueInfo,
 }) {
   const entryById = useMemo(() => {
     const m = new Map()
@@ -188,10 +190,12 @@ function BrandHeader({
       aria-label={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
     >
       <div className="brand-header__row">
-        <span className="brand-header__pill" aria-label={LEAGUE_TITLE_ABBR}>
-          <TclotLionIcon size={22} />
-          <span className="brand-header__wordmark">{LEAGUE_TITLE_ABBR}</span>
-        </span>
+        <BrandHeaderWordmark
+          label={LEAGUE_TITLE_ABBR}
+          icon={<TclotLionIcon size={22} />}
+          isOpen={leagueInfoOpen}
+          onOpen={onOpenLeagueInfo}
+        />
         <span className="brand-header__meta brand-header__meta--season">
           {BRAND_HEADER_SEASON}
         </span>
@@ -258,6 +262,8 @@ import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
 import { SettingsPage } from './SettingsPage'
+import { BrandHeaderWordmark } from './BrandHeaderWordmark'
+import { LeagueInfoModal } from './LeagueInfoModal'
 import { PointsCell } from './PointsCell.jsx'
 import {
   DEFAULT_TAB_STORAGE_KEY,
@@ -2113,6 +2119,11 @@ function App() {
   const [systemTheme, setSystemTheme] = useState(() => resolveSystemTheme())
   const colorTheme = themePref === 'system' ? systemTheme : themePref
   const [playerDetailOverlayOpen, setPlayerDetailOverlayOpen] = useState(false)
+  /** League Info modal disclosure — opened by the BrandHeaderWordmark
+   * trigger in the brand header. Lives here at the App level so the
+   * trigger (deep inside `<BrandHeader>`) and the modal mount (sibling
+   * of the dashboard layout) share the same open state. */
+  const [leagueInfoOpen, setLeagueInfoOpen] = useState(false)
 
   const bottomNavHidden = useAutoHideBottomNav({
     enabled:
@@ -2746,6 +2757,8 @@ function App() {
               teamLogoMap={teamLogoMap}
               kitIndexByEntry={kitIndexByEntry}
               liveStatus={brandHeaderStatus}
+              leagueInfoOpen={leagueInfoOpen}
+              onOpenLeagueInfo={() => setLeagueInfoOpen(true)}
             />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
@@ -4159,6 +4172,10 @@ function App() {
       <MobileBottomNav
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
+      />
+      <LeagueInfoModal
+        open={leagueInfoOpen}
+        onClose={() => setLeagueInfoOpen(false)}
       />
       <footer className="page-footer--script">Tery is a Racist</footer>
     </div>
