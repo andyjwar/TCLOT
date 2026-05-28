@@ -8576,8 +8576,13 @@ function buildMergedHistory() {
     const ranks = seasons.map((s) => s.rank).filter(Boolean)
     const titles = ranks.filter((r) => r === 1).length
     const ru = ranks.filter((r) => r === 2).length
+    /* TITAN = top-half finishes (1st–4th); MINNOW = bottom-half (5th–8th).
+     * These overlap with titles/ru deliberately so the four stats give
+     * a fuller career picture than just championships. */
+    const titan = ranks.filter((r) => r >= 1 && r <= 4).length
+    const minnow = ranks.filter((r) => r >= 5 && r <= 8).length
     const best = ranks.length ? Math.min(...ranks) : null
-    return { key, meta: MERGED_MGR_META[key], seasons, titles, ru, best }
+    return { key, meta: MERGED_MGR_META[key], seasons, titles, ru, titan, minnow, best }
   })
 }
 
@@ -9658,38 +9663,61 @@ function mergedCellPosClass(rank) {
  * Manager + crest on the left; season cards stretch right. Each card
  * shows team name on top + big position below (heatmap-tinted).
  *
- * Locked spec: identity column carries the manager name + a stacked
- * uppercase stats block (TITLES · RUNNER-UP) that mirrors the 25/26
- * year-label treatment (caps, muted, letter-spaced). The BEST #N
- * line was dropped per user feedback — the per-season heatmap cards
- * already make a manager's best finish read at a glance, so the
- * stacked stats focus on the celebratory tallies only. */
+ * Locked spec: identity column is a vertical stack — badge + bold
+ * full name on a top row, then a full-width 2×2 grid of uppercase
+ * stats (TITLES · RUNNER-UP · TITAN · MINNOW) that mirrors the 25/26
+ * year-label treatment (caps, muted, letter-spaced).
+ *   TITLES   — finishes at 1st
+ *   RUNNER-UP — finishes at 2nd
+ *   TITAN    — top-half finishes (1st–4th)
+ *   MINNOW   — bottom-half finishes (5th–8th)
+ * TITAN + MINNOW = seasons played. Tooltips on the TITAN/MINNOW
+ * cells carry the position-range clarification so the inline labels
+ * stay short. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
       {MERGED_HISTORY_SORTED.map((row) => (
         <div key={row.key} className="merged-history-timeline__row">
           <div className="merged-history-timeline__mgr">
-            <span
-              className="merged-history-timeline__crest"
-              style={{ background: row.meta.color }}
+            <div className="merged-history-timeline__mgr-head">
+              <span
+                className="merged-history-timeline__crest"
+                style={{ background: row.meta.color }}
+              >
+                {row.meta.initials}
+              </span>
+              <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
+            </div>
+            <div
+              className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
+              role="group"
+              aria-label="Career stats"
             >
-              {row.meta.initials}
-            </span>
-            <div className="merged-history-timeline__mgr-text">
-              <div className="merged-history-timeline__mgr-name">{row.key}</div>
-              <ul className="merged-history-timeline__mgr-stats" aria-label="Career stats">
-                <li className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">
-                    {row.titles === 1 ? 'title' : 'titles'}
-                  </span>
-                </li>
-                <li className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
-                </li>
-              </ul>
+              <div className="merged-history-timeline__mgr-stat">
+                <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
+                <span className="merged-history-timeline__mgr-stat-label">
+                  {row.titles === 1 ? 'title' : 'titles'}
+                </span>
+              </div>
+              <div className="merged-history-timeline__mgr-stat">
+                <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
+                <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+              </div>
+              <div
+                className="merged-history-timeline__mgr-stat"
+                title="Seasons finishing 1st–4th (top half)"
+              >
+                <span className="merged-history-timeline__mgr-stat-num">{row.titan}</span>
+                <span className="merged-history-timeline__mgr-stat-label">titan</span>
+              </div>
+              <div
+                className="merged-history-timeline__mgr-stat"
+                title="Seasons finishing 5th–8th (bottom half)"
+              >
+                <span className="merged-history-timeline__mgr-stat-num">{row.minnow}</span>
+                <span className="merged-history-timeline__mgr-stat-label">minnow</span>
+              </div>
             </div>
           </div>
           <div className="merged-history-timeline__cards">
