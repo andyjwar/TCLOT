@@ -15546,27 +15546,55 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
+/* `.heritage-cofc-algo-lb__total*` was the original source for `<PointsCell>`.
+ * Kept as a positioning shim — `<PointsCell size="sm" />` now provides the
+ * value + label styling itself (see the `.pts-cell` block lower in this file).
+ * The leftover `text-align: right` keeps the grid column's content right-aligned
+ * relative to the chevron. */
 .heritage-cofc-algo-lb__total {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  font-variant-numeric: tabular-nums;
   text-align: right;
 }
 
-.heritage-cofc-algo-lb__total strong {
-  font-size: 16px;
-  font-weight: 800;
+/* ==========================================================================
+ * PointsCell — shared "violet PTS" treatment
+ * ==========================================================================
+ * Used by `<PointsCell>` (web/src/PointsCell.jsx). Extracted from the
+ * Champion of Champions → Algorithm mobile leaderboard so every PTS cell
+ * across Standings, Historic Standings, CofC Cumulative, FPL Live Table,
+ * Team History leaderboard, and the algo leaderboard itself reads the same.
+ *
+ * Sizes are tuned so the algorithm leaderboard remains visually identical
+ * after the refactor (it consumes `size="sm"` — value=16px, label=10px,
+ * matching the legacy `.heritage-cofc-algo-lb__total strong` values).
+ * `md` (20px) is the table-cell default; `lg` (25.6px) is reserved for
+ * hero placements.
+ */
+.pts-cell {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.32em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.pts-cell__value {
+  font-weight: 700;
   color: var(--tclot-logo-purple, #795bfb);
 }
 
-.heritage-cofc-algo-lb__total-label {
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+.pts-cell__label {
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
   color: var(--fm-muted);
+  text-transform: uppercase;
 }
+
+.pts-cell--sm .pts-cell__value { font-size: 1rem; }
+.pts-cell--md .pts-cell__value { font-size: 1.25rem; }
+.pts-cell--lg .pts-cell__value { font-size: 1.6rem; }
+
+.pts-cell--ink .pts-cell__value { color: var(--fm-text-strong); }
 
 .heritage-cofc-algo-lb__chev {
   font-size: 18px;

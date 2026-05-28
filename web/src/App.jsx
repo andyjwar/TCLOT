@@ -257,6 +257,7 @@ import { DraftBoard } from './DraftBoard'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { SettingsPage } from './SettingsPage'
+import { PointsCell } from './PointsCell.jsx'
 import {
   DEFAULT_TAB_STORAGE_KEY,
   readStoredDefaultTab,
@@ -1485,10 +1486,11 @@ function CofcAlgorithmMobileLeaderboard({ sortedRows, fullNameMap, onSelect }) {
               <span className="heritage-cofc-algo-lb__name">
                 {managerFull ?? row.key}
               </span>
-              <span className="heritage-cofc-algo-lb__total tabular">
-                <strong>{row.total}</strong>
-                <span className="heritage-cofc-algo-lb__total-label">pts</span>
-              </span>
+              <PointsCell
+                value={row.total}
+                size="sm"
+                className="heritage-cofc-algo-lb__total"
+              />
               <span className="heritage-cofc-algo-lb__chev" aria-hidden="true">›</span>
             </button>
           </li>
