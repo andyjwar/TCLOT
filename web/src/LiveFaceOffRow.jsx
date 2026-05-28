@@ -82,41 +82,39 @@ export function LiveFaceOffRow({
     : {};
 
   /**
-   * Bracketed `(N)` indicator showing the count of starting-XI players who
-   * still have a Premier League fixture to play this GW. When `N === 0`
-   * (every starter has finished their PL match), we swap the `(0)`
-   * placeholder for the **Option A** "all done" green pulse dot — chosen
-   * over the trophy/crown (B) and check chip (C) variants because it
-   * carries the lowest visual noise and the green colour reads as
-   * "complete / all clear" at a glance. Render nothing when the squad
-   * payload is missing (`null`) so an orphan / not-yet-ingested fixture
-   * doesn't render a misleading green dot.
+   * Stylish "X to play" sub-row rendered under each team name. Replaces the
+   * older bracketed `(N)` next to the score so the to-play count lives in
+   * one place per team (under the name) and the score row stays clean
+   * (`44 – 53`). Amber pulse dot reads "still in play"; green pulse +
+   * "All done" once every starter has finished. Render nothing when the
+   * squad payload is missing (`null`) so an orphan / not-yet-ingested
+   * fixture doesn't render a misleading row.
    */
-  function renderRemaining(n, side) {
+  function renderToPlay(n, side) {
     if (n == null || !Number.isFinite(Number(n))) return null;
     const count = Math.max(0, Math.floor(Number(n)));
-    if (count === 0) {
-      return (
-        <span
-          className="live-banner-row__done"
-          role="img"
-          aria-label={`${side === 'home' ? 'Home' : 'Away'} team — all 11 starters have finished their fixtures`}
-          title="All 11 starters have finished their fixtures"
-        >
-          <span className="live-banner-row__done-pulse" aria-hidden="true" />
-          <span className="live-banner-row__done-check" aria-hidden="true">
-            ✓
-          </span>
-        </span>
-      );
-    }
+    const done = count === 0;
+    const label = done ? 'All done' : `${count} to play`;
+    const ariaLabel = done
+      ? `${side === 'home' ? 'Home' : 'Away'} team — all 11 starters have finished their fixtures`
+      : `${count} starter${count === 1 ? '' : 's'} still to play`;
     return (
       <span
-        className="live-banner-row__remaining tabular"
-        title={`${count} starter${count === 1 ? '' : 's'} still to play this GW`}
-        aria-label={`${count} starter${count === 1 ? '' : 's'} still to play`}
+        className={
+          'live-banner-row__to-play' +
+          (done ? ' live-banner-row__to-play--done' : '')
+        }
+        aria-label={ariaLabel}
+        title={ariaLabel}
       >
-        ({count})
+        <span
+          className={
+            'live-banner-row__to-play-dot' +
+            (done ? ' live-banner-row__to-play-dot--done' : '')
+          }
+          aria-hidden="true"
+        />
+        <span className="live-banner-row__to-play-text">{label}</span>
       </span>
     );
   }
@@ -160,6 +158,7 @@ export function LiveFaceOffRow({
           >
             {homeDisplayName ?? homeName}
           </span>
+          {renderToPlay(homeRemaining, 'home')}
         </span>
       </div>
 
@@ -176,7 +175,6 @@ export function LiveFaceOffRow({
               >
                 {homeLive}
               </span>
-              {renderRemaining(homeRemaining, 'home')}
             </span>
             <span className="live-banner-row__score-sep" aria-hidden="true">
               –
@@ -191,7 +189,6 @@ export function LiveFaceOffRow({
               >
                 {awayLive}
               </span>
-              {renderRemaining(awayRemaining, 'away')}
             </span>
           </>
         ) : (
@@ -211,6 +208,7 @@ export function LiveFaceOffRow({
           >
             {awayDisplayName ?? awayName}
           </span>
+          {renderToPlay(awayRemaining, 'away')}
         </span>
         <span className="live-banner-row__crest">
           <HeroVillainAvatarFrame
