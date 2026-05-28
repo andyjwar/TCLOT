@@ -9673,43 +9673,43 @@ function MergedHistoryTHD() {
       {MERGED_HISTORY_SORTED.map((row) => (
         <div key={row.key} className="merged-history-timeline__row">
           <div className="merged-history-timeline__mgr">
-            <span
-              className="merged-history-timeline__crest"
-              style={{ background: row.meta.color }}
-            >
-              {row.meta.initials}
-            </span>
-            <div className="merged-history-timeline__mgr-text">
-              <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
-              <div
-                className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
-                role="group"
-                aria-label="Career stats"
+            <div className="merged-history-timeline__mgr-head">
+              <span
+                className="merged-history-timeline__crest"
+                style={{ background: row.meta.color }}
               >
-                <div className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">
-                    {row.titles === 1 ? 'title' : 'titles'}
-                  </span>
-                </div>
-                <div className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
-                </div>
-                <div
-                  className="merged-history-timeline__mgr-stat"
-                  title="Seasons finishing 1st–4th (top half)"
-                >
-                  <span className="merged-history-timeline__mgr-stat-num">{row.titan}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">titan</span>
-                </div>
-                <div
-                  className="merged-history-timeline__mgr-stat"
-                  title="Seasons finishing 5th–8th (bottom half)"
-                >
-                  <span className="merged-history-timeline__mgr-stat-num">{row.minnow}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">minnow</span>
-                </div>
+                {row.meta.initials}
+              </span>
+              <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
+            </div>
+            <div
+              className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
+              role="group"
+              aria-label="Career stats"
+            >
+              <div className="merged-history-timeline__mgr-stat">
+                <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
+                <span className="merged-history-timeline__mgr-stat-label">
+                  {row.titles === 1 ? 'title' : 'titles'}
+                </span>
+              </div>
+              <div className="merged-history-timeline__mgr-stat">
+                <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
+                <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+              </div>
+              <div
+                className="merged-history-timeline__mgr-stat"
+                title="Seasons finishing 1st–4th (top half)"
+              >
+                <span className="merged-history-timeline__mgr-stat-num">{row.titan}</span>
+                <span className="merged-history-timeline__mgr-stat-label">titan</span>
+              </div>
+              <div
+                className="merged-history-timeline__mgr-stat"
+                title="Seasons finishing 5th–8th (bottom half)"
+              >
+                <span className="merged-history-timeline__mgr-stat-num">{row.minnow}</span>
+                <span className="merged-history-timeline__mgr-stat-label">minnow</span>
               </div>
             </div>
           </div>
