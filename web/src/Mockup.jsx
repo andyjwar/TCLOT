@@ -22,6 +22,10 @@ import { TeamAvatar } from './TeamAvatar'
 import './Mockup.css'
 import { MOCKUP_PART2_SECTIONS } from './MockupSurfacesPart2.jsx'
 import './MockupSurfacesPart2.css'
+import {
+  HALL_SEASON_FINAL_TABLES,
+  hallManagerDisplayKey,
+} from './hallManagerHistory'
 
 /* ------------------------------------------------------------------ */
 /* Icon families — minimal inline SVGs                                  */
@@ -8490,6 +8494,104 @@ const HOF_HISTORIC_STANDINGS = HOF_SEASONS.reduce((m, season, idx) => {
 }, {})
 
 /* ------------------------------------------------------------------ */
+/* HOF · merged team-name + finishing position data                     */
+/* ------------------------------------------------------------------ */
+/* Anchors history on managers (their first names are the stable
+ * identity — team names rebrand every season). Real ranks + team names
+ * for 20/21 → 24/25 come from `hallManagerHistory.js`. The 25/26 row is
+ * fabricated to keep the merged variants self-contained inside Mockup —
+ * Luke wins, per the team-name-table screenshot the user shared.
+ *
+ * NOTE: this dataset deliberately does NOT use HOF_POSITIONS (the
+ * position-heatmap matrix that the rest of HOF uses). HOF_POSITIONS is
+ * keyed by current team-id with fictional managers (e.g. SZM/Eddy
+ * Webster, SCC/Luke Butcher) that do not 1:1 map to the real manager
+ * identities in hallManagerHistory. Composing them honestly would have
+ * required either re-attributing teams (changes the heatmap story) or
+ * inventing a manager↔team-id bridge (introduces noise). Anchoring on
+ * the manager-first history and fabricating one 25/26 row keeps each
+ * merged variant internally consistent at the cost of mild divergence
+ * from H-D1/H-D2's tally — flagged in the return summary. */
+const MERGED_MGR_KEYS = ['Andy', 'David', 'Eddy', 'Jon', 'Luke', 'Mike', 'Nick G', 'Nick M']
+
+const MERGED_MGR_META = {
+  Andy:     { initials: 'AW', color: '#f79233', fullName: 'Andy Ward' },
+  David:    { initials: 'DH', color: '#7e57ff', fullName: 'David Higman' },
+  Eddy:     { initials: 'EW', color: '#c0392b', fullName: 'Eddy Webster' },
+  Jon:      { initials: 'JW', color: '#c2497a', fullName: 'Jon Ward' },
+  Luke:     { initials: 'LB', color: '#2bb1d9', fullName: 'Luke Butcher' },
+  Mike:     { initials: 'MS', color: '#3a8dde', fullName: 'Mike Sutton' },
+  'Nick G': { initials: 'NG', color: '#9c6b3c', fullName: 'Nick Goodacre' },
+  'Nick M': { initials: 'NM', color: '#28b269', fullName: 'Nick Mottershead' },
+}
+
+/* 6-column run — 18/19 + 19/20 dropped (the league existed but the
+ * mocked-data table starts at 20/21). Keeping six matches the
+ * team-name-by-season screenshot the user pasted exactly. */
+const MERGED_SEASONS = ['20/21', '21/22', '22/23', '23/24', '24/25', '25/26']
+
+/* Mocked 25/26 final table — anchored on the user's team-name table
+ * (Luke = "Seoul Club 7" with trophy emoji = champion). Other ranks
+ * fabricated for the merged variants only. */
+const MERGED_LIVE_2526 = [
+  { manager: 'Luke',   team: 'Seoul Club 7',       rank: 1 },
+  { manager: 'David',  team: 'Crouch End Oashisu', rank: 2 },
+  { manager: 'Andy',   team: 'Toronto Oizo',       rank: 3 },
+  { manager: 'Eddy',   team: 'Brampton II Men',    rank: 4 },
+  { manager: 'Nick',   team: 'Hanson of York AFC', rank: 5 },
+  { manager: 'Nick',   team: 'Hackney Meat Loaf',  rank: 6 },
+  { manager: 'Mike',   team: 'Clapton Cornershop', rank: 7 },
+  { manager: 'Jon',    team: 'Morpeth Jamiroquai', rank: 8 },
+]
+
+function shortenSeasonLabel(season) {
+  /* '2020-21' → '20/21' */
+  const m = /^(\d{2})(\d{2})-(\d{2})$/.exec(String(season))
+  return m ? `${m[2]}/${m[3]}` : String(season)
+}
+
+function buildMergedHistory() {
+  const seasonRows = [
+    ...HALL_SEASON_FINAL_TABLES.map(({ season, rows }) => ({
+      label: shortenSeasonLabel(season),
+      rows,
+    })),
+    { label: '25/26', rows: MERGED_LIVE_2526 },
+  ]
+  const byMgr = {}
+  for (const key of MERGED_MGR_KEYS) byMgr[key] = {}
+  for (const { label, rows } of seasonRows) {
+    for (const r of rows) {
+      const mgrKey = hallManagerDisplayKey(r.team, r.manager)
+      if (!byMgr[mgrKey]) byMgr[mgrKey] = {}
+      byMgr[mgrKey][label] = { team: r.team, rank: r.rank }
+    }
+  }
+  return MERGED_MGR_KEYS.map((key) => {
+    const seasons = MERGED_SEASONS.map((s) => ({
+      season: s,
+      team: byMgr[key]?.[s]?.team ?? null,
+      rank: byMgr[key]?.[s]?.rank ?? null,
+    }))
+    const ranks = seasons.map((s) => s.rank).filter(Boolean)
+    const titles = ranks.filter((r) => r === 1).length
+    const ru = ranks.filter((r) => r === 2).length
+    const best = ranks.length ? Math.min(...ranks) : null
+    return { key, meta: MERGED_MGR_META[key], seasons, titles, ru, best }
+  })
+}
+
+const MERGED_HISTORY = buildMergedHistory()
+
+/* Sort: titles desc, then runner-ups, then best rank — matches the
+ * sort used by HOF_TITLES_BY_TEAM / runner-up tie-break. */
+const MERGED_HISTORY_SORTED = [...MERGED_HISTORY].sort((a, b) => {
+  if (b.titles !== a.titles) return b.titles - a.titles
+  if (b.ru !== a.ru) return b.ru - a.ru
+  return (a.best ?? 9) - (b.best ?? 9)
+})
+
+/* ------------------------------------------------------------------ */
 /* HOF · shared atoms                                                   */
 /* ------------------------------------------------------------------ */
 function HofBannerImage({ banner, fit = 'cover' }) {
@@ -9062,6 +9164,467 @@ function CocLiveAlgoToggle({ style: mode = 'heatmap' }) {
         </div>
       </div>
       <CocMatrixTable style={mode} algorithm={algo} />
+    </div>
+  )
+}
+
+/* ------------------------------------------------------------------ */
+/* MERGED HISTORY — team-name + finishing position variants             */
+/* TH-A · TH-B · TH-C · TH-D (desktop) + MV-A · MV-B · MV-C (mobile)    */
+/* ------------------------------------------------------------------ */
+
+function MergedMgrCell({ row }) {
+  return (
+    <span className="hof-team-cell merged-history__mgr-cell">
+      <span
+        className="hof-team-cell__crest"
+        style={{ background: row.meta.color }}
+      >
+        {row.meta.initials}
+      </span>
+      <span className="hof-team-cell__text">
+        <span className="hof-team-cell__name">{row.key}</span>
+        <span className="hof-team-cell__mgr">{row.meta.fullName}</span>
+      </span>
+    </span>
+  )
+}
+
+function mergedCellPosClass(rank) {
+  if (!rank) return 'is-empty'
+  return 'is-pos-' + rank
+}
+
+/* TH-A · Stacked cell — team-name above (tiny, muted), finishing
+ * position below (large, heatmapped). Cells are taller than the H-D
+ * matrix to fit both. */
+function MergedHistoryTHA() {
+  return (
+    <div className="merged-history merged-history--stacked">
+      <table>
+        <thead>
+          <tr>
+            <th className="merged-history__th-mgr">Manager</th>
+            {MERGED_SEASONS.map((s) => (
+              <th key={s} className="merged-history__th-season">{s}</th>
+            ))}
+            <th className="merged-history__th-meta">Titles</th>
+            <th className="merged-history__th-meta">Best</th>
+          </tr>
+        </thead>
+        <tbody>
+          {MERGED_HISTORY_SORTED.map((row) => (
+            <tr key={row.key}>
+              <td className="merged-history__td-mgr">
+                <MergedMgrCell row={row} />
+              </td>
+              {row.seasons.map((s) => (
+                <td
+                  key={s.season}
+                  className={
+                    'merged-history__td-cell merged-history__td-cell--stacked ' +
+                    mergedCellPosClass(s.rank)
+                  }
+                >
+                  {s.team ? (
+                    <>
+                      <div className="merged-history__cell-team">{s.team}</div>
+                      <div className="merged-history__cell-pos">{s.rank ?? '—'}</div>
+                    </>
+                  ) : (
+                    <div className="merged-history__cell-empty">—</div>
+                  )}
+                </td>
+              ))}
+              <td className="merged-history__td-meta">
+                <strong>{row.titles}</strong>
+              </td>
+              <td className="merged-history__td-meta">
+                <strong>{row.best ?? '—'}</strong>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* TH-B · Position prominent; team-name as a thin chip ribbon along
+ * the bottom edge of the cell. More compact than TH-A but the team
+ * name has less room. */
+function MergedHistoryTHB() {
+  return (
+    <div className="merged-history merged-history--ribbon">
+      <table>
+        <thead>
+          <tr>
+            <th className="merged-history__th-mgr">Manager</th>
+            {MERGED_SEASONS.map((s) => (
+              <th key={s} className="merged-history__th-season">{s}</th>
+            ))}
+            <th className="merged-history__th-meta">Titles</th>
+            <th className="merged-history__th-meta">Best</th>
+          </tr>
+        </thead>
+        <tbody>
+          {MERGED_HISTORY_SORTED.map((row) => (
+            <tr key={row.key}>
+              <td className="merged-history__td-mgr">
+                <MergedMgrCell row={row} />
+              </td>
+              {row.seasons.map((s) => (
+                <td
+                  key={s.season}
+                  className={
+                    'merged-history__td-cell merged-history__td-cell--ribbon ' +
+                    mergedCellPosClass(s.rank)
+                  }
+                >
+                  <div className="merged-history__cell-pos-big">{s.rank ?? '—'}</div>
+                  {s.team && (
+                    <div className="merged-history__cell-ribbon" title={s.team}>
+                      {s.team}
+                    </div>
+                  )}
+                </td>
+              ))}
+              <td className="merged-history__td-meta">
+                <strong>{row.titles}</strong>
+              </td>
+              <td className="merged-history__td-meta">
+                <strong>{row.best ?? '—'}</strong>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* TH-C · Two-row band per manager — top row = team names, bottom row =
+ * finishing positions (heatmapped). Manager + meta cells span both
+ * with rowSpan={2}. Takes 2x vertical space per manager. */
+function MergedHistoryTHC() {
+  return (
+    <div className="merged-history merged-history--band">
+      <table>
+        <thead>
+          <tr>
+            <th className="merged-history__th-mgr">Manager</th>
+            {MERGED_SEASONS.map((s) => (
+              <th key={s} className="merged-history__th-season">{s}</th>
+            ))}
+            <th className="merged-history__th-meta">Titles</th>
+            <th className="merged-history__th-meta">Best</th>
+          </tr>
+        </thead>
+        <tbody>
+          {MERGED_HISTORY_SORTED.map((row) => (
+            <Fragment key={row.key}>
+              <tr className="merged-history__band-top">
+                <td className="merged-history__td-mgr" rowSpan={2}>
+                  <MergedMgrCell row={row} />
+                </td>
+                {row.seasons.map((s) => (
+                  <td key={s.season} className="merged-history__td-band-name">
+                    {s.team ?? '—'}
+                  </td>
+                ))}
+                <td className="merged-history__td-meta" rowSpan={2}>
+                  <strong>{row.titles}</strong>
+                </td>
+                <td className="merged-history__td-meta" rowSpan={2}>
+                  <strong>{row.best ?? '—'}</strong>
+                </td>
+              </tr>
+              <tr className="merged-history__band-bottom">
+                {row.seasons.map((s) => (
+                  <td
+                    key={s.season}
+                    className={
+                      'merged-history__td-band-pos ' + mergedCellPosClass(s.rank)
+                    }
+                  >
+                    {s.rank ?? '—'}
+                  </td>
+                ))}
+              </tr>
+            </Fragment>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/* TH-D · Manager journey timeline — vertical card row per manager.
+ * Manager + crest on the left; season cards stretch right. Each card
+ * shows team name on top + big position below (heatmap-tinted). More
+ * celebratory, less dense than the table variants. */
+function MergedHistoryTHD() {
+  return (
+    <div className="merged-history-timeline">
+      {MERGED_HISTORY_SORTED.map((row) => (
+        <div key={row.key} className="merged-history-timeline__row">
+          <div className="merged-history-timeline__mgr">
+            <span
+              className="merged-history-timeline__crest"
+              style={{ background: row.meta.color }}
+            >
+              {row.meta.initials}
+            </span>
+            <div className="merged-history-timeline__mgr-text">
+              <div className="merged-history-timeline__mgr-name">{row.key}</div>
+              <div className="merged-history-timeline__mgr-sub">
+                {row.titles}{' '}{row.titles === 1 ? 'title' : 'titles'} · best #{row.best ?? '—'}
+              </div>
+            </div>
+          </div>
+          <div className="merged-history-timeline__cards">
+            {row.seasons.map((s) => (
+              <div
+                key={s.season}
+                className={
+                  'merged-history-timeline__card ' + mergedCellPosClass(s.rank)
+                }
+              >
+                <div className="merged-history-timeline__card-season">{s.season}</div>
+                <div className="merged-history-timeline__card-team" title={s.team ?? ''}>
+                  {s.team ?? '—'}
+                </div>
+                <div className="merged-history-timeline__card-pos">
+                  {s.rank ?? '—'}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+/* MV-A · Mobile accordion — each manager is one row showing
+ * crest + name + best/titles summary; tap → expand to reveal the
+ * per-season journey list. Mocked with the top row expanded so the
+ * user sees both states in the same frame. */
+function MergedHistoryMVA() {
+  const [openKey, setOpenKey] = useState(MERGED_HISTORY_SORTED[0].key)
+  return (
+    <div className="merged-history-mv merged-history-mv--accordion">
+      <ul className="merged-history-mv__accordion-list">
+        {MERGED_HISTORY_SORTED.map((row) => {
+          const open = openKey === row.key
+          return (
+            <li key={row.key} className="merged-history-mv__accordion-item">
+              <button
+                type="button"
+                aria-expanded={open}
+                className={
+                  'merged-history-mv__accordion-toggle' + (open ? ' is-open' : '')
+                }
+                onClick={() => setOpenKey(open ? null : row.key)}
+              >
+                <span className="merged-history-mv__accordion-mgr">
+                  <span
+                    className="merged-history-mv__crest"
+                    style={{ background: row.meta.color }}
+                  >
+                    {row.meta.initials}
+                  </span>
+                  <span className="merged-history-mv__accordion-mgr-text">
+                    <span className="merged-history-mv__accordion-mgr-name">{row.key}</span>
+                    <span className="merged-history-mv__accordion-mgr-sub">
+                      {row.meta.fullName}
+                    </span>
+                  </span>
+                </span>
+                <span className="merged-history-mv__accordion-meta">
+                  <span className="merged-history-mv__summary-chip">
+                    <span className="merged-history-mv__summary-chip-num">{row.titles}</span>
+                    <span className="merged-history-mv__summary-chip-label">titles</span>
+                  </span>
+                  <span className="merged-history-mv__summary-chip">
+                    <span className="merged-history-mv__summary-chip-num">#{row.best ?? '—'}</span>
+                    <span className="merged-history-mv__summary-chip-label">best</span>
+                  </span>
+                  <span
+                    className="merged-history-mv__chevron"
+                    aria-hidden
+                    style={{ transform: open ? 'rotate(90deg)' : 'rotate(0deg)' }}
+                  >
+                    ›
+                  </span>
+                </span>
+              </button>
+              {open && (
+                <ul className="merged-history-mv__journey">
+                  {row.seasons.map((s) => (
+                    <li
+                      key={s.season}
+                      className={
+                        'merged-history-mv__journey-row ' + mergedCellPosClass(s.rank)
+                      }
+                    >
+                      <span className="merged-history-mv__journey-season">{s.season}</span>
+                      <span className="merged-history-mv__journey-team">
+                        {s.team ?? '—'}
+                      </span>
+                      <span
+                        className={
+                          'merged-history-mv__pos-chip ' + mergedCellPosClass(s.rank)
+                        }
+                      >
+                        {s.rank ?? '—'}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+/* MV-B · One-manager pager — horizontal manager pills up top, vertical
+ * season list below for the active manager. Mocked with the first
+ * sorted manager active. */
+function MergedHistoryMVB() {
+  const [activeKey, setActiveKey] = useState(MERGED_HISTORY_SORTED[0].key)
+  const active = MERGED_HISTORY_SORTED.find((r) => r.key === activeKey) ?? MERGED_HISTORY_SORTED[0]
+  return (
+    <div className="merged-history-mv merged-history-mv--pager">
+      <div
+        className="merged-history-mv__pager-pills"
+        role="tablist"
+        aria-label="Manager"
+      >
+        {MERGED_HISTORY_SORTED.map((row) => {
+          const isActive = row.key === active.key
+          return (
+            <button
+              key={row.key}
+              type="button"
+              role="tab"
+              aria-selected={isActive}
+              className={
+                'merged-history-mv__pager-pill' + (isActive ? ' is-active' : '')
+              }
+              style={
+                isActive
+                  ? { background: row.meta.color, borderColor: row.meta.color }
+                  : undefined
+              }
+              onClick={() => setActiveKey(row.key)}
+            >
+              {row.key}
+            </button>
+          )
+        })}
+      </div>
+      <div
+        className="merged-history-mv__pager-head"
+        style={{ borderTopColor: active.meta.color }}
+      >
+        <span
+          className="merged-history-mv__crest merged-history-mv__crest--lg"
+          style={{ background: active.meta.color }}
+        >
+          {active.meta.initials}
+        </span>
+        <div className="merged-history-mv__pager-head-text">
+          <div className="merged-history-mv__pager-head-name">{active.key}</div>
+          <div className="merged-history-mv__pager-head-sub">
+            {active.meta.fullName} · {active.titles}{' '}
+            {active.titles === 1 ? 'title' : 'titles'} · best #{active.best ?? '—'}
+          </div>
+        </div>
+      </div>
+      <ul className="merged-history-mv__pager-list">
+        {active.seasons.map((s) => (
+          <li
+            key={s.season}
+            className={
+              'merged-history-mv__pager-row ' + mergedCellPosClass(s.rank)
+            }
+          >
+            <span className="merged-history-mv__pager-season">{s.season}</span>
+            <span className="merged-history-mv__pager-team">{s.team ?? '—'}</span>
+            <span
+              className={
+                'merged-history-mv__pos-chip ' + mergedCellPosClass(s.rank)
+              }
+            >
+              {s.rank ?? '—'}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/* MV-C · Transposed matrix — rows = seasons, columns = managers
+ * (8 narrow cells across the phone viewport, ~38-42 px each). Each
+ * cell shows finishing position with the heatmap; team name reveals
+ * on tap at runtime — the mock just shows the position. */
+function MergedHistoryMVC() {
+  return (
+    <div className="merged-history-mv merged-history-mv--transposed">
+      <div className="merged-history-mv__transposed-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th className="merged-history-mv__transposed-corner" />
+              {MERGED_HISTORY_SORTED.map((row) => (
+                <th
+                  key={row.key}
+                  className="merged-history-mv__transposed-th-mgr"
+                  title={`${row.key} · ${row.meta.fullName}`}
+                >
+                  <span
+                    className="merged-history-mv__transposed-crest"
+                    style={{ background: row.meta.color }}
+                  >
+                    {row.meta.initials}
+                  </span>
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {MERGED_SEASONS.map((season) => (
+              <tr key={season}>
+                <th className="merged-history-mv__transposed-th-season">{season}</th>
+                {MERGED_HISTORY_SORTED.map((row) => {
+                  const entry = row.seasons.find((s) => s.season === season)
+                  const rank = entry?.rank ?? null
+                  return (
+                    <td
+                      key={row.key}
+                      className={
+                        'merged-history-mv__transposed-cell ' + mergedCellPosClass(rank)
+                      }
+                      title={entry?.team ?? '—'}
+                    >
+                      {rank ?? '—'}
+                    </td>
+                  )
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p className="merged-history-mv__transposed-note">
+        Tap a cell to reveal the team name that season. Mock shows
+        positions only.
+      </p>
     </div>
   )
 }
@@ -9889,6 +10452,105 @@ export function Mockup() {
             matrix variants above.
           </p>
           <CocLiveTally />
+        </section>
+
+        {/* HISTORY — merged team-name + finishing-position variants ---- */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">
+            History · Team-name + finishing position merged
+          </div>
+          <h2 className="mockup__section-h">
+            Commemorate the team-name evolution AND the finishing position in one table
+          </h2>
+          <p className="mockup__section-sub">
+            User direction: &ldquo;use a table like this (without horizontal
+            scroll) somehow with their finishing positions instead of this
+            mockup&rdquo; — i.e. fold the team-name-by-season story from the
+            Team History list into the Champions-of-Champions heatmap. All
+            variants anchor on the <strong>manager</strong> (the stable
+            identity — teams rebrand every year) and run 20/21 → 25/26 (six
+            cols; 18/19 + 19/20 dropped — the mocked history doesn&apos;t
+            cover them and an &ldquo;n/a&rdquo; column on the far left
+            cluttered every layout). 25/26 row is mocked — Luke wins, per
+            the team-name-table screenshot.
+          </p>
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">VARIANT TH-A · STACKED CELL (team-name above · position below)</div>
+          <MergedHistoryTHA />
+          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
+            Each cell stacks tiny team-name on top + finishing position
+            (large, heatmap-tinted) below. Reads as &ldquo;{`{team that season}`}{' '}
+            finished {`{position}`}&rdquo; in one glance. Cells are taller
+            (~52 px) than the H-D matrix to fit both rows.
+          </p>
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">VARIANT TH-B · POSITION + RIBBON (team-name as bottom chip)</div>
+          <MergedHistoryTHB />
+          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
+            Position is the focal element (matrix-style); team-name ribbons
+            across the bottom edge in tiny text. More compact than TH-A but
+            long team names truncate with ellipsis.
+          </p>
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">VARIANT TH-C · TWO-ROW BAND (names row above · positions row below)</div>
+          <MergedHistoryTHC />
+          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
+            Each manager occupies two stacked rows: team names on top
+            (small, no heatmap), finishing positions on the bottom (big,
+            heatmapped). Manager + meta columns span both with rowSpan=2.
+            Visually separates the two dimensions but doubles vertical
+            space.
+          </p>
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">VARIANT TH-D · MANAGER JOURNEY TIMELINE (card per season)</div>
+          <MergedHistoryTHD />
+          <p className="mockup__section-sub" style={{ marginTop: 'var(--space-3)' }}>
+            Manager + crest on the left, horizontal sequence of season
+            cards stretching right — one card per season with year, team
+            name, and big heatmapped position. More celebratory / heritage
+            feel than the table variants but less dense.
+          </p>
+        </section>
+
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">
+            History · merged · MOBILE PATTERNS · MV-A · MV-B · MV-C (390 px portrait)
+          </div>
+          <h2 className="mockup__section-h">Three mobile patterns for the same merged table</h2>
+          <p className="mockup__section-sub">
+            The matrix doesn&apos;t fit on a phone, so three different
+            patterns below — accordion-per-manager, one-manager-at-a-time
+            pager, and a transposed (season-as-row) matrix that fits 8
+            narrow cells across.
+          </p>
+          <div className="mockup-portrait-row hof-portrait-row hof-portrait-row--3">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">MV-A · accordion list · top row expanded</div>
+              <PortraitFrame>
+                <MergedHistoryMVA />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">MV-B · manager pager · pills + season list</div>
+              <PortraitFrame>
+                <MergedHistoryMVB />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">MV-C · transposed matrix · season-as-row</div>
+              <PortraitFrame>
+                <MergedHistoryMVC />
+              </PortraitFrame>
+            </div>
+          </div>
         </section>
         </>)}
 
