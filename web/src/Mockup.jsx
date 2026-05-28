@@ -8576,13 +8576,8 @@ function buildMergedHistory() {
     const ranks = seasons.map((s) => s.rank).filter(Boolean)
     const titles = ranks.filter((r) => r === 1).length
     const ru = ranks.filter((r) => r === 2).length
-    /* TITAN = top-half finishes (1st–4th); MINNOW = bottom-half (5th–8th).
-     * These overlap with titles/ru deliberately so the four stats give
-     * a fuller career picture than just championships. */
-    const titan = ranks.filter((r) => r >= 1 && r <= 4).length
-    const minnow = ranks.filter((r) => r >= 5 && r <= 8).length
     const best = ranks.length ? Math.min(...ranks) : null
-    return { key, meta: MERGED_MGR_META[key], seasons, titles, ru, titan, minnow, best }
+    return { key, meta: MERGED_MGR_META[key], seasons, titles, ru, best }
   })
 }
 
@@ -9126,8 +9121,9 @@ function CocLiveAlgoToggle({ style: mode = 'heatmap' }) {
  *  · Live cumulative — manager-anchored career totals across all 6
  *    completed/in-progress seasons (228 H2H matches per manager).
  *    11 sortable columns; default sort is PTS desc.
- *  · Algorithm matrix — finishing position per season translated to
- *    8-7-6-5-4-3-2-1 (1st = 8 pts ... 8th = 1 pt). Heatmap-tinted
+ *  · Algorithm matrix — finishing position per season is the cell
+ *    score directly (1st = 1 pt ... 8th = 8 pts, lowest total wins
+ *    golf-style). Heatmap-tinted
  *    cells reuse the same .merged-history-timeline__card pos-* tints
  *    as TH-D so the cumulative story reads consistently with Team
  *    History. Default sort is TOTAL desc.
@@ -9404,13 +9400,14 @@ function CocLiveMobileSubset() {
 
 /* Build the per-season algorithm-score rows from MERGED_HISTORY so the
  * matrix stays in lockstep with TH-D's finishing positions. Each cell
- * = 9 - rank (1st = 8 ... 8th = 1, missing season = 0). Total = sum
- * across the 6 seasons. Sorted by Total desc by default. */
+ * = finishing position itself (1st = 1 pt ... 8th = 8 pts, missing
+ * season = 0). Lowest total wins (golf-style). Sorted by Total asc by
+ * default. */
 function buildCocAlgoRows() {
   return MERGED_HISTORY.map((row) => {
     const scores = MERGED_SEASONS.map((season) => {
       const entry = row.seasons.find((s) => s.season === season)
-      return entry?.rank ? 9 - entry.rank : 0
+      return entry?.rank ?? 0
     })
     const ranks = MERGED_SEASONS.map((season) => {
       const entry = row.seasons.find((s) => s.season === season)
@@ -9442,17 +9439,21 @@ function sortCocAlgoRows(rows, sort) {
 
 /* Desktop · Algorithm matrix.
  * 8 columns (manager + 6 seasons + total). Season cells reuse the
- * TH-D pos-* tints (gold for 1st ... red for 8th). */
+ * TH-D pos-* tints (gold for 1st ... red for 8th) — because the cell
+ * value is now the rank itself, the existing rank-keyed tint already
+ * paints 1 = darkest gold and 8 = darkest red without any mapping
+ * change. Default sort: TOTAL ascending (lowest = best, golf-style). */
 function CocAlgorithmMatrix() {
-  const [sort, setSort] = useState({ key: 'total', dir: 'desc' })
+  const [sort, setSort] = useState({ key: 'total', dir: 'asc' })
   const rows = sortCocAlgoRows(buildCocAlgoRows(), sort)
   const handleSort = (key) => {
     setSort((prev) => {
       if (prev?.key === key) {
         return { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
       }
-      const defaultDir = key === 'mgr' ? 'asc' : 'desc'
-      return { key, dir: defaultDir }
+      /* Manager is alphabetical (asc); every numeric column is a
+       * "lower = better" score so default-asc as well. */
+      return { key, dir: 'asc' }
     })
   }
   const arrowFor = (key) => {
@@ -9467,7 +9468,7 @@ function CocAlgorithmMatrix() {
   return (
     <div className="hof-coc-algo">
       <div className="hof-coc-algo__subhead">
-        Algorithm: 8 pts for 1st · 7 for 2nd · 6 for 3rd · … · 1 for 8th. Sum across all seasons.
+        Algorithm: 1 pt for 1st · 2 for 2nd · 3 for 3rd · … · 8 for 8th. Lowest total wins.
       </div>
       <div className="hof-coc-algo__scroll">
         <table className="hof-coc-algo__table">
@@ -9514,7 +9515,7 @@ function CocAlgorithmMatrix() {
                     <td
                       key={MERGED_SEASONS[i]}
                       className={'hof-coc-algo__td hof-coc-algo__td-cell ' + mergedCellPosClass(rank)}
-                      title={rank ? `Finished ${rank} → ${score} pts` : '—'}
+                      title={rank ? `Finished ${rank} → ${score} pts (lower = better)` : '—'}
                     >
                       {score || '—'}
                     </td>
@@ -9535,15 +9536,16 @@ function CocAlgorithmMatrix() {
 /* Mobile · Algorithm matrix.
  *   manager (96px) + 6 seasons × 32px + TOTAL (48px) = 336px
  * — fits a 360px viewport with 12px padding. Same heatmap tints as
- * desktop, just compressed cell sizing. */
+ * desktop, just compressed cell sizing. Sorted by TOTAL asc (lowest
+ * = best). */
 function CocAlgoMobileMatrix() {
-  const rows = sortCocAlgoRows(buildCocAlgoRows(), { key: 'total', dir: 'desc' })
+  const rows = sortCocAlgoRows(buildCocAlgoRows(), { key: 'total', dir: 'asc' })
   return (
     <div className="hof-coc-algo-mob">
       <div className="hof-coc-algo-mob__head">
-        <div className="hof-coc-algo-mob__title">Algorithm · 8-7-6-5-4-3-2-1</div>
+        <div className="hof-coc-algo-mob__title">Algorithm · 1-2-3-4-5-6-7-8</div>
         <div className="hof-coc-algo-mob__sub">
-          1st = 8 · 8th = 1 · Sum across seasons
+          1st = 1 · 8th = 8 · Lowest total wins
         </div>
       </div>
       <table className="hof-coc-algo-mob__table">
@@ -9656,61 +9658,38 @@ function mergedCellPosClass(rank) {
  * Manager + crest on the left; season cards stretch right. Each card
  * shows team name on top + big position below (heatmap-tinted).
  *
- * Locked spec: identity column carries the manager full name + a
- * 2×2 grid of uppercase stats (TITLES · RUNNER-UP · TITAN · MINNOW)
- * that mirrors the 25/26 year-label treatment (caps, muted,
- * letter-spaced).
- *   TITLES   — finishes at 1st
- *   RUNNER-UP — finishes at 2nd
- *   TITAN    — top-half finishes (1st–4th)
- *   MINNOW   — bottom-half finishes (5th–8th)
- * TITAN + MINNOW = seasons played. Tooltips on the TITAN/MINNOW
- * cells carry the position-range clarification so the inline labels
- * stay short. */
+ * Locked spec: identity column carries the manager name + a stacked
+ * uppercase stats block (TITLES · RUNNER-UP) that mirrors the 25/26
+ * year-label treatment (caps, muted, letter-spaced). The BEST #N
+ * line was dropped per user feedback — the per-season heatmap cards
+ * already make a manager's best finish read at a glance, so the
+ * stacked stats focus on the celebratory tallies only. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
       {MERGED_HISTORY_SORTED.map((row) => (
         <div key={row.key} className="merged-history-timeline__row">
           <div className="merged-history-timeline__mgr">
-            <div className="merged-history-timeline__mgr-head">
-              <span
-                className="merged-history-timeline__crest"
-                style={{ background: row.meta.color }}
-              >
-                {row.meta.initials}
-              </span>
-              <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
-            </div>
-            <div
-              className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
-              role="group"
-              aria-label="Career stats"
+            <span
+              className="merged-history-timeline__crest"
+              style={{ background: row.meta.color }}
             >
-              <div className="merged-history-timeline__mgr-stat">
-                <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
-                <span className="merged-history-timeline__mgr-stat-label">
-                  {row.titles === 1 ? 'title' : 'titles'}
-                </span>
-              </div>
-              <div className="merged-history-timeline__mgr-stat">
-                <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
-                <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
-              </div>
-              <div
-                className="merged-history-timeline__mgr-stat"
-                title="Seasons finishing 1st–4th (top half)"
-              >
-                <span className="merged-history-timeline__mgr-stat-num">{row.titan}</span>
-                <span className="merged-history-timeline__mgr-stat-label">titan</span>
-              </div>
-              <div
-                className="merged-history-timeline__mgr-stat"
-                title="Seasons finishing 5th–8th (bottom half)"
-              >
-                <span className="merged-history-timeline__mgr-stat-num">{row.minnow}</span>
-                <span className="merged-history-timeline__mgr-stat-label">minnow</span>
-              </div>
+              {row.meta.initials}
+            </span>
+            <div className="merged-history-timeline__mgr-text">
+              <div className="merged-history-timeline__mgr-name">{row.key}</div>
+              <ul className="merged-history-timeline__mgr-stats" aria-label="Career stats">
+                <li className="merged-history-timeline__mgr-stat">
+                  <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">
+                    {row.titles === 1 ? 'title' : 'titles'}
+                  </span>
+                </li>
+                <li className="merged-history-timeline__mgr-stat">
+                  <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
+                  <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+                </li>
+              </ul>
             </div>
           </div>
           <div className="merged-history-timeline__cards">
@@ -9768,7 +9747,8 @@ function MergedHistoryMVA() {
                     {row.meta.initials}
                   </span>
                   <span className="merged-history-mv__accordion-mgr-text">
-                    <span className="merged-history-mv__accordion-mgr-name">
+                    <span className="merged-history-mv__accordion-mgr-name">{row.key}</span>
+                    <span className="merged-history-mv__accordion-mgr-sub">
                       {row.meta.fullName}
                     </span>
                   </span>
@@ -10908,7 +10888,8 @@ export function Mockup() {
             Tab 3 (Champions of Champions) is locked with a Live ⇄
             Algorithm pill: Live shows the cumulative 11-column table
             (default PTS desc); Algorithm shows the season-by-season
-            8-7-6-5-4-3-2-1 finishing-score matrix.
+            finishing-position matrix (1st = 1 pt ... 8th = 8 pts,
+            lowest total wins golf-style).
           </p>
           <HallOfFameHistorySubMenu />
         </section>
