@@ -566,12 +566,67 @@ function TrophyRoomCarouselDots({ count, activeIdx, onSelect, idPrefix }) {
   )
 }
 
+/** Segmented carousel ⇄ grid toggle for the Trophy Room. Shared by the
+ * mobile and desktop layouts; the glass-pill styling sits on the dark
+ * celebration backdrop. "Grid" reveals every winner banner at once. */
+function TrophyRoomViewToggle({ mode, onChange }) {
+  return (
+    <div className="hof-troom__viewtoggle" role="group" aria-label="Trophy Room view">
+      <button
+        type="button"
+        className={'hof-troom__viewtoggle-btn' + (mode === 'carousel' ? ' is-active' : '')}
+        aria-pressed={mode === 'carousel'}
+        aria-label="Carousel view — one banner at a time"
+        onClick={() => onChange('carousel')}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="8" y="5" width="8" height="14" rx="1.5" />
+          <line x1="4.5" y1="8" x2="4.5" y2="16" />
+          <line x1="19.5" y1="8" x2="19.5" y2="16" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className={'hof-troom__viewtoggle-btn' + (mode === 'grid' ? ' is-active' : '')}
+        aria-pressed={mode === 'grid'}
+        aria-label="Grid view — show all winners"
+        onClick={() => onChange('grid')}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="3.5" y="3.5" width="7" height="7" rx="1.4" />
+          <rect x="13.5" y="3.5" width="7" height="7" rx="1.4" />
+          <rect x="3.5" y="13.5" width="7" height="7" rx="1.4" />
+          <rect x="13.5" y="13.5" width="7" height="7" rx="1.4" />
+        </svg>
+      </button>
+    </div>
+  )
+}
+
+/** Grid of every champion banner, rendered in the same banner-card style
+ * as the carousel slides, on the shared dark celebration backdrop. */
+function TrophyRoomGrid({ banners }) {
+  return (
+    <div className="hof-troom__grid">
+      {banners.map((b) => (
+        <div className="hof-troom__grid-cell" key={b.season}>
+          <TrophyBannerCard row={b} />
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function HeritageTrophyRoom() {
   const banners = HALL_OF_CHAMPIONS
   const total = banners.length
   /* Banners are sorted latest-first, so the default active card is index 0
    * (the most recent champion). */
   const [activeIdx, setActiveIdx] = useState(0)
+  /* View mode — default carousel (latest season first); "grid" shows all
+   * six winner banners at once. Mobile-only: the desktop layout is always
+   * a carousel, so only the mobile branch reads/writes this. */
+  const [viewMode, setViewMode] = useState('carousel')
   const isDesktop = useTrophyRoomDesktopLayout()
 
   const goPrev = useCallback(
@@ -627,22 +682,30 @@ function HeritageTrophyRoom() {
           tabIndex={0}
           onKeyDown={onKeyDown}
         >
-          <TrophyRoomCarouselArrow direction="prev" onClick={goPrev} />
-          <div className="hof-troom-dt__stage" id="heritage-troom-dt-active">
-            {banners.map((b, i) => (
-              <div
-                key={b.season}
-                className={
-                  'hof-troom-dt__slide' +
-                  (i === activeIdx ? ' is-active' : '')
-                }
-                aria-hidden={i === activeIdx ? 'false' : 'true'}
-              >
-                <TrophyBannerCard row={b} />
-              </div>
-            ))}
+          {/* Viewport wraps stage + arrows so the arrows always sit
+              tight against the card edges, regardless of how wide the
+              outer Heritage tile is. The viewport is the same width as
+              the stage card (with a small gutter on each side to host
+              the glass arrow pills), centered in the tile, and acts as
+              the positioning context for both arrows. */}
+          <div className="hof-troom-dt__viewport">
+            <TrophyRoomCarouselArrow direction="prev" onClick={goPrev} />
+            <div className="hof-troom-dt__stage" id="heritage-troom-dt-active">
+              {banners.map((b, i) => (
+                <div
+                  key={b.season}
+                  className={
+                    'hof-troom-dt__slide' +
+                    (i === activeIdx ? ' is-active' : '')
+                  }
+                  aria-hidden={i === activeIdx ? 'false' : 'true'}
+                >
+                  <TrophyBannerCard row={b} />
+                </div>
+              ))}
+            </div>
+            <TrophyRoomCarouselArrow direction="next" onClick={goNext} />
           </div>
-          <TrophyRoomCarouselArrow direction="next" onClick={goNext} />
           <TrophyRoomCarouselDots
             count={total}
             activeIdx={activeIdx}
@@ -653,28 +716,37 @@ function HeritageTrophyRoom() {
       ) : (
         <div
           className="hof-troom hof-troom--swipe"
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
+          onTouchStart={viewMode === 'carousel' ? onTouchStart : undefined}
+          onTouchEnd={viewMode === 'carousel' ? onTouchEnd : undefined}
           tabIndex={0}
-          onKeyDown={onKeyDown}
+          onKeyDown={viewMode === 'carousel' ? onKeyDown : undefined}
         >
-          <div className="hof-troom__swipe-stage">
-            <div className="hof-troom__swipe-peek hof-troom__swipe-peek--prev" aria-hidden="true">
-              <TrophyBannerCard row={prev} />
-            </div>
-            <div className="hof-troom__swipe-active">
-              <TrophyBannerCard row={cur} />
-            </div>
-            <div className="hof-troom__swipe-peek hof-troom__swipe-peek--next" aria-hidden="true">
-              <TrophyBannerCard row={next} />
-            </div>
+          <div className="hof-troom__bar">
+            <TrophyRoomViewToggle mode={viewMode} onChange={setViewMode} />
           </div>
-          <TrophyRoomCarouselDots
-            count={total}
-            activeIdx={activeIdx}
-            onSelect={setActiveIdx}
-            idPrefix="heritage-troom-mob"
-          />
+          {viewMode === 'grid' ? (
+            <TrophyRoomGrid banners={banners} />
+          ) : (
+            <>
+              <div className="hof-troom__swipe-stage">
+                <div className="hof-troom__swipe-peek hof-troom__swipe-peek--prev" aria-hidden="true">
+                  <TrophyBannerCard row={prev} />
+                </div>
+                <div className="hof-troom__swipe-active">
+                  <TrophyBannerCard row={cur} />
+                </div>
+                <div className="hof-troom__swipe-peek hof-troom__swipe-peek--next" aria-hidden="true">
+                  <TrophyBannerCard row={next} />
+                </div>
+              </div>
+              <TrophyRoomCarouselDots
+                count={total}
+                activeIdx={activeIdx}
+                onSelect={setActiveIdx}
+                idPrefix="heritage-troom-mob"
+              />
+            </>
+          )}
         </div>
       )}
     </section>
@@ -898,18 +970,23 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
     )
   }, [journey])
 
-  /* Default to the leader (most titles) — re-evaluate when the sorted
-   * order changes so the open row tracks the top-of-leaderboard manager
-   * across live-season updates. */
-  const [openKey, setOpenKey] = useState(
-    () => sortedJourney[0]?.key ?? null,
-  )
+  /* Multi-open accordion: every section starts collapsed and the user can
+   * expand as many as they like simultaneously. Toggling a row only adds or
+   * removes its own key from the Set, so opening one never closes another. */
+  const [openKeys, setOpenKeys] = useState(() => new Set())
+  const toggleKey = (key) =>
+    setOpenKeys((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
 
   return (
     <div className="merged-history-mv merged-history-mv--accordion merged-history-mv--leaderboard">
       <ul className="merged-history-mv__accordion-list">
         {sortedJourney.map((row, idx) => {
-          const open = openKey === row.key
+          const open = openKeys.has(row.key)
           const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
           const place = idx + 1
           return (
@@ -921,7 +998,7 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
                 className={
                   'merged-history-mv__accordion-toggle' + (open ? ' is-open' : '')
                 }
-                onClick={() => setOpenKey(open ? null : row.key)}
+                onClick={() => toggleKey(row.key)}
               >
                 <span
                   className={
@@ -1701,6 +1778,9 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
    * primary scoreboard for the tab; the cumulative ("Live") career table
    * is a deeper drill-down users opt into. */
   const [view, setView] = useState('algorithm')
+  /* Touch/click toggle for the Algorithm info tooltip — hover + :focus-within
+   * cover pointer/keyboard; this `is-open` class handles tap on touch devices. */
+  const [infoOpen, setInfoOpen] = useState(false)
   const liveRows = useMemo(
     () => computeLiveHallManagerCareerRows(tableRows),
     [tableRows],
@@ -1710,23 +1790,20 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
     [tableRows],
   )
 
+  /* Collapse the touch tooltip whenever the view switches away from Algorithm. */
+  useEffect(() => {
+    if (view !== 'algorithm') setInfoOpen(false)
+  }, [view])
+
+  const algoInfoTitle =
+    'Algorithm total is calculated by:\n1 point for 1st place\n2 points for 2nd place\n3 points for 3rd place\nEtc...'
+
   return (
     <section
       className="tile hall-of-champions tile--standings heritage-cofc"
       aria-labelledby="heritage-cofc-heading"
     >
       <div className="heritage-cofc__head">
-        <div className="heritage-cofc__headstack">
-          <h2
-            id="heritage-cofc-heading"
-            className="tile-title tile-title--sm heritage-cofc__title"
-          >
-            Champion of Champions
-          </h2>
-          <p className="heritage-cofc__explanation muted">
-            All seasons cumulative · includes current {formatHeritageSeasonLabel(LIVE_HALL_SEASON_LABEL)} season
-          </p>
-        </div>
         <div
           className="subnav heritage-cofc__viewtoggle"
           role="tablist"
@@ -1752,16 +1829,39 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
           </button>
         </div>
       </div>
+      <div className="heritage-cofc__headingrow">
+        <h2
+          id="heritage-cofc-heading"
+          className="tile-title tile-title--sm heritage-cofc__title"
+        >
+          {view === 'live' ? 'Live Table: All Time' : 'Algorithm Table'}
+        </h2>
+        {view === 'algorithm' ? (
+          <span className={'cofc-info' + (infoOpen ? ' is-open' : '')}>
+            <button
+              type="button"
+              className="cofc-info__btn"
+              aria-label="How the algorithm total is calculated"
+              aria-expanded={infoOpen}
+              title={algoInfoTitle}
+              onClick={() => setInfoOpen((open) => !open)}
+            >
+              <span aria-hidden="true">i</span>
+            </button>
+            <span className="cofc-info__bubble" role="tooltip">
+              Algorithm total is calculated by:
+              <br />1 point for 1st place
+              <br />2 points for 2nd place
+              <br />3 points for 3rd place
+              <br />Etc...
+            </span>
+          </span>
+        ) : null}
+      </div>
       {view === 'live' ? (
         <CofcLiveTable rows={liveRows} fullNameMap={fullNameMap} />
       ) : (
         <div className="heritage-cofc-algo">
-          <h3 className="tile-title tile-title--sm heritage-cofc-algo__heading">
-            Algorithm
-          </h3>
-          <p className="heritage-cofc-algo__caption muted">
-            1 pt for 1st · 2 for 2nd · … · 8 for 8th. Lowest total wins (golf-style).
-          </p>
           <CofcAlgorithmMatrix
             rows={algoData.rows}
             seasonLabels={algoData.seasonLabels}
@@ -1799,7 +1899,7 @@ function HallOfChampions({ tableRows = [] }) {
         {tab === 'trophy' ? (
           <>
             <HeritageTrophyRoom />
-            <HeritageRecords tableRows={tableRows} />
+            {/* TCLOT Records hidden for now (per request 2026-05-28); re-enable by restoring <HeritageRecords tableRows={tableRows} /> */}
           </>
         ) : null}
         {tab === 'history' ? (

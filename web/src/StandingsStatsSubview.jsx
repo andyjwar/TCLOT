@@ -3,6 +3,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
 import { TeamH2HRivals } from './TeamH2HRivals.jsx'
 import { WIN_MARGIN_BUCKET_KEYS } from './useLeagueData'
+import { useMobileNarrowViewport } from './usePortraitMobile'
 
 function firstWord(name) {
   if (typeof name !== 'string') return ''
@@ -69,6 +70,7 @@ export function StandingsStatsSubview({
   h2hTeamId = null,
   onH2hTeamChange,
 }) {
+  const isMobileNarrow = useMobileNarrowViewport()
   const marginRows = marginMode === 'losses' ? lossMarginBucketRows : winMarginBucketRows
   const totalKey = marginMode === 'losses' ? 'totalLosses' : 'totalWins'
   const marginRowsSorted = useMemo(() => {
@@ -167,12 +169,7 @@ export function StandingsStatsSubview({
                           className="win-margin-table__name"
                           title={row.teamName}
                         >
-                          <span className="win-margin-table__name-full">
-                            {row.teamName}
-                          </span>
-                          <span className="win-margin-table__name-short">
-                            {firstWord(row.teamName)}
-                          </span>
+                          {isMobileNarrow ? firstWord(row.teamName) : row.teamName}
                         </span>
                       </span>
                     </th>
@@ -296,12 +293,7 @@ export function StandingsStatsSubview({
                             className="win-margin-table__name"
                             title={r.teamName}
                           >
-                            <span className="win-margin-table__name-full">
-                              {r.teamName}
-                            </span>
-                            <span className="win-margin-table__name-short">
-                              {firstWord(r.teamName)}
-                            </span>
+                            {isMobileNarrow ? firstWord(r.teamName) : r.teamName}
                           </span>
                         </span>
                       </th>

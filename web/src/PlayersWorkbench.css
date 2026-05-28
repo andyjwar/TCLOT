@@ -22,6 +22,14 @@
 
 .players-bench-tile.tile--standings {
   overflow: visible;
+  /* `.tile--standings { padding: 0 }` is defined earlier in App.css than the
+   * base `.tile { padding: 16px 18px }`, so at equal specificity the base
+   * padding leaks back in on desktop — pushing the Players sub-menu band
+   * ~16px down and ~18px right of the Heritage reference. Re-assert padding:0
+   * here (higher specificity, two classes) so the chrome band pins flush at
+   * the card's content edge. The header/filter bands keep their own internal
+   * padding for breathing room. */
+  padding: 0;
 }
 
 .players-bench-banner {
@@ -46,7 +54,14 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  padding: var(--space-4) var(--space-4) var(--space-3);
+  /* Top padding normalized to the Heritage sub-nav standard: the
+   * `.players-bench-tile` (`.tile--standings`, padding: 0) already pins this
+   * chrome band flush at the card top (= the 8px nav→content grid gap), but the
+   * header's 16px (--space-4) internal top padding pushed the visible sub-menu
+   * (title + search + filters) ~16px lower than the reference strips. Reduced to
+   * 8px (--space-2) so the sub-menu sits at the same offset as the Standings
+   * strip. Desktop-only: the ≤1080px portrait rule below overrides this. */
+  padding: var(--space-2) var(--space-4) var(--space-3);
   background: var(--surface);
   border-bottom: 1px solid var(--border);
   min-width: 0;

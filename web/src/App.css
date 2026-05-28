@@ -1211,6 +1211,37 @@
   }
 }
 
+/* Desktop: the FPL Live + Moves sub-nav strips live inside a `.tile--compact`
+ * card whose 14px top padding pushes the strip below the Heritage 8px standard
+ * (8px grid gap + 14px card padding = 22px). Pull the sticky chrome up by that
+ * padding so the strip sits flush at the card top — i.e. at the same 8px
+ * nav→content grid gap as the Heritage/Standings reference strips. Scoped to
+ * `.tile--team-selection` (used only by these two views) so no other
+ * `.tile--compact` card or `.section-chrome--sticky` consumer is affected. At
+ * ≤1080px the sticky chrome already applies `margin: -14px -16px 0`, so this
+ * matches the existing mobile bleed and introduces no regression there. */
+.tile--team-selection > .section-chrome--sticky {
+  /* Cancel the card's 14px top AND 16px horizontal padding so the sub-nav
+   * pill row sits flush at the card's content edge — same 8px nav→content
+   * gap and same left x-start as the Heritage reference strip. */
+  margin: -14px -16px 0;
+}
+
+/* Mobile: the shared `.section-chrome--sticky` rule (above) adds
+ * `padding: 10px 16px 8px` to the sticky bar, which pushed the FPL Live /
+ * Moves pills ~11px lower and ~16px further right than the Heritage strip.
+ * Zero the top/side padding here (keeping the bottom breathing room) so the
+ * pills land at the same gap + left x as Heritage at mobile widths too. The
+ * bar keeps its full-bleed background via the inherited `-16px` side margin. */
+@media (max-width: 1080px) {
+  .tile--team-selection > .section-chrome--sticky {
+    margin-top: -17px;
+    padding-top: 2px;
+    padding-left: 0;
+    padding-right: 0;
+  }
+}
+
 .dashboard-content {
   min-width: 0;
   display: flex;
@@ -13361,7 +13392,10 @@ button.live-xp__player-name:focus-visible {
   position: sticky;
   top: 0;
   z-index: 30;
-  margin: 4px -16px 10px;
+  /* Top margin pulled from 4px → -8px so the capsule pills rest at the same
+   * nav→content offset as the Heritage reference strip (the prior 4px margin +
+   * 8px top padding sat the pills ~12px lower than Heritage at every width). */
+  margin: -8px -16px 10px;
   padding: 8px 16px;
   background: var(--fm-bg);
   border-bottom: 1px solid var(--fm-border);
@@ -14451,6 +14485,10 @@ button.live-xp__player-name:focus-visible {
   font-weight: 400;
   letter-spacing: 0.05em;
   color: var(--banner-ink);
+  /* Dark halo keeps the ink legible on every --banner-bg — including the
+   * lighter banners (e.g. Crouch End's pale blue-grey) where gold ink
+   * would otherwise wash out. Subtle/invisible on dark banners. */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.35);
   font-size: clamp(1.5rem, 3.4vw, 2.4rem);
   line-height: 1;
   text-transform: uppercase;
@@ -14466,6 +14504,7 @@ button.live-xp__player-name:focus-visible {
   font-weight: 400;
   letter-spacing: 0.12em;
   color: var(--banner-ink);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.35);
   font-size: clamp(1rem, 2vw, 1.4rem);
   line-height: 1;
   text-transform: uppercase;
@@ -14505,6 +14544,9 @@ button.live-xp__player-name:focus-visible {
 }
 
 .hof-troom--swipe {
+  /* border-box so the 100%-width / padded dark container can never grow
+   * past the overflow:hidden tile and clip the toggle at the edge. */
+  box-sizing: border-box;
   background:
     radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, transparent) 0%, transparent 65%),
     linear-gradient(180deg, #1a0f33 0%, #0c0820 100%);
@@ -14563,6 +14605,10 @@ button.live-xp__player-name:focus-visible {
  * centered against the active card, dots below. No grid toggle. */
 .hof-troom-dt {
   position: relative;
+  /* border-box is REQUIRED: this container sets width:100% AND horizontal
+   * padding. Without it the content-box width 100% + padding overflows the
+   * overflow:hidden parent tile and clips the flex-end toggle pill. */
+  box-sizing: border-box;
   width: 100%;
   background:
     radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 22%, transparent) 0%, transparent 65%),
@@ -14576,16 +14622,31 @@ button.live-xp__player-name:focus-visible {
   min-height: 560px;
 }
 
+/* Viewport wraps the stage + both arrows so the arrows are always
+ * positioned relative to the card itself (rather than the much-wider
+ * outer Heritage tile). Width matches the card with extra room for
+ * a 44px arrow pill + 12px gutter on each side; max-width: 100% lets
+ * it collapse on narrow viewports while keeping the arrows pinned
+ * tight to the card. */
+.hof-troom-dt__viewport {
+  position: relative;
+  flex: 1 1 auto;
+  width: calc(var(--troom-card-w, 380px) + 184px);
+  max-width: 100%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 /* Stage hosts every banner stacked absolutely; only the active slide
  * is visible at opacity:1 / scale:1. Outgoing slides fade out + shrink
  * to 0.96; incoming slides fade in from 1.04 → 1.0. */
 .hof-troom-dt__stage {
   position: relative;
-  flex: 1 1 auto;
   width: var(--troom-card-w, 380px);
-  max-width: 100%;
+  max-width: calc(100% - 184px);
   aspect-ratio: 4 / 5;
-  margin: 0 auto;
 }
 
 .hof-troom-dt__slide {
@@ -14660,8 +14721,12 @@ button.live-xp__player-name:focus-visible {
   outline-offset: 2px;
 }
 
-.hof-troom-dt__arrow--prev { left: 18px; }
-.hof-troom-dt__arrow--next { right: 18px; }
+/* Pinned to the viewport edges — which always frame the card with a
+ * 56px arrow gutter on each side at full size, collapsing inward as
+ * the tile narrows. The glass-pill background keeps the arrows
+ * readable even when they overlap the card edge on cramped layouts. */
+.hof-troom-dt__arrow--prev { left: 14px; }
+.hof-troom-dt__arrow--next { right: 14px; }
 
 /* Dots — shared across desktop + mobile. Mobile bumps tap target. */
 .hof-troom-dt__dots {
@@ -14731,6 +14796,108 @@ button.live-xp__player-name:focus-visible {
   .hof-troom--swipe {
     border-radius: 0;
     padding: 18px 16px 8px;
+  }
+}
+
+/* ---- Trophy Room view toggle (carousel ⇄ grid) ----
+ * Sits in a top bar on the dark celebration backdrop for both the mobile
+ * and desktop layouts. Glass segmented pill matching the on-theme arrow
+ * pills; the active segment lifts to a brighter chip. */
+.hof-troom__bar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  position: relative;
+  z-index: 5;
+}
+
+.hof-troom__viewtoggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 3px;
+  border-radius: 999px;
+  background: rgba(12, 8, 32, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.hof-troom__viewtoggle-btn {
+  appearance: none;
+  border: none;
+  background: transparent;
+  padding: 6px 12px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.hof-troom__viewtoggle-btn:hover:not(.is-active) {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hof-troom__viewtoggle-btn.is-active {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 55%, rgba(12, 8, 32, 0.5));
+  color: #fff;
+}
+
+.hof-troom__viewtoggle-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 80%, #fff);
+  outline-offset: 2px;
+}
+
+/* ---- Trophy Room grid ("view all") ----
+ * Every banner shown at once in the same banner-card style, on the shared
+ * dark backdrop. Desktop = 3 columns; mobile = 2 columns. Each cell keeps
+ * the carousel card's 4:5 portrait shape, rounded corners + soft shadow. */
+.hof-troom__grid {
+  /* flex: 0 0 auto (size to content) — NOT 1 1 auto. With aspect-ratio
+   * cells in a min-height:560px flex column, a growable/shrinkable grid
+   * gets pinned to the 560px content area and the tall 4:5 cells overflow,
+   * getting clipped by the tile's overflow:hidden. Sizing to content lets
+   * the container (and tile) grow to the grid's full height instead. */
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  align-content: start;
+  padding-top: 18px;
+  /* Cap to 3 carousel-card widths + 2 gaps and center, so cells stay the
+   * same ~380px size as the carousel card on ultra-wide screens instead of
+   * ballooning into very tall 4:5 cells. */
+  width: 100%;
+  max-width: calc(var(--troom-card-w, 380px) * 3 + 36px);
+  margin-inline: auto;
+}
+
+.hof-troom__grid-cell {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow:
+    0 18px 38px -20px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+/* The grid now renders only in the mobile branch (viewport < 1024px, the
+ * useTrophyRoomDesktopLayout() breakpoint), so keep it cleanly 2-col across
+ * the whole mobile range — including 721–1023px tablet widths — rather than
+ * letting the base 3-col rule show through there. */
+@media (max-width: 1023px) {
+  .hof-troom__grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    padding-top: 14px;
+  }
+  .hof-troom__grid-cell {
+    border-radius: 12px;
   }
 }
 

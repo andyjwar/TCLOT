@@ -6,9 +6,10 @@ import { NavIcon } from './NavIcon'
 /** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'more' | 'settings'} NavIconName */
 
 /**
- * Note: the view ID for the Transactions tab stays `teamSelection` to keep
- * already-stored Settings default-tab prefs (PR #3) working. Only the
- * user-visible label changes.
+ * Note: the view ID for the Moves tab stays `teamSelection` to keep
+ * already-stored Settings default-tab prefs (PR #3) working — the
+ * user-visible label has gone Team Selection → Transactions → Moves, but
+ * the internal id is load-bearing for saved preferences and is preserved.
  *
  * @param {{
  *   item: {
@@ -56,7 +57,7 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
   const isBottom = variant === 'bottom'
 
   // Single source of truth for nav order (left → right on desktop, also the
-  // mobile bottom-pill order): FPL Live · Standings · Transactions ·
+  // mobile bottom-pill order): FPL Live · Standings · Moves ·
   // Players · TCLOT Heritage · More. `More` is `bottomOnly` so it only
   // renders in the mobile bottom nav; desktop gets a separate Settings gear
   // button (rendered below the .map() loop), kept out of this array so its
@@ -77,7 +78,7 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
     },
     {
       id: /** @type {const} */ ('teamSelection'),
-      label: 'Transactions',
+      label: 'Moves',
       shortLabel: 'Moves',
       icon: /** @type {const} */ ('users'),
     },

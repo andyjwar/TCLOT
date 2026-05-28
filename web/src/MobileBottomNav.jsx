@@ -8,7 +8,7 @@
  * (`.glass-bottom-nav`) so it does not collide with the existing
  * `.dashboard-nav--bottom` rules in App.css.
  *
- * Order (left → right): Live · Standings · Transactions · Players · Heritage.
+ * Order (left → right): Live · Standings · Moves · Players · Heritage.
  * `More` is intentionally dropped — Settings is reachable via the new
  * League Info modal (BrandHeaderWordmark + LeagueInfoModal). The set is kept
  * in sync with the bottom-nav item list in `DashboardNav.jsx` minus the
@@ -25,7 +25,7 @@ import './MobileBottomNav.css'
 const NAV_ITEMS = [
   { id: /** @type {const} */ ('fplLive'),       label: 'Live',         icon: /** @type {const} */ ('pulsing-dot'), pulse: true },
   { id: /** @type {const} */ ('standings'),     label: 'Standings',    icon: /** @type {const} */ ('bar-chart-3') },
-  { id: /** @type {const} */ ('teamSelection'), label: 'Transactions', icon: /** @type {const} */ ('users') },
+  { id: /** @type {const} */ ('teamSelection'), label: 'Moves',        icon: /** @type {const} */ ('users') },
   { id: /** @type {const} */ ('players'),       label: 'Players',      icon: /** @type {const} */ ('shuffle') },
   { id: /** @type {const} */ ('hall'),          label: 'Heritage',     icon: /** @type {const} */ ('column') },
 ]

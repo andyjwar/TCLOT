@@ -226,7 +226,7 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
  * Hero card
  * ================================================================== */
 .league-info-modal-shell .li-card--hero {
-  padding: var(--space-5);
+  padding: var(--space-3);
   align-items: center;
   text-align: center;
   background:
@@ -235,6 +235,7 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   border-color: color-mix(in srgb, #f1c43b 30%, var(--border));
 }
 .league-info-modal-shell .li-hero {
+  width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -242,101 +243,72 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   text-align: center;
   padding: 0;
 }
-.league-info-modal-shell .li-hero__crest {
-  width: 104px;
-  height: 104px;
-  border-radius: var(--r-circle);
-  background:
-    radial-gradient(60% 60% at 50% 35%, rgba(255, 220, 120, 0.30), transparent 70%),
-    var(--surface-2);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+/* Branded header banner — single 16:9 image carrying the lion logo,
+ * wordmark, subtitle and flags. Constrained to the hero-card content
+ * width (the image's natural 1024px width would otherwise overflow the
+ * modal). `height: auto` preserves aspect; rounded corners + soft shadow
+ * frame it as a deliberate header plate. */
+.league-info-modal-shell .li-hero--banner {
+  width: 100%;
+}
+.league-info-modal-shell .li-hero__banner {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 14px;
   box-shadow:
-    inset 0 0 0 1px color-mix(in srgb, #f1c43b 35%, transparent),
-    0 4px 14px rgba(241, 196, 59, 0.18);
-  margin-bottom: var(--space-1);
+    0 10px 26px rgba(0, 0, 0, 0.20),
+    0 2px 6px rgba(0, 0, 0, 0.14);
 }
-/* Hero league name — modernized to drop the Cinzel serif treatment in
- * favor of the site's primary sans family in purple uppercase tracking.
- * Lines 1-2 of the wordmark stack vertically on phones (`.li-hero__name`
- * relies on natural wrapping; `text-wrap: balance` keeps the break
- * pretty on browsers that support it). */
-.league-info-modal-shell .li-hero__name {
-  margin: 0;
-  font-family: inherit;
-  font-size: 22px;
-  line-height: 1.18;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--brand);
-  text-wrap: balance;
+/* ==================================================================
+ * Tab strip — Lingo · Teams · Managers · Settings
+ * Reuses the site-standard `.subnav` / `.subnav__tab` segmented-pill
+ * classes (defined globally in App.css, same look as the Heritage /
+ * Standings sub-tabs). `.li-subnav` is a thin scoping modifier on the
+ * same element: it keeps the capsule at its natural content width
+ * (the global `.subnav` is `inline-flex`, which would otherwise be
+ * stretched full-width by the flex-column modal body) and lets it
+ * scroll horizontally on narrow viewports — mirroring the
+ * `.heritage-subnav-strip` treatment without touching the global rule.
+ * ================================================================== */
+.league-info-modal-shell .li-subnav {
+  align-self: flex-start;
+  max-width: 100%;
+  box-sizing: border-box;
+  /* The modal body is a flex column, so the strip inherits
+   * `flex-shrink: 1` and gets squashed below its content height when the
+   * panel is tall. Once the mobile rule turns it into a scroll container
+   * (`overflow-x: auto` forces `overflow-y` to compute as `auto`), that
+   * squash clips the tabs at the top edge. Pin it so it always renders
+   * at full height. */
+  flex: 0 0 auto;
+  /* Re-assert the segmented-pill capsule chrome with the modal's own
+   * surface tokens so it paints reliably on the light shell background,
+   * independent of how the global `.subnav` fallback chain resolves in
+   * the portal context. */
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: 3px;
+  gap: 2px;
 }
-@media (min-width: 480px) {
-  .league-info-modal-shell .li-hero__name {
-    font-size: 26px;
+@media (max-width: 720px) {
+  .league-info-modal-shell .li-subnav {
+    /* The four short tabs comfortably fit on one row at typical phone
+     * widths, so no horizontal scroll is needed in practice; keep
+     * `overflow-x: auto` purely as a safety valve for very narrow
+     * screens. `min-height` + the `flex: 0 0 auto` above guarantee the
+     * capsule keeps its full height so nothing is clipped vertically. */
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    min-height: 40px;
   }
-}
-
-/* Tri-continental flag strip — sits directly under the wordmark to give
- * the "Tri-Continental" name a literal three-flag reading. Flag glyphs
- * use Unicode regional indicators (rendered natively per-OS); labels
- * sit beside each flag in purple uppercase tracking matching the eyebrow
- * vernacular. The dot dividers (`·`) inherit muted text color. */
-.league-info-modal-shell .li-hero__flags {
-  margin-top: var(--space-2);
-  display: inline-flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  font-family: inherit;
-}
-.league-info-modal-shell .li-hero__flag-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.league-info-modal-shell .li-hero__flag {
-  font-size: 18px;
-  line-height: 1;
-  /* Some platforms render flag emoji at variable advance widths — pin
-   * a fixed width so the label tracking stays consistent. */
-  display: inline-block;
-  min-width: 22px;
-  text-align: center;
-}
-.league-info-modal-shell .li-hero__flag-label {
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--brand);
-}
-.league-info-modal-shell .li-hero__flag-divider {
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 700;
-  margin-right: 2px;
-}
-
-.league-info-modal-shell .league-info-modal__season {
-  margin-top: var(--space-2);
-  font-size: var(--text-xs);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.league-info-modal-shell .li-hero__tagline {
-  margin-top: 4px;
-  font-size: var(--text-sm);
-  line-height: var(--lh-sm);
-  color: var(--text-muted);
-  font-family: inherit;
-  font-style: normal;
+  .league-info-modal-shell .li-subnav::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 /* ==================================================================
@@ -559,14 +531,6 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   }
   .league-info-modal-shell .li-card--hero {
     padding: var(--space-4);
-  }
-  .league-info-modal-shell .li-hero__crest {
-    width: 88px;
-    height: 88px;
-  }
-  .league-info-modal-shell .li-hero__name {
-    font-size: 22px;
-    line-height: 26px;
   }
   .league-info-modal-shell .li-mgr-row__name {
     font-size: var(--text-sm);

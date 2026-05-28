@@ -7,7 +7,7 @@
  *
  *   - pulsing-dot  : FPL Live (filled #16a34a circle, no stroke; animated by CSS)
  *   - bar-chart-3  : Standings
- *   - users        : Transactions (formerly "Team Selection")
+ *   - users        : Moves (formerly "Team Selection" / "Transactions")
  *   - shuffle      : Players
  *   - column       : TCLOT Heritage (Doric Greek column — Titans-mythology nod)
  *   - trophy       : retained for backwards compatibility (Mockup spec only;
