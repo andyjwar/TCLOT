@@ -7,6 +7,12 @@
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+/* Trophy-banner font comparison mockup — fonts loaded here, not in
+ * production. Caveat already ships via web/index.html so we don't
+ * need to re-import it. If any of these fail offline, the per-class
+ * fallback stack (defined below in .font-cmp) keeps the mockup
+ * legible (e.g. Cinzel → Trajan Pro → Times New Roman, serif). */
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Cinzel:wght@600;800&family=Italianno&family=Playfair+Display:wght@700;900&display=swap');
 
 /* ------------------------------------------------------------------ */
 /* Root tokens                                                          */
@@ -944,6 +950,84 @@
   background: var(--brand-tint);
   color: var(--text-strong);
   box-shadow: none;
+}
+
+/* ------------------------------------------------------------------ */
+/* TCLOT Heritage · candidate-icon comparison                          */
+/* ------------------------------------------------------------------ */
+/* Each candidate is a production-style tab pill (icon + uppercase
+ * wordmark inside a soft brand-tinted pill) followed by a tiny
+ * caption. 2-up grid keeps all 11 candidates scannable at once. */
+.mockup-heritage-compare {
+  display: block;
+}
+.mockup-heritage-compare__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4) var(--space-5);
+}
+.mockup-heritage-compare__item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.mockup-heritage-compare__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: var(--r-md);
+  background: var(--brand-tint);
+  color: var(--text-strong);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  align-self: flex-start;
+  line-height: 1;
+}
+.mockup-heritage-compare__pill svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--brand);
+}
+.mockup-heritage-compare__monogram {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  font-family: 'Geist', system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: -0.06em;
+  color: var(--brand);
+}
+.mockup-heritage-compare__wordmark {
+  display: inline-block;
+  white-space: nowrap;
+}
+.mockup-heritage-compare__caption {
+  font-size: var(--text-xs);
+  line-height: var(--lh-xs);
+  color: var(--text-strong);
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 600;
+}
+.mockup-heritage-compare__caption-note {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+@media (max-width: 640px) {
+  .mockup-heritage-compare__list {
+    grid-template-columns: 1fr;
+  }
 }
 
 /* ------------------------------------------------------------------ */
@@ -8683,6 +8767,459 @@
 }
 
 /* =================================================================== */
+/* MOBILE BOTTOM NAV · words + glass · variants                          */
+/* ------------------------------------------------------------------- */
+/* Six riffs on production .dashboard-nav--bottom that explore bringing */
+/* labels back and adopting an Apple liquid-glass frosted background.   */
+/* Class prefix `mockup-wgn-` (words-glass-nav) — does not collide with */
+/* production `dashboard-nav__*` or the earlier `mockup-bottom-nav-*`   */
+/* showcase. Browsers without backdrop-filter fall back to a more       */
+/* opaque background (defined by the @supports not block below).        */
+/* =================================================================== */
+
+.mockup-wgn-variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(376px, 1fr));
+  gap: 28px;
+  align-items: start;
+}
+
+.mockup-wgn-variant {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.mockup-wgn-variant__label {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--text-strong);
+  letter-spacing: -0.005em;
+}
+
+.mockup-wgn-variant__desc {
+  margin: 0;
+  font-size: var(--text-xs);
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+.mockup-wgn-stage {
+  width: 376px;
+  height: 720px;
+  margin: 0 auto;
+  border: 1px solid #c8c8cd;
+  background: #d8d8db;
+  border-radius: 28px;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.mockup-wgn-screen {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: #f5f5f7;
+  border-radius: 20px;
+  overflow: hidden;
+  color: #111;
+  font-family:
+    'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.mockup-wgn-page {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 16px 110px;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.mockup-wgn-page__hero {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ede7ff, #fef3c7 60%, #fde2e2);
+  color: #1a1240;
+}
+
+.mockup-wgn-page__hero-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(26, 18, 64, 0.65);
+}
+
+.mockup-wgn-page__hero-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.mockup-wgn-page__hero-sub {
+  font-size: 12px;
+  color: rgba(26, 18, 64, 0.7);
+}
+
+.mockup-wgn-page__tile {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 14px;
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.mockup-wgn-page__tile--violet {
+  background: linear-gradient(135deg, #7c3aed, #4f46e5);
+}
+
+.mockup-wgn-page__tile--cyan {
+  background: linear-gradient(135deg, #0891b2, #0ea5e9);
+}
+
+.mockup-wgn-page__tile--orange {
+  background: linear-gradient(135deg, #f97316, #ec4899);
+}
+
+.mockup-wgn-page__tile-eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.mockup-wgn-page__tile-title {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.005em;
+}
+
+.mockup-wgn-page__tile-meta {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.mockup-wgn-page__row {
+  display: flex;
+  gap: 8px;
+}
+
+.mockup-wgn-page__chip {
+  flex: 1 1 0;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  color: #1f1408;
+}
+
+.mockup-wgn-page__chip--gold   { background: linear-gradient(135deg, #fde68a, #f59e0b); }
+.mockup-wgn-page__chip--silver { background: linear-gradient(135deg, #e5e7eb, #94a3b8); color: #1e293b; }
+.mockup-wgn-page__chip--bronze { background: linear-gradient(135deg, #fed7aa, #c2410c); color: #fff; }
+
+/* --- Base nav (shared across all 6 variants) ------------------------- */
+.mockup-wgn {
+  position: absolute;
+  z-index: 2;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  display: flex;
+  align-items: stretch;
+  justify-content: space-around;
+  gap: 0;
+  margin: 0;
+  height: 56px;
+  padding: 8px 8px;
+  border-radius: 999px;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: rgba(17, 17, 17, 0.6);
+}
+
+.mockup-wgn__btn {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: color 120ms ease;
+}
+
+.mockup-wgn__btn.is-active {
+  color: var(--brand);
+}
+
+.mockup-wgn__icon-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  transition: background-color 160ms ease, color 160ms ease;
+  position: relative;
+  z-index: 1;
+}
+
+.mockup-wgn__icon-wrap svg,
+.mockup-wgn__icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.mockup-wgn__label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ============= VARIANT 1 — Current (icons only) =================== */
+.mockup-wgn--current {
+  background: #ffffff;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.mockup-wgn--current .mockup-wgn__icon-wrap {
+  width: 40px;
+  height: 40px;
+}
+
+.mockup-wgn--current .mockup-wgn__btn.is-active .mockup-wgn__icon-wrap {
+  background: var(--brand-tint);
+}
+
+.mockup-wgn--current .mockup-wgn__label {
+  display: none;
+}
+
+/* ============= VARIANT 2 — Stacked icon + label, solid pill ======== */
+.mockup-wgn--stacked-solid {
+  background: #ffffff;
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.12),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  height: auto;
+  min-height: 60px;
+  padding: 8px 8px;
+}
+
+.mockup-wgn--stacked-solid .mockup-wgn__btn {
+  gap: 1px;
+  padding: 4px 2px;
+}
+
+.mockup-wgn--stacked-solid .mockup-wgn__icon-wrap {
+  width: 32px;
+  height: 32px;
+}
+
+.mockup-wgn--stacked-solid .mockup-wgn__btn.is-active .mockup-wgn__icon-wrap {
+  background: var(--brand-tint);
+}
+
+/* ============= GLASS BASE — shared by Variants 3, 4, 5, 6 ========== */
+.mockup-wgn--stacked-glass,
+.mockup-wgn--fotmob,
+.mockup-wgn--inline,
+.mockup-wgn--label-only {
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(28px) saturate(180%);
+  -webkit-backdrop-filter: blur(28px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .mockup-wgn--stacked-glass,
+  .mockup-wgn--fotmob,
+  .mockup-wgn--inline,
+  .mockup-wgn--label-only {
+    background: rgba(255, 255, 255, 0.92);
+  }
+}
+
+/* Dark-theme glass override (mockup root sets data-theme on .mockup) */
+.mockup[data-theme='dark'] .mockup-wgn--stacked-glass,
+.mockup[data-theme='dark'] .mockup-wgn--fotmob,
+.mockup[data-theme='dark'] .mockup-wgn--inline,
+.mockup[data-theme='dark'] .mockup-wgn--label-only {
+  background: rgba(20, 20, 30, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .mockup[data-theme='dark'] .mockup-wgn--stacked-glass,
+  .mockup[data-theme='dark'] .mockup-wgn--fotmob,
+  .mockup[data-theme='dark'] .mockup-wgn--inline,
+  .mockup[data-theme='dark'] .mockup-wgn--label-only {
+    background: rgba(20, 20, 30, 0.92);
+  }
+}
+
+/* ============= VARIANT 3 — Stacked, glass pill, ring active ======== */
+.mockup-wgn--stacked-glass {
+  height: auto;
+  min-height: 60px;
+  padding: 8px 8px;
+}
+
+.mockup-wgn--stacked-glass .mockup-wgn__btn {
+  gap: 1px;
+  padding: 4px 2px;
+}
+
+.mockup-wgn--stacked-glass .mockup-wgn__icon-wrap {
+  width: 32px;
+  height: 32px;
+}
+
+.mockup-wgn--stacked-glass .mockup-wgn__btn.is-active .mockup-wgn__icon-wrap {
+  background: var(--brand-tint);
+}
+
+/* ============= VARIANT 4 — Glass, Fotmob active sub-pill ============ */
+.mockup-wgn--fotmob {
+  height: auto;
+  min-height: 64px;
+  padding: 8px 8px;
+}
+
+.mockup-wgn--fotmob .mockup-wgn__btn {
+  gap: 2px;
+  padding: 2px 2px 4px;
+}
+
+.mockup-wgn--fotmob .mockup-wgn__icon-wrap {
+  width: 32px;
+  height: 32px;
+}
+
+.mockup-wgn--fotmob .mockup-wgn__btn.is-active .mockup-wgn__icon-wrap {
+  width: 52px;
+  height: 30px;
+  background: var(--brand);
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(121, 91, 251, 0.35);
+}
+
+/* ============= VARIANT 5 — Inline, glass, active full sub-pill ===== */
+/* Tightest of the six at 376px since six [icon][label] pairs share one
+ * row. Icons drop to 14px, font drops to 9.5px, and the active item only
+ * takes a 1.15× flex bump so inactive labels still read. "Heritage" is
+ * the only label long enough to truncate on inactive slots; the active
+ * item gets the full label inside the sub-pill. */
+.mockup-wgn--inline {
+  height: auto;
+  min-height: 50px;
+  padding: 5px 5px;
+  gap: 1px;
+}
+
+.mockup-wgn--inline .mockup-wgn__btn {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 5px 3px;
+  border-radius: 999px;
+  font-size: 9.5px;
+  letter-spacing: 0;
+}
+
+.mockup-wgn--inline .mockup-wgn__icon-wrap {
+  width: 14px;
+  height: 14px;
+}
+
+.mockup-wgn--inline .mockup-wgn__icon-wrap svg,
+.mockup-wgn--inline .mockup-wgn__icon {
+  width: 14px;
+  height: 14px;
+}
+
+.mockup-wgn--inline .mockup-wgn__btn.is-active {
+  flex: 1.15 1 0;
+  background: var(--brand);
+  color: #ffffff;
+  padding: 6px 8px;
+  box-shadow: 0 4px 12px rgba(121, 91, 251, 0.32);
+}
+
+.mockup-wgn--inline .mockup-wgn__btn.is-active .mockup-wgn__icon-wrap {
+  background: transparent;
+  color: #ffffff;
+}
+
+/* ============= VARIANT 6 — Glass, active label only ================= */
+.mockup-wgn--label-only {
+  height: auto;
+  min-height: 60px;
+  padding: 8px 8px;
+}
+
+.mockup-wgn--label-only .mockup-wgn__btn {
+  gap: 1px;
+  padding: 4px 2px;
+}
+
+.mockup-wgn--label-only .mockup-wgn__icon-wrap {
+  width: 32px;
+  height: 32px;
+}
+
+.mockup-wgn--label-only .mockup-wgn__btn:not(.is-active) .mockup-wgn__label {
+  display: none;
+}
+
+.mockup-wgn--label-only .mockup-wgn__btn.is-active .mockup-wgn__icon-wrap {
+  background: var(--brand-tint);
+}
+
+/* --- Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  .mockup-wgn__btn,
+  .mockup-wgn__icon-wrap {
+    transition: none;
+  }
+}
+
+/* The pulsing-dot icon used for "Live" inherits its green via
+ * `var(--nav-pulse-dot-fill, #16a34a)` from NavIcon.jsx. Inside an active
+ * sub-pill (Variants 4 and 5 active state), the icon is no longer the
+ * active item, so leave it green; only the *active* item recolors. */
+
+/* =================================================================== */
 /* WIRE — PORTRAIT LAYOUT VARIANTS                                       */
 /* =================================================================== */
 /* All four variants share the toolbar (search + Position / Club pills)  */
@@ -12602,10 +13139,16 @@
   padding: 24px 28px;
 }
 
-/* Arrow buttons + dots (shared across A/B) ------------------------- */
+/* Arrow buttons + dots (TR-DT-A wide carousel) -------------------- */
+/* Arrows live as direct children of the dark backdrop so they sit in
+ * the side gutters (in front of the faint side peeks, on top of the
+ * brand-tinted backdrop) and stay vertically centered against the
+ * active banner card. We offset top by ~half the dots-strip height
+ * (~21 px) so the arrow midline matches the banner midline rather
+ * than the full backdrop midline. 44 x 44 px hit target. */
 .hof-troom-dt__arrow {
   position: absolute;
-  top: 50%;
+  top: calc(50% - 10px);
   transform: translateY(-50%);
   width: 44px;
   height: 44px;
@@ -12630,8 +13173,8 @@
   color: #fff;
   transform: translateY(-50%) scale(1.05);
 }
-.hof-troom-dt__arrow--prev { left: 12px; }
-.hof-troom-dt__arrow--next { right: 12px; }
+.hof-troom-dt__arrow--prev { left: 18px; }
+.hof-troom-dt__arrow--next { right: 18px; }
 .hof-troom-dt__dots {
   display: flex;
   justify-content: center;
@@ -12688,180 +13231,133 @@
 .hof-troom-dt__wide-peek--prev { left: 8%; }
 .hof-troom-dt__wide-peek--next { right: 8%; }
 
-/* TR-DT-B · 3-up carousel ------------------------------------------ */
-.hof-troom-dt--3up .hof-troom-dt__3up-stage {
-  position: relative;
+/* ================================================================== */
+/* TROPHY ROOM · BANNER FONT COMPARISON (mockup-only)                   */
+/* ================================================================== */
+/* Side-by-side comparison of five candidate fonts for the centerImage
+ * HTML-composed banner layout (title + artwork + year stack). Only
+ * the font face varies between cards — color (hall gold), weight,
+ * and layout are constant. Artwork is a neutral placeholder so the
+ * baked-in PNG text doesn't compete visually with the HTML title. */
+.font-cmp {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.font-cmp__grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.font-cmp__cell {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 240px;
+}
+.font-cmp__card {
+  width: 240px;
+  height: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 18px 16px 16px;
+  border-radius: 14px;
+  background: #1d1331;
+  border: 1px solid color-mix(in srgb, #7e57ff 30%, var(--border));
+  box-shadow: 0 14px 24px -18px rgba(0, 0, 0, 0.7);
+  overflow: hidden;
+}
+.font-cmp__title {
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--hall-gold, #f5c542);
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+.font-cmp__art {
   flex: 1 1 auto;
+  margin: 10px 0;
+  border-radius: 10px;
+  background:
+    repeating-linear-gradient(
+      135deg,
+      color-mix(in srgb, #7e57ff 24%, transparent) 0 12px,
+      color-mix(in srgb, #7e57ff 14%, transparent) 12px 24px
+    ),
+    color-mix(in srgb, #7e57ff 28%, #1d1331);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
-  padding: 0 60px;
-}
-.hof-troom-dt__3up-card {
-  appearance: none;
-  background: rgba(255, 255, 255, 0.02);
-  border: none;
-  padding: 0;
-  border-radius: 12px;
-  overflow: hidden;
-  cursor: pointer;
-  aspect-ratio: 3 / 4;
-  flex: 0 0 auto;
-  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
-}
-.hof-troom-dt__3up-card--side {
-  width: 220px;
-  opacity: 0.72;
-  box-shadow:
-    0 16px 28px -16px rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-}
-.hof-troom-dt__3up-card--side:hover {
-  opacity: 0.95;
-  transform: scale(1.03);
-}
-.hof-troom-dt__3up-card--center {
-  width: 320px;
-  cursor: default;
-  box-shadow:
-    0 28px 56px -20px rgba(0, 0, 0, 0.7),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
-}
-
-/* TR-DT-C · Grid default ------------------------------------------- */
-.hof-troom-dt--grid {
-  padding-top: 60px;
-}
-.hof-troom-dt__grid {
-  flex: 1 1 auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: 1fr 1fr;
-  gap: 16px;
-  min-height: 0;
-}
-.hof-troom-dt__grid-card {
-  appearance: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: rgba(255, 255, 255, 0.02);
-  aspect-ratio: 3 / 4;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  box-shadow:
-    0 6px 14px -8px rgba(0, 0, 0, 0.6),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.hof-troom-dt__grid-card:hover,
-.hof-troom-dt__grid-card:focus-visible {
-  transform: translateY(-2px) scale(1.025);
-  box-shadow:
-    0 14px 26px -12px rgba(0, 0, 0, 0.7),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  outline: none;
-}
-
-/* TR-DT-D · Featured + gallery split -------------------------------- */
-.hof-troom-dt--featured {
-  padding-top: 56px;
-}
-.hof-troom-dt__featured-split {
-  flex: 1 1 auto;
-  display: grid;
-  grid-template-columns: 60fr 40fr;
-  gap: 28px;
-  min-height: 0;
-}
-.hof-troom-dt__featured-main,
-.hof-troom-dt__featured-gallery-wrap {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  min-height: 0;
-}
-.hof-troom-dt__featured-eyebrow {
-  font-family: 'Geist Mono', 'Geist', monospace;
-  font-size: 10px;
-  font-weight: 700;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: color-mix(in srgb, var(--brand) 35%, #fff);
 }
-.hof-troom-dt__featured-card {
-  flex: 1 1 auto;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow:
-    0 30px 60px -22px rgba(0, 0, 0, 0.7),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.02);
-  min-height: 0;
+.font-cmp__year {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1.1;
+  color: var(--hall-gold, #f5c542);
+  text-align: center;
 }
-.hof-troom-dt__featured-caption {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  color: rgba(255, 255, 255, 0.9);
+.font-cmp__caption {
+  font-family: 'Geist Mono', 'Geist', monospace;
+  font-size: 11px;
+  line-height: 14px;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-align: center;
 }
-.hof-troom-dt__featured-caption strong {
-  font-size: var(--text-md);
+
+/* Per-variant overrides — only font-family (and minor tracking)
+ * changes; weight, color, and stack position stay constant so the
+ * comparison is honest. Each declaration includes a system fallback
+ * stack so an offline / CSP-blocked Google Fonts fetch still renders
+ * something representative. */
+.font-cmp__title--caveat,
+.font-cmp__year--caveat {
+  font-family: 'Caveat', 'Brush Script MT', cursive;
   font-weight: 700;
 }
-.hof-troom-dt__featured-caption span {
-  font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.62);
-}
-.hof-troom-dt__featured-gallery {
-  flex: 1 1 auto;
-  /* 2 cols × 3 rows = 6 slots; 5 priors fill all but the
-   * bottom-right slot. Keeps the same 3:4 aspect across every tile. */
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(3, 1fr);
-  gap: 12px;
-  min-height: 0;
-}
-.hof-troom-dt__featured-tile {
-  appearance: none;
-  border: none;
-  padding: 0;
-  margin: 0;
-  background: rgba(255, 255, 255, 0.02);
-  aspect-ratio: 3 / 4;
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
-  position: relative;
-  box-shadow:
-    0 6px 14px -8px rgba(0, 0, 0, 0.55),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.hof-troom-dt__featured-tile:hover,
-.hof-troom-dt__featured-tile:focus-visible {
-  transform: translateY(-2px) scale(1.025);
-  box-shadow:
-    0 14px 24px -12px rgba(0, 0, 0, 0.65),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  outline: none;
-}
-.hof-troom-dt__featured-tile-season {
-  position: absolute;
-  left: 8px;
-  bottom: 8px;
-  font-size: 10px;
-  font-weight: 700;
-  color: #fff;
-  padding: 2px 6px;
-  border-radius: 4px;
-  background: rgba(12, 8, 32, 0.65);
+.font-cmp__title--cinzel,
+.font-cmp__year--cinzel {
+  font-family: 'Cinzel', 'Trajan Pro', 'Times New Roman', serif;
+  font-weight: 800;
   letter-spacing: 0.04em;
 }
+.font-cmp__title--playfair,
+.font-cmp__year--playfair {
+  font-family: 'Playfair Display', 'Didot', 'Georgia', serif;
+  font-weight: 900;
+}
+.font-cmp__title--bebas,
+.font-cmp__year--bebas {
+  font-family: 'Bebas Neue', 'Oswald', 'Impact', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.font-cmp__title--italianno,
+.font-cmp__year--italianno {
+  font-family: 'Italianno', 'Snell Roundhand', 'Edwardian Script ITC', cursive;
+  font-weight: 700;
+}
+
+/* Bebas Neue and Italianno render visually smaller at the default
+ * 22/20px; nudge sizes so every variant occupies similar real-estate
+ * inside the 240×340 card and the comparison reads at a glance. */
+.font-cmp__title--italianno { font-size: 34px; line-height: 1.0; }
+.font-cmp__year--italianno  { font-size: 30px; line-height: 1.0; }
+.font-cmp__title--bebas     { font-size: 26px; }
+.font-cmp__year--bebas      { font-size: 22px; }
 
 /* ================================================================== */
 /* HISTORY                                                              */
@@ -14391,7 +14887,7 @@
   color: #ff9988;
 }
 
-/* Mobile · Live cumulative subset (5 cols + tap-expand) ------------- */
+/* Mobile · Live cumulative subset (Mgr + W/D/L/For/Pts inline) ------ */
 .hof-coc-mob-frame {
   display: flex;
   flex-direction: column;
@@ -14438,18 +14934,25 @@
   display: flex;
   flex-direction: column;
 }
-.hof-coc-live-mob__col-head {
+/* Header + body share the same grid template so columns line up. The
+ * 1fr Mgr lane plus 28/28/28/44/36 numeric tracks (5px gap, 10px
+ * gutters) fit the 5-numeric layout inside the ~336px PortraitFrame
+ * body without horizontal scroll. */
+.hof-coc-live-mob__col-head,
+.hof-coc-live-mob__row {
   display: grid;
-  grid-template-columns: 1.6fr 36px 36px 36px 44px 14px;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr) 28px 28px 28px 44px 36px;
+  gap: 5px;
   align-items: center;
-  padding: 6px 12px;
+}
+.hof-coc-live-mob__col-head {
+  padding: 6px 10px;
   border-bottom: 1px solid var(--border);
   background: var(--surface-2);
   font-size: 10px;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
 }
 .hof-coc-live-mob__col-h { text-align: right; }
@@ -14460,79 +14963,27 @@
 .hof-coc-live-mob__item {
   border-bottom: 1px solid var(--border);
 }
-.hof-coc-live-mob__item.is-open {
-  background: color-mix(in srgb, var(--brand) 5%, transparent);
-}
 .hof-coc-live-mob__row {
-  appearance: none;
-  background: transparent;
-  border: none;
-  width: 100%;
-  display: grid;
-  grid-template-columns: 1.6fr 36px 36px 36px 44px 14px;
-  gap: 6px;
-  align-items: center;
-  padding: 10px 12px;
+  padding: 10px;
   text-align: right;
-  font: inherit;
   color: var(--text-strong);
-  cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
-.hof-coc-live-mob__row:hover { background: color-mix(in srgb, var(--brand) 3%, transparent); }
 .hof-coc-live-mob__cell { font-size: 13px; }
 .hof-coc-live-mob__cell--mgr {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
   text-align: left;
 }
-.hof-coc-live-mob__mgr-name { font-weight: 600; }
-.hof-coc-live-mob__cell--pts { font-weight: 700; color: var(--brand); }
-.hof-coc-live-mob__chevron {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-muted);
-  font-size: 14px;
-  transition: transform 0.15s ease;
-}
-
-.hof-coc-live-mob__expand {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 6px 14px;
-  padding: 4px 14px 12px 50px;
-  margin: 0;
-}
-.hof-coc-live-mob__expand-pair {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  border-bottom: 1px dashed var(--border);
-  padding: 4px 0;
-  font-variant-numeric: tabular-nums;
-}
-.hof-coc-live-mob__expand dt {
-  font-size: 10px;
+.hof-coc-live-mob__mgr-name {
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
-  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.hof-coc-live-mob__expand dd {
-  margin: 0;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text-strong);
-}
-.hof-coc-live-mob__note {
-  padding: 8px 14px 12px;
-  font-size: 10px;
-  text-align: center;
-  color: var(--text-muted);
-}
+.hof-coc-live-mob__cell--pts { font-weight: 700; color: var(--brand); }
 
 /* Mobile · Algorithm matrix (tight 336px layout) -------------------- */
 .hof-coc-algo-mob {
