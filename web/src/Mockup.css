@@ -12541,6 +12541,329 @@
 }
 
 /* ================================================================== */
+/* TROPHY ROOM · DESKTOP VARIANTS (TR-DT-A through TR-DT-D)             */
+/* ================================================================== */
+/* Stacked vertical section below the locked mobile T-D frames. Each
+ * variant is a ~1024px-wide frame on the same brand-tinted dark
+ * celebratory backdrop as the mobile T-D, with the same top-right
+ * carousel ⇄ grid toggle pill so the toggle UX reads consistently
+ * across mobile + desktop. */
+.hof-troom-dt-section {
+  margin-top: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.hof-troom-dt-section__h {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.hof-troom-dt-section__beat {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.hof-troom-dt-section__eyebrow {
+  font-family: 'Geist Mono', 'Geist', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+/* Shared desktop frame wrapper — caps at 1024px wide, fixed-ish
+ * aspect for the celebratory area. Inner variants paint their own
+ * dark backdrop and layout the banners. */
+.hof-troom-dt-frame {
+  width: 100%;
+  max-width: 1024px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 14px 30px -16px rgba(0, 0, 0, 0.45),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.hof-troom-dt {
+  position: relative;
+  width: 100%;
+  height: 560px;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--brand) 22%, transparent) 0%, transparent 65%),
+    linear-gradient(180deg, #1a0f33 0%, #0c0820 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  padding: 24px 28px;
+}
+
+/* Arrow buttons + dots (shared across A/B) ------------------------- */
+.hof-troom-dt__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(12, 8, 32, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: rgba(255, 255, 255, 0.85);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 12px -4px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  z-index: 3;
+}
+.hof-troom-dt__arrow:hover {
+  background: color-mix(in srgb, var(--brand) 60%, rgba(12, 8, 32, 0.5));
+  color: #fff;
+  transform: translateY(-50%) scale(1.05);
+}
+.hof-troom-dt__arrow--prev { left: 12px; }
+.hof-troom-dt__arrow--next { right: 12px; }
+.hof-troom-dt__dots {
+  display: flex;
+  justify-content: center;
+  gap: 7px;
+  padding-top: 14px;
+}
+.hof-troom-dt__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+.hof-troom-dt__dot.is-active {
+  background: #fff;
+  transform: scale(1.4);
+}
+
+/* TR-DT-A · Wide carousel ------------------------------------------ */
+.hof-troom-dt--wide .hof-troom-dt__wide-stage {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.hof-troom-dt__wide-active {
+  position: relative;
+  z-index: 2;
+  flex: 0 0 auto;
+  width: 360px;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow:
+    0 28px 56px -20px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.hof-troom-dt__wide-peek {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  width: 280px;
+  aspect-ratio: 3 / 4;
+  border-radius: 14px;
+  overflow: hidden;
+  opacity: 0.4;
+  filter: blur(0.5px);
+  box-shadow: 0 16px 26px -16px rgba(0, 0, 0, 0.6);
+}
+.hof-troom-dt__wide-peek--prev { left: 8%; }
+.hof-troom-dt__wide-peek--next { right: 8%; }
+
+/* TR-DT-B · 3-up carousel ------------------------------------------ */
+.hof-troom-dt--3up .hof-troom-dt__3up-stage {
+  position: relative;
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 0 60px;
+}
+.hof-troom-dt__3up-card {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.02);
+  border: none;
+  padding: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  aspect-ratio: 3 / 4;
+  flex: 0 0 auto;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+}
+.hof-troom-dt__3up-card--side {
+  width: 220px;
+  opacity: 0.72;
+  box-shadow:
+    0 16px 28px -16px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+}
+.hof-troom-dt__3up-card--side:hover {
+  opacity: 0.95;
+  transform: scale(1.03);
+}
+.hof-troom-dt__3up-card--center {
+  width: 320px;
+  cursor: default;
+  box-shadow:
+    0 28px 56px -20px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+/* TR-DT-C · Grid default ------------------------------------------- */
+.hof-troom-dt--grid {
+  padding-top: 60px;
+}
+.hof-troom-dt__grid {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: 16px;
+  min-height: 0;
+}
+.hof-troom-dt__grid-card {
+  appearance: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.02);
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  box-shadow:
+    0 6px 14px -8px rgba(0, 0, 0, 0.6),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hof-troom-dt__grid-card:hover,
+.hof-troom-dt__grid-card:focus-visible {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow:
+    0 14px 26px -12px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+
+/* TR-DT-D · Featured + gallery split -------------------------------- */
+.hof-troom-dt--featured {
+  padding-top: 56px;
+}
+.hof-troom-dt__featured-split {
+  flex: 1 1 auto;
+  display: grid;
+  grid-template-columns: 60fr 40fr;
+  gap: 28px;
+  min-height: 0;
+}
+.hof-troom-dt__featured-main,
+.hof-troom-dt__featured-gallery-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+}
+.hof-troom-dt__featured-eyebrow {
+  font-family: 'Geist Mono', 'Geist', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: color-mix(in srgb, var(--brand) 35%, #fff);
+}
+.hof-troom-dt__featured-card {
+  flex: 1 1 auto;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 30px 60px -22px rgba(0, 0, 0, 0.7),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+  min-height: 0;
+}
+.hof-troom-dt__featured-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  color: rgba(255, 255, 255, 0.9);
+}
+.hof-troom-dt__featured-caption strong {
+  font-size: var(--text-md);
+  font-weight: 700;
+}
+.hof-troom-dt__featured-caption span {
+  font-size: var(--text-xs);
+  color: rgba(255, 255, 255, 0.62);
+}
+.hof-troom-dt__featured-gallery {
+  flex: 1 1 auto;
+  /* 2 cols × 3 rows = 6 slots; 5 priors fill all but the
+   * bottom-right slot. Keeps the same 3:4 aspect across every tile. */
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 12px;
+  min-height: 0;
+}
+.hof-troom-dt__featured-tile {
+  appearance: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  background: rgba(255, 255, 255, 0.02);
+  aspect-ratio: 3 / 4;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  box-shadow:
+    0 6px 14px -8px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+.hof-troom-dt__featured-tile:hover,
+.hof-troom-dt__featured-tile:focus-visible {
+  transform: translateY(-2px) scale(1.025);
+  box-shadow:
+    0 14px 24px -12px rgba(0, 0, 0, 0.65),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  outline: none;
+}
+.hof-troom-dt__featured-tile-season {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(12, 8, 32, 0.65);
+  letter-spacing: 0.04em;
+}
+
+/* ================================================================== */
 /* HISTORY                                                              */
 /* ================================================================== */
 

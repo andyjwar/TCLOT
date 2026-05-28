@@ -8769,6 +8769,189 @@ function TrophyRoomLockedFrame({ initialMode = 'carousel', initialIdx = HOF_CARO
   return <TrophyRoomCarouselFrame activeIdx={initialIdx} onToggleMode={setMode} />
 }
 
+/* ------------------------------------------------------------------ */
+/* TROPHY ROOM · DESKTOP VARIANTS (TR-DT-A through TR-DT-D)             */
+/* ------------------------------------------------------------------ */
+/* Mobile T-D is locked. Desktop equivalents need to honour the same
+ * celebratory backdrop + banner-card visual language but adapt to a
+ * wider canvas. Four variants here for the user to pick between:
+ *   TR-DT-A · Wide carousel — single big banner, side peeks, arrows
+ *   TR-DT-B · 3-up carousel — three banners visible (prev/cur/next)
+ *   TR-DT-C · Grid default — 3×2 of the most-recent 6 banners
+ *   TR-DT-D · Featured + gallery — latest big, 5 priors as a side grid
+ * All four reuse HOF_BANNERS, HofBannerImage, and the same toggle
+ * pill (TrophyRoomViewToggle) so the cross-surface toggle language
+ * matches mobile T-D. */
+
+function DesktopCarouselArrow({ direction = 'prev' }) {
+  return (
+    <button
+      type="button"
+      className={'hof-troom-dt__arrow hof-troom-dt__arrow--' + direction}
+      aria-label={direction === 'prev' ? 'Previous banner' : 'Next banner'}
+    >
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        {direction === 'prev' ? (
+          <polyline points="15 6 9 12 15 18" />
+        ) : (
+          <polyline points="9 6 15 12 9 18" />
+        )}
+      </svg>
+    </button>
+  )
+}
+
+function DesktopCarouselDots({ count, activeIdx }) {
+  return (
+    <div className="hof-troom-dt__dots" role="tablist" aria-label="Banner">
+      {Array.from({ length: count }).map((_, i) => (
+        <span
+          key={i}
+          className={'hof-troom-dt__dot' + (i === activeIdx ? ' is-active' : '')}
+          role="tab"
+          aria-selected={i === activeIdx}
+        />
+      ))}
+    </div>
+  )
+}
+
+/* TR-DT-A · Wide carousel.
+ * One big banner centered, faint side peeks (just the edges visible),
+ * arrows on the left/right gutter, dots below. Toggle pill top-right. */
+function TrophyRoomDesktopWideCarousel({ activeIdx = HOF_CAROUSEL_DEFAULT_IDX }) {
+  const total = HOF_BANNERS.length
+  const prev = HOF_BANNERS[(activeIdx - 1 + total) % total]
+  const cur = HOF_BANNERS[activeIdx]
+  const next = HOF_BANNERS[(activeIdx + 1) % total]
+  return (
+    <div className="hof-troom-dt hof-troom-dt--wide">
+      <TrophyRoomViewToggle mode="carousel" onCarousel={() => {}} onGrid={() => {}} />
+      <div className="hof-troom-dt__wide-stage">
+        <div className="hof-troom-dt__wide-peek hof-troom-dt__wide-peek--prev" aria-hidden>
+          <HofBannerImage banner={prev} fit="cover" />
+        </div>
+        <div className="hof-troom-dt__wide-active">
+          <HofBannerImage banner={cur} fit="cover" />
+        </div>
+        <div className="hof-troom-dt__wide-peek hof-troom-dt__wide-peek--next" aria-hidden>
+          <HofBannerImage banner={next} fit="cover" />
+        </div>
+        <DesktopCarouselArrow direction="prev" />
+        <DesktopCarouselArrow direction="next" />
+      </div>
+      <DesktopCarouselDots count={total} activeIdx={activeIdx} />
+    </div>
+  )
+}
+
+/* TR-DT-B · 3-up carousel.
+ * Three full-size banners visible side-by-side. Center one elevated +
+ * full opacity; flanks slightly faded and scaled down. Click a flank
+ * to shift it into the center slot. */
+function TrophyRoomDesktopThreeUp({ activeIdx = HOF_CAROUSEL_DEFAULT_IDX }) {
+  const total = HOF_BANNERS.length
+  const prev = HOF_BANNERS[(activeIdx - 1 + total) % total]
+  const cur = HOF_BANNERS[activeIdx]
+  const next = HOF_BANNERS[(activeIdx + 1) % total]
+  return (
+    <div className="hof-troom-dt hof-troom-dt--3up">
+      <TrophyRoomViewToggle mode="carousel" onCarousel={() => {}} onGrid={() => {}} />
+      <div className="hof-troom-dt__3up-stage">
+        <DesktopCarouselArrow direction="prev" />
+        <button
+          type="button"
+          className="hof-troom-dt__3up-card hof-troom-dt__3up-card--side"
+          aria-label={`Shift ${prev.team} ${prev.season} to center`}
+        >
+          <HofBannerImage banner={prev} fit="cover" />
+        </button>
+        <div className="hof-troom-dt__3up-card hof-troom-dt__3up-card--center">
+          <HofBannerImage banner={cur} fit="cover" />
+        </div>
+        <button
+          type="button"
+          className="hof-troom-dt__3up-card hof-troom-dt__3up-card--side"
+          aria-label={`Shift ${next.team} ${next.season} to center`}
+        >
+          <HofBannerImage banner={next} fit="cover" />
+        </button>
+        <DesktopCarouselArrow direction="next" />
+      </div>
+      <DesktopCarouselDots count={total} activeIdx={activeIdx} />
+    </div>
+  )
+}
+
+/* TR-DT-C · Grid default.
+ * 3 columns × 2 rows of the 6 most-recent banners. Larger cells than
+ * mobile grid since desktop has more space per cell. Toggle top-right
+ * lets the user switch to a carousel view (TR-DT-A or TR-DT-B). */
+function TrophyRoomDesktopGrid() {
+  return (
+    <div className="hof-troom-dt hof-troom-dt--grid">
+      <TrophyRoomViewToggle mode="grid" onCarousel={() => {}} onGrid={() => {}} />
+      <div className="hof-troom-dt__grid">
+        {HOF_GRID_BANNERS.map((b) => (
+          <button
+            key={b.season}
+            type="button"
+            className="hof-troom-dt__grid-card"
+            aria-label={`Open ${b.team} ${b.season} banner`}
+          >
+            <HofBannerImage banner={b} fit="cover" />
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* TR-DT-D · Featured + gallery split.
+ * Latest 25/26 champion sits big on the left (60% width). The 5 prior
+ * banners pack into a 3×2-with-empty gallery on the right. Tapping a
+ * gallery tile swaps it into the featured slot (mocked statically).
+ * Most "trophy hall" / heritage feel of the four. */
+function TrophyRoomDesktopFeatured() {
+  const featured = HOF_BANNERS[HOF_BANNERS.length - 1]
+  /* Gallery = the 5 banners before the featured one, latest first. */
+  const gallery = HOF_BANNERS.slice(0, -1).slice(-5).reverse()
+  return (
+    <div className="hof-troom-dt hof-troom-dt--featured">
+      <TrophyRoomViewToggle mode="carousel" onCarousel={() => {}} onGrid={() => {}} />
+      <div className="hof-troom-dt__featured-split">
+        <div className="hof-troom-dt__featured-main">
+          <div className="hof-troom-dt__featured-eyebrow">Reigning · {featured.season}</div>
+          <div className="hof-troom-dt__featured-card">
+            <HofBannerImage banner={featured} fit="cover" />
+          </div>
+          <div className="hof-troom-dt__featured-caption">
+            <strong>{featured.team}</strong>
+            <span>{featured.mgr}</span>
+          </div>
+        </div>
+        <div className="hof-troom-dt__featured-gallery-wrap">
+          <div className="hof-troom-dt__featured-eyebrow">Prior champions</div>
+          <div className="hof-troom-dt__featured-gallery">
+            {gallery.map((b) => (
+              <button
+                key={b.season}
+                type="button"
+                className="hof-troom-dt__featured-tile"
+                aria-label={`Promote ${b.team} ${b.season} to featured`}
+                title={`${b.team} · ${b.season}`}
+              >
+                <HofBannerImage banner={b} fit="cover" />
+                <span className="hof-troom-dt__featured-tile-season">{b.season}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 /* Toggle UX detail — zoomed-in render of just the toggle pill on a
  * cropped dark backdrop, with annotations for the active/inactive
  * states. Used in the "toggle UX detail" frame in the mockup. */
@@ -10891,6 +11074,57 @@ export function Mockup() {
               <PortraitFrame>
                 <TrophyRoomToggleDetail />
               </PortraitFrame>
+            </div>
+          </div>
+
+          {/* Desktop variants — TR-DT-A through TR-DT-D ------------- */}
+          <div className="hof-troom-dt-section">
+            <div className="mockup__eyebrow">TROPHY ROOM · DESKTOP VARIANTS</div>
+            <h3 className="hof-troom-dt-section__h">
+              How the same celebratory banner story scales to ~1024 px
+            </h3>
+            <p className="mockup__section-sub">
+              Mobile T-D is locked. Four desktop equivalents below — all
+              share the same brand-tinted dark backdrop, banner card
+              chrome, and top-right toggle pill as the mobile carousel.
+              Pick the one that feels most "trophy hall" at desktop
+              width.
+            </p>
+
+            <div className="hof-troom-dt-section__beat">
+              <div className="hof-troom-dt-section__eyebrow">
+                TR-DT-A · WIDE CAROUSEL · single big banner, side peeks, arrows + dots
+              </div>
+              <div className="hof-troom-dt-frame">
+                <TrophyRoomDesktopWideCarousel />
+              </div>
+            </div>
+
+            <div className="hof-troom-dt-section__beat">
+              <div className="hof-troom-dt-section__eyebrow">
+                TR-DT-B · 3-UP CAROUSEL · prev / active / next all visible
+              </div>
+              <div className="hof-troom-dt-frame">
+                <TrophyRoomDesktopThreeUp />
+              </div>
+            </div>
+
+            <div className="hof-troom-dt-section__beat">
+              <div className="hof-troom-dt-section__eyebrow">
+                TR-DT-C · GRID DEFAULT · 3 × 2 of the most-recent 6 banners
+              </div>
+              <div className="hof-troom-dt-frame">
+                <TrophyRoomDesktopGrid />
+              </div>
+            </div>
+
+            <div className="hof-troom-dt-section__beat">
+              <div className="hof-troom-dt-section__eyebrow">
+                TR-DT-D · FEATURED + GALLERY SPLIT · reigning champ big, priors as side gallery
+              </div>
+              <div className="hof-troom-dt-frame">
+                <TrophyRoomDesktopFeatured />
+              </div>
             </div>
           </div>
         </section>
