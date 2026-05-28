@@ -11493,6 +11493,477 @@ export function Mockup() {
           Selection sub-views, the Hall career detail, and the Form/H2H widgets just
           recompose these atoms — no new chrome required.
         </div>
+
+        {/* ============ LEAGUE INFO MODAL · WORDMARK TRIGGER + 3 LAYOUT VARIANTS ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">League Info · wordmark trigger + 3 modal layout variants</div>
+          <h2 className="mockup__section-h">League Info modal panel — design exploration</h2>
+          <p className="mockup__section-sub">
+            With Settings + League Info merged behind the brand header (no
+            visible cog), the wordmark needs a subtle &ldquo;tap me&rdquo;
+            affordance, and the panel itself becomes a centered modal — same on
+            mobile and desktop. Section A compares two header affordances
+            (chevron vs. info glyph). Section B and C show three modal layout
+            variants — LP-A long scroll, LP-B inline tabs, LP-C sectioned cards
+            on a themed backdrop — first at desktop width, then again at mobile
+            width (~390px, edge-to-edge with 16px gutters).
+          </p>
+          <LeagueInfoShowcase />
+        </section>
+      </div>
+    </div>
+  )
+}
+
+/* =================================================================== */
+/* LEAGUE INFO · brand-wordmark trigger + 3 centered modal variants     */
+/* ------------------------------------------------------------------- */
+/* Exploration for the modal panel that opens when the user taps the   */
+/* league wordmark/logo in the brand header (replaces the cog).        */
+/* Section A — two header affordance comparisons (A: chevron hint,     */
+/* B: info glyph). Section B + C — three layout variants of the modal  */
+/* itself rendered at desktop (~440-520px) and mobile (~390px) width.  */
+/* All mock data; all classes prefixed `.li-` to avoid collision.       */
+/* =================================================================== */
+
+const LEAGUE_INFO_TEAMS = [
+  { id: 'CO',  team: 'Crouch End Oashisu',  mgr: 'David Higman',     descriptor: 'Founder',           color: '#7e57ff' },
+  { id: 'SZM', team: 'Soul Ze Moles',       mgr: 'Eddy Webster',     descriptor: 'Reigning Champion', color: '#e94343' },
+  { id: 'DB',  team: 'Dalston Bellsprouts', mgr: 'Nick Mottershead', descriptor: 'Heretic',           color: '#28b269' },
+  { id: 'TW',  team: 'Toronto Wiggum',      mgr: 'Andy Ward',        descriptor: 'Statistician',      color: '#f79233' },
+  { id: 'ER',  team: 'Essex Ratigans',      mgr: 'Mike Sutton',      descriptor: 'Wooden Spoon',      color: '#3a8dde' },
+  { id: 'DN',  team: 'Dalston Benoit',      mgr: 'Nick Goodacre',    descriptor: 'Trader',            color: '#9c6b3c' },
+  { id: 'SCC', team: 'Soul Crouch Carrol',  mgr: 'Luke Butcher',     descriptor: 'Vice-Champion',     color: '#cf4d8e' },
+  { id: 'PFO', team: 'Pinks Five-O',        mgr: 'Jon Ward',         descriptor: 'Stalwart',          color: '#c2497a' },
+]
+
+const LEAGUE_INFO_FACTS = [
+  { label: 'Seasons completed',         value: '5' },
+  { label: 'Different champions',       value: '3' },
+  { label: 'All-time top scorer (For)', value: 'Luke Butcher · 16,402' },
+  { label: 'Longest title drought',     value: 'Jamie Adams · 5 seasons' },
+]
+
+const LEAGUE_INFO_SETTINGS = [
+  { label: 'Default landing tab',              value: 'FPL Live' },
+  { label: 'Show projections in Players Wire', value: 'On' },
+  { label: 'Beta features',                    value: 'Off' },
+  { label: 'Sign out',                         value: null },
+]
+
+const LEAGUE_INFO_BLURB =
+  'Founded in 2020 by a handful of friends across Toronto, London, and Yorkshire, TCLOT is an 8-team head-to-head FPL Draft league named after the mythic Titans. Five seasons in, three different managers have lifted the trophy. Each season writes another chapter into the Heritage.'
+
+const LEAGUE_INFO_TAGLINE = 'Eight managers. Five seasons. One trophy.'
+
+const LEAGUE_INFO_LP_B_TABS = ['Overview', 'Managers', 'Settings']
+
+function LiTrophy({ size = 64 }) {
+  const gradId = `li-trophy-grad-${size}`
+  return (
+    <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden className="li-trophy">
+      <defs>
+        <linearGradient id={gradId} x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#ffe7a3" />
+          <stop offset="55%" stopColor="#f1c43b" />
+          <stop offset="100%" stopColor="#a37305" />
+        </linearGradient>
+      </defs>
+      <path
+        fill={`url(#${gradId})`}
+        d="M7 3h10v2.4c1.1 0 2.1.05 2.9.35.7.27 1.1.86 1.1 1.7 0 1.85-1.2 3.4-2.95 4.18-.55.25-1.18.37-1.82.4-.4 2-1.85 3.65-3.73 4.27V19h2.25a1 1 0 010 2H9.25a1 1 0 010-2H11.5v-2.7c-1.88-.62-3.33-2.27-3.73-4.27-.64-.03-1.27-.15-1.82-.4C4.2 10.85 3 9.3 3 7.45c0-.84.4-1.43 1.1-1.7C4.9 5.45 5.9 5.4 7 5.4V3zm0 4.42c-.78 0-1.4.04-1.85.2-.13.05-.15.13-.15.23 0 1 .65 1.78 1.55 2.18.16.07.31.12.45.15V7.42zm10 0v2.76c.14-.03.29-.08.45-.15.9-.4 1.55-1.18 1.55-2.18 0-.1-.02-.18-.15-.23-.45-.16-1.07-.2-1.85-.2z"
+      />
+    </svg>
+  )
+}
+
+function liInitials(text, count = 2) {
+  return String(text)
+    .split(/\s+/)
+    .slice(0, count)
+    .map((w) => w[0])
+    .filter(Boolean)
+    .join('')
+    .toUpperCase()
+}
+
+function LiBadge({ team }) {
+  return (
+    <div className="li-badge">
+      <div className="li-badge__crest" style={{ background: team.color }}>
+        <span>{liInitials(team.team)}</span>
+      </div>
+      <div className="li-badge__name">{team.team}</div>
+    </div>
+  )
+}
+
+function LiManagerRow({ team }) {
+  return (
+    <div className="li-mgr-row">
+      <div className="li-mgr-row__avatar" style={{ background: team.color }}>
+        <span>{liInitials(team.mgr)}</span>
+      </div>
+      <div className="li-mgr-row__body">
+        <div className="li-mgr-row__name">{team.mgr}</div>
+        <div className="li-mgr-row__descriptor">{team.descriptor}</div>
+      </div>
+    </div>
+  )
+}
+
+function LiHero({ size = 'default' }) {
+  const isLarge = size === 'large'
+  return (
+    <div className={'li-hero' + (isLarge ? ' li-hero--large' : '')}>
+      <div className="li-hero__crest">
+        <LiTrophy size={isLarge ? 88 : 64} />
+      </div>
+      <div className="li-hero__name">The TC League of Titans</div>
+      <div className="li-hero__tagline">{LEAGUE_INFO_TAGLINE}</div>
+    </div>
+  )
+}
+
+function LiBadgesGrid() {
+  return (
+    <div className="li-badges-grid">
+      {LEAGUE_INFO_TEAMS.map((t) => <LiBadge key={t.id} team={t} />)}
+    </div>
+  )
+}
+
+function LiManagersList() {
+  return (
+    <div className="li-managers-list">
+      {LEAGUE_INFO_TEAMS.map((t) => <LiManagerRow key={t.id} team={t} />)}
+    </div>
+  )
+}
+
+function LiBlurb() {
+  return <p className="li-blurb">{LEAGUE_INFO_BLURB}</p>
+}
+
+function LiFactsGrid() {
+  return (
+    <div className="li-facts-grid">
+      {LEAGUE_INFO_FACTS.map((f) => (
+        <div className="li-fact" key={f.label}>
+          <div className="li-fact__label">{f.label}</div>
+          <div className="li-fact__value">{f.value}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function LiAppearance() {
+  return (
+    <div className="li-appearance" role="radiogroup" aria-label="Appearance">
+      {['Light', 'Dark', 'System'].map((opt) => {
+        const active = opt === 'System'
+        return (
+          <button
+            key={opt}
+            type="button"
+            role="radio"
+            aria-checked={active}
+            className={'li-appearance__opt' + (active ? ' is-active' : '')}
+          >
+            {opt}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+function LiSettings() {
+  return (
+    <div className="li-settings">
+      {LEAGUE_INFO_SETTINGS.map((s) => (
+        <button type="button" className="li-settings__row" key={s.label}>
+          <span className="li-settings__label">{s.label}</span>
+          {s.value !== null && <span className="li-settings__value">{s.value}</span>}
+          <span className="li-settings__chevron" aria-hidden>›</span>
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function LiFooter() {
+  return (
+    <div className="li-footer">
+      v0.42.0 · Updated 2 minutes ago
+    </div>
+  )
+}
+
+function LiSection({ eyebrow, children }) {
+  return (
+    <div className="li-section">
+      <div className="li-section__eyebrow">{eyebrow}</div>
+      {children}
+    </div>
+  )
+}
+
+function LiBrandHeader({ affordance }) {
+  return (
+    <div className="li-brand">
+      <span className="li-brand__icon" aria-hidden>
+        <TclotLionIcon size={16} />
+      </span>
+      <button
+        type="button"
+        className={`li-brand__trigger li-brand__trigger--${affordance}`}
+        aria-label="Open League Info"
+      >
+        <span className="li-brand__wordmark">TCLOT</span>
+        {affordance === 'A' && (
+          <span className="li-brand__chevron" aria-hidden>▾</span>
+        )}
+        {affordance === 'B' && (
+          <span className="li-brand__info-glyph" aria-hidden>i</span>
+        )}
+      </button>
+      <span className="li-brand__season">2025/26</span>
+      <span className="li-brand__live" aria-hidden>
+        <span className="li-brand__live-dot" />
+        LIVE
+      </span>
+    </div>
+  )
+}
+
+function LiAffordanceShowcase() {
+  return (
+    <div className="li-affordance-grid">
+      <div className="li-affordance-card">
+        <div className="li-affordance-card__label">Affordance A — chevron hint</div>
+        <div className="li-affordance-card__stage">
+          <LiBrandHeader affordance="A" />
+        </div>
+        <p className="li-affordance-card__caption">
+          Wordmark + small muted <code>▾</code> chevron. Tap target pulses
+          subtly on idle. Most explicit &ldquo;there&apos;s a menu here&rdquo;
+          signal without adding a cog.
+        </p>
+      </div>
+      <div className="li-affordance-card">
+        <div className="li-affordance-card__label">Affordance B — info glyph</div>
+        <div className="li-affordance-card__stage">
+          <LiBrandHeader affordance="B" />
+        </div>
+        <p className="li-affordance-card__caption">
+          Wordmark + tiny circular <code>i</code> glyph appended. No chevron.
+          Reads as &ldquo;about this league&rdquo; — quieter, but the menu
+          intent is less obvious than a chevron.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+function LiModalStage({ width, variant, children }) {
+  return (
+    <div className={`li-stage li-stage--${width} li-stage--${variant}`}>
+      <div className="li-stage__page" aria-hidden>
+        <div className="li-stage__page-line" />
+        <div className="li-stage__page-line li-stage__page-line--short" />
+        <div className="li-stage__page-line" />
+        <div className="li-stage__page-line li-stage__page-line--short" />
+        <div className="li-stage__page-line" />
+      </div>
+      <div className="li-stage__backdrop" />
+      {children}
+    </div>
+  )
+}
+
+function LiVariantA({ width }) {
+  return (
+    <LiModalStage width={width} variant="lp-a">
+      <div className="li-modal li-modal--lp-a">
+        <div className="li-modal__head">
+          <LiHero />
+          <button type="button" className="li-modal__close" aria-label="Close">×</button>
+        </div>
+        <div className="li-modal__body li-modal__body--scroll">
+          <LiSection eyebrow="League Badges"><LiBadgesGrid /></LiSection>
+          <LiSection eyebrow="Managers"><LiManagersList /></LiSection>
+          <LiSection eyebrow="About TCLOT"><LiBlurb /></LiSection>
+          <LiSection eyebrow="Fast Facts"><LiFactsGrid /></LiSection>
+          <LiSection eyebrow="Appearance"><LiAppearance /></LiSection>
+          <LiSection eyebrow="Settings"><LiSettings /></LiSection>
+          <LiFooter />
+        </div>
+      </div>
+    </LiModalStage>
+  )
+}
+
+function LiVariantB({ width }) {
+  const [tab, setTab] = useState('Overview')
+  return (
+    <LiModalStage width={width} variant="lp-b">
+      <div className="li-modal li-modal--lp-b">
+        <div className="li-modal__head">
+          <LiHero />
+          <button type="button" className="li-modal__close" aria-label="Close">×</button>
+          <div className="li-tabs" role="tablist" aria-label="League Info sections">
+            {LEAGUE_INFO_LP_B_TABS.map((t) => (
+              <button
+                key={t}
+                type="button"
+                role="tab"
+                aria-selected={tab === t}
+                className={'li-tabs__btn' + (tab === t ? ' is-active' : '')}
+                onClick={() => setTab(t)}
+              >
+                {t}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="li-modal__body li-modal__body--scroll">
+          {tab === 'Overview' && (
+            <>
+              <LiSection eyebrow="League Badges"><LiBadgesGrid /></LiSection>
+              <LiSection eyebrow="About TCLOT"><LiBlurb /></LiSection>
+              <LiSection eyebrow="Fast Facts"><LiFactsGrid /></LiSection>
+            </>
+          )}
+          {tab === 'Managers' && (
+            <LiSection eyebrow="Managers"><LiManagersList /></LiSection>
+          )}
+          {tab === 'Settings' && (
+            <>
+              <LiSection eyebrow="Appearance"><LiAppearance /></LiSection>
+              <LiSection eyebrow="Settings"><LiSettings /></LiSection>
+              <LiFooter />
+            </>
+          )}
+        </div>
+      </div>
+    </LiModalStage>
+  )
+}
+
+function LiVariantC({ width }) {
+  return (
+    <LiModalStage width={width} variant="lp-c">
+      <div className="li-modal li-modal--lp-c">
+        <div className="li-modal__body li-modal__body--scroll">
+          <div className="li-card li-card--hero">
+            <button type="button" className="li-modal__close li-modal__close--on-card" aria-label="Close">×</button>
+            <LiHero size="large" />
+          </div>
+          <div className="li-card-row">
+            <div className="li-card li-card--badges">
+              <div className="li-card__eyebrow">League Badges</div>
+              <LiBadgesGrid />
+            </div>
+            <div className="li-card li-card--managers">
+              <div className="li-card__eyebrow">Managers</div>
+              <LiManagersList />
+            </div>
+          </div>
+          <div className="li-card li-card--blurb">
+            <span className="li-card__quote-mark" aria-hidden>&ldquo;</span>
+            <div className="li-card__eyebrow">About TCLOT</div>
+            <LiBlurb />
+          </div>
+          <div className="li-card li-card--facts">
+            <div className="li-card__eyebrow">Fast Facts</div>
+            <LiFactsGrid />
+          </div>
+          <div className="li-card li-card--appearance">
+            <div className="li-card__eyebrow">Appearance</div>
+            <LiAppearance />
+          </div>
+          <div className="li-card li-card--settings">
+            <div className="li-card__eyebrow">Settings</div>
+            <LiSettings />
+          </div>
+          <LiFooter />
+        </div>
+      </div>
+    </LiModalStage>
+  )
+}
+
+const LEAGUE_INFO_VARIANTS = [
+  {
+    id: 'lp-a',
+    label: 'LP-A — Long scroll, single column',
+    caption: 'LP-A · long scroll, single column · most conservative settings-style',
+    Component: LiVariantA,
+  },
+  {
+    id: 'lp-b',
+    label: 'LP-B — Tabbed inside modal',
+    caption: 'LP-B · hero pinned · inline Overview · Managers · Settings tabs · only active tab body scrolls',
+    Component: LiVariantB,
+  },
+  {
+    id: 'lp-c',
+    label: 'LP-C — Sectioned cards on themed background',
+    caption: 'LP-C · violet-washed surface · hero card, side-by-side badges + managers (desktop) · most premium feel',
+    Component: LiVariantC,
+  },
+]
+
+function LiVariantBlock({ variant, width }) {
+  const { Component, label, caption, id } = variant
+  return (
+    <div className={`li-variant li-variant--${id} li-variant--${width}`}>
+      <div className="li-variant__label">{label}</div>
+      <Component width={width} />
+      <p className="li-variant__caption">{caption}</p>
+    </div>
+  )
+}
+
+function LeagueInfoShowcase() {
+  return (
+    <div className="li-showcase">
+      <div className="li-sub">
+        <div className="li-sub__eyebrow">A · Brand-header trigger affordance</div>
+        <p className="li-sub__desc">
+          Mobile-width brand headers (~390px) showing two options for hinting at the
+          tappable wordmark. Pick one.
+        </p>
+        <LiAffordanceShowcase />
+      </div>
+
+      <div className="li-sub">
+        <div className="li-sub__eyebrow">B · Modal layout variants — desktop</div>
+        <p className="li-sub__desc">
+          ~440px modal (LP-A, LP-B) and ~520px modal (LP-C) on a dimmed page
+          backdrop. Same content sections in all three; only the visual
+          composition changes.
+        </p>
+        <div className="li-variants li-variants--desktop">
+          {LEAGUE_INFO_VARIANTS.map((v) => (
+            <LiVariantBlock key={v.id} variant={v} width="desktop" />
+          ))}
+        </div>
+      </div>
+
+      <div className="li-sub">
+        <div className="li-sub__eyebrow">C · Modal layout variants — mobile (~390px)</div>
+        <p className="li-sub__desc">
+          Edge-to-edge modal with 16px gutters on each side. No horizontal
+          scroll — the badge grid wraps and the side-by-side cards in LP-C stack.
+        </p>
+        <div className="li-variants li-variants--mobile">
+          {LEAGUE_INFO_VARIANTS.map((v) => (
+            <LiVariantBlock key={v.id} variant={v} width="mobile" />
+          ))}
+        </div>
       </div>
     </div>
   )
