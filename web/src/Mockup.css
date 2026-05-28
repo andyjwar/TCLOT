@@ -13244,7 +13244,7 @@
 /* Stacked uppercase stats block — mirrors the year-label treatment
  * on the per-season cards (caps · muted · letter-spaced) so the
  * career summary reads as part of the same visual language. Each
- * stat sits on its own line (TITLES / RUNNER-UP / BEST #N). */
+ * stat sits on its own line (TITLES / RUNNER-UP). */
 .merged-history-timeline__mgr-stats {
   list-style: none;
   margin: 0;

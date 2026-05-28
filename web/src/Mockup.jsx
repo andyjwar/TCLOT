@@ -9652,10 +9652,11 @@ function mergedCellPosClass(rank) {
  * shows team name on top + big position below (heatmap-tinted).
  *
  * Locked spec: identity column carries the manager name + a stacked
- * uppercase stats block (TITLES · RUNNER-UP · BEST #N) that mirrors
- * the 25/26 year-label treatment (caps, muted, letter-spaced). The
- * inline "N titles · best #1" line was retired so the celebratory
- * stats stand on their own. */
+ * uppercase stats block (TITLES · RUNNER-UP) that mirrors the 25/26
+ * year-label treatment (caps, muted, letter-spaced). The BEST #N
+ * line was dropped per user feedback — the per-season heatmap cards
+ * already make a manager's best finish read at a glance, so the
+ * stacked stats focus on the celebratory tallies only. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
@@ -9680,10 +9681,6 @@ function MergedHistoryTHD() {
                 <li className="merged-history-timeline__mgr-stat">
                   <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
                   <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
-                </li>
-                <li className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-label">best</span>
-                  <span className="merged-history-timeline__mgr-stat-num">#{row.best ?? '—'}</span>
                 </li>
               </ul>
             </div>
@@ -9713,9 +9710,11 @@ function MergedHistoryTHD() {
 }
 
 /* MV-A · Mobile accordion — each manager is one row showing
- * crest + name + best/titles summary; tap → expand to reveal the
+ * crest + name + titles summary; tap → expand to reveal the
  * per-season journey list. Mocked with the top row expanded so the
- * user sees both states in the same frame. */
+ * user sees both states in the same frame. (BEST chip was dropped
+ * per user feedback — the expanded per-season list already shows
+ * a manager's best finish at the heatmap level.) */
 function MergedHistoryMVA() {
   const [openKey, setOpenKey] = useState(MERGED_HISTORY_SORTED[0].key)
   return (
@@ -9751,10 +9750,6 @@ function MergedHistoryMVA() {
                   <span className="merged-history-mv__summary-chip">
                     <span className="merged-history-mv__summary-chip-num">{row.titles}</span>
                     <span className="merged-history-mv__summary-chip-label">titles</span>
-                  </span>
-                  <span className="merged-history-mv__summary-chip">
-                    <span className="merged-history-mv__summary-chip-num">#{row.best ?? '—'}</span>
-                    <span className="merged-history-mv__summary-chip-label">best</span>
                   </span>
                   <span
                     className="merged-history-mv__chevron"
@@ -10876,15 +10871,17 @@ export function Mockup() {
           <p className="mockup__section-sub">
             Locked: H-A&apos;s tabbed pattern is the History sub-menu.
             Tab 1 (Team History) renders the manager-journey timeline
-            (TH-D, refined with stacked uppercase TITLES · RUNNER-UP ·
-            BEST stats) on desktop, and a small List ⇄ Matrix toggle
+            (TH-D, refined with stacked uppercase TITLES · RUNNER-UP
+            stats) on desktop, and a small List ⇄ Matrix toggle
             (MV-A accordion ⇄ MV-C transposed matrix) on mobile. Tab 2
             (Historic Standings) shows the refined per-season table with
             manager-initial bubbles, the dedicated Manager column
             dropped, team name left-aligned tight to the bubble, and the
             season picker without a &ldquo;live&rdquo; suffix on 25/26.
-            Tab 3 (Champions of Champions) is preserved as pending — the
-            live-tally mock stays in place while the visual is decided.
+            Tab 3 (Champions of Champions) is locked with a Live ⇄
+            Algorithm pill: Live shows the cumulative 11-column table
+            (default PTS desc); Algorithm shows the season-by-season
+            8-7-6-5-4-3-2-1 finishing-score matrix.
           </p>
           <HallOfFameHistorySubMenu />
         </section>
