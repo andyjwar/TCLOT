@@ -117,6 +117,8 @@ const EVENT_META = {
 };
 
 /** Yellow / red only if the player is on a league squad (owner map has the element). */
+// Kept for re-enabling the events list inside the expanded fixture body.
+// eslint-disable-next-line no-unused-vars
 function includePremWindowEvent(ev, ownerByEl) {
   if (ev.kind !== 'yellow_card' && ev.kind !== 'red_card') return true;
   const id = ev.elementId;
@@ -273,9 +275,11 @@ function LineupPaired({
   }
   const h = homeSide;
   const a = awaySide;
-  const xiLen = Math.max(h?.xi?.length ?? 0, a?.xi?.length ?? 0);
-  const benchH = h?.bench ?? [];
-  const benchA = a?.bench ?? [];
+  const xiH = sortPlayersByPosition(h?.xi ?? [], elementById);
+  const xiA = sortPlayersByPosition(a?.xi ?? [], elementById);
+  const xiLen = Math.max(xiH.length, xiA.length);
+  const benchH = sortPlayersByPosition(h?.bench ?? [], elementById);
+  const benchA = sortPlayersByPosition(a?.bench ?? [], elementById);
   const benchLen = Math.max(benchH.length, benchA.length);
 
   const rowFor = (player, club) =>
@@ -311,17 +315,6 @@ function LineupPaired({
 
   return (
     <div className="prem-lineup-paired">
-      {(h?.formation || a?.formation) ? (
-        <div className="prem-lineup-paired__formations" aria-hidden>
-          <span className="prem-lineup-paired__formation">
-            {h?.formation || ''}
-          </span>
-          <span className="prem-lineup-paired__formation">
-            {a?.formation || ''}
-          </span>
-        </div>
-      ) : null}
-
       <div className="prem-lineup-paired__rows" role="list">
         {Array.from({ length: xiLen }, (_, i) => (
           <div
@@ -330,10 +323,10 @@ function LineupPaired({
             role="listitem"
           >
             <div className="prem-lineup-paired__cell prem-lineup-paired__cell--home">
-              {rowFor(h?.xi?.[i], home)}
+              {rowFor(xiH[i], home)}
             </div>
             <div className="prem-lineup-paired__cell prem-lineup-paired__cell--away">
-              {rowFor(a?.xi?.[i], away)}
+              {rowFor(xiA[i], away)}
             </div>
           </div>
         ))}
@@ -479,6 +472,61 @@ function countOwnedInXi(side, ownerByEl) {
   return n;
 }
 
+/**
+ * GK / DEF / MID / FWD ordering for both display + sort.
+ *
+ * `fotmobPremWindow.enrichWithFplElements` writes a one/two-char `fplPos` on
+ * each player ('GK' / 'D' / 'M' / 'F'). The lineup body needs the full label
+ * for the position pill, and a numeric rank so XI + bench can be sorted
+ * GK → DEF → MID → FWD with FPL `element_type` as the authoritative source
+ * and the short `fplPos` as the fallback. Unknown positions are sorted last
+ * so they don't break the visual cadence at the top of the list.
+ */
+const POS_LABEL_FOR_FPLPOS = {
+  GK: 'GK',
+  D: 'DEF',
+  M: 'MID',
+  F: 'FWD',
+};
+const POS_RANK_FOR_FPLPOS = { GK: 1, D: 2, M: 3, F: 4 };
+
+function lineupPlayerPosLabel(player, elementById) {
+  const el =
+    player?.elementId != null && elementById
+      ? elementById[player.elementId]
+      : null;
+  const elementType = Number(el?.element_type);
+  if (elementType === 1) return 'GK';
+  if (elementType === 2) return 'DEF';
+  if (elementType === 3) return 'MID';
+  if (elementType === 4) return 'FWD';
+  const short = String(player?.fplPos || '').trim().toUpperCase();
+  return POS_LABEL_FOR_FPLPOS[short] || null;
+}
+
+function lineupPlayerPosRank(player, elementById) {
+  const el =
+    player?.elementId != null && elementById
+      ? elementById[player.elementId]
+      : null;
+  const elementType = Number(el?.element_type);
+  if (elementType === 1) return 1;
+  if (elementType === 2) return 2;
+  if (elementType === 3) return 3;
+  if (elementType === 4) return 4;
+  const short = String(player?.fplPos || '').trim().toUpperCase();
+  return POS_RANK_FOR_FPLPOS[short] ?? 5;
+}
+
+/** Stable sort by `lineupPlayerPosRank` (GK → DEF → MID → FWD → unknown). */
+function sortPlayersByPosition(players, elementById) {
+  if (!Array.isArray(players)) return [];
+  return players
+    .map((p, idx) => ({ p, idx, rank: lineupPlayerPosRank(p, elementById) }))
+    .sort((a, b) => a.rank - b.rank || a.idx - b.idx)
+    .map((wrap) => wrap.p);
+}
+
 function MobileLineupRow({
   player,
   club,
@@ -498,10 +546,7 @@ function MobileLineupRow({
         `#${player.fotmobPlayerId ?? '?'}`);
   const teamShort =
     el && teamById ? teamById[Number(el.team)]?.short_name : undefined;
-  const fplPos =
-    player.fplPos != null && String(player.fplPos).trim()
-      ? String(player.fplPos).trim()
-      : null;
+  const posLabel = lineupPlayerPosLabel(player, elementById);
   return (
     <div
       className={
@@ -537,10 +582,161 @@ function MobileLineupRow({
           kitIndexByEntry={kitIndexByEntry}
         />
       ) : null}
-      {fplPos ? (
-        <span className={`prem-mlu-pos prem-mlu-pos--${fplPos}`}>{fplPos}</span>
+      {posLabel ? (
+        <span className={`prem-mlu-pos prem-mlu-pos--${posLabel}`}>
+          {posLabel}
+        </span>
       ) : null}
     </div>
+  );
+}
+
+/**
+ * Compact one-row strip listing unowned bench players (PL crest left, names
+ * separated by ` | `, no per-row crests / owner tags / position pills). Shape
+ * mirrors `NotInSquadRow` but the "not on the matchday team" case has names
+ * already, so this version takes raw lineup-shaped players + the club to
+ * source the crest. Names wrap to a second line when they don't fit.
+ */
+function UnownedBenchStrip({ players, club, elementById }) {
+  if (!players?.length) return null;
+  const crest =
+    club?.code != null && plBadgeUrl(club.code) ? (
+      <img
+        className="prem-bench-other__crest"
+        src={plBadgeUrl(club.code)}
+        alt={club?.name || ''}
+        loading="lazy"
+      />
+    ) : (
+      <span className="prem-bench-other__crest" aria-hidden />
+    );
+  return (
+    <div className="prem-bench-other">
+      {crest}
+      <span className="prem-bench-other__items">
+        {players.map((p, i) => {
+          const el =
+            p?.elementId != null && elementById ? elementById[p.elementId] : null;
+          const displayName = el
+            ? fplElementWebName(el, p.elementId)
+            : (p?.fplWebName?.trim() || p?.name || `#${p?.fotmobPlayerId ?? '?'}`);
+          return (
+            <span className="prem-bench-other__item" key={`bo-${i}`}>
+              {i > 0 ? (
+                <span className="prem-bench-other__sep" aria-hidden>
+                  |
+                </span>
+              ) : null}
+              <ClickablePlayerName
+                element={p?.elementId}
+                displayName={displayName}
+                web_name={displayName}
+              >
+                <span className="prem-bench-other__name">{displayName}</span>
+              </ClickablePlayerName>
+            </span>
+          );
+        })}
+      </span>
+    </div>
+  );
+}
+
+/**
+ * Renders one team's XI + bench + not-in-squad strip on mobile.
+ *
+ * Bench is partitioned into:
+ *   - `ownedBench`: bench players whose `elementId` is in `ownerByEl` —
+ *     rendered as full `MobileLineupRow`s (with owner tag + position pill).
+ *   - `unownedBench`: everyone else — rendered as a single compact strip
+ *     via `UnownedBenchStrip` (one club crest + names separated by ` | `).
+ *
+ * The "Bench" header is hidden when both partitions are empty. XI and the
+ * owned bench rows are sorted GK → DEF → MID → FWD via
+ * `sortPlayersByPosition`.
+ */
+function MobileLineupSide({
+  side,
+  club,
+  ownerByEl,
+  elementById,
+  teamById,
+  teamLogoMap,
+  kitIndexByEntry,
+  notInSquad,
+}) {
+  const sortedXi = useMemo(
+    () => sortPlayersByPosition(side?.xi || [], elementById),
+    [side?.xi, elementById],
+  );
+  const { ownedBench, unownedBench } = useMemo(() => {
+    const owned = [];
+    const unowned = [];
+    for (const p of side?.bench || []) {
+      const id = Number(p?.elementId);
+      const isOwned =
+        Number.isFinite(id) && ownerByEl && ownerByEl.get(id);
+      if (isOwned) owned.push(p);
+      else unowned.push(p);
+    }
+    return {
+      ownedBench: sortPlayersByPosition(owned, elementById),
+      unownedBench: sortPlayersByPosition(unowned, elementById),
+    };
+  }, [side?.bench, ownerByEl, elementById]);
+  const showBenchHeader = ownedBench.length > 0 || unownedBench.length > 0;
+
+  return (
+    <>
+      <div className="prem-mlu-list">
+        {sortedXi.map((p, i) => (
+          <MobileLineupRow
+            key={`xi-${i}`}
+            player={p}
+            club={club}
+            ownerByEl={ownerByEl}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            elementById={elementById}
+            teamById={teamById}
+          />
+        ))}
+      </div>
+      {showBenchHeader ? (
+        <div className="prem-mlu-bench-head">Bench</div>
+      ) : null}
+      {ownedBench.length > 0 ? (
+        <div className="prem-mlu-list">
+          {ownedBench.map((p, i) => (
+            <MobileLineupRow
+              key={`bench-owned-${i}`}
+              player={p}
+              club={club}
+              ownerByEl={ownerByEl}
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+              elementById={elementById}
+              teamById={teamById}
+              bench
+            />
+          ))}
+        </div>
+      ) : null}
+      {unownedBench.length > 0 ? (
+        <UnownedBenchStrip
+          players={unownedBench}
+          club={club}
+          elementById={elementById}
+        />
+      ) : null}
+      <NotInSquadRow
+        players={notInSquad}
+        variant="mobile"
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+    </>
   );
 }
 
@@ -607,48 +803,16 @@ function MobileLineupBody({
         })}
       </div>
       {side ? (
-        <>
-          <div className="prem-mlu-list">
-            {(side.xi || []).map((p, i) => (
-              <MobileLineupRow
-                key={`xi-${i}`}
-                player={p}
-                club={club}
-                ownerByEl={ownerByEl}
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-                elementById={elementById}
-                teamById={teamById}
-              />
-            ))}
-          </div>
-          {(side.bench || []).length > 0 ? (
-            <>
-              <div className="prem-mlu-bench-head">Bench</div>
-              <div className="prem-mlu-list">
-                {(side.bench || []).map((p, i) => (
-                  <MobileLineupRow
-                    key={`bench-${i}`}
-                    player={p}
-                    club={club}
-                    ownerByEl={ownerByEl}
-                    teamLogoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                    elementById={elementById}
-                    teamById={teamById}
-                    bench
-                  />
-                ))}
-              </div>
-            </>
-          ) : null}
-          <NotInSquadRow
-            players={notInSquad}
-            variant="mobile"
-            teamLogoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        </>
+        <MobileLineupSide
+          side={side}
+          club={club}
+          ownerByEl={ownerByEl}
+          elementById={elementById}
+          teamById={teamById}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          notInSquad={notInSquad}
+        />
       ) : (
         <p className="muted muted--tight prem-mlu-empty">No lineup yet for this team.</p>
       )}
@@ -688,10 +852,9 @@ function FixtureRow({
     : 'vs';
 
   const canShowLineups = lineupsBothConfirmed(fx);
-  const visibleEvents = (fx.events || []).filter((ev) =>
-    includePremWindowEvent(ev, ownerByEl),
-  );
-  const hasEvents = visibleEvents.length > 0;
+  // NOTE: events list is hidden for now — see the events placeholder inside
+  // the expanded body below. `fx.events` is still fetched and threaded
+  // through props so we can re-enable the section without re-wiring.
 
   const homeLabel = narrow ? homeShort : homeName;
   const awayLabel = narrow ? awayShort : awayName;
@@ -800,26 +963,9 @@ function FixtureRow({
             </p>
           ) : null}
 
-          {hasEvents ? (
-            <div className="prem-events">
-              <h3 className="prem-events__title">Events</h3>
-              <ul className="prem-events__list">
-                {visibleEvents.map((ev, i) => (
-                  <EventRow
-                    key={`${ev.kind}-${ev.eventId ?? i}-${i}`}
-                    ev={ev}
-                    ownerByEl={ownerByEl}
-                    teamLogoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                    elementById={elementById}
-                    teamById={teamById}
-                  />
-                ))}
-              </ul>
-            </div>
-          ) : fx.matchId && !fx.detailsBlockedReason ? (
-            <p className="muted muted--tight">No events yet.</p>
-          ) : null}
+          {/* Events list temporarily hidden — data is still fetched via
+              `visibleEvents` so we can re-enable the section without
+              re-wiring props/hooks. */}
 
           {canShowLineups ? (
             <div className="prem-lineups">
