@@ -227,7 +227,7 @@ export function DraftBoard({
                   isActive={teamFilter !== ''}
                   disabled={!teamOptions.length}
                   options={[
-                    { value: '', label: 'All teams' },
+                    { value: '', label: 'All' },
                     ...teamOptions.map((o) => ({ value: o.value, label: o.label })),
                   ]}
                 />
@@ -240,7 +240,7 @@ export function DraftBoard({
                   isActive={roundFilter !== ''}
                   disabled={!picks.length}
                   options={[
-                    { value: '', label: 'All rounds' },
+                    { value: '', label: 'All' },
                     ...Array.from({ length: maxRound }, (_, i) => i + 1).map((r) => ({
                       value: String(r),
                       label: `Round ${r}`,
@@ -256,7 +256,7 @@ export function DraftBoard({
                   isActive={posFilter !== ''}
                   disabled={!picks.length}
                   options={[
-                    { value: '', label: 'All positions' },
+                    { value: '', label: 'All' },
                     ...POS_OPTIONS.map((pos) => ({ value: pos, label: pos })),
                   ]}
                 />

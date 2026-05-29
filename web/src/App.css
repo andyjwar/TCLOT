@@ -1929,14 +1929,26 @@
   flex: 1;
   min-width: 0;
   width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.draft-board-filter-scroll::-webkit-scrollbar {
+  display: none;
 }
 
 .draft-board-filters {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   gap: 8px;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   align-items: center;
+}
+
+.draft-board-filters > .draft-board-filter-pill {
+  flex: 0 0 auto;
 }
 
 .draft-board-filter-select {
@@ -4148,6 +4160,27 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   flex-direction: column;
   padding: 14px;
   min-width: 0;
+}
+
+/* Portrait phones — stack the two sides into full-width bands so team and
+   player names have the whole card width to breathe (the 2-column split
+   left only ~150 px per side at 390 px viewport, which truncated even short
+   names). The 1px vertical rule becomes a 1px horizontal divider. */
+@media (max-width: 600px) {
+  .trade2__split {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 1px auto;
+  }
+  .trade2__rule {
+    height: 1px;
+    width: auto;
+  }
+  /* Each band now spans full card width; min-height on .trade2__players was
+     there to align result bars across side-by-side rows — irrelevant when
+     stacked, and it just added empty space. */
+  .trade2__players {
+    min-height: 0;
+  }
 }
 .trade2__team {
   display: grid;
@@ -11692,23 +11725,31 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
    a status the two pills stack (column) under the score. */
 .live-banner-row__status-captions {
   position: absolute;
-  top: calc(100% + 4px);
+  top: calc(100% + 2px);
   left: 50%;
   transform: translateX(-50%);
   display: inline-flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 2px;
   pointer-events: none;
   white-space: nowrap;
 }
-/* Reserve vertical space for the absolute caption stack (only when a status
-   is present on either side). Sized to clear up to two stacked pills. */
+/* Reserve vertical space for the absolute caption stack. Single-pill case
+   (just home OR just away has a status) only needs ~one pill's height; the
+   `--has-status-both` modifier doubles the reservation when both sides
+   carry a status and the pills stack. */
 .live-banner-row--has-status {
-  padding-bottom: 36px;
+  padding-bottom: 18px;
+}
+.live-banner-row--has-status.live-banner-row--has-status-both {
+  padding-bottom: 32px;
 }
 .live-banner-row--compact.live-banner-row--has-status {
-  padding-bottom: 32px;
+  padding-bottom: 16px;
+}
+.live-banner-row--compact.live-banner-row--has-status.live-banner-row--has-status-both {
+  padding-bottom: 28px;
 }
 .live-banner-row__caption-pill {
   font-family: 'Geist Mono', monospace;
@@ -17063,44 +17104,7 @@ button.live-xp__player-name:focus-visible {
 /*   .prem-nis-*     — 'Not in squad' strip atoms                       */
 /* =================================================================== */
 
-/* Lineups toolbar — wraps the shared `<GameWeekNavigator>` (same component the
-   Scores subtab uses) so the centered ‹ / GW label / › cluster reads identical,
-   then anchors the refresh icon on the right edge of the band. The `.gw-nav`
-   inside is already `position: relative` for its popover, so we just hang the
-   absolute refresh icon off `.prem-lineup-toolbar` itself. */
-.prem-lineup-toolbar {
-  position: relative;
-}
-.prem-lineup-toolbar__refresh {
-  position: absolute;
-  top: 50%;
-  right: 12px;
-  transform: translateY(-50%);
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-/* "Updated 12:34 PM" muted stamp sitting just left of the refresh icon. Tells
-   the user the page is showing cached data and when the last network round-trip
-   landed, which would otherwise be invisible given how aggressively we cache
-   finished gameweeks. */
-.prem-lineup-toolbar__stamp {
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  color: var(--text-muted);
-  white-space: nowrap;
-}
-@media (max-width: 420px) {
-  /* On the narrowest phones, drop the stamp text to keep the GW selector
-     centered and the refresh icon flush against the edge. */
-  .prem-lineup-toolbar__stamp {
-    display: none;
-  }
-}
-
-/* GW navigation cluster: ‹ • [GW 35 ▾] • › + refresh on the right */
+/* GW navigation cluster: ‹ • [GW 35 ▾] • › */
 .prem-gwnav {
   display: flex;
   align-items: center;

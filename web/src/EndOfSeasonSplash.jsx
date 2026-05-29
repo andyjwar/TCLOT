@@ -79,18 +79,24 @@ export function EndOfSeasonSplash({ onDismiss }) {
 
   return (
     <div
-      className={`eos-splash${isPlaying ? ' eos-splash--playing' : ''}`}
+      className={
+        'eos-splash' +
+        (isPlaying ? ' eos-splash--playing' : '') +
+        (onDismiss ? '' : ' eos-splash--no-dismiss')
+      }
       role="region"
       aria-label="End of season celebration"
     >
-      <button
-        type="button"
-        className="eos-splash__dismiss"
-        onClick={onDismiss}
-        aria-label="Dismiss end-of-season splash"
-      >
-        <span className="eos-splash__dismiss-x" aria-hidden="true">×</span>
-      </button>
+      {onDismiss ? (
+        <button
+          type="button"
+          className="eos-splash__dismiss"
+          onClick={onDismiss}
+          aria-label="Dismiss end-of-season splash"
+        >
+          <span className="eos-splash__dismiss-x" aria-hidden="true">×</span>
+        </button>
+      ) : null}
 
       <button
         type="button"
@@ -143,7 +149,9 @@ export function EndOfSeasonSplash({ onDismiss }) {
 
         <TitleScene />
         <ClubScene />
+        <BramptonScene />
         <BathroomScene />
+        <OutroScene />
       </svg>
     </div>
   );
@@ -1042,6 +1050,121 @@ function BathroomScene() {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* INTERSTITIAL — "Meanwhile, in Brampton..."
+ *
+ * A short 3s text card that sits between the nightclub and bathroom
+ * scenes. It plays after Higman has settled on the VIP couch (with
+ * champagne popping in the rear-view) and before Tery's bathroom
+ * tableau begins. The dark-card aesthetic is deliberately stark — a
+ * single italicised tagline on a deep purple background — so the cut
+ * to the cramped bathroom lands harder by contrast.
+ *
+ * Default opacity is 0 (set in the static fallback rule below) so
+ * this scene is invisible outside playback, just like scenes 1, 2,
+ * and the outro. The bathroom static tableau remains the default
+ * "non-playing" view for prefers-reduced-motion viewers.            */
+/* ------------------------------------------------------------------ */
+function BramptonScene() {
+  return (
+    <g className="eos-splash__scene eos-splash__scene--brampton">
+      <rect x="0" y="0" width="1024" height="576" fill="#100a20" />
+      <text
+        x="512"
+        y={BRAMPTON_LINE_Y}
+        textAnchor="middle"
+        className="eos-splash__brampton-line"
+      >
+        Meanwhile, in Brampton...
+      </text>
+    </g>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* SCENE 4 — Outro: "See ya next season!" + fantasy badges grid.
+ *
+ * The final tableau of the cinematic. After the bathroom dissolves on
+ * its half-done puzzle, this scene fades up onto a black-purple field
+ * with a celebratory headline and a 3×3 grid of all nine TCLOT
+ * fantasy team badges (the manager team-logos shipped under
+ * `/team-logos-web/`). Each badge pops in via a per-tile staggered
+ * keyframe so the grid populates from top-left to bottom-right
+ * rather than appearing all at once.                                  */
+/* ------------------------------------------------------------------ */
+function OutroScene() {
+  return (
+    <g className="eos-splash__scene eos-splash__scene--outro">
+      <rect x="0" y="0" width="1024" height="576" fill="#080612" />
+
+      <text
+        x="512"
+        y={OUTRO_TITLE_Y}
+        textAnchor="middle"
+        className="eos-splash__outro-title"
+      >
+        See ya next season!
+      </text>
+
+      {OUTRO_BADGES.map((id, i) => {
+        const col = i % OUTRO_GRID_COLS;
+        const row = Math.floor(i / OUTRO_GRID_COLS);
+        const cx =
+          OUTRO_GRID_X +
+          col * (OUTRO_BADGE_DIAMETER + OUTRO_BADGE_GAP) +
+          OUTRO_BADGE_DIAMETER / 2;
+        const cy =
+          OUTRO_GRID_Y +
+          row * (OUTRO_BADGE_DIAMETER + OUTRO_BADGE_GAP) +
+          OUTRO_BADGE_DIAMETER / 2;
+        const r = OUTRO_BADGE_DIAMETER / 2;
+        const clipId = `eos-outro-badge-clip-${i}`;
+        return (
+          <g
+            key={`outro-badge-${id}`}
+            className="eos-splash__outro-badge"
+            style={{ '--i': i }}
+          >
+            <defs>
+              <clipPath id={clipId}>
+                <circle cx={cx} cy={cy} r={r} />
+              </clipPath>
+            </defs>
+            {/* Subtle inner shadow disc behind the image — same dark
+                neutral the on-site .team-avatar-frame uses
+                (background: #2a2a2a) so transparent or letterboxed
+                logos read consistently against the deep-purple outro
+                field. */}
+            <circle cx={cx} cy={cy} r={r} fill="#2a2a2a" />
+            <image
+              href={`/team-logos-web/${id}.png`}
+              x={cx - r}
+              y={cy - r}
+              width={r * 2}
+              height={r * 2}
+              clipPath={`url(#${clipId})`}
+              preserveAspectRatio="xMidYMid slice"
+            />
+            {/* Thin light ring on top — mirrors the
+                `.team-avatar-frame { border: 1px solid rgba(255, 255,
+                255, 0.1); }` rule used on every TeamAvatar across the
+                site, so the outro tiles read as the SAME circular
+                badge family rather than a bespoke alternate style. */}
+            <circle
+              cx={cx}
+              cy={cy}
+              r={r}
+              fill="none"
+              stroke="rgba(255, 255, 255, 0.18)"
+              strokeWidth="2"
+            />
+          </g>
+        );
+      })}
+    </g>
+  );
+}
+
 /**
  * Small crown glyph rendered inside Higman's dot. Same shape used by
  * the Guard of Honour splash — a 5-point coronet with a rounded base.
@@ -1541,3 +1664,57 @@ const TERY_STAND_X = 512;
 const TERY_STAND_Y = 410;
 const TERY_ENTRY_X = 518;
 const TERY_ENTRY_Y = -40;
+
+/* INTERSTITIAL — Brampton card --------------------------------------- */
+
+/** Vertical centre of the "Meanwhile, in Brampton..." line. Positioned
+ * slightly below the geometric centre of the 1024×576 viewBox to leave
+ * a touch more breathing room above than below — easier on the eye
+ * than a perfectly-centred line. */
+const BRAMPTON_LINE_Y = 320;
+
+/* SCENE 4 — Outro: "See ya next season!" + fantasy badges grid ------- */
+
+/**
+ * League-entry IDs + surname fallbacks for the eight TCLOT managers,
+ * in the order their badges appear in the outro grid (left-to-right,
+ * top-to-bottom). The `id` values are the same as filenames under
+ * `/team-logos-web/{id}.png`, so each `<image>` href resolves to the
+ * manager's custom badge artwork. The list mirrors the eight managers
+ * in `web/public/league-data/details.json`.
+ *
+ * Not every manager has a custom badge uploaded, so each tile also
+ * carries a `surname` fallback that is rendered as a text label
+ * underneath where the image would sit. When the badge image is
+ * present it draws over the text and the label is hidden visually;
+ * when it is absent the text reads as the tile's identifier instead
+ * of leaving an empty bordered frame. Adding a new badge image to
+ * `web/public/team-logos/` (and re-running the build pipeline) will
+ * automatically swap the surname fallback for the artwork without any
+ * code change here.
+ */
+const OUTRO_BADGES = [
+  { id: 26587, surname: 'Goodacre' },     // Hanson of York AFC
+  { id: 26675, surname: 'Mottershead' },  // Hackney Meat Loaf
+  { id: 27370, surname: 'Higman' },       // Crouch End Oashisu (champion)
+  { id: 31076, surname: 'Butcher' },      // Seoul Club 7
+  { id: 39078, surname: 'Sutton' },       // Clapton Cornershop
+  { id: 39219, surname: 'Ward' },         // Morpeth Jamiroquai
+  { id: 40206, surname: 'Ward' },         // Toronto Oizo
+  { id: 72086, surname: 'Webster' },      // Brampton II Men
+];
+
+/** League-entry IDs that have an actual badge file under
+ * `web/public/team-logos-web/`. Used to gate `<image>` rendering so
+ * tiles with missing artwork don't show a broken-image icon. Update
+ * this set when a new badge PNG is added under `web/public/team-logos/`
+ * (the build step rasterises it into `team-logos-web/`). */
+const OUTRO_BADGES_WITH_LOGO = new Set([26587, 27370, 39219]);
+
+const OUTRO_TITLE_Y = 110;
+const OUTRO_GRID_COLS = 4;
+const OUTRO_BADGE_SIZE = 130;
+const OUTRO_BADGE_GAP = 24;
+/** Centred horizontally: 4×130 + 3×24 = 592 → (1024 − 592) / 2 = 216. */
+const OUTRO_GRID_X = 216;
+const OUTRO_GRID_Y = 180;

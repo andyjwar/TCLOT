@@ -10,7 +10,6 @@ import {
 import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
 import { mergePremWindowSources } from './premWindowMerger.js';
 import { buildOwnerByElementId } from './playerContributionEvents.js';
-import { LiveRefreshIconButton } from './LiveRefreshIconButton.jsx';
 import { GameWeekNavigator } from './GameWeekNavigator.jsx';
 import {
   fplElementDisplayName,
@@ -1097,7 +1096,6 @@ export function PremWindow({
     events,
     squads,
     contributionLiveContext,
-    refresh: refreshLive,
   } = useLiveScores({
     teams,
     gameweek,
@@ -1113,11 +1111,6 @@ export function PremWindow({
   const [premWindowLoading, setPremWindowLoading] = useState(false);
   const [premWindowError, setPremWindowError] = useState(null);
   const [premWindowRows, setPremWindowRows] = useState(/** @type {any[]} */ ([]));
-  /** Wallclock of the latest successful network round-trip for the current
-   *  GW. Drives the "Updated …" badge next to the refresh icon. Reset to
-   *  null whenever the GW changes so we don't show a stamp from a different
-   *  gameweek. */
-  const [lastFetchedAt, setLastFetchedAt] = useState(/** @type {number | null} */ (null));
   /** Fetch-generation guard so a slow request for an older GW cannot overwrite the new one. */
   const premWindowGenRef = useRef(0);
 
@@ -1139,9 +1132,10 @@ export function PremWindow({
    * whole GW is cached (e.g. browsing a completed GW after a tab-switch),
    * no requests fire at all and the page lights up instantly.
    *
-   * `forceRefresh: true` (used by the refresh button) wipes the cache and
-   * re-runs the full fetch graph so users always have a manual escape
-   * hatch against any caching mistake.
+   * `forceRefresh: true` wipes the cache and re-runs the full fetch graph;
+   * kept as a programmatic escape hatch even though the UI no longer
+   * exposes a manual refresh control (the 90s `useLiveScores` poll and
+   * GW-change effect drive all refreshes automatically).
    */
   const doPremWindowFetch = useCallback(
     async ({ forceRefresh = false } = {}) => {
@@ -1225,7 +1219,6 @@ export function PremWindow({
           .map((fx) => byPulseId.get(Number(fx?.pulse_id)))
           .filter(Boolean);
         setPremWindowRows(finalRows);
-        setLastFetchedAt(Date.now());
       } catch (e) {
         if (gen !== premWindowGenRef.current) return;
         setPremWindowError(e?.message || String(e));
@@ -1242,12 +1235,6 @@ export function PremWindow({
   useEffect(() => {
     void doPremWindowFetch();
   }, [doPremWindowFetch]);
-
-  /** Reset the "Updated …" stamp when the user moves between gameweeks so
-   *  the next successful fetch stamps fresh. */
-  useEffect(() => {
-    setLastFetchedAt(null);
-  }, [gameweek]);
 
   /**
    * Sort rows by earliest kickoff first. Split out live (in-play) fixtures
@@ -1326,60 +1313,21 @@ export function PremWindow({
     narrow,
   };
 
-  const refreshing = Boolean(liveLoading || premWindowLoading);
   const noFixtures =
     liveFixtures.length === 0 && dayGroups.length === 0 && !premWindowLoading;
-
-  /** "Updated 12:34 PM" — uses the user's locale time formatter so devs in
-   *  other regions don't see a confusing AM/PM. We deliberately format on
-   *  every render rather than memoising: the page rerenders rarely enough
-   *  that the extra `Intl.DateTimeFormat` cost is meaningless. */
-  const lastFetchedLabel = useMemo(() => {
-    if (lastFetchedAt == null) return null;
-    try {
-      return new Date(lastFetchedAt).toLocaleTimeString([], {
-        hour: 'numeric',
-        minute: '2-digit',
-      });
-    } catch {
-      return null;
-    }
-  }, [lastFetchedAt]);
 
   return (
     <div className="dashboard-stack prem-window-root">
       <section className="prem-window-chrome" aria-label="Lineups">
         {/* Same navigator the Scores subtab uses (`GameWeekNavigator` from
-            `LiveScores.jsx`). The refresh icon sits absolutely on the right
-            edge of the band so the centered ‹ / GW label / › cluster stays
-            visually identical to Scores. */}
-        <div className="prem-lineup-toolbar">
-          <GameWeekNavigator
-            gameweek={gameweek}
-            gwOptions={gwOptions}
-            onGameweekChange={onGameweekChange}
-          />
-          <span className="prem-lineup-toolbar__refresh">
-            {lastFetchedLabel ? (
-              <span
-                className="prem-lineup-toolbar__stamp"
-                title="Last successful refresh"
-                aria-live="polite"
-              >
-                Updated {lastFetchedLabel}
-              </span>
-            ) : null}
-            <LiveRefreshIconButton
-              title="Refresh squads and results"
-              loading={refreshing}
-              disabled={refreshing}
-              onClick={() => {
-                void refreshLive();
-                void doPremWindowFetch({ forceRefresh: true });
-              }}
-            />
-          </span>
-        </div>
+            `LiveScores.jsx`). Auto-refresh is handled by the 90s
+            `useLiveScores` poll plus the GW-change effect, so no manual
+            refresh control is rendered. */}
+        <GameWeekNavigator
+          gameweek={gameweek}
+          gwOptions={gwOptions}
+          onGameweekChange={onGameweekChange}
+        />
 
         {liveError ? (
           <div className="data-banner data-banner--error" role="alert">

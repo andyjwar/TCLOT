@@ -252,7 +252,7 @@ import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
-import { FplLiveGwTickerBar } from './FplLiveGwTickerBar'
+import { EndOfSeasonSplash } from './EndOfSeasonSplash.jsx'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
@@ -2298,7 +2298,7 @@ function App() {
     /** @type {'waivers' | 'trades' | 'draft'} */ ('waivers'),
   )
   const [fplLiveTab, setFplLiveTab] = useState(
-    /** @type {'squads' | 'live' | 'projections'} */ ('live'),
+    /** @type {'squads' | 'live' | 'vibes'} */ ('live'),
   )
   /** `null` = API league order; otherwise sort by numeric column */
   const [standingsSort, setStandingsSort] = useState(null)
@@ -3732,37 +3732,17 @@ function App() {
                 <button
                   type="button"
                   role="tab"
-                  id="tab-fpl-live-projections"
-                  aria-selected={fplLiveTab === 'projections'}
+                  id="tab-fpl-live-vibes"
+                  aria-selected={fplLiveTab === 'vibes'}
                   className={
                     'subnav__tab' +
-                    (fplLiveTab === 'projections' ? ' subnav__tab--active' : '')
+                    (fplLiveTab === 'vibes' ? ' subnav__tab--active' : '')
                   }
-                  onClick={() => setFplLiveTab('projections')}
+                  onClick={() => setFplLiveTab('vibes')}
                 >
-                  Projections
+                  Vibes
                 </button>
               </div>
-              {/* The generative hero banner (LiveBannerConcept) was removed
-                  in PR #5 cleanup. The horizontal H2H mini-ticker
-                  (FplLiveGwTickerBar) is now scoped to the Projections
-                  sub-tab only:
-                    - On `Scores`, the 4-fixture grid below
-                      (LiveScores → live-banner-group-tile) already covers
-                      the same H2H story at full size.
-                    - On `Lineups`, the new fixture list IS the page chrome;
-                      the H2H ticker was visually competing with the
-                      day-grouped real-fixture rows below it. */}
-              {fplLiveTab === 'projections' ? (
-                <FplLiveGwTickerBar
-                  teams={teamsForFormSelect}
-                  matches={matches ?? []}
-                  gameweek={liveGameweek}
-                  onBootstrapLiveMeta={onBootstrapLiveMeta}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-              ) : null}
               </div>
               <div className="section-body">
               {fplLiveTab === 'squads' ? (
@@ -3788,25 +3768,19 @@ function App() {
                   leagueId={data?.league?.id ?? null}
                   waiverOutGwRows={waiverOutGwRows}
                   fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
+                  liveStatus={brandHeaderStatus}
                   compactMobileChrome
                 />
               ) : null}
-              {fplLiveTab === 'projections' ? (
-                <LiveScores
-                  teams={teamsForFormSelect}
-                  tableRows={tableRows}
-                  matches={matches ?? []}
-                  gameweek={liveGameweek}
-                  onGameweekChange={setLiveGw}
-                  onBootstrapLiveMeta={onBootstrapLiveMeta}
-                  teamLogoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                  leagueId={data?.league?.id ?? null}
-                  waiverOutGwRows={waiverOutGwRows}
-                  fplDraftCurrentGw={mergedFplCalendarCurrent ?? fplLiveLandingGw}
-                  projectionsOnly
-                  compactMobileChrome
-                />
+              {fplLiveTab === 'vibes' ? (
+                /* "Vibes" tab — standalone home for the End-of-Season
+                   cinematic. Mounted on its own (no surrounding ticker /
+                   live-scores chrome) so the splash gets the full sub-tab
+                   body to itself. The component handles its own session
+                   playback cap + Replay button; dismiss is intentionally
+                   omitted here so the splash stays in the tab as a
+                   permanent feature rather than a one-shot. */
+                <EndOfSeasonSplash />
               ) : null}
               </div>
             </section>

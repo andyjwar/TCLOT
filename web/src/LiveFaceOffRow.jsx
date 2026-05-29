@@ -74,6 +74,7 @@ export function LiveFaceOffRow({
   const homeScoreLive = homeLive != null;
   const awayScoreLive = awayLive != null;
   const hasStatus = Boolean(homeStatus) || Boolean(awayStatus);
+  const hasBothStatus = Boolean(homeStatus) && Boolean(awayStatus);
 
   const RowEl = onToggle ? 'button' : 'div';
   const interactiveProps = onToggle
@@ -130,7 +131,8 @@ export function LiveFaceOffRow({
         (compact ? ' live-banner-row--compact' : '') +
         (onToggle ? ' live-banner-row--toggle' : '') +
         (expanded ? ' live-banner-row--open' : '') +
-        (hasStatus ? ' live-banner-row--has-status' : '')
+        (hasStatus ? ' live-banner-row--has-status' : '') +
+        (hasBothStatus ? ' live-banner-row--has-status-both' : '')
       }
       {...interactiveProps}
     >
