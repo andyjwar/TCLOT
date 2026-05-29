@@ -453,7 +453,14 @@ export function useLiveScores({
         if (Number.isFinite(id)) liveFullNumeric[id] = v;
       }
 
-      const fxUrl = classicResourceUrl(`fixtures?event=${gw}`);
+      // Trailing slash matters: `fixtures?event=N` returns HTTP 301 to the
+      // same URL with `/` before the query, and the dev proxy passes the
+      // relative `Location` header back to the browser unresolved — the
+      // browser then re-fetches `/api/fixtures/?event=N` against the dev
+      // origin (Vite SPA) instead of upstream FPL, and HTML lands here as
+      // "Unexpected token '<', '<!doctype '..." Adding the slash up-front
+      // skips the redirect and reaches FPL's JSON directly.
+      const fxUrl = classicResourceUrl(`fixtures/?event=${gw}`);
       let gwFixtures = [];
       try {
         const fixturesPayload = await fetchFplJsonCached(fxUrl, {

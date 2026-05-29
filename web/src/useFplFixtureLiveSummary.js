@@ -189,7 +189,9 @@ export function useFplFixtureLiveSummary({
     async (gw) => {
       if (gw == null || !Number.isFinite(gw)) return
       try {
-        const url = classicResourceUrl(`fixtures?event=${gw}`)
+        // Trailing slash bypasses FPL's 301 → see same-named fetch in
+        // `useLiveScores.js` for the full explanation.
+        const url = classicResourceUrl(`fixtures/?event=${gw}`)
         const data = await fetchFplJsonCached(url, {
           label: 'brand-header fixtures',
         })
