@@ -10657,6 +10657,7 @@ function readStoredMockupTheme() {
  * design-system explorations, past surfaces). */
 const MOCKUP_TABS = [
   { id: 'standings', label: 'Standings' },
+  { id: 'waivers',   label: 'Waivers' },
   { id: 'wire',      label: 'Wire' },
   { id: 'live',      label: 'Live' },
   { id: 'hall',      label: 'Hall of Fame' },
@@ -10670,6 +10671,676 @@ function readStoredMockupTab() {
     if (stored && MOCKUP_TABS.some((t) => t.id === stored)) return stored
   } catch { /* ignore */ }
   return 'standings'
+}
+
+/* =================================================================== */
+/* WAIVERS REDESIGN · Moves › Waivers sub-tab modernization             */
+/* ------------------------------------------------------------------- */
+/* Brief: re-skin the Waivers sub-tab into the modern design language   */
+/* (clean tiles, compact pill dropdowns, PointsCell-style numerics,     */
+/* club badges). Weekly waivers show the player's CLUB badge (via the   */
+/* shared <ClubCrest> — official PL CDN), NOT kit/shirt changes. Mock    */
+/* data below is representative of real league shapes from              */
+/* drops-gw-live.json (weekly in/out swaps + waiverProcessOrder) and    */
+/* pickups-tenure.json (best pickups + per-team totals). All classes    */
+/* are namespaced `.mockup-wv-*` so nothing collides with production.   */
+/* =================================================================== */
+
+const WV_TEAMS = [
+  { code: 'CO',  name: 'Crouch End Oashisu',  short: 'Crouch End',  color: '#7e57ff' },
+  { code: 'SZM', name: 'Soul Ze Moles',       short: 'Soul Ze',     color: '#e94343' },
+  { code: 'DB',  name: 'Dalston Bellsprouts', short: 'Bellsprouts', color: '#28b269' },
+  { code: 'TW',  name: 'Toronto Wiggum',      short: 'Toronto',     color: '#f79233' },
+  { code: 'ER',  name: 'Essex Ratigans',      short: 'Essex',       color: '#3a8dde' },
+  { code: 'DN',  name: 'Dalston Benoit',      short: 'Benoit',      color: '#9c6b3c' },
+  { code: 'SCC', name: 'Soul Crouch Carrol',  short: 'Carrol',      color: '#cf4d8e' },
+  { code: 'PFO', name: 'Pinks Five-O',        short: 'Pinks',       color: '#c2497a' },
+]
+const WV_TEAM = Object.fromEntries(WV_TEAMS.map((t) => [t.code, t]))
+
+/* Selected-GW weekly waivers. The per-MOVE `order` is the LEAGUE-WIDE
+ * waiver run order for that GW (1 = first claim processed league-wide) and
+ * is shown verbatim in both the flat and the "by team" grouped views — it is
+ * never re-numbered per team. Free-agency moves (`kind: 'f'`) have no waiver
+ * number (`order: null`) and render an "FA" tag instead. The team-level
+ * `order` is the team's waiver priority that GW (used by the tile header). */
+const WV_WEEKLY = [
+  {
+    team: 'ER', order: 1,
+    moves: [{ kind: 'w', order: 1, in: { name: 'Kerkez', club: 'LIV', pos: 'DEF' }, out: { name: 'Mykolenko', club: 'EVE', pos: 'DEF' } }],
+  },
+  {
+    team: 'PFO', order: 2,
+    moves: [{ kind: 'w', order: 2, in: { name: 'João Pedro', club: 'CHE', pos: 'FWD' }, out: { name: 'N.Jackson', club: 'CHE', pos: 'FWD' } }],
+  },
+  {
+    team: 'CO', order: 3,
+    moves: [
+      { kind: 'w', order: 3, in: { name: 'Rogers', club: 'AVL', pos: 'MID' }, out: { name: 'McNeil', club: 'EVE', pos: 'MID' } },
+      { kind: 'f', order: null, in: { name: 'Muñoz', club: 'CRY', pos: 'DEF' }, out: { name: 'Aina', club: 'NFO', pos: 'DEF' } },
+    ],
+  },
+  {
+    team: 'DB', order: 4,
+    moves: [{ kind: 'w', order: 4, in: { name: 'Wissa', club: 'BRE', pos: 'FWD' }, out: { name: 'Wood', club: 'NFO', pos: 'FWD' } }],
+  },
+  {
+    team: 'TW', order: 5,
+    moves: [
+      { kind: 'w', order: 5, in: { name: 'Gordon', club: 'NEW', pos: 'MID' }, out: { name: 'Mbeumo', club: 'BRE', pos: 'MID' } },
+      { kind: 'f', order: null, in: { name: 'Sels', club: 'NFO', pos: 'GKP' }, out: { name: 'Raya', club: 'ARS', pos: 'GKP' } },
+    ],
+  },
+  {
+    team: 'SCC', order: null,
+    moves: [{ kind: 'f', order: null, in: { name: 'Mateta', club: 'CRY', pos: 'FWD' }, out: { name: 'Calvert-Lewin', club: 'EVE', pos: 'FWD' } }],
+  },
+  { team: 'SZM', order: null, moves: [] },
+  { team: 'DN',  order: null, moves: [] },
+]
+
+/* Per-team season totals — both directions. inPts/players mirror
+ * pickups-tenure teamWaiverInTotals; outPts/outCount mirror the
+ * "waived out — team totals" (sum of dropped GW points). */
+const WV_TOTALS = [
+  { team: 'CO',  inPts: 1157, inPlayers: 41, outPts: 98, outCount: 22 },
+  { team: 'SZM', inPts: 1151, inPlayers: 38, outPts: 86, outCount: 19 },
+  { team: 'DB',  inPts: 1075, inPlayers: 35, outPts: 110, outCount: 26 },
+  { team: 'TW',  inPts: 1072, inPlayers: 33, outPts: 74, outCount: 18 },
+  { team: 'ER',  inPts: 1030, inPlayers: 36, outPts: 121, outCount: 28 },
+  { team: 'DN',  inPts: 1025, inPlayers: 40, outPts: 64, outCount: 15 },
+  { team: 'SCC', inPts: 901,  inPlayers: 31, outPts: 92,  outCount: 24 },
+  { team: 'PFO', inPts: 753,  inPlayers: 29, outPts: 58,  outCount: 16 },
+]
+
+/* First waiver pick per GW, newest first (matches the production
+ * "First Waiver Picks" run-order = 1). */
+const WV_FIRST_PICKS = [
+  { gw: 38, team: 'ER',  player: { name: 'Kerkez', club: 'LIV', pos: 'DEF' }, pts: 6 },
+  { gw: 37, team: 'CO',  player: { name: 'João Pedro', club: 'CHE', pos: 'FWD' }, pts: 9 },
+  { gw: 36, team: 'DB',  player: { name: 'Wissa', club: 'BRE', pos: 'FWD' }, pts: 2 },
+  { gw: 35, team: 'SCC', player: { name: 'Mateta', club: 'CRY', pos: 'FWD' }, pts: 13 },
+  { gw: 34, team: 'TW',  player: { name: 'Gordon', club: 'NEW', pos: 'MID' }, pts: 5 },
+  { gw: 33, team: 'PFO', player: { name: 'Semenyo', club: 'BOU', pos: 'MID' }, pts: 8 },
+  { gw: 32, team: 'DN',  player: { name: 'Rogers', club: 'AVL', pos: 'MID' }, pts: 11 },
+  { gw: 31, team: 'CO',  player: { name: 'Muñoz', club: 'CRY', pos: 'DEF' }, pts: 7 },
+  { gw: 30, team: 'SZM', player: { name: 'Mbeumo', club: 'BRE', pos: 'MID' }, pts: 3 },
+  { gw: 29, team: 'ER',  player: { name: 'Gakpo', club: 'LIV', pos: 'MID' }, pts: 9 },
+  { gw: 28, team: 'DB',  player: { name: 'Cunha', club: 'MUN', pos: 'MID' }, pts: 6 },
+  { gw: 27, team: 'TW',  player: { name: 'Mateta', club: 'CRY', pos: 'FWD' }, pts: 14 },
+]
+
+/* Best waiver pickups — total pts for the owning team over each
+ * waiver-in stint (mirrors pickups-tenure.json rows). */
+const WV_BEST_PICKUPS = [
+  { player: { name: 'Semenyo', club: 'BOU', pos: 'MID' }, team: 'CO',  total: 179, firstGw: 1,  lastGw: 38, stints: 1 },
+  { player: { name: 'Rogers', club: 'AVL', pos: 'MID' },  team: 'SZM', total: 131, firstGw: 1,  lastGw: 30, stints: 1 },
+  { player: { name: 'Wissa', club: 'BRE', pos: 'FWD' },   team: 'ER',  total: 130, firstGw: 17, lastGw: 38, stints: 2 },
+  { player: { name: 'Gordon', club: 'NEW', pos: 'MID' },  team: 'TW',  total: 125, firstGw: 3,  lastGw: 38, stints: 1 },
+  { player: { name: 'Muñoz', club: 'CRY', pos: 'DEF' },   team: 'CO',  total: 122, firstGw: 11, lastGw: 38, stints: 1 },
+  { player: { name: 'Mateta', club: 'CRY', pos: 'FWD' },  team: 'DN',  total: 121, firstGw: 5,  lastGw: 38, stints: 1 },
+  { player: { name: 'Sels', club: 'NFO', pos: 'GKP' },    team: 'PFO', total: 120, firstGw: 8,  lastGw: 38, stints: 1 },
+  { player: { name: 'Cunha', club: 'MUN', pos: 'MID' },   team: 'SZM', total: 109, firstGw: 5,  lastGw: 38, stints: 1 },
+  { player: { name: 'Gakpo', club: 'LIV', pos: 'MID' },   team: 'SZM', total: 109, firstGw: 12, lastGw: 38, stints: 1 },
+  { player: { name: 'Kerkez', club: 'LIV', pos: 'DEF' },  team: 'DB',  total: 104, firstGw: 12, lastGw: 38, stints: 1 },
+]
+
+/* Most waivered players — distinct teams that have claimed them. */
+const WV_MOST_WAIVERED = [
+  { player: { name: 'Mateta', club: 'CRY', pos: 'FWD' },  claims: 7 },
+  { player: { name: 'Semenyo', club: 'BOU', pos: 'MID' }, claims: 6 },
+  { player: { name: 'Wissa', club: 'BRE', pos: 'FWD' },   claims: 6 },
+  { player: { name: 'Gordon', club: 'NEW', pos: 'MID' },  claims: 5 },
+  { player: { name: 'Rogers', club: 'AVL', pos: 'MID' },  claims: 5 },
+  { player: { name: 'Muñoz', club: 'CRY', pos: 'DEF' },   claims: 4 },
+  { player: { name: 'Cunha', club: 'MUN', pos: 'MID' },   claims: 4 },
+  { player: { name: 'Sels', club: 'NFO', pos: 'GKP' },    claims: 3 },
+  { player: { name: 'Gakpo', club: 'LIV', pos: 'MID' },   claims: 3 },
+  { player: { name: 'Kerkez', club: 'LIV', pos: 'DEF' },  claims: 3 },
+]
+
+/* Small team-chip atom: club-style badge initials + accent. */
+function WvTeamBadge({ code, size = 22 }) {
+  const t = WV_TEAM[code]
+  if (!t) return null
+  return (
+    <span
+      className="mockup-wv-team-badge"
+      style={{ width: size, height: size, '--wv-accent': t.color }}
+      title={t.name}
+      aria-hidden="true"
+    >
+      {t.code.slice(0, 2)}
+    </span>
+  )
+}
+
+/* Single-letter position chip (G/D/M/F) — mirrors the Players Wire tile
+ * pos-chip beside the name. Replaces the old club·pos meta sub-line; the
+ * club is already conveyed by the crest. */
+const WV_POS_LETTER = { GKP: 'G', DEF: 'D', MID: 'M', FWD: 'F' }
+function WvPosChip({ pos }) {
+  if (!pos) return null
+  const letter = WV_POS_LETTER[pos] ?? pos.slice(0, 1)
+  return (
+    <span className={'mockup-wv-pos-chip mockup-wv-pos-chip--' + pos} title={pos} aria-label={pos}>
+      {letter}
+    </span>
+  )
+}
+
+/* Player identity cell: club badge + name + single-letter position chip
+ * (Players-Wire style). No club abbreviation — the crest conveys the club. */
+function WvPlayerCell({ player, dir }) {
+  return (
+    <span className="mockup-wv-player">
+      <ClubCrest club={player.club} size={22} className="mockup-wv-player__crest" />
+      <span className="mockup-wv-player__name">{player.name}</span>
+      <WvPosChip pos={player.pos} />
+      {dir ? (
+        <span className={'mockup-wv-dir mockup-wv-dir--' + dir} aria-hidden="true">
+          {dir === 'in' ? '↑' : '↓'}
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
+/* Compact pill dropdown (display-only, mirrors production CompactSelectPill). */
+function WvPill({ label, value, active }) {
+  return (
+    <button type="button" className={'mockup-wv-pill' + (active ? ' is-active' : '')}>
+      <span className="mockup-wv-pill__label">{label}</span>
+      <span className="mockup-wv-pill__value">{value}</span>
+      <CaretIcon className="mockup-wv-pill__caret" width={12} height={12} />
+    </button>
+  )
+}
+
+/* ── Section 1 · Weekly Waivers by team ─────────────────────────────── */
+
+/* Variant A — per-team tiles (desktop grid / mobile single column). */
+function WvWeeklyTiles({ compact = false }) {
+  const teams = WV_WEEKLY.filter((t) => t.moves.length > 0)
+  return (
+    <div className={'mockup-wv-weekly-grid' + (compact ? ' mockup-wv-weekly-grid--compact' : '')}>
+      {teams.map((t) => {
+        const team = WV_TEAM[t.team]
+        return (
+          <article className="mockup-wv-weekly-tile" key={t.team}>
+            <header className="mockup-wv-weekly-tile__head">
+              <WvTeamBadge code={t.team} size={24} />
+              <span className="mockup-wv-weekly-tile__team">{team.name}</span>
+              {t.order != null ? (
+                <span className="mockup-wv-order" title="Waiver run order this GW (1 = first)">#{t.order}</span>
+              ) : null}
+            </header>
+            <div className="mockup-wv-weekly-tile__moves">
+              {t.moves.map((m, i) => (
+                <div className="mockup-wv-swap" key={i}>
+                  <WvPlayerCell player={m.in} dir="in" />
+                  <span className="mockup-wv-swap__arrow" aria-hidden="true">⇄</span>
+                  <WvPlayerCell player={m.out} dir="out" />
+                  {m.kind === 'f' ? <span className="mockup-wv-fa-chip">FA</span> : null}
+                </div>
+              ))}
+            </div>
+          </article>
+        )
+      })}
+    </div>
+  )
+}
+
+/* Locked desktop design — single flat swap table with a grouping filter:
+ *   • "All swaps" — one row per swap, sorted by league-wide waiver order.
+ *   • "By team"   — swaps grouped under each team heading, ordered within a
+ *                   team by waiver order.
+ * The `#` chip always shows the move's LEAGUE-WIDE waiver number (never a
+ * per-team re-numbering); FA moves show an inline "FA" tag instead. */
+const wvMoveOrderKey = (m) => (m.order == null ? Infinity : m.order)
+
+function WvOrderCell({ move }) {
+  return move.order != null
+    ? <span className="tabular">{move.order}</span>
+    : <span className="mockup-wv-fa-tag">FA</span>
+}
+
+function WvWeeklyTable() {
+  const [group, setGroup] = useState('flat')
+
+  const teamsWithMoves = WV_WEEKLY.filter((t) => t.moves.length > 0)
+
+  const flatRows = useMemo(() => {
+    const rows = []
+    for (const t of teamsWithMoves) {
+      for (const m of t.moves) rows.push({ team: t.team, ...m })
+    }
+    rows.sort((a, b) => wvMoveOrderKey(a) - wvMoveOrderKey(b))
+    return rows
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const groupedTeams = useMemo(() => {
+    return teamsWithMoves
+      .map((t) => ({
+        team: t.team,
+        moves: [...t.moves].sort((a, b) => wvMoveOrderKey(a) - wvMoveOrderKey(b)),
+      }))
+      .sort((a, b) => {
+        const am = Math.min(...a.moves.map(wvMoveOrderKey))
+        const bm = Math.min(...b.moves.map(wvMoveOrderKey))
+        return am - bm
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  return (
+    <div className="mockup-wv-weekly">
+      <div className="mockup-wv-weekly__bar">
+        <div className="mockup-wv-toggle mockup-wv-toggle--sm" role="tablist" aria-label="Weekly waivers grouping">
+          {[
+            { v: 'flat', label: 'All swaps' },
+            { v: 'team', label: 'By team' },
+          ].map((opt) => (
+            <button
+              key={opt.v}
+              type="button"
+              role="tab"
+              aria-selected={group === opt.v}
+              className={'mockup-wv-toggle__btn' + (group === opt.v ? ' is-active' : '')}
+              onClick={() => setGroup(opt.v)}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <span className="mockup-wv-weekly__hint muted"># = league-wide waiver order · FA = free agency</span>
+      </div>
+      <div className="mockup-wv-table-wrap">
+        <table className="mockup-wv-table mockup-wv-weekly__table">
+          <thead>
+            <tr>
+              <th className="mockup-wv-table__num">#</th>
+              {group === 'flat' ? <th>Team</th> : null}
+              <th>In</th>
+              <th>Out</th>
+            </tr>
+          </thead>
+          {group === 'flat' ? (
+            <tbody>
+              {flatRows.map((r, i) => (
+                <tr key={i}>
+                  <td className="mockup-wv-table__num tabular"><WvOrderCell move={r} /></td>
+                  <td>
+                    <span className="mockup-wv-table__team">
+                      <WvTeamBadge code={r.team} size={20} />
+                      <span>{WV_TEAM[r.team].short}</span>
+                    </span>
+                  </td>
+                  <td><WvPlayerCell player={r.in} dir="in" /></td>
+                  <td><WvPlayerCell player={r.out} dir="out" /></td>
+                </tr>
+              ))}
+            </tbody>
+          ) : (
+            groupedTeams.map((g) => (
+              <tbody className="mockup-wv-weekly__group" key={g.team}>
+                <tr className="mockup-wv-weekly__grouphead">
+                  <td colSpan={3}>
+                    <span className="mockup-wv-table__team">
+                      <WvTeamBadge code={g.team} size={20} />
+                      <span>{WV_TEAM[g.team].name}</span>
+                    </span>
+                  </td>
+                </tr>
+                {g.moves.map((m, i) => (
+                  <tr key={i}>
+                    <td className="mockup-wv-table__num tabular"><WvOrderCell move={m} /></td>
+                    <td><WvPlayerCell player={m.in} dir="in" /></td>
+                    <td><WvPlayerCell player={m.out} dir="out" /></td>
+                  </tr>
+                ))}
+              </tbody>
+            ))
+          )}
+        </table>
+      </div>
+    </div>
+  )
+}
+
+/* Mobile at-a-glance — per-team summary the user can scan in one swipe. */
+function WvWeeklyGlance() {
+  return (
+    <div className="mockup-wv-glance">
+      <div className="mockup-wv-glance__bar">
+        <span className="mockup-wv-glance__title">Waivers · by team</span>
+        <WvPill label="GW" value="38" active />
+      </div>
+      <ul className="mockup-wv-glance__list">
+        {WV_WEEKLY.map((t) => {
+          const team = WV_TEAM[t.team]
+          const ins = t.moves.map((m) => m.in)
+          return (
+            <li className="mockup-wv-glance__row" key={t.team}>
+              <WvTeamBadge code={t.team} size={26} />
+              <span className="mockup-wv-glance__team">{team.short}</span>
+              {t.moves.length > 0 ? (
+                <>
+                  <span className="mockup-wv-glance__counts">
+                    <span className="mockup-wv-glance__count mockup-wv-glance__count--in">↑{t.moves.length}</span>
+                    <span className="mockup-wv-glance__count mockup-wv-glance__count--out">↓{t.moves.length}</span>
+                  </span>
+                  <span className="mockup-wv-glance__crests">
+                    {ins.map((p, i) => (
+                      <ClubCrest key={i} club={p.club} size={20} className="mockup-wv-glance__crest" />
+                    ))}
+                  </span>
+                </>
+              ) : (
+                <span className="mockup-wv-glance__none">No moves</span>
+              )}
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+/* ── Section 2 · Waiver in/out team totals — condensed toggle ───────── */
+function WvTotalsToggle({ idBase = 'wv-totals' }) {
+  const [mode, setMode] = useState('in')
+  const rows = useMemo(() => {
+    const mapped = WV_TOTALS.map((r) => ({
+      team: r.team,
+      value: mode === 'in' ? r.inPts : r.outPts,
+      count: mode === 'in' ? r.inPlayers : r.outCount,
+      avg: mode === 'in'
+        ? (r.inPts / r.inPlayers)
+        : (r.outCount ? r.outPts / r.outCount : 0),
+    }))
+    mapped.sort((a, b) => b.value - a.value)
+    return mapped
+  }, [mode])
+  const max = rows.reduce((m, r) => Math.max(m, r.value), 0)
+
+  return (
+    <div className="mockup-wv-totals">
+      <div className="mockup-wv-toggle" role="tablist" aria-label="Waiver totals direction">
+        {[
+          { v: 'in', label: 'Waivered in' },
+          { v: 'out', label: 'Waived out' },
+        ].map((opt) => (
+          <button
+            key={opt.v}
+            type="button"
+            role="tab"
+            aria-selected={mode === opt.v}
+            className={'mockup-wv-toggle__btn' + (mode === opt.v ? ' is-active' : '')}
+            onClick={() => setMode(opt.v)}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <p className="mockup-wv-totals__hint">
+        {mode === 'in'
+          ? 'Total FPL points scored by every player a team waivered in, from pickup until they left.'
+          : 'Sum of dropped players’ GW points in the week each waiver hit (lower = cleaner exits).'}
+      </p>
+      <ol className="mockup-wv-bars">
+        <li className="mockup-wv-bar-row mockup-wv-bars-head" aria-hidden="true">
+          <span />
+          <span className="mockup-wv-bar-row__team">Team</span>
+          <span className="mockup-wv-bar-row__track-head">{mode === 'in' ? 'Points in' : 'Points out'}</span>
+          <span className="mockup-wv-bar-row__val">Pts</span>
+          <span className="mockup-wv-bar-row__col">{mode === 'in' ? 'In' : 'Out'}</span>
+          <span className="mockup-wv-bar-row__col">Avg</span>
+        </li>
+        {rows.map((r) => {
+          const team = WV_TEAM[r.team]
+          const pct = max > 0 ? Math.round((r.value / max) * 100) : 0
+          return (
+            <li className="mockup-wv-bar-row" key={r.team}>
+              <WvTeamBadge code={r.team} size={22} />
+              <span className="mockup-wv-bar-row__team">{team.short}</span>
+              <span className="mockup-wv-bar-row__track">
+                <span
+                  className="mockup-wv-bar-row__fill"
+                  style={{ width: pct + '%', '--wv-accent': team.color }}
+                />
+              </span>
+              <span className="mockup-wv-bar-row__val tabular">{r.value}</span>
+              <span className="mockup-wv-bar-row__col tabular muted">{r.count}</span>
+              <span className="mockup-wv-bar-row__col tabular muted">{r.avg.toFixed(1)}</span>
+            </li>
+          )
+        })}
+      </ol>
+    </div>
+  )
+}
+
+/* ── Section 3 · First waiver picks tracker (last 5 default) ────────── */
+function WvFirstPicks() {
+  const [showAll, setShowAll] = useState(false)
+  const rows = showAll ? WV_FIRST_PICKS : WV_FIRST_PICKS.slice(0, 5)
+  return (
+    <div className="mockup-wv-first">
+      <div className="mockup-wv-first__scroll">
+        <table className="mockup-wv-table mockup-wv-first__table">
+          <thead>
+            <tr>
+              <th className="mockup-wv-table__num">GW</th>
+              <th>First pick</th>
+              <th>Player</th>
+              <th className="mockup-wv-table__num">Pts</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.gw}>
+                <td className="mockup-wv-table__num tabular fw-700">{r.gw}</td>
+                <td>
+                  <span className="mockup-wv-table__team">
+                    <WvTeamBadge code={r.team} size={20} />
+                    <span>{WV_TEAM[r.team].short}</span>
+                  </span>
+                </td>
+                <td><WvPlayerCell player={r.player} /></td>
+                <td className="mockup-wv-table__num tabular">
+                  <span className="mockup-wv-pts">{r.pts}</span>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {WV_FIRST_PICKS.length > 5 ? (
+        <button type="button" className="mockup-wv-more" onClick={() => setShowAll((s) => !s)}>
+          {showAll ? 'Show last 5' : `Show all ${WV_FIRST_PICKS.length} gameweeks`}
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+/* ── Section 4 · Best pickups + Most waivered — combined toggle ─────── */
+function WvPickupsToggle() {
+  const [mode, setMode] = useState('best')
+  return (
+    <div className="mockup-wv-pickups">
+      <div className="mockup-wv-toggle" role="tablist" aria-label="Pickup leaderboard mode">
+        {[
+          { v: 'best', label: 'Best pickups' },
+          { v: 'most', label: 'Most waivered' },
+        ].map((opt) => (
+          <button
+            key={opt.v}
+            type="button"
+            role="tab"
+            aria-selected={mode === opt.v}
+            className={'mockup-wv-toggle__btn' + (mode === opt.v ? ' is-active' : '')}
+            onClick={() => setMode(opt.v)}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+      <p className="mockup-wv-totals__hint">
+        {mode === 'best'
+          ? 'Top player–team pairs by total FPL points from each waiver-in until they left the squad.'
+          : 'Players claimed off waivers by the most distinct teams this season.'}
+      </p>
+      <ol className="mockup-wv-rank-list">
+        {(mode === 'best' ? WV_BEST_PICKUPS : WV_MOST_WAIVERED).map((r, i) => (
+          <li className="mockup-wv-rank-row" key={i}>
+            <span className="mockup-wv-rank-row__rank tabular">{i + 1}</span>
+            <WvPlayerCell player={r.player} />
+            {mode === 'best' ? (
+              <span className="mockup-wv-rank-row__owner">
+                <WvTeamBadge code={r.team} size={18} />
+                <span className="mockup-wv-rank-row__owner-name">{WV_TEAM[r.team].short}</span>
+                <span className="mockup-wv-rank-row__range muted">
+                  GW {r.firstGw}–{r.lastGw}{r.stints > 1 ? ` · ${r.stints}×` : ''}
+                </span>
+              </span>
+            ) : (
+              <span className="mockup-wv-rank-row__owner mockup-wv-rank-row__owner--muted muted">
+                claimed by {r.claims} teams
+              </span>
+            )}
+            <span className="mockup-wv-pts mockup-wv-pts--lg">
+              {mode === 'best' ? r.total : r.claims}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/* ── Section 5 · Shareable weekly waiver list (screenshot card) ─────── */
+/* Realistic IN / OUT player pools (real PL clubs) used to synthesise the
+ * share card at two densities. Mirrors the WaiverSummaryShare row shape:
+ * picked (IN) ← dropped (OUT), league-wide waiver order, W / FA kind, and
+ * the manager's fantasy-team crest pinned to the right. */
+const WV_SHARE_IN = [
+  { name: 'Kerkez', club: 'LIV', pos: 'DEF' },
+  { name: 'João Pedro', club: 'CHE', pos: 'FWD' },
+  { name: 'Rogers', club: 'AVL', pos: 'MID' },
+  { name: 'Wissa', club: 'BRE', pos: 'FWD' },
+  { name: 'Gordon', club: 'NEW', pos: 'MID' },
+  { name: 'Semenyo', club: 'BOU', pos: 'MID' },
+  { name: 'Mateta', club: 'CRY', pos: 'FWD' },
+  { name: 'Cunha', club: 'MUN', pos: 'MID' },
+  { name: 'Gakpo', club: 'LIV', pos: 'MID' },
+  { name: 'Muñoz', club: 'CRY', pos: 'DEF' },
+  { name: 'Sels', club: 'NFO', pos: 'GKP' },
+  { name: 'Mbeumo', club: 'BRE', pos: 'MID' },
+  { name: 'Rice', club: 'ARS', pos: 'MID' },
+  { name: 'Tonali', club: 'NEW', pos: 'MID' },
+  { name: 'Kudus', club: 'TOT', pos: 'MID' },
+  { name: 'Iwobi', club: 'FUL', pos: 'MID' },
+]
+const WV_SHARE_OUT = [
+  { name: 'Mykolenko', club: 'EVE', pos: 'DEF' },
+  { name: 'N.Jackson', club: 'CHE', pos: 'FWD' },
+  { name: 'McNeil', club: 'EVE', pos: 'MID' },
+  { name: 'Wood', club: 'NFO', pos: 'FWD' },
+  { name: 'Raya', club: 'ARS', pos: 'GKP' },
+  { name: 'Calvert-Lewin', club: 'EVE', pos: 'FWD' },
+  { name: 'Aina', club: 'NFO', pos: 'DEF' },
+  { name: 'Bowen', club: 'WHU', pos: 'FWD' },
+  { name: 'Maddison', club: 'TOT', pos: 'MID' },
+  { name: 'Mings', club: 'AVL', pos: 'DEF' },
+  { name: 'Foden', club: 'MCI', pos: 'MID' },
+  { name: 'Isak', club: 'NEW', pos: 'FWD' },
+  { name: 'Watkins', club: 'AVL', pos: 'FWD' },
+  { name: 'Bruno F.', club: 'MUN', pos: 'MID' },
+  { name: 'Trossard', club: 'ARS', pos: 'FWD' },
+  { name: 'Welbeck', club: 'BHA', pos: 'FWD' },
+]
+const WV_SHARE_TEAMS = ['CO', 'SZM', 'DB', 'TW', 'ER', 'DN', 'SCC', 'PFO']
+
+function buildShareRows(nWaiver, nFa) {
+  const rows = []
+  for (let i = 0; i < nWaiver; i++) {
+    rows.push({
+      kind: 'w',
+      order: i + 1,
+      team: WV_SHARE_TEAMS[i % WV_SHARE_TEAMS.length],
+      in: WV_SHARE_IN[i % WV_SHARE_IN.length],
+      out: WV_SHARE_OUT[i % WV_SHARE_OUT.length],
+    })
+  }
+  for (let j = 0; j < nFa; j++) {
+    const k = nWaiver + j
+    rows.push({
+      kind: 'f',
+      order: null,
+      team: WV_SHARE_TEAMS[(k + 2) % WV_SHARE_TEAMS.length],
+      in: WV_SHARE_IN[(k + 5) % WV_SHARE_IN.length],
+      out: WV_SHARE_OUT[(k + 5) % WV_SHARE_OUT.length],
+    })
+  }
+  return rows
+}
+const WV_SHARE_8 = buildShareRows(6, 2)
+const WV_SHARE_30 = buildShareRows(24, 6)
+
+/* One-screen, screenshot-friendly waiver card. Fixed phone-screen height;
+ * rows flex (flex: 1 1 0) to divide the height evenly, so a light week
+ * reads large and the 30-row record still fits without scroll. Two density
+ * presets (airy / dense) scale type to match the row count. */
+function WvShareCard({ rows, gw = 38, density = 'airy' }) {
+  return (
+    <div className={'mockup-wv-share mockup-wv-share--' + density}>
+      <div className="mockup-wv-share__head">
+        <div className="mockup-wv-share__brand">
+          <span className="mockup-wv-share__league">TCLOT</span>
+          <span className="mockup-wv-share__title">Waivers</span>
+        </div>
+        <span className="mockup-wv-share__gw tabular">GW {gw}</span>
+      </div>
+      <ol className="mockup-wv-share__list">
+        {rows.map((r, i) => (
+          <li className="mockup-wv-share__row" key={i}>
+            <span className="mockup-wv-share__rank tabular">{r.order != null ? r.order : ''}</span>
+            <span className={'mockup-wv-share__tag mockup-wv-share__tag--' + (r.kind === 'f' ? 'fa' : 'w')}>
+              {r.kind === 'f' ? 'FA' : 'W'}
+            </span>
+            <ClubCrest club={r.in.club} size={20} className="mockup-wv-share__crest" />
+            <span className="mockup-wv-share__name">{r.in.name}</span>
+            <span className="mockup-wv-share__arrow" aria-hidden="true">←</span>
+            <ClubCrest club={r.out.club} size={18} className="mockup-wv-share__crest mockup-wv-share__crest--out" />
+            <span className="mockup-wv-share__name mockup-wv-share__name--out">{r.out.name}</span>
+            <WvTeamBadge code={r.team} size={18} />
+          </li>
+        ))}
+      </ol>
+    </div>
+  )
+}
+
+/* Mobile sub-nav (Waivers · Trades · Draft) — context for the portrait frames. */
+function WvMovesSubnav() {
+  return (
+    <div className="mockup-wv-movesnav" role="tablist" aria-label="Moves views">
+      {[
+        { id: 'w', label: 'Waivers', emoji: '🏃', active: true },
+        { id: 't', label: 'Trades', emoji: '🤝' },
+        { id: 'd', label: 'Draft', emoji: '📋' },
+      ].map((t) => (
+        <button key={t.id} type="button" role="tab" aria-selected={!!t.active}
+          className={'mockup-wv-movesnav__btn' + (t.active ? ' is-active' : '')}>
+          <span aria-hidden="true">{t.emoji}</span> {t.label}
+        </button>
+      ))}
+    </div>
+  )
 }
 
 export function Mockup() {
@@ -11584,6 +12255,181 @@ export function Mockup() {
             Owner column is right-aligned and uses tabular numerals when amounts appear.
           </p>
           <WaiversFeed />
+        </section>
+        </>)}
+
+        {activeTab === 'waivers' && (<>
+        {/* ============ WAIVERS REDESIGN · intro ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Waivers redesign · Moves › Waivers</div>
+          <h2 className="mockup__section-h">Waivers sub-tab — modern redesign</h2>
+          <p className="mockup__section-sub">
+            Re-skin of the <strong>Moves › Waivers</strong> sub-tab into the modern
+            design language: clean tiles, compact pill dropdowns, PointsCell-style
+            numerics, and real <strong>club badges</strong> (official PL crests) on
+            weekly waivers — no more kit/shirt swaps. The <em>Waivers · Trades · Draft</em>
+            sub-nav is preserved (only Waivers is mocked here). Each section below shows
+            a desktop tile and a 375px portrait frame; A/B variants are offered where a
+            choice helps. The legacy <em>“Waived out — GW points”</em> table is
+            intentionally dropped.
+          </p>
+          <WvMovesSubnav />
+        </section>
+
+        {/* ── Section 1 · Weekly Waivers by team ── */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">1 · Weekly waivers by team</div>
+          <h2 className="mockup__section-h">Weekly waivers — club badges, far less bulky</h2>
+          <p className="mockup__section-sub">
+            Locked on the <strong>flat swap table</strong> (one row per swap, club badge +
+            single-letter position chip). A grouping filter switches between
+            <strong> All swaps</strong> (sorted by league-wide waiver order) and
+            <strong> By team</strong> (swaps grouped under each team). The <code>#</code> chip
+            always shows the move’s <strong>league-wide waiver number</strong> for the GW —
+            never a per-team re-numbering — and free-agency moves show an <code>FA</code> tag.
+            The mobile frames keep both the at-a-glance “by team” summary and the tap-to-expand
+            tiles.
+          </p>
+          <div className="mockup-wv-variant">
+            <div className="mockup-wv-variant__label">Desktop · flat swap table — toggle “All swaps” ↔ “By team”</div>
+            <WvWeeklyTable />
+          </div>
+          <div className="mockup-portrait-row mockup-wv-frames">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Mobile · at-a-glance by team</div>
+              <PortraitFrame><WvWeeklyGlance /></PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Mobile · tiles (tap a team to expand)</div>
+              <PortraitFrame>
+                <div className="mockup-wv-mobile-pad">
+                  <div className="mockup-wv-glance__bar">
+                    <span className="mockup-wv-glance__title">Weekly waivers</span>
+                    <WvPill label="GW" value="38" active />
+                  </div>
+                  <WvWeeklyTiles compact />
+                </div>
+              </PortraitFrame>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section 2 · Waiver in/out team totals (condensed toggle) ── */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">2 · Waiver in / out team totals</div>
+          <h2 className="mockup__section-h">One condensed toggle graph (in ↔ out)</h2>
+          <p className="mockup__section-sub">
+            The two separate “Waiver in totals” + “Waived out totals” tables merge into a
+            single component that toggles direction — mirroring the
+            <strong> Wins/Losses by margin</strong> condensed toggle on Standings · Stats.
+            Horizontal bars rank teams; each row carries the value, player/waiver count,
+            and average.
+          </p>
+          <div className="mockup-wv-variant">
+            <div className="mockup-wv-variant__label">Desktop</div>
+            <WvTotalsToggle />
+          </div>
+          <div className="mockup-portrait-row mockup-wv-frames">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Mobile · 375 px</div>
+              <PortraitFrame>
+                <div className="mockup-wv-mobile-pad"><WvTotalsToggle idBase="wv-totals-m" /></div>
+              </PortraitFrame>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section 3 · First waiver picks tracker ── */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">3 · First waiver picks tracker</div>
+          <h2 className="mockup__section-h">Who picked first each GW — last 5, newest first</h2>
+          <p className="mockup__section-sub">
+            Replaces the sideways-scrolling card strip with a neat vertical table, newest
+            GW first, showing the <strong>last 5</strong> by default with a “show all”
+            expander. Minimal detail: GW, the team that held waiver slot #1, the player
+            they took (club badge), and that player’s GW points.
+          </p>
+          <div className="mockup-wv-variant">
+            <div className="mockup-wv-variant__label">Desktop</div>
+            <div className="mockup-wv-desktop-card"><WvFirstPicks /></div>
+          </div>
+          <div className="mockup-portrait-row mockup-wv-frames">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Mobile · 375 px</div>
+              <PortraitFrame>
+                <div className="mockup-wv-mobile-pad"><WvFirstPicks /></div>
+              </PortraitFrame>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section 4 · Best pickups + Most waivered (combined toggle) ── */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">4 · Best pickups + Most waivered</div>
+          <h2 className="mockup__section-h">Two leaderboards, one toggle table</h2>
+          <p className="mockup__section-sub">
+            “Best waiver pickups” and “Most waivered players” collapse into a single
+            ranked list with a direction toggle (again echoing the wins-by-margin
+            condensed pattern). Best pickups shows the owning team + GW range + total
+            points; Most waivered shows how many teams claimed the player.
+          </p>
+          <div className="mockup-wv-variant">
+            <div className="mockup-wv-variant__label">Desktop</div>
+            <div className="mockup-wv-desktop-card"><WvPickupsToggle /></div>
+          </div>
+          <div className="mockup-portrait-row mockup-wv-frames">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">Mobile · 375 px</div>
+              <PortraitFrame>
+                <div className="mockup-wv-mobile-pad"><WvPickupsToggle /></div>
+              </PortraitFrame>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Section 5 · Shareable weekly waiver list (share view) ── */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">5 · Shareable weekly waiver list</div>
+          <h2 className="mockup__section-h">One-screen share card — scales from 8 to 30 rows</h2>
+          <p className="mockup__section-sub">
+            A self-contained, screenshot-friendly card of a single GW's waivers,
+            sized to fill one portrait screen. Rows flex to fit, so ~8 successful
+            waivers read large and the 30-row league record still lands on one
+            screen with no scroll. Each row: waiver rank (FA = none) · W/FA tag ·
+            IN player + club crest ← OUT player · and the manager's fantasy-team
+            crest pinned right. Mirrors the data in <code style={{ fontFamily: 'Geist Mono, monospace', fontSize: 12 }}>WaiverSummaryShare</code>.
+          </p>
+          <div className="mockup-portrait-row mockup-wv-frames">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">~8 rows · fills the screen</div>
+              <PortraitFrame>
+                <WvShareCard rows={WV_SHARE_8} gw={38} density="airy" />
+              </PortraitFrame>
+            </div>
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">~30 rows · league record, still one screen</div>
+              <PortraitFrame>
+                <WvShareCard rows={WV_SHARE_30} gw={38} density="dense" />
+              </PortraitFrame>
+            </div>
+          </div>
+        </section>
+
+        {/* ── Ideas / suggestions ── */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Ideas · further improvements</div>
+          <h2 className="mockup__section-h">Anything else for the Waivers tab?</h2>
+          <div className="mockup-wv-ideas">
+            <ul>
+              <li><strong>GW filter persistence:</strong> remember the last-viewed GW across the Waivers/Trades/Draft sub-nav so a deep-dive doesn’t reset.</li>
+              <li><strong>“Hits &amp; misses” chip:</strong> tag each weekly pickup green/red once that GW is scored (picked-up pts − dropped pts), so the feed tells a story at a glance.</li>
+              <li><strong>Net points won/lost:</strong> a single headline stat per team this GW (pts gained from ins minus pts lost from outs) — the real “who won the waiver wire” signal.</li>
+              <li><strong>Free-agency vs waiver split:</strong> small legend / filter pill since both share the feed (FA chip already shown on tiles).</li>
+              <li><strong>Player slide-over:</strong> tapping any club badge / name opens the existing player detail sheet (wire into <code>ClickablePlayerName</code> in production).</li>
+              <li><strong>Empty-state polish:</strong> teams with no moves this GW collapse into a muted “no moves” strip rather than disappearing, so the league picture stays complete.</li>
+              <li><strong>Biggest one-week steal:</strong> highlight the single best waiver pickup of the GW (highest picked-up GW points) as a hero chip above the feed.</li>
+            </ul>
+          </div>
         </section>
         </>)}
 
