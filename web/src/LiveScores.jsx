@@ -798,15 +798,15 @@ function proxyHostLabel() {
 /**
  * Build the row class string shared by mobile + desktop renders of the
  * Live Table. Mirrors the production Standings variant-c row treatment:
- * rank-1 row tint (`row-highlight`), rank-8 8th-place band, plus the
- * Hero / Villain row tints inherited from the previous Live Table.
+ * rank-1 row tint (`row-highlight`) and the rank-8 8th-place band. The
+ * Hero / Villain row tints were intentionally removed — the hero/villain
+ * narrative is a face-off-row treatment only and is no longer reflected
+ * in the standings-style Live Table.
  */
-function liveStandingsRowClass(row, isVillainVictory, isHeroDefeat) {
+function liveStandingsRowClass(row) {
   return [
     row.liveRank === 1 ? 'row-highlight' : '',
     row.liveRank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
-    isVillainVictory ? 'standings-row--villain-victory' : '',
-    isHeroDefeat ? 'standings-row--hero-defeat' : '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -822,8 +822,6 @@ function liveStandingsRowClass(row, isVillainVictory, isHeroDefeat) {
  */
 function LiveTeamCell({
   row,
-  isVillainVictory,
-  isHeroDefeat,
   teamLogoMap,
   kitIndexByEntry,
   mobile,
@@ -833,20 +831,13 @@ function LiveTeamCell({
   const moveDown = row.rankMove < 0;
   return (
     <span className="team-cell">
-      <HeroVillainAvatarFrame
-        status={
-          isVillainVictory ? 'villain' : isHeroDefeat ? 'hero' : null
-        }
-        size="tiny"
-      >
-        <TeamAvatar
-          entryId={row.league_entry}
-          name={row.teamName}
-          size="sm"
-          logoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-      </HeroVillainAvatarFrame>
+      <TeamAvatar
+        entryId={row.league_entry}
+        name={row.teamName}
+        size="sm"
+        logoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
       <span className="team-name team-name--sidebar live-standings-team-name">
         {displayName}
         {moveUp ? (
@@ -967,8 +958,6 @@ function LiveStandingsTable({
   teams,
   teamLogoMap,
   kitIndexByEntry,
-  villainVictoryEntryIds,
-  heroDefeatEntryIds,
   mobile,
 }) {
   const lastTitle = gwStandingsFrozen
@@ -1000,17 +989,7 @@ function LiveStandingsTable({
           </thead>
           <tbody>
             {liveStandingsRows.map((row) => {
-              const isVillainVictory = villainVictoryEntryIds.has(
-                Number(row.league_entry),
-              );
-              const isHeroDefeat = heroDefeatEntryIds.has(
-                Number(row.league_entry),
-              );
-              const rowClass = liveStandingsRowClass(
-                row,
-                isVillainVictory,
-                isHeroDefeat,
-              );
+              const rowClass = liveStandingsRowClass(row);
               return (
                 <Fragment key={row.league_entry}>
                   <tr className={rowClass || undefined}>
@@ -1030,8 +1009,6 @@ function LiveStandingsTable({
                     <td className="col-team">
                       <LiveTeamCell
                         row={row}
-                        isVillainVictory={isVillainVictory}
-                        isHeroDefeat={isHeroDefeat}
                         teamLogoMap={teamLogoMap}
                         kitIndexByEntry={kitIndexByEntry}
                         mobile
@@ -1159,17 +1136,7 @@ function LiveStandingsTable({
         </thead>
         <tbody>
           {liveStandingsRows.map((row) => {
-            const isVillainVictory = villainVictoryEntryIds.has(
-              Number(row.league_entry),
-            );
-            const isHeroDefeat = heroDefeatEntryIds.has(
-              Number(row.league_entry),
-            );
-            const rowClass = liveStandingsRowClass(
-              row,
-              isVillainVictory,
-              isHeroDefeat,
-            );
+            const rowClass = liveStandingsRowClass(row);
             return (
               <Fragment key={row.league_entry}>
                 <tr className={rowClass || undefined}>
@@ -1189,8 +1156,6 @@ function LiveStandingsTable({
                   <td className="col-team">
                     <LiveTeamCell
                       row={row}
-                      isVillainVictory={isVillainVictory}
-                      isHeroDefeat={isHeroDefeat}
                       teamLogoMap={teamLogoMap}
                       kitIndexByEntry={kitIndexByEntry}
                       mobile={false}
@@ -1995,10 +1960,10 @@ export function LiveScores({
               const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
 
               // Hero defeat / villain victory narrative status is passed
-              // through to LiveFaceOffRow as `homeStatus`/`awayStatus` so the
-              // Variant 1 avatar treatment (ring + dot + caption pill) wraps
-              // the manager avatar directly. The rectangular tile is no
-              // longer injected via `bannerExtras` in this face-off row.
+              // through to LiveFaceOffRow as `homeStatus`/`awayStatus`. The
+              // tinted ring marks which manager avatar carries the status,
+              // while the narrative caption pill renders beneath the central
+              // score column (not under the crest).
               const homeStatus = homeVillain ? 'villain' : homeHero ? 'hero' : null;
               const awayStatus = awayVillain ? 'villain' : awayHero ? 'hero' : null;
 
@@ -2252,8 +2217,6 @@ export function LiveScores({
             teams={teams}
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
-            villainVictoryEntryIds={villainVictoryEntryIds}
-            heroDefeatEntryIds={heroDefeatEntryIds}
             mobile={mobileNarrowViewport}
           />
         )}

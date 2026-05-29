@@ -3474,7 +3474,7 @@ function App() {
             >
               <div className="section-chrome section-chrome--sticky">
               <div
-                className="team-selection-submenu"
+                className="subnav"
                 role="tablist"
                 aria-label="Moves views"
               >
@@ -3484,14 +3484,11 @@ function App() {
                   id="tab-team-selection-waivers"
                   aria-selected={teamSelectionTab === 'waivers'}
                   className={
-                    'team-selection-submenu__btn' +
-                    (teamSelectionTab === 'waivers' ? ' team-selection-submenu__btn--active' : '')
+                    'subnav__tab' +
+                    (teamSelectionTab === 'waivers' ? ' subnav__tab--active' : '')
                   }
                   onClick={() => setTeamSelectionTab('waivers')}
                 >
-                  <span className="team-selection-submenu__emoji" aria-hidden="true">
-                    🏃
-                  </span>
                   Waivers
                 </button>
                 <button
@@ -3500,14 +3497,11 @@ function App() {
                   id="tab-team-selection-trades"
                   aria-selected={teamSelectionTab === 'trades'}
                   className={
-                    'team-selection-submenu__btn' +
-                    (teamSelectionTab === 'trades' ? ' team-selection-submenu__btn--active' : '')
+                    'subnav__tab' +
+                    (teamSelectionTab === 'trades' ? ' subnav__tab--active' : '')
                   }
                   onClick={() => setTeamSelectionTab('trades')}
                 >
-                  <span className="team-selection-submenu__emoji" aria-hidden="true">
-                    🤝
-                  </span>
                   Trades
                 </button>
                 <button
@@ -3516,14 +3510,11 @@ function App() {
                   id="tab-team-selection-draft"
                   aria-selected={teamSelectionTab === 'draft'}
                   className={
-                    'team-selection-submenu__btn' +
-                    (teamSelectionTab === 'draft' ? ' team-selection-submenu__btn--active' : '')
+                    'subnav__tab' +
+                    (teamSelectionTab === 'draft' ? ' subnav__tab--active' : '')
                   }
                   onClick={() => setTeamSelectionTab('draft')}
                 >
-                  <span className="team-selection-submenu__emoji" aria-hidden="true">
-                    📋
-                  </span>
                   Draft
                 </button>
               </div>

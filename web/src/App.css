@@ -805,24 +805,6 @@
     box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
   }
 
-  .section-chrome--sticky .team-selection-submenu {
-    margin-bottom: 0;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-  }
-
-  .section-chrome--sticky .team-selection-submenu::-webkit-scrollbar {
-    display: none;
-  }
-
-  .section-chrome--sticky .team-selection-submenu__btn {
-    flex: 0 0 auto;
-    padding: 8px 14px;
-    font-size: 0.75rem;
-  }
-
   .section-chrome--sticky .live-score-ticker-slot--section-chrome {
     margin-top: 10px;
     width: 100%;
@@ -952,6 +934,11 @@
 .tile--team-selection .tile-head-row {
   margin-bottom: 10px;
 }
+
+/* Moves / FPL Live sub-nav now uses the shared `.subnav` segmented-pill style
+ * (see `.subnav*` rules below). The `.team-selection-submenu__btn*` rules below
+ * are retained because the Players workbench filter pills (`.players-*-pill__btn`
+ * in `playersFilterPills.jsx`) reuse them as their base style. */
 
 /* Clear “selected” ring: vivid purple oval (idle tabs stay muted 2px so active doesn’t shift layout). */
 .tile--team-selection .team-selection-submenu__btn {
@@ -1196,9 +1183,7 @@
   }
 }
 
-/* Narrow viewports: let the sub-nav scroll horizontally rather than wrap.
- * Matches the existing `.section-chrome--sticky .team-selection-submenu` rule
- * but scoped to the new class. */
+/* Narrow viewports: let the sub-nav scroll horizontally rather than wrap. */
 @media (max-width: 1080px) {
   .section-chrome--sticky .subnav {
     flex-wrap: nowrap;
@@ -11385,17 +11370,14 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row__side--away {
   justify-content: flex-end;
 }
-/* `position: relative` anchors the absolutely-positioned caption pill
-   (HERO DEFEAT / VILLAIN VICTORY) BELOW the avatar without participating
-   in this column's intrinsic width. Previously the pill (wider than the
-   avatar) inflated the crest column and pushed the team name into a
-   single-char ellipsis ("T..." for "Toronto Wiggum"). Round 3 follow-up. */
+/* Crest column simply wraps the avatar (+ its hero/villain ring). The
+   narrative caption pill no longer lives here — it moved beneath the
+   central score column — so no caption-slot reservation or Y-alignment
+   compensation is needed and the crest sits flush against the team name. */
 .live-banner-row__crest {
-  position: relative;
   flex-shrink: 0;
   line-height: 0;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
 }
 /* Avatar wrapper — wraps the existing TeamAvatar so the V1 ring is applied
@@ -11430,45 +11412,44 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row__avatar-wrap--size-tiny.live-banner-row__avatar-wrap--villain {
   box-shadow: 0 0 0 1.5px var(--live-villain-color);
 }
-/* Caption slot — absolutely positioned BELOW the avatar so the pill text
-   (HERO DEFEAT / VILLAIN VICTORY) can be wider than the avatar without
-   inflating the crest column width. Vertical space is reserved on the
-   row itself via `.live-banner-row--has-status { padding-bottom }` so
-   the pill doesn't clip out of the row edge.
-
-   Horizontal anchoring depends on which side of the row the crest sits
-   on: avatars on the home side hug the row's left padding, so a pill
-   centered on the avatar would overflow past the card's left edge. We
-   instead flush the pill to the SAME edge as the team name (left of the
-   avatar on home, right of the avatar on away) so it always extends
-   inward into the card. */
-.live-banner-row__caption-slot {
+/* Center column wrapper — holds the score line and (when present) the
+   narrative caption pill(s) beneath it. `position: relative` anchors the
+   absolutely-positioned caption stack BELOW the score without making the
+   center column taller (which would otherwise push the score out of
+   vertical alignment with the crests). The score itself therefore stays
+   centered on the row baseline alongside the avatars. */
+.live-banner-row__center {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  min-width: 0;
+}
+/* Caption stack — HERO DEFEAT / VILLAIN VICTORY pill(s) centered directly
+   under the score. Absolutely positioned so it doesn't inflate the center
+   column; vertical room is reserved on the row via
+   `.live-banner-row--has-status { padding-bottom }`. When both sides carry
+   a status the two pills stack (column) under the score. */
+.live-banner-row__status-captions {
   position: absolute;
   top: calc(100% + 4px);
+  left: 50%;
+  transform: translateX(-50%);
   display: inline-flex;
+  flex-direction: column;
   align-items: center;
-  height: 14px;
+  gap: 3px;
   pointer-events: none;
   white-space: nowrap;
 }
-.live-banner-row__side--home .live-banner-row__caption-slot {
-  left: 0;
-  right: auto;
-  justify-content: flex-start;
-}
-.live-banner-row__side--away .live-banner-row__caption-slot {
-  left: auto;
-  right: 0;
-  justify-content: flex-end;
-}
-/* Reserve vertical space for the absolute caption pill (only when a status
-   is present on either side). Without this the pill would render outside
-   the row's padded area. */
+/* Reserve vertical space for the absolute caption stack (only when a status
+   is present on either side). Sized to clear up to two stacked pills. */
 .live-banner-row--has-status {
-  padding-bottom: 22px;
+  padding-bottom: 36px;
 }
 .live-banner-row--compact.live-banner-row--has-status {
-  padding-bottom: 20px;
+  padding-bottom: 32px;
 }
 .live-banner-row__caption-pill {
   font-family: 'Geist Mono', monospace;

@@ -1,5 +1,8 @@
 import { TeamAvatar } from './TeamAvatar';
-import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame';
+import {
+  HeroVillainAvatarFrame,
+  HERO_VILLAIN_LABEL,
+} from './HeroVillainAvatarFrame';
 import { liveFixtureLead } from './liveScoresDerivations.js';
 
 /**
@@ -14,10 +17,11 @@ import { liveFixtureLead } from './liveScoresDerivations.js';
  *
  * Hero defeat / villain victory narrative badge follows the Variant 1
  * treatment from the mockup HERO/VILLAIN BADGE showcase (locked): the
- * existing avatar is wrapped in a 2px tinted ring with a small emoji dot
- * at bottom-right and a caption pill below it. Both crest columns reserve
- * the caption slot when either side has a status so the avatars stay Y
- * aligned across home/away.
+ * relevant team's avatar is wrapped in a 2px tinted ring so you can still
+ * see *which* team carries the status. The narrative caption pill
+ * (HERO DEFEAT / VILLAIN VICTORY) is rendered beneath the central score
+ * column rather than under the crest. When both sides carry a status the
+ * two pills stack under the score.
  *
  * @param {{
  *   homeId: number,
@@ -69,7 +73,7 @@ export function LiveFaceOffRow({
   const awayWinner = lead === 'away';
   const homeScoreLive = homeLive != null;
   const awayScoreLive = awayLive != null;
-  const captionSlotVisible = Boolean(homeStatus) || Boolean(awayStatus);
+  const hasStatus = Boolean(homeStatus) || Boolean(awayStatus);
 
   const RowEl = onToggle ? 'button' : 'div';
   const interactiveProps = onToggle
@@ -126,18 +130,14 @@ export function LiveFaceOffRow({
         (compact ? ' live-banner-row--compact' : '') +
         (onToggle ? ' live-banner-row--toggle' : '') +
         (expanded ? ' live-banner-row--open' : '') +
-        (captionSlotVisible ? ' live-banner-row--has-status' : '')
+        (hasStatus ? ' live-banner-row--has-status' : '')
       }
       {...interactiveProps}
     >
       <div className="live-banner-row__side live-banner-row__side--home">
         {bannerExtras.home ?? null}
         <span className="live-banner-row__crest">
-          <HeroVillainAvatarFrame
-            status={homeStatus}
-            size="default"
-            captionSlotVisible={captionSlotVisible}
-          >
+          <HeroVillainAvatarFrame status={homeStatus} size="default">
             <TeamAvatar
               entryId={homeId}
               name={homeName}
@@ -162,6 +162,7 @@ export function LiveFaceOffRow({
         </span>
       </div>
 
+      <div className="live-banner-row__center">
       <div className="live-banner-row__score tabular" aria-label="Gameweek score">
         {homeScoreLive && awayScoreLive ? (
           <>
@@ -195,6 +196,33 @@ export function LiveFaceOffRow({
           <span className="live-banner-row__score-pending muted">vs</span>
         )}
       </div>
+        {hasStatus ? (
+          <span className="live-banner-row__status-captions">
+            {homeStatus ? (
+              <span
+                className={
+                  'live-banner-row__caption-pill live-banner-row__caption-pill--' +
+                  homeStatus
+                }
+                aria-label={`${homeName}: ${HERO_VILLAIN_LABEL[homeStatus]}`}
+              >
+                {HERO_VILLAIN_LABEL[homeStatus]}
+              </span>
+            ) : null}
+            {awayStatus ? (
+              <span
+                className={
+                  'live-banner-row__caption-pill live-banner-row__caption-pill--' +
+                  awayStatus
+                }
+                aria-label={`${awayName}: ${HERO_VILLAIN_LABEL[awayStatus]}`}
+              >
+                {HERO_VILLAIN_LABEL[awayStatus]}
+              </span>
+            ) : null}
+          </span>
+        ) : null}
+      </div>
 
       <div className="live-banner-row__side live-banner-row__side--away">
         <span className="live-banner-row__names live-banner-row__names--away">
@@ -211,11 +239,7 @@ export function LiveFaceOffRow({
           {renderToPlay(awayRemaining, 'away')}
         </span>
         <span className="live-banner-row__crest">
-          <HeroVillainAvatarFrame
-            status={awayStatus}
-            size="default"
-            captionSlotVisible={captionSlotVisible}
-          >
+          <HeroVillainAvatarFrame status={awayStatus} size="default">
             <TeamAvatar
               entryId={awayId}
               name={awayName}
