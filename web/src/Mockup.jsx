@@ -24,6 +24,7 @@ import './Mockup.css'
 import { MOCKUP_PART2_SECTIONS } from './MockupSurfacesPart2.jsx'
 import './MockupSurfacesPart2.css'
 import { TradeViewsShowcase } from './MockupTradeViews.jsx'
+import { TradePortraitVariants } from './MockupTradePortrait.jsx'
 import { LineupsShowcase } from './MockupLineups.jsx'
 import {
   HALL_SEASON_FINAL_TABLES,
@@ -12804,6 +12805,29 @@ export function Mockup() {
         </>)}
 
         {activeTab === 'trades' && (<>
+        {/* ============ TRADES — portrait (mobile) variants ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Trades · portrait</div>
+          <h2 className="mockup__section-h">Trade card on phone — four variants</h2>
+          <p className="mockup__section-sub">
+            Production card is a 2-column head-to-head split. On phone (~390 px
+            wide) each side gets ~150 px, which forces team and player names to
+            truncate even when they&apos;re short ({'\u201C'}Toron…{'\u201D'},
+            {' '}{'\u201C'}Gy…{'\u201D'}). It&apos;s primarily a{' '}
+            <em>format</em> issue, not pure spacing — tightening fonts/padding
+            buys ~10–20 px per side but can&apos;t fit longer team names. These
+            four variants render real trade data inside a 375 px portrait
+            frame so each layout can be judged at phone size. The score bar
+            is preserved across all four.
+          </p>
+          <TradePortraitVariants
+            trades={data?.tradesPanelRows ?? []}
+            teamLogoMap={data?.teamLogoMap ?? {}}
+            kitIndexByEntry={data?.defaultKitIndexByLeagueEntry ?? {}}
+            PortraitFrame={PortraitFrame}
+          />
+        </section>
+
         {/* ============ TRADES — modern trade views ============ */}
         <section className="mockup__section">
           <div className="mockup__eyebrow">Trades · concept</div>

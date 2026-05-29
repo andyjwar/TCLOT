@@ -4168,34 +4168,40 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 .trade2__split {
   display: grid;
   grid-template-columns: 1fr 1px 1fr;
+  /* Grow to fill any extra card height so the result bar always sits at the
+     same y-coordinate across cards in the same row (align-items: stretch). */
+  flex: 1 1 auto;
 }
 .trade2__rule { background: var(--fm-border); }
 .trade2__side {
   display: flex;
   flex-direction: column;
-  padding: 12px;
+  padding: 14px;
   min-width: 0;
 }
 .trade2__team {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   min-width: 0;
-  padding-bottom: 8px;
-  margin-bottom: 4px;
+  padding-bottom: 12px;
+  margin-bottom: 10px;
   border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
 }
-.trade2__team .team-avatar-frame { width: 20px; height: 20px; }
+.trade2__team .team-avatar-frame { width: 26px; height: 26px; }
+/* Team name — bold, sized to read as the card's headline. */
 .trade2__team-name {
   min-width: 0;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--fm-text);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--fm-text-strong);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Side total — same weight + colour as the team name so they read as a pair. */
 .trade2__total {
   flex-shrink: 0;
   font-size: 16px;
@@ -4203,21 +4209,33 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   color: var(--fm-text-strong);
 }
 
-/* player rows — fixed grid so badge / name / points line up */
-.trade2__players { display: flex; flex-direction: column; }
+/* Player rows — badge + name+position inline on row 1; tenure on row 2 under the name.
+   `min-height` + `justify-content: center` (plus `flex: 1` on .trade2__split)
+   locks every tile's bar to the same y-coordinate. The min-height is set above
+   the natural 2-player content height so 1-player tiles match 2-player tiles
+   across rows, and `flex: 1` makes any extra card height land in the players
+   area inside a row. */
+.trade2__players {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-height: 100px;
+  justify-content: center;
+}
 .trade2__pl {
   display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) auto;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  min-height: 34px;
+  column-gap: 10px;
+  padding: 4px 0;
 }
 .trade2__badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   flex-shrink: 0;
   overflow: hidden;
 }
@@ -4227,17 +4245,18 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   background: var(--fm-surface-2);
   border: 1px solid var(--fm-border);
   font-family: 'Geist Mono', monospace;
-  font-size: 8px;
+  font-size: 9px;
   font-weight: 700;
   color: var(--fm-muted);
 }
 .trade2__pl-id { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.trade2__pl-name-line { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.trade2__pl-name-line { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+/* Player name — still a header but lighter than the team name. */
 .trade2__pl-name {
   min-width: 0;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--fm-text-strong);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fm-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4248,27 +4267,28 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 .trade2__pos {
   flex-shrink: 0;
   font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--fm-muted);
 }
 .trade2__pl-pts {
   justify-self: end;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--fm-text-strong);
 }
 
-/* tenure */
+/* Tenure — single line: status dot + "on squad for X GWs" (kept)
+   or "GW 9–35" (dropped). Dot colour signals kept/dropped state. */
 .trade2__tenure {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 400;
   color: var(--fm-muted);
 }
-.trade2__tenure-state { display: inline-flex; align-items: center; gap: 4px; }
 .trade2__tenure-dot {
   width: 6px;
   height: 6px;
@@ -4276,8 +4296,15 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   flex-shrink: 0;
   background: color-mix(in srgb, var(--fm-muted) 50%, transparent);
 }
-.trade2__tenure-state.is-kept .trade2__tenure-dot { background: var(--fm-win); }
-.trade2__tenure-state.is-gone .trade2__tenure-dot { background: var(--fm-loss); }
+.trade2__tenure.is-kept .trade2__tenure-dot { background: var(--fm-win); }
+.trade2__tenure.is-gone .trade2__tenure-dot { background: var(--fm-loss); }
+
+/* Hide the "(N GWs)" weeks count on portrait phones — the dot + "on squad"
+   carries the kept signal on its own; the count was the first thing to
+   truncate at ~390px viewport. Kept on tablet/desktop where there's room. */
+@media (max-width: 600px) {
+  .trade2__tenure-weeks { display: none; }
+}
 
 /* result bar — purple winner on grey track */
 .trade2__bar {
@@ -17045,7 +17072,6 @@ button.live-xp__player-name:focus-visible {
   color: color-mix(in srgb, var(--fm-text, #fff) 45%, transparent);
   margin-top: 2px;
 }
-
 
 /* =================================================================== */
 /* Lineups (Premier League) — redesigned page.                          */

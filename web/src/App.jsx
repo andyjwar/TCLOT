@@ -1917,18 +1917,32 @@ function TradePosText({ typeId }) {
   return <span className="trade2__pos">{pos}</span>
 }
 
-/** Tenure: weeks the acquired player stayed + kept/dropped state (coloured dot, muted text). */
+/** Tenure — single line: coloured status dot + either the GW range the
+ *  acquired player was dropped over ("GW 9–35") or "on squad for X GWs". */
 function TradeTenure({ leg }) {
-  const weeks = Math.max((leg.endGw ?? 0) - (leg.startGw ?? 0) + 1, 1)
   const kept = leg.stillOnTeam
+  const weeks = Math.max((leg.endGw ?? 0) - (leg.startGw ?? 0) + 1, 1)
+  const range =
+    leg.gwRangeLabel ??
+    (leg.startGw != null && leg.endGw != null && leg.startGw !== leg.endGw
+      ? `${leg.startGw}\u2013${leg.endGw}`
+      : `${leg.startGw ?? leg.endGw ?? ''}`)
   return (
-    <span className="trade2__tenure">
-      <span className="trade2__tenure-weeks">
-        <span className="tabular">{weeks}</span> GW{weeks === 1 ? '' : 's'}
-      </span>
-      <span className={'trade2__tenure-state' + (kept ? ' is-kept' : ' is-gone')}>
-        <span className="trade2__tenure-dot" aria-hidden />
-        {kept ? 'on squad' : <>dropped GW <span className="tabular">{leg.endGw}</span></>}
+    <span className={'trade2__tenure' + (kept ? ' is-kept' : ' is-gone')}>
+      <span className="trade2__tenure-dot" aria-hidden />
+      <span className="trade2__tenure-label">
+        {kept ? (
+          <>
+            on squad
+            <span className="trade2__tenure-weeks">
+              {' '}(<span className="tabular">{weeks}</span> GW{weeks === 1 ? '' : 's'})
+            </span>
+          </>
+        ) : (
+          <>
+            GW <span className="tabular">{range}</span>
+          </>
+        )}
       </span>
     </span>
   )
