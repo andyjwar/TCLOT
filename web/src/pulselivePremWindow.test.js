@@ -180,6 +180,73 @@ test('findPulseliveMatchForFixture — matches via FPL team ids', () => {
   assert.equal(hit?.fixtureId, 91234);
 });
 
+test('findPulseliveMatchForFixture — prefers FPL `pulse_id` over team-pair heuristic', () => {
+  // Same team pair plays twice in a season (home + away leg). Pulselive ships
+  // both rows in the seasonal list; without `pulse_id` the old code returned
+  // whichever leg came first (wrong scores for the OTHER GW). With FPL's
+  // `pulse_id` ferried through, we always land on the right leg.
+  const pulseRows = [
+    {
+      fixtureId: 91100,
+      homeId: 1, // Arsenal home
+      awayId: 10, // Man City away
+      homeAbbr: 'ARS',
+      awayAbbr: 'MCI',
+      kickoffMs: Date.parse('2025-09-21T15:00:00Z'),
+    },
+    {
+      fixtureId: 91234,
+      homeId: 10, // Man City home (reverse leg)
+      awayId: 1, // Arsenal away
+      homeAbbr: 'MCI',
+      awayAbbr: 'ARS',
+      kickoffMs: Date.parse('2026-04-12T15:00:00Z'),
+    },
+  ];
+  const pulseToFpl = new Map([
+    [10, 11],
+    [1, 1],
+  ]);
+  // Direct pulse_id mapping → returns the exact match, regardless of order.
+  const fx = {
+    team_h: 11,
+    team_a: 1,
+    kickoff_time: '2026-04-12T15:00:00Z',
+    pulse_id: 91234,
+  };
+  const hit = findPulseliveMatchForFixture(fx, pulseToFpl, pulseRows);
+  assert.equal(hit?.fixtureId, 91234);
+});
+
+test('findPulseliveMatchForFixture — picks closest kickoff when pulse_id missing', () => {
+  const pulseRows = [
+    {
+      fixtureId: 91100,
+      homeId: 1,
+      awayId: 10,
+      homeAbbr: 'ARS',
+      awayAbbr: 'MCI',
+      kickoffMs: Date.parse('2025-09-21T15:00:00Z'),
+    },
+    {
+      fixtureId: 91234,
+      homeId: 10,
+      awayId: 1,
+      homeAbbr: 'MCI',
+      awayAbbr: 'ARS',
+      kickoffMs: Date.parse('2026-04-12T15:00:00Z'),
+    },
+  ];
+  const pulseToFpl = new Map([
+    [10, 11],
+    [1, 1],
+  ]);
+  // No `pulse_id` — disambiguate by `kickoff_time` proximity.
+  const fx = { team_h: 11, team_a: 1, kickoff_time: '2026-04-12T15:00:00Z' };
+  const hit = findPulseliveMatchForFixture(fx, pulseToFpl, pulseRows);
+  assert.equal(hit?.fixtureId, 91234);
+});
+
 test('parsePulseliveLineups — happy path with full XI on both sides marks confirmed', () => {
   const fplFixture = { id: 1001, team_h: 11, team_a: 1 };
   const pulseToFpl = new Map([

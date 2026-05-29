@@ -235,17 +235,61 @@ export function mapPulseliveTeamsToFpl(teamById, pulseTeams) {
 }
 
 /**
- * Find the Pulselive fixture id for an FPL fixture by matching both team ids.
+ * Resolve an FPL fixture to its Pulselive `fixtures/{id}` peer.
+ *
+ *   1. **Authoritative mapping** — FPL ships `pulse_id` on every fixture row
+ *      (e.g. `pulse_id: 125161` for `BHA vs MUN, GW 38`). When that id matches
+ *      a row in the Pulselive fixtures list, return it. This is the only
+ *      reliable way to pick the right leg for team-pair fixtures that play
+ *      twice in a season (otherwise both legs match the team-id heuristic and
+ *      the first one wins, surfacing the wrong score / lineups for the GW).
+ *   2. **Same teams + closest kickoff** — fallback when `pulse_id` is missing.
+ *      Score every row that matches the FPL fixture's team pair (either
+ *      direction, because some Pulselive rows put the away team first), and
+ *      pick the one whose kickoff is closest to the FPL fixture's. Closer
+ *      ties tie-break on direction-match (home/home, away/away).
  */
 export function findPulseliveMatchForFixture(fx, pulseToFpl, pulseRows) {
   const th = Number(fx?.team_h);
   const ta = Number(fx?.team_a);
   if (!Number.isFinite(th) || !Number.isFinite(ta)) return null;
+
+  /** Step 1: prefer FPL's `pulse_id` mapping when available. */
+  const pulseId = Number(fx?.pulse_id);
+  if (Number.isFinite(pulseId)) {
+    const direct = pulseRows.find((row) => row.fixtureId === pulseId);
+    if (direct) return direct;
+  }
+
+  /** Step 2: fallback — team-pair match, disambiguated by closest kickoff. */
+  const fxKickoffMs = (() => {
+    const t = Date.parse(String(fx?.kickoff_time || ''));
+    return Number.isFinite(t) ? t : null;
+  })();
+  let best = null;
+  let bestDelta = Infinity;
+  let bestDirectionMatch = false;
   for (const row of pulseRows) {
     const h = pulseToFpl.get(row.homeId);
     const a = pulseToFpl.get(row.awayId);
-    if (h === th && a === ta) return row;
-    if (h === ta && a === th) return row;
+    const directionMatch = h === th && a === ta;
+    const swapMatch = h === ta && a === th;
+    if (!directionMatch && !swapMatch) continue;
+    const delta =
+      fxKickoffMs != null && row.kickoffMs != null
+        ? Math.abs(row.kickoffMs - fxKickoffMs)
+        : Infinity;
+    /** Prefer direction-match over swap-match when kickoff signal is missing
+     *  (Infinity vs Infinity); otherwise the smaller delta wins; ties favour
+     *  direction-match. */
+    if (
+      delta < bestDelta ||
+      (delta === bestDelta && directionMatch && !bestDirectionMatch)
+    ) {
+      best = row;
+      bestDelta = delta;
+      bestDirectionMatch = directionMatch;
+    }
   }
-  return null;
+  return best;
 }
