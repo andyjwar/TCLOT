@@ -1654,31 +1654,32 @@
   background: var(--fm-card);
 }
 
-.prem-lineup-paired__heads {
+/* Slim formation strip — two muted chips centered above each XI column,
+   replacing the old `prem-lineup-paired__heads` sub-bar that repeated
+   team names that already appear in the fixture row toggle above. */
+.prem-lineup-paired__formations {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 0;
+  align-items: center;
   margin: 0;
-}
-
-.prem-lineup-paired__head-slab {
-  padding: 10px 10px 8px 12px;
-  box-sizing: border-box;
-  min-width: 0;
-  background: color-mix(in srgb, var(--fm-surface-2) 55%, var(--fm-card));
-}
-
-.prem-lineup-paired__head-slab--home {
-  border-right: 1px solid var(--fm-border);
-}
-
-.prem-lineup-paired__head-slab--away {
-  padding-left: 12px;
+  padding: 8px 12px;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
   background: color-mix(in srgb, var(--fm-surface-2) 30%, var(--fm-card));
+  text-align: center;
 }
 
-.prem-lineup-paired__head-slab .prem-lineup-col__head {
-  margin-bottom: 0;
+.prem-lineup-paired__formation {
+  display: inline-block;
+  justify-self: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--fm-muted);
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--fm-border);
+  background: var(--fm-card);
 }
 
 .prem-lineup-paired__rows {
@@ -1711,8 +1712,8 @@
 .prem-lineup-paired__cell {
   min-width: 0;
   display: flex;
-  align-items: center;
-  padding: 6px 10px 6px 12px;
+  align-items: stretch;
+  padding: 4px 8px;
   box-sizing: border-box;
 }
 
@@ -1722,18 +1723,15 @@
 }
 
 .prem-lineup-paired__cell--away {
-  padding-left: 12px;
-  padding-right: 12px;
   background: color-mix(in srgb, var(--fm-surface-2) 22%, var(--fm-card));
 }
 
-.prem-lineup-paired__cell .prem-lineup-row {
+/* The new compact row design (`prem-mlu-row`) takes the full cell width and
+   left-aligns; bring its own padding down so the cell padding owns spacing. */
+.prem-lineup-paired__cell .prem-mlu-row {
   width: 100%;
-  min-height: 2.25rem;
   padding: 4px 2px;
   border-bottom: none;
-  align-items: center;
-  box-sizing: border-box;
 }
 
 .prem-lineup-paired__empty {
@@ -17092,6 +17090,22 @@ button.live-xp__player-name:focus-visible {
 /*   .prem-mlu-*     — mobile lineup body atoms (toggle, rows, etc.)    */
 /*   .prem-nis-*     — 'Not in squad' strip atoms                       */
 /* =================================================================== */
+
+/* Lineups toolbar — wraps the shared `<GameWeekNavigator>` (same component the
+   Scores subtab uses) so the centered ‹ / GW label / › cluster reads identical,
+   then anchors the refresh icon on the right edge of the band. The `.gw-nav`
+   inside is already `position: relative` for its popover, so we just hang the
+   absolute refresh icon off `.prem-lineup-toolbar` itself. */
+.prem-lineup-toolbar {
+  position: relative;
+}
+.prem-lineup-toolbar__refresh {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  z-index: 1;
+}
 
 /* GW navigation cluster: ‹ • [GW 35 ▾] • › + refresh on the right */
 .prem-gwnav {

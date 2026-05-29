@@ -3744,17 +3744,16 @@ function App() {
                 </button>
               </div>
               {/* The generative hero banner (LiveBannerConcept) was removed
-                  in PR #5 cleanup — user confirmed the slot is no longer
-                  needed. The horizontal H2H mini-ticker (FplLiveGwTickerBar)
-                  is now scoped to the Lineups + Projections sub-tabs only;
-                  on the Live GW sub-tab, the new 4-fixture grid below
-                  (LiveScores → live-banner-group-tile) already covers the
-                  same job at full size, so the mini-ticker is redundant
-                  there. (The per-tile pill that previously sat above the
-                  fixture rows was retired in PR #5h — its two unique data
-                  points moved into the brand-header status strip; see
-                  brandHeaderStatus.js.) */}
-              {fplLiveTab !== 'live' ? (
+                  in PR #5 cleanup. The horizontal H2H mini-ticker
+                  (FplLiveGwTickerBar) is now scoped to the Projections
+                  sub-tab only:
+                    - On `Scores`, the 4-fixture grid below
+                      (LiveScores → live-banner-group-tile) already covers
+                      the same H2H story at full size.
+                    - On `Lineups`, the new fixture list IS the page chrome;
+                      the H2H ticker was visually competing with the
+                      day-grouped real-fixture rows below it. */}
+              {fplLiveTab === 'projections' ? (
                 <FplLiveGwTickerBar
                   teams={teamsForFormSelect}
                   matches={matches ?? []}
