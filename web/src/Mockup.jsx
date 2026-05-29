@@ -24,6 +24,7 @@ import './Mockup.css'
 import { MOCKUP_PART2_SECTIONS } from './MockupSurfacesPart2.jsx'
 import './MockupSurfacesPart2.css'
 import { TradeViewsShowcase } from './MockupTradeViews.jsx'
+import { LineupsShowcase } from './MockupLineups.jsx'
 import {
   HALL_SEASON_FINAL_TABLES,
   hallManagerDisplayKey,
@@ -10972,6 +10973,7 @@ const MOCKUP_TABS = [
   { id: 'wire',      label: 'Wire' },
   { id: 'draft',     label: 'Draft' },
   { id: 'live',      label: 'Live' },
+  { id: 'lineups',   label: 'Lineups' },
   { id: 'hall',      label: 'Hall of Fame' },
   { id: 'other',     label: 'Other' },
 ]
@@ -12284,6 +12286,10 @@ export function Mockup() {
           </p>
           <ContribStreamingShowcase />
         </section>
+        </>)}
+
+        {activeTab === 'lineups' && (<>
+          <LineupsShowcase />
         </>)}
 
         {activeTab === 'hall' && (<>

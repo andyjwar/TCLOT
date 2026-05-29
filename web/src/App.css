@@ -17046,3 +17046,551 @@ button.live-xp__player-name:focus-visible {
   margin-top: 2px;
 }
 
+
+/* =================================================================== */
+/* Lineups (Premier League) — redesigned page.                          */
+/* Replaces the old `.prem-fixture` / `.prem-fixtures-block` layout     */
+/* with a FotMob-style day-grouped fixture list. Inline expand below    */
+/* each row reveals the existing paired XI tiles (desktop) or the new   */
+/* mobile lineup body (toggle + single-side rows + not-in-squad strip). */
+/* Class prefixes:                                                      */
+/*   .prem-gwnav     — centered ‹ GW n ▾ › selector cluster             */
+/*   .prem-fxlist-*  — outer card + day-grouped fixture lists           */
+/*   .prem-day       — day band ('Saturday, Apr 12')                    */
+/*   .prem-livenow-* — pinned 'Live now' strip (conditional)            */
+/*   .prem-fxitem    — single fixture (row + optional expanded body)    */
+/*   .prem-fxrow-*   — collapsed row layout                             */
+/*   .prem-fxchip-*  — left-side state chip (LIVE / Lineups out / FT)   */
+/*   .prem-fxright   — right-side kickoff time                          */
+/*   .prem-fxbody-*  — expanded body container                          */
+/*   .prem-mlu-*     — mobile lineup body atoms (toggle, rows, etc.)    */
+/*   .prem-nis-*     — 'Not in squad' strip atoms                       */
+/* =================================================================== */
+
+/* GW navigation cluster: ‹ • [GW 35 ▾] • › + refresh on the right */
+.prem-gwnav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  position: relative;
+}
+.prem-gwnav__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.prem-gwnav__arrow:hover:not(:disabled) { color: var(--text-strong); }
+.prem-gwnav__arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.prem-gwnav__arrow svg { width: 16px; height: 16px; }
+/* The center GW pill is a CompactSelectPill — pin a min-width so it
+ * reads centered between the arrows even when "GW 9" is short. */
+.prem-gwnav__center { min-width: 110px; }
+.prem-gwnav__ft {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.prem-gwnav__refresh {
+  position: absolute;
+  right: 0;
+}
+
+/* Outer card holding live strip + day sections */
+.prem-fxlist-card {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+/* Day band */
+.prem-day {
+  padding: 9px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  background: color-mix(in srgb, var(--surface-2) 70%, var(--surface));
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.prem-fxlist-card > .prem-daysect:first-child .prem-day,
+.prem-fxlist-card > .prem-livenow + .prem-daysect .prem-day {
+  border-top: none;
+}
+.prem-fxlist-card > .prem-daysect:first-child > .prem-day {
+  border-top: none;
+}
+
+/* Pinned 'Live now' strip */
+.prem-livenow {
+  background: color-mix(in srgb, #ef4444 6%, var(--surface));
+  border-bottom: 1px solid var(--border);
+}
+.prem-livenow__head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #ef4444;
+  background: color-mix(in srgb, #ef4444 10%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, #ef4444 25%, var(--border));
+}
+.prem-livenow__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #ef4444;
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5);
+  animation: prem-fxpulse 1.6s ease-out infinite;
+}
+.prem-livenow__title { letter-spacing: 0.1em; }
+.prem-livenow__count {
+  margin-left: auto;
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #ef4444 22%, transparent);
+}
+
+/* Fixture list (within either a day section or the live strip) */
+.prem-fxlist { display: flex; flex-direction: column; }
+.prem-fxitem {
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+}
+.prem-fxitem:last-child { border-bottom: none; }
+.prem-fxitem.is-expanded {
+  background: color-mix(in srgb, var(--brand) 4%, var(--surface));
+}
+
+/* Collapsed row: 4-zone grid — chip | teams | kickoff | chev */
+.prem-fxrow {
+  display: grid;
+  grid-template-columns: 110px 1fr 70px 18px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+  font: inherit;
+  min-height: 44px;
+}
+.prem-fxrow:hover { background: color-mix(in srgb, var(--brand) 5%, var(--surface)); }
+.prem-fxitem.is-expanded .prem-fxrow { background: transparent; }
+.prem-fxrow__chip { display: inline-flex; min-width: 0; }
+.prem-fxrow__teams {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.prem-fxrow__home,
+.prem-fxrow__away {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.prem-fxrow__home { justify-content: flex-end; }
+.prem-fxrow__name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.prem-fxrow__badge {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.prem-fxrow__score {
+  font-size: 14px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-strong);
+  padding: 0 6px;
+  white-space: nowrap;
+}
+.prem-fxrow__score--vs {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.prem-fxrow__right,
+.prem-fxright {
+  font-family: 'Geist Mono', monospace;
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: right;
+  white-space: nowrap;
+}
+.prem-fxrow__chev {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* State chips on the LEFT of each row */
+.prem-fxchip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border);
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.prem-fxchip--live {
+  color: #ef4444;
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  border-color: color-mix(in srgb, #ef4444 45%, var(--border));
+}
+.prem-fxchip--live .prem-fxchip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  animation: prem-fxpulse 1.6s ease-out infinite;
+}
+.prem-fxchip--live .prem-fxchip__min {
+  font-family: 'Geist Mono', monospace;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+.prem-fxchip--pre {
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+  border-color: color-mix(in srgb, var(--brand) 45%, var(--border));
+}
+.prem-fxchip--ft {
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--surface-2) 80%, var(--surface));
+}
+.prem-fxchip--ghost {
+  background: transparent;
+  border-color: transparent;
+}
+
+@keyframes prem-fxpulse {
+  0%   { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0.45); }
+  70%  { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);    }
+  100% { box-shadow: 0 0 0 0   rgba(239, 68, 68, 0);    }
+}
+
+/* Expanded body */
+.prem-fxbody {
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  background: var(--surface);
+  padding: 12px 14px;
+}
+.prem-fxbody__notice {
+  margin: 0;
+}
+
+/* Narrow (< 560 px) compressed row layout */
+@media (max-width: 560px) {
+  .prem-fxrow {
+    grid-template-columns: 84px 1fr 50px 14px;
+    gap: 8px;
+    padding: 9px 10px;
+    min-height: 42px;
+  }
+  .prem-fxrow__teams { gap: 6px; }
+  .prem-fxrow__name {
+    font-size: 12.5px;
+    font-family: 'Geist Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .prem-fxrow__badge { width: 18px; height: 18px; }
+  .prem-fxrow__score { font-size: 13px; padding: 0 4px; }
+  .prem-fxrow__right,
+  .prem-fxright { font-size: 10.5px; }
+  .prem-fxchip {
+    font-size: 9px;
+    padding: 2px 6px;
+    gap: 4px;
+  }
+  .prem-day {
+    padding: 8px 12px;
+    font-size: 11.5px;
+  }
+  .prem-livenow__head {
+    padding: 8px 12px;
+    font-size: 10.5px;
+  }
+  .prem-fxbody {
+    padding: 10px 0;
+  }
+}
+
+/* =================================================================== */
+/* Mobile lineup body — used when narrow (< 560 px) is true.            */
+/* Replaces the cramped paired XI tiles with a home/away toggle +       */
+/* single-side row list. Toggle pill carries crest + name + formation   */
+/* + owned-count, so the formation/confirmed/owned sub-bar is dropped.  */
+/* =================================================================== */
+
+.prem-mlu-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  padding: 8px 0;
+}
+.prem-mlu-toggle__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 9px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  min-width: 0;
+}
+.prem-mlu-toggle__pill.is-active {
+  color: #fff;
+  background: var(--brand);
+  border-color: var(--brand);
+}
+.fotmob[data-theme='light'] .prem-mlu-toggle__pill.is-active { color: #fff; }
+.prem-mlu-toggle__crest { width: 18px; height: 18px; flex-shrink: 0; object-fit: contain; }
+.prem-mlu-toggle__name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.prem-mlu-toggle__formation {
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.prem-mlu-toggle__pill.is-active .prem-mlu-toggle__formation {
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+.prem-mlu-toggle__count {
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--brand) 22%, transparent);
+  color: var(--brand);
+  flex-shrink: 0;
+}
+.prem-mlu-toggle__pill.is-active .prem-mlu-toggle__count {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
+.prem-mlu-list { display: flex; flex-direction: column; }
+.prem-mlu-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  min-width: 0;
+}
+.prem-mlu-list:first-of-type .prem-mlu-row:first-child { border-top: none; }
+.prem-mlu-row.is-owned {
+  background: color-mix(in srgb, var(--brand) 7%, transparent);
+  box-shadow: inset 3px 0 0 var(--brand);
+  padding-left: 6px;
+}
+.prem-mlu-row--bench .prem-mlu-name { font-weight: 500; color: var(--text-muted); }
+.prem-mlu-crest {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+.prem-mlu-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-strong);
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.prem-mlu-pos {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  height: 18px;
+  padding: 0 5px;
+  font-family: 'Geist Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.prem-mlu-pos--GKP { color: #f59e0b; border-color: color-mix(in srgb, #f59e0b 38%, var(--border)); }
+.prem-mlu-pos--DEF { color: #22d3ee; border-color: color-mix(in srgb, #22d3ee 38%, var(--border)); }
+.prem-mlu-pos--MID { color: #c4b5fd; border-color: color-mix(in srgb, #a78bfa 38%, var(--border)); }
+.prem-mlu-pos--FWD { color: #fca5a5; border-color: color-mix(in srgb, #ef4444 38%, var(--border)); }
+.fotmob[data-theme='light'] .prem-mlu-pos--GKP { color: #b45309; }
+.fotmob[data-theme='light'] .prem-mlu-pos--DEF { color: #0e7490; }
+.fotmob[data-theme='light'] .prem-mlu-pos--MID { color: #6d28d9; }
+.fotmob[data-theme='light'] .prem-mlu-pos--FWD { color: #b91c1c; }
+
+.prem-mlu-bench-head {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  padding: 8px 0 5px;
+  border-top: 1px solid var(--border);
+  margin-top: 4px;
+}
+.prem-mlu-empty {
+  padding: 12px 0;
+  text-align: center;
+}
+
+/* =================================================================== */
+/* "Not in squad" strip — fantasy-owned players on this PL club that    */
+/* aren't in the announced XI or bench. Label on top row, item list     */
+/* below; items wrap gracefully if names overflow.                      */
+/* =================================================================== */
+.prem-nis {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px 0 4px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+  margin-top: 8px;
+  min-width: 0;
+}
+.prem-nis__h {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.prem-nis__items {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  min-width: 0;
+}
+.prem-nis__item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.prem-nis__sep {
+  color: color-mix(in srgb, var(--text-muted) 55%, transparent);
+  font-weight: 400;
+  margin: 0 4px;
+  user-select: none;
+}
+.prem-nis__name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-strong);
+  white-space: nowrap;
+}
+.prem-nis--desktop .prem-nis__name { font-size: 12.5px; }
+
+/* Desktop paired NIS row (two columns below the paired bench grid) */
+.prem-nis-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+.prem-nis-pair__cell { min-width: 0; padding: 0 14px; }
+.prem-nis-pair__cell--home {
+  border-right: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+}
+.prem-nis-pair__cell .prem-nis {
+  border-top: none;
+  margin-top: 0;
+}
+
+/* Compact owner crest used by .prem-nis__item */
+.prem-owner-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.prem-owner-crest .team-avatar-frame {
+  width: 18px;
+  height: 18px;
+}
+
