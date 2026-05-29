@@ -75,6 +75,8 @@ function winMarginBucketKey(margin) {
 
 /** element_type 1 = GKP — excluded: cheap keeper churn dominates waivers but isn’t useful for this list */
 const OUTFIELD_TYPES = new Set([2, 3, 4]);
+/** FPL element_type → position label (matches Players-Wire `POS_LABEL`). */
+const POS_BY_TYPE = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
 /** FPL element IDs omitted from this list (e.g. suspected bad/misleading waiver attribution). */
 const EXCLUDED_WAIVER_ELEMENT_IDS = new Set([667]);
 
@@ -105,6 +107,7 @@ function buildMostWaivered(transactionsPayload, fplMini) {
         teamShort: tm?.short_name ?? '—',
         teamCode: tm?.code,
         teamId,
+        pos: POS_BY_TYPE[e?.element_type] ?? null,
         claims: claimCount,
         shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
         badgeUrl:
@@ -172,6 +175,7 @@ function buildFirstWaiverOrderPicks(
         fplElementWebName(pickEl, elementIn) ??
         (elementIn != null ? `Player #${elementIn}` : '—'),
       pickedTeamShort: pickTm?.short_name ?? '—',
+      pickedPos: POS_BY_TYPE[pickEl?.element_type] ?? null,
       pickedShirtUrl: fplShirtImageUrl(pickTm?.code, pickEl?.element_type),
       pickedBadgeUrl:
         pickTm?.code != null
@@ -925,6 +929,8 @@ function processLeagueData(raw, extras = {}) {
         `Player #${row.element_in}`,
       droppedTeamShort: dropTm?.short_name ?? '—',
       pickedTeamShort: pickTm?.short_name ?? '—',
+      pickedPos: POS_BY_TYPE[pickEl?.element_type] ?? null,
+      droppedPos: POS_BY_TYPE[dropEl?.element_type] ?? null,
       droppedShirtUrl: fplShirtImageUrl(dropTm?.code, dropEl?.element_type),
       droppedBadgeUrl:
         dropTm?.code != null
@@ -956,9 +962,11 @@ function processLeagueData(raw, extras = {}) {
       return {
         ...r,
         teamName: teams[r.entry]?.entry_name ?? `Team ${r.entry}`,
+        leagueEntryId: teams[r.entry]?.id ?? r.entry,
         playerName: fplElementWebName(e, r.elementId),
         teamShort: tm?.short_name ?? '—',
         teamId: e?.team,
+        pos: POS_BY_TYPE[e?.element_type] ?? null,
         shirtUrl: fplShirtImageUrl(tm?.code, e?.element_type),
         badgeUrl:
           tm?.code != null
