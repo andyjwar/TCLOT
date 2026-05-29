@@ -3714,10 +3714,7 @@ function App() {
                   }
                   onClick={() => setFplLiveTab('live')}
                 >
-                  <span className="subnav__dot" aria-hidden="true">
-                    <NavIcon name="pulsing-dot" size={12} />
-                  </span>
-                  Live GW
+                  Scores
                 </button>
                 <button
                   type="button"
