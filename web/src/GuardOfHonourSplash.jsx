@@ -40,14 +40,14 @@ const SESSION_PLAY_CAP = 3;
  *    overlaps a teammate's dot or label), then walks SLOWLY DOWN the
  *    lane past every teammate, ending below the bottom of the column.
  *
- *  ACT 3 — Pitch invader chased off (≈36–50s)
- *    Motter's Head (pink dot waving two flags) bursts onto the pitch
- *    from the bottom-right while Higman is NEAR THE END of his
- *    inspection walk (~y=480, last teammate row). He sprints toward
- *    the centre of the guard, then two black security dots enter from
- *    the SAME direction he came from (bottom-right) — pursuing him —
- *    catch up shoulder-to-shoulder, and chase the whole bundle off
- *    the right edge of the pitch together.
+ *  ACT 3 — Pitch invader chased off (≈28–38s)
+ *    Mick Nottershead (pink dot waving two flags) sprints onto the
+ *    pitch from OFF-SCREEN LEFT just as Higman BEGINS his inspection
+ *    walk-down. He runs to the centre of the guard, then two black
+ *    security dots EMERGE FROM THE CORNER TUNNEL (bottom-right),
+ *    converge on him, catch up shoulder-to-shoulder, and haul the
+ *    whole bundle back off toward the tunnel together — all clearing
+ *    by ~t=38s as Higman reaches the end of his walk.
  *
  * The cinematic auto-plays up to SESSION_PLAY_CAP times per browser
  * tab, with manual Replay always available, and respects
@@ -230,17 +230,48 @@ export function GuardOfHonourSplash({
               line, centred vertically on the goal-line midpoint. */}
           <rect x="6" y="252" width="10" height="72" fill="#ffffff" opacity="0.85" />
           <rect x="1008" y="252" width="10" height="72" fill="#ffffff" opacity="0.85" />
+
+          {/* Players' tunnel — a clean WHITE arch at the BOTTOM-RIGHT
+              corner, angled (TUNNEL_ROT) so its mouth opens up-left into
+              the pitch. Every player streams OUT of this one corner and
+              fans to their formation. Rendered inside the pitch group
+              (so it fades in with the surface) and before all the dots.
+              The arched opening sits at (MOUTH_X, MOUTH_Y); the body
+              recedes toward the corner / off-screen. The Crouch End
+              Oashisu crest is rendered separately near the END of the
+              SVG so it sits on top of the dots emerging from the mouth. */}
+          <g
+            className="goh-splash__tunnel"
+            transform={`translate(${TUNNEL_X} ${TUNNEL_Y}) rotate(${TUNNEL_ROT})`}
+          >
+            <path
+              d="M -6 -30 L 52 -30 Q 86 -30 86 0 Q 86 30 52 30 L -6 30 A 30 30 0 0 1 -6 -30 Z"
+              fill="#ffffff"
+              fillOpacity="0.95"
+              stroke="#b9ccb9"
+              strokeOpacity="0.7"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+            <path
+              d="M 2 -20 L 50 -20 Q 74 -20 74 0 Q 74 20 50 20 L 2 20 A 20 20 0 0 1 2 -20 Z"
+              fill="#e9efe9"
+              opacity="0.9"
+            />
+          </g>
         </g>
 
-        {/* Centrepiece: trophy outline (more faded) + crown overlaid.
-            Repositioned above the corridor in the upper third so it
-            stays unobscured while the conga walks along the halfway line.
-            Wrapped in a group so the entrance fade + idle swell can be
-            applied as a single animation target. */}
+        {/* Centrepiece: trophy outline (more faded) + crown overlaid,
+            centred inside the centre circle at the pitch centre
+            (CENTRE_X, CENTRE_Y) = (512, 288). The glow radius roughly
+            matches the centre-circle radius (r=64) so the faint gold
+            wash fills the circle, and the crown/trophy are sized + offset
+            so the emblem reads as filling that circle. Wrapped in a group
+            so the entrance fade + idle swell apply as a single target. */}
         <g className="goh-splash__centre">
-          <circle cx={CENTRE_X} cy={CENTRE_Y} r="70" fill="url(#goh-centre-glow)" />
-          <TrophyOutlineSvg cx={CENTRE_X} cy={CENTRE_Y + 12} scale={0.78} opacity={0.22} />
-          <CrownSvg cx={CENTRE_X} cy={CENTRE_Y - 6} scale={0.95} opacity={0.5} fill="#ffd166" />
+          <circle cx={CENTRE_X} cy={CENTRE_Y} r="64" fill="url(#goh-centre-glow)" />
+          <TrophyOutlineSvg cx={CENTRE_X} cy={CENTRE_Y + 14} scale={0.85} opacity={0.22} />
+          <CrownSvg cx={CENTRE_X} cy={CENTRE_Y - 18} scale={1.05} opacity={0.5} fill="#ffd166" />
         </g>
 
         {/* Opponent top line (blue) — 5 outfield dots ------------------
@@ -285,6 +316,8 @@ export function GuardOfHonourSplash({
               '--i': i,
               '--enter-dx': `${ENTRY_X - m.cx}px`,
               '--enter-dy': `${ENTRY_Y - OPP_TOP_Y}px`,
+              '--mouth-dx': `${MOUTH_X - m.cx}px`,
+              '--mouth-dy': `${MOUTH_Y - OPP_TOP_Y}px`,
             }}
           >
             <g className="goh-splash__opp-bob">
@@ -333,6 +366,8 @@ export function GuardOfHonourSplash({
                 '--i': i,
                 '--enter-dx': `${ENTRY_X - m.cx}px`,
                 '--enter-dy': `${ENTRY_Y - OPP_BOTTOM_Y}px`,
+                '--mouth-dx': `${MOUTH_X - m.cx}px`,
+                '--mouth-dy': `${MOUTH_Y - OPP_BOTTOM_Y}px`,
               }}
             >
               <g className="goh-splash__opp-bob">
@@ -374,6 +409,12 @@ export function GuardOfHonourSplash({
                 '--i': i,
                 '--enter-dx': `${ENTRY_X - RED_LINE_X}px`,
                 '--enter-dy': `${ENTRY_Y - finalY}px`,
+                '--mouth-dx': `${MOUTH_X - RED_LINE_X}px`,
+                '--mouth-dy': `${MOUTH_Y - finalY}px`,
+                '--corr-dx': `${CORRIDOR_ENTRY_X - RED_LINE_X}px`,
+                '--corr-dy': `${CORRIDOR_Y - finalY}px`,
+                '--corrL-dx': '0px',
+                '--corrL-dy': `${CORRIDOR_Y - finalY}px`,
               }}
             >
               <PlayerDot
@@ -390,16 +431,21 @@ export function GuardOfHonourSplash({
         })}
 
         {/* Higman — emerges FIRST onto the pitch (just as the blue
-            guard is settling), weaves between the two blue lines, and
-            then walks SLOWLY DOWN his own inspection lane (to the
-            right of the conga column) past every teammate. Final SVG
-            render position is the BOTTOM of that lane; CSS keyframes
-            (see `goh-higman-weave` in GuardOfHonourSplash.css) drive
-            him through:
-              0%   off-screen right at corridor y
+            guard is settling). He now mirrors the red conga's exit
+            route — out of the tunnel, turn UP to the RIGHT of Roefs
+            (CORRIDOR_ENTRY_X) into the corridor — and ONLY THEN runs
+            his zig-zag weave between the two blue lines before walking
+            SLOWLY DOWN his own inspection lane (to the right of the
+            conga column) past every teammate. Final SVG render position
+            is the BOTTOM of that lane; CSS keyframes (see
+            `goh-higman-weave` in GuardOfHonourSplash.css) drive him
+            through:
+              0%   off-screen in the corner tunnel
               3%   appears (opacity 1)
-              18%  W1 — top row near right end (~x=800, y=180)
-              35%  W2 — bottom row near centre (~x=540, y=400)
+              8%   tunnel mouth (MOUTH_X, MOUTH_Y)
+              14%  corridor entry, RIGHT of Roefs (CORRIDOR_ENTRY_X, CORRIDOR_Y)
+              24%  W1 — top row near right end (~x=800, y=180)
+              38%  W2 — bottom row near centre (~x=540, y=400)
               52%  W3 — top row near left (~x=260, y=180)
               65%  W4 — TOP of inspection lane (HIGMAN_LANE_X, top)
               100% BOTTOM of inspection lane (final)
@@ -418,6 +464,10 @@ export function GuardOfHonourSplash({
           style={{
             '--enter-dx': `${ENTRY_X - HIGMAN_FINAL_X}px`,
             '--enter-dy': `${ENTRY_Y - HIGMAN_FINAL_Y}px`,
+            '--mouth-dx': `${MOUTH_X - HIGMAN_FINAL_X}px`,
+            '--mouth-dy': `${MOUTH_Y - HIGMAN_FINAL_Y}px`,
+            '--corr-dx': `${CORRIDOR_ENTRY_X - HIGMAN_FINAL_X}px`,
+            '--corr-dy': `${CORRIDOR_Y - HIGMAN_FINAL_Y}px`,
             '--w1-dx': `${HIGMAN_W1_X - HIGMAN_FINAL_X}px`,
             '--w1-dy': `${HIGMAN_W1_Y - HIGMAN_FINAL_Y}px`,
             '--w2-dx': `${HIGMAN_W2_X - HIGMAN_FINAL_X}px`,
@@ -466,15 +516,17 @@ export function GuardOfHonourSplash({
           </text>
         </g>
 
-        {/* Streaker — "Motter's Head". Pink dot with two waving flags
+        {/* Streaker — "Mick Nottershead". Pink dot with two waving flags
             and a bobbing run. Renders at its FINAL on-pitch position
             (mid-corridor) inside an inner translated group so the
             outer wrapper can carry the entrance + capture-drag-off
             animations cleanly without the SVG `transform` attribute
             fighting the CSS keyframe transforms.
-              --enter-dx/dy : from off-screen bottom-right to centre
-              --exit-dx     : from centre to off-screen right (the
-                              dragged-off motion).
+              --enter-dx/dy : from off-screen LEFT to the centre — he
+                              now sprints ON from the left touchline.
+              --exit-dx/dy  : from centre toward the bottom-right tunnel
+                              (the dragged-off motion, hauled back the
+                              way the security guards came).
             The `__streaker-bob` wrapper handles the perpetual running
             bounce; each `__streaker-flag-spin` wrapper rotates a flag
             around its mast for the wave effect. */}
@@ -484,6 +536,7 @@ export function GuardOfHonourSplash({
             '--enter-dx': `${STREAKER_ENTRY_X - STREAKER_FINAL_X}px`,
             '--enter-dy': `${STREAKER_ENTRY_Y - STREAKER_FINAL_Y}px`,
             '--exit-dx': `${EXIT_X - STREAKER_FINAL_X}px`,
+            '--exit-dy': `${EXIT_Y - STREAKER_FINAL_Y}px`,
           }}
         >
           <g transform={`translate(${STREAKER_FINAL_X} ${STREAKER_FINAL_Y})`}>
@@ -526,20 +579,21 @@ export function GuardOfHonourSplash({
               textAnchor="middle"
               className="goh-splash__label goh-splash__label--streaker"
             >
-              {"Motter's Head"}
+              {'Mick Nottershead'}
             </text>
           </g>
         </g>
 
-        {/* Security guard #1 — enters from off-screen right just above
-            the corridor, grabs the streaker from his left side, and
-            drags off-screen right with the bundle. */}
+        {/* Security guard #1 — EMERGES FROM THE CORNER TUNNEL (mouth at
+            the bottom-right), cuts up-left to grab the streaker from his
+            left side, then hauls the bundle back off toward the tunnel. */}
         <g
           className="goh-splash__security goh-splash__security--top"
           style={{
             '--enter-dx': `${SECURITY_ENTRY_X - SECURITY1_GRAB_X}px`,
             '--enter-dy': `${SECURITY1_ENTRY_Y - SECURITY_GRAB_Y}px`,
             '--exit-dx': `${EXIT_X - SECURITY1_GRAB_X}px`,
+            '--exit-dy': `${EXIT_Y - SECURITY_GRAB_Y}px`,
           }}
         >
           <circle
@@ -560,15 +614,16 @@ export function GuardOfHonourSplash({
           />
         </g>
 
-        {/* Security guard #2 — enters from off-screen right just below
-            the corridor, grabs the streaker from his right side, and
-            drags off with #1. */}
+        {/* Security guard #2 — also EMERGES FROM THE CORNER TUNNEL (a
+            touch lower in the mouth than #1), grabs the streaker from his
+            right side, and hauls off toward the tunnel with #1. */}
         <g
           className="goh-splash__security goh-splash__security--bot"
           style={{
             '--enter-dx': `${SECURITY_ENTRY_X - SECURITY2_GRAB_X}px`,
             '--enter-dy': `${SECURITY2_ENTRY_Y - SECURITY_GRAB_Y}px`,
             '--exit-dx': `${EXIT_X - SECURITY2_GRAB_X}px`,
+            '--exit-dy': `${EXIT_Y - SECURITY_GRAB_Y}px`,
           }}
         >
           <circle
@@ -604,15 +659,17 @@ export function GuardOfHonourSplash({
  *   - Higman emerges FIRST onto the pitch and weaves between the
  *     two blue lines (right→top→bottom→top→bottom→left touchline)
  *     before climbing to the top of the vertical line.
- *   - Right behind Higman, the CONGA of 11 champion starters walks
- *     through the corridor and stacks into the vertical line on the
- *     left touchline. Higman settles at the TOP of the line (the
- *     back of the procession) last.
- *   - Streaker ("Motter's Head", pink, with two waving flags) bursts
- *     onto the pitch from the bottom-right corner just as the conga
- *     finishes, runs to the corridor centre.
- *   - Two black security dots converge on the streaker from the
- *     off-screen-right side and drag him off-screen right.
+ *   - Right behind Higman, the CONGA of 11 champion starters emerges
+ *     from the corner tunnel, turns up into the corridor at its right
+ *     end, and PARADES the full width of the pitch down the corridor
+ *     (between the two blue rows) before peeling into the vertical
+ *     line on the left touchline. Higman settles at the TOP of the
+ *     line (the back of the procession) last.
+ *   - Streaker ("Mick Nottershead", pink, with two waving flags)
+ *     sprints ON from OFF-SCREEN LEFT to the corridor centre just as
+ *     Higman begins his walk-down.
+ *   - Two black security dots EMERGE FROM THE CORNER TUNNEL, converge
+ *     on the streaker, and haul him off back toward the tunnel.
  *                                                                     */
 /* ------------------------------------------------------------------ */
 
@@ -678,12 +735,42 @@ function redLineY(i) {
   return RED_LINE_TOP_Y + i * RED_LINE_SPACING;
 }
 
-/** Off-screen entry point — both teams enter from the right touchline
- * along the corridor. The entry x is well past the right edge of the
- * SVG viewBox so dots are reliably clipped during their "off-screen
- * waiting" portion of the timeline. */
-const ENTRY_X = 1200;
-const ENTRY_Y = CORRIDOR_Y;
+/** X where the red conga turns UP into the corridor after leaving the
+ * tunnel — the right-hand entrance to the guard of honour. Sits to the
+ * RIGHT of the blue right-end column (Butcher top / GK "Roefs" bottom at
+ * x=920, r=17 → right edge ~937): the mouth→corridor leg climbs from the
+ * tunnel mouth (936, 516) up to (CORRIDOR_ENTRY_X, CORRIDOR_Y), and that
+ * diagonal's closest approach is around Roefs's centre height (y≈400),
+ * so the turn-up x has to clear Roefs by more than just his right edge.
+ * At x=980 the leg's perpendicular distance to Roefs is ~38px > the 31px
+ * sum of the two radii (17 + conga 14), so no red dot overlaps Roefs. From
+ * here the conga walks LEFT along `CORRIDOR_Y` across the full width of
+ * the pitch, parading through the guard, before peeling into the
+ * left-touchline line. */
+const CORRIDOR_ENTRY_X = 980;
+
+/** Players' tunnel at the BOTTOM-RIGHT corner. Everyone (the blue guard,
+ * the red champion conga, and Higman) now emerges from this single
+ * corner mouth and fans out to their existing formation slots.
+ *
+ *   TUNNEL_X/Y/ROT : placement + rotation of the dark arch visual at the
+ *                    pitch edge (the opening faces up-left, into the
+ *                    pitch interior).
+ *   MOUTH_X/MOUTH_Y: the on-pitch tunnel-mouth waypoint every dot passes
+ *                    through right after appearing, so the procession
+ *                    streams single-file out of the mouth before fanning
+ *                    to formation (rather than teleporting diagonally).
+ *   ENTRY_X/ENTRY_Y: the off-screen point (past the bottom-right corner,
+ *                    along the tunnel axis) where every dot starts,
+ *                    safely clipped during the "waiting in the tunnel"
+ *                    portion of the timeline. */
+const TUNNEL_X = 944;
+const TUNNEL_Y = 520;
+const TUNNEL_ROT = 30;
+const MOUTH_X = 936;
+const MOUTH_Y = 516;
+const ENTRY_X = 1085;
+const ENTRY_Y = 604;
 
 /** Higman waypoints — five intermediate stops between off-screen entry
  * (right of the pitch) and his final spot at the bottom of the
@@ -709,45 +796,48 @@ const HIGMAN_W3_Y = OPP_TOP_Y;
 const HIGMAN_W4_X = HIGMAN_LANE_X;
 const HIGMAN_W4_Y = HIGMAN_LANE_TOP_Y;
 
-/** Streaker — "Motter's Head". Enters from off-screen bottom-right at a
- * diagonal, ends up at the corridor halfway between the blue lines
- * (i.e. the centre of the guard of honour). */
-const STREAKER_ENTRY_X = 1100;
-const STREAKER_ENTRY_Y = 650;
+/** Streaker — "Mick Nottershead". Sprints ON from OFF-SCREEN LEFT along
+ * the corridor and ends up at the corridor centre (halfway between the
+ * blue lines, i.e. the centre of the guard of honour). Entry y matches
+ * the final y so he runs straight in along the corridor from the left
+ * edge rather than on a diagonal. */
+const STREAKER_ENTRY_X = -120;
+const STREAKER_ENTRY_Y = CORRIDOR_Y;
 const STREAKER_FINAL_X = 512;
 const STREAKER_FINAL_Y = CORRIDOR_Y;
 
-/** Exit point — both the streaker and the two security guards are
- * dragged off-screen to the right together. */
-const EXIT_X = 1300;
-const EXIT_Y = CORRIDOR_Y;
+/** Exit point — the streaker and both security guards are hauled off
+ * together toward the BOTTOM-RIGHT corner tunnel (the way the guards
+ * came in), so the chase resolves back into the tunnel mouth. Sits
+ * off-screen past the corner so the bundle is fully clipped by the end. */
+const EXIT_X = 1120;
+const EXIT_Y = 640;
 
-/** Security guards — chase the streaker. Both enter from the SAME
- * off-screen direction the streaker came in from (bottom-right of the
- * pitch), so they read as pursuing him from the start rather than
- * appearing from elsewhere to ambush.
+/** Security guards — EMERGE FROM THE CORNER TUNNEL (bottom-right) to
+ * chase the streaker. Their entry origin sits in the tunnel mouth so,
+ * with the fade-in, they read as spilling out of the tunnel; one starts
+ * a touch higher in the mouth and one a touch lower so the pair fans out
+ * rather than overlapping. They cut up-left to the streaker at corridor
+ * centre, catch him shoulder-to-shoulder (22px flanking), then haul the
+ * whole bundle back off toward the tunnel.
  *
- * Entry y-values straddle the streaker's diagonal so the two dots
- * look like a pair of pursuers — one cutting in slightly higher, one
- * slightly lower — rather than a single column behind him. Entry x is
- * pulled in from off-screen far-right (1200 → 1100) so they enter
- * close enough to actually look like pursuit rather than a far-off
- * convergence.
- *
- * Grab positions sit tight to the streaker (22px on each side, was
- * 30px) so once they catch up they're shoulder-to-shoulder with him
- * for the chase off-screen. */
-const SECURITY_ENTRY_X = 1100;
-const SECURITY1_ENTRY_Y = 600;
-const SECURITY2_ENTRY_Y = 700;
+ * Grab positions sit tight to the streaker (22px on each side) so once
+ * they catch up they're shoulder-to-shoulder with him for the drag-off. */
+const SECURITY_ENTRY_X = 985;
+const SECURITY1_ENTRY_Y = 500;
+const SECURITY2_ENTRY_Y = 545;
 const SECURITY1_GRAB_X = STREAKER_FINAL_X - 22;
 const SECURITY2_GRAB_X = STREAKER_FINAL_X + 22;
 const SECURITY_GRAB_Y = CORRIDOR_Y;
 
-/** Centrepiece (crown + trophy outline) — above the corridor in the
- * upper third so the procession doesn't occlude it. */
+/** Centrepiece (crown + trophy outline) — sits INSIDE the centre circle
+ * (drawn at cx=512, cy=288, r=64) at the exact pitch centre, reading as
+ * a faint ceremonial backdrop that fills the circle. It's intentionally
+ * faint and rendered behind the action: corridor traffic (CORRIDOR_Y
+ * ≈ 290) and the conga pass over it, which is fine since it's a low-
+ * opacity emblem, not a foreground element. */
 const CENTRE_X = 512;
-const CENTRE_Y = 110;
+const CENTRE_Y = 288;
 
 /** Pull the FPL `web_name` (or `displayName` fallback) for the label. */
 function surnameOf(row) {

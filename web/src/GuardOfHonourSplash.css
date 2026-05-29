@@ -255,24 +255,26 @@
  *   ACT 2 — Champions parade + Higman inspects (≈10–38s)
  *     10.0s+     Higman emerges FIRST (1s before the conga) and runs
  *                his zigzag weave through the blue guard
- *     11.0–22.4s 11 red starters walk through corridor → vertical
- *                line on the left touchline (520ms stagger × 5.2s,
- *                pulled in from 13s start)
+ *     11.0–25.5s 11 red starters emerge from the tunnel, turn up into
+ *                the corridor, and PARADE the full width of the pitch
+ *                down the guard before peeling into the vertical line
+ *                on the left touchline (550ms stagger × 9s — slowed
+ *                from 5.2s for a deliberate procession)
  *     ~28.2–38s  Higman walks SLOWLY DOWN his own inspection lane
  *                (offset right of the column so he never overlaps a
  *                teammate's dot or label) past every starter
  *     10s+       Higman perpetual bob + ring pulse (active throughout)
  *
- *   ACT 3 — Pitch invader chased off (≈36–50s)
- *     36.0s+     Streaker enters bottom-right (Higman is ~93%
- *                through his walk-down at this point, near the row
- *                of the last teammate — the user-requested timing)
- *     36.0s+     Streaker bouncing run + flag wave (perpetual until exit)
- *     39.0–50s   Security enters from the SAME bottom-right direction
- *                the streaker came in — pursues him, catches up
- *                shoulder-to-shoulder (22px flanking, was 30), and
- *                chases the whole bundle off the right edge of the
- *                pitch in sync with the streaker's drag-off */
+ *   ACT 3 — Pitch invader chased off (≈28–38s)
+ *     28.0s+     Streaker sprints ON from OFF-SCREEN LEFT just as
+ *                Higman BEGINS his walk-down, so the gag overlaps the
+ *                inspection instead of only firing at the very end
+ *     28.0s+     Streaker bouncing run + flag wave (perpetual until exit)
+ *     31.0–38s   Security EMERGES FROM THE CORNER TUNNEL — converges on
+ *                the streaker, catches up shoulder-to-shoulder (22px
+ *                flanking), and hauls the whole bundle back off toward
+ *                the tunnel by t=38s, the same moment Higman reaches
+ *                HIGMAN_FINAL */
 /* ------------------------------------------------------------------ */
 
 /* ACT 1 — opening atmospherics ------------------------------------- */
@@ -304,7 +306,11 @@
     transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
     opacity: 0;
   }
-  10% { opacity: 1; }
+  8% { opacity: 1; }
+  22% {
+    transform: translate(var(--mouth-dx, 0), var(--mouth-dy, 0));
+    opacity: 1;
+  }
   100% {
     transform: translate(0, 0);
     opacity: 1;
@@ -324,22 +330,37 @@
   50%      { opacity: 1; }
 }
 
-/* ACT 2 — red starters walk through the corridor, then turn up/down to
- * their slot in the vertical line on the left. Multi-keyframe path:
- *   0%  off-screen-right at corridor y  → (enter-dx, enter-dy)
- *   60% at left touchline still on corridor → (0, enter-dy)
- *   100% at final vertical-line slot     → (0, 0)
- * The 60% waypoint makes the dot walk LEFT along the corridor first,
- * then turn up or down to its formation slot — exactly mirroring the
- * "march through, then queue up" visual the choreography calls for. */
+/* ACT 2 — red starters emerge from the corner tunnel, turn UP into the
+ * corridor at its right end, then PARADE the full width of the pitch
+ * down the corridor (between the two blue rows) before peeling into the
+ * vertical line on the left touchline. Multi-keyframe path:
+ *   0%   off-screen in the tunnel          → (enter-dx, enter-dy)
+ *   14%  at the tunnel mouth (single-file) → (mouth-dx, mouth-dy)
+ *   28%  turned up into the corridor, right end → (corr-dx, corr-dy)
+ *   78%  walked the FULL width to the left end  → (corrL-dx, corrL-dy)
+ *   100% peeled up/down into the vertical-line slot → (0, 0)
+ * The 28%→78% leg is the long, deliberate parade through the guard —
+ * half the animation — so the champions process the length of the
+ * pitch rather than cutting straight to the touchline. */
 
 @keyframes goh-red-walk {
   0% {
     transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
     opacity: 0;
   }
-  8%   { opacity: 1; }
-  60%  { transform: translate(0, var(--enter-dy, 0)); }
+  6%   { opacity: 1; }
+  14%  {
+    transform: translate(var(--mouth-dx, 0), var(--mouth-dy, 0));
+    opacity: 1;
+  }
+  28%  {
+    transform: translate(var(--corr-dx, 0), var(--corr-dy, 0));
+    opacity: 1;
+  }
+  78%  {
+    transform: translate(var(--corrL-dx, 0), var(--corrL-dy, 0));
+    opacity: 1;
+  }
   100% {
     transform: translate(0, 0);
     opacity: 1;
@@ -347,19 +368,26 @@
 }
 
 /* Higman weave — Higman emerges FIRST onto the pitch (right after the
- * blue guard settles) and zigzags between the two blue rows before
- * stepping into his own inspection lane and walking SLOWLY DOWN it
- * past every teammate. Each waypoint is consumed as a translate from
- * his final SVG position (bottom of the lane), the same convention
- * every other dot uses.
+ * blue guard settles). He now mirrors the red conga's exit route — out
+ * of the tunnel, turn UP to the RIGHT of Roefs into the corridor — and
+ * ONLY THEN zigzags between the two blue rows before stepping into his
+ * own inspection lane and walking SLOWLY DOWN it past every teammate.
+ * Each waypoint is consumed as a translate from his final SVG position
+ * (bottom of the lane), the same convention every other dot uses.
  *
- *   0%   off-screen right at corridor y  (--enter-dx, --enter-dy)
+ *   0%   off-screen in the corner tunnel (--enter-dx, --enter-dy)
  *   3%   appears (opacity 1)
- *   18%  W1 top row near right end       (--w1-dx, --w1-dy)
- *   35%  W2 bottom row near centre       (--w2-dx, --w2-dy)
+ *   8%   tunnel mouth at the corner      (--mouth-dx, --mouth-dy)
+ *   14%  corridor entry, RIGHT of Roefs  (--corr-dx, --corr-dy)
+ *   24%  W1 top row near right end       (--w1-dx, --w1-dy)
+ *   38%  W2 bottom row near centre       (--w2-dx, --w2-dy)
  *   52%  W3 top row near left            (--w3-dx, --w3-dy)
  *   65%  W4 TOP of inspection lane       (--w4-dx, --w4-dy)
  *   100% BOTTOM of inspection lane       translate(0, 0)
+ *
+ * The 0%→14% intro (tunnel → mouth → corridor entry to the right of
+ * Roefs) matches the conga's `goh-red-walk` emergence, so Higman and the
+ * champions leave the tunnel along the same path and clear the Roefs dot.
  *
  * The 65%→100% phase is the long, slow walk down the line — it's the
  * single longest leg of the keyframe (35% of the run versus ~15% per
@@ -382,11 +410,19 @@
     transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
     opacity: 1;
   }
-  18% {
+  8% {
+    transform: translate(var(--mouth-dx, 0), var(--mouth-dy, 0));
+    opacity: 1;
+  }
+  14% {
+    transform: translate(var(--corr-dx, 0), var(--corr-dy, 0));
+    opacity: 1;
+  }
+  24% {
     transform: translate(var(--w1-dx, 0), var(--w1-dy, 0));
     opacity: 1;
   }
-  35% {
+  38% {
     transform: translate(var(--w2-dx, 0), var(--w2-dy, 0));
     opacity: 1;
   }
@@ -414,12 +450,13 @@
   50%      { opacity: 0.55; }
 }
 
-/* ACT 3 — streaker cinematic. Enters diagonally from off-screen bottom
- * right, dashes to the corridor centre, holds only briefly (just long
+/* ACT 3 — streaker cinematic. Sprints ON from OFF-SCREEN LEFT along the
+ * corridor, dashes to the corridor centre, holds only briefly (just long
  * enough to look "caught") before security catch up and the whole
- * bundle bolts off-screen right. The hold window has been deliberately
- * shortened from 50–70% to 50–60% of the animation so the chase reads
- * as an actual pursuit rather than a long pause-then-eject.
+ * bundle is hauled off toward the bottom-right tunnel. The hold window
+ * has been deliberately shortened from 50–70% to 50–60% of the animation
+ * so the chase reads as an actual pursuit rather than a long
+ * pause-then-eject.
  *
  * Explicit `opacity: 1` at the entry, on-pitch, and held waypoints so
  * the streaker stays fully visible during the entrance and capture
@@ -434,7 +471,7 @@
   50% { transform: translate(0, 0); opacity: 1; }
   60% { transform: translate(0, 0); opacity: 1; }
   100% {
-    transform: translate(var(--exit-dx, 0), 0);
+    transform: translate(var(--exit-dx, 0), var(--exit-dy, 0));
     opacity: 0;
   }
 }
@@ -459,21 +496,21 @@
   50%      { transform: rotate(-22deg); }
 }
 
-/* Security — enters from the SAME off-screen direction the streaker
- * came in (bottom-right) so they read as pursuing him from the start,
- * catches up shoulder-to-shoulder (22px flanking), then chases him
- * off-screen right in close formation.
+/* Security — EMERGES FROM THE CORNER TUNNEL (bottom-right), cuts up-left
+ * to the streaker at corridor centre, catches up shoulder-to-shoulder
+ * (22px flanking), then hauls him back off toward the tunnel in close
+ * formation.
  *
  * Phase timeline (the `__security` rule's delay/duration positions
  * these inside the streaker's window):
- *   0–10%   off-screen entry, fade in
- *   10–40%  in-pursuit phase — translate from bottom-right entry
- *           toward the streaker at corridor centre
+ *   0–10%   appears at the tunnel mouth, fades in
+ *   10–40%  in-pursuit phase — translate from the tunnel mouth
+ *           up-left toward the streaker at corridor centre
  *   40–55%  caught up, shoulder-to-shoulder with the streaker at
  *           his brief centre hold
- *   55–100% chase off-screen right — fires ~0.65s after the
- *           streaker's 60% drag-off start so the streaker barely
- *           leads the pack out the right edge of the pitch */
+ *   55–100% haul the bundle off toward the bottom-right tunnel —
+ *           fires ~0.65s after the streaker's 60% drag-off start so
+ *           the streaker barely leads the pack back into the tunnel */
 @keyframes goh-security {
   0% {
     transform: translate(var(--enter-dx, 0), var(--enter-dy, 0));
@@ -483,7 +520,7 @@
   40% { transform: translate(0, 0); opacity: 1; }
   55% { transform: translate(0, 0); opacity: 1; }
   100% {
-    transform: translate(var(--exit-dx, 0), 0);
+    transform: translate(var(--exit-dx, 0), var(--exit-dy, 0));
     opacity: 0;
   }
 }
@@ -505,14 +542,17 @@
  *                 time he's on the pitch — he's the overly-animated
  *                 manager dot, bouncing while he weaves and while he
  *                 walks the line)
- *   11   – 22.4s  CONGA (11 red starters) walks the corridor and
- *                 stacks into the vertical line to Higman's LEFT
- *   36   – 50.0s  streaker entry → brief centre hold (starts while
- *                 Higman is near the end of his inspection walk
- *                 (~y=480, last teammate row)) → drag-off right
- *   39   – 50.0s  security entry from same bottom-right direction,
- *                 catches the streaker, chases the whole bundle off
- *                 the right edge in sync with the streaker's drag-off
+ *   11   – 25.5s  CONGA (11 red starters) parades the full width of the
+ *                 corridor (9s walk) and stacks into the vertical line
+ *                 to Higman's LEFT
+ *   28   – 38.0s  streaker sprints in FROM OFF-SCREEN LEFT → brief
+ *                 centre hold (starts as Higman BEGINS his walk-down) →
+ *                 hauled off toward the bottom-right tunnel, fully gone
+ *                 by t=38s
+ *   31   – 38.0s  security EMERGES FROM THE CORNER TUNNEL, catches the
+ *                 streaker, hauls the whole bundle back off toward the
+ *                 tunnel by t=38s — the same moment Higman reaches
+ *                 HIGMAN_FINAL
  */
 
 .goh-splash--playing .goh-splash__pitch {
@@ -553,13 +593,15 @@
     calc(8s + var(--i, 0) * 0.21s) infinite;
 }
 
-/* Conga (11 red starters) walk through the corridor — 520ms stagger
- * × 5.2s walk. First dot starts at t=11s, last one settles at
- * ~22.4s, tightening the dead-air gap between blue arriving and red
- * marching through (was t=13s start). */
+/* Conga (11 red starters) parade through the corridor — 550ms stagger
+ * × 9s walk (lengthened from 5.2s so the full-width traverse reads as a
+ * deliberate parade rather than a dash). First dot starts at t=11s, the
+ * last settles at ~25.5s — still comfortably before the streaker enters
+ * at t=28s. A near-linear ease keeps the corridor walk at a steady
+ * processional pace instead of rushing then braking. */
 .goh-splash--playing .goh-splash__conga-slot {
-  animation: goh-red-walk 5.2s cubic-bezier(0.3, 1, 0.55, 1)
-    calc(11s + var(--i, 0) * 0.52s) both;
+  animation: goh-red-walk 9s cubic-bezier(0.45, 0.05, 0.55, 0.95)
+    calc(11s + var(--i, 0) * 0.55s) both;
 }
 
 /* Higman cinematic — starts at t=10s (1s BEFORE the conga so he's
@@ -589,13 +631,15 @@
   animation: goh-higman-glow-pulse 1.8s ease-in-out 10s infinite;
 }
 
-/* Streaker cinematic — starts t=36s, which is ~93% of the way
- * through Higman's walk-down (he's at ~y=480, the row of the last
- * teammate). Duration shortened from 19s to 14s so the entry-to-
- * chase rhythm is tighter — no long mid-pitch hold, just dash in,
- * brief showboat, security catches up, off he goes. */
+/* Streaker cinematic — starts t=28s, just as Higman BEGINS his
+ * walk-down the inspection lane (the walk-down runs ~28.2–38s), so
+ * the streaker is on the pitch overlapping Higman's walk rather than
+ * only bursting on at the very end. Runs 10s and fully exits at
+ * t=38s — the same moment Higman reaches HIGMAN_FINAL (100% of
+ * goh-higman-weave) — so the whole pitch-invader gag lands and
+ * clears in step with the climax of Higman's inspection. */
 .goh-splash--playing .goh-splash__streaker {
-  animation: goh-streaker 14s cubic-bezier(0.3, 1, 0.55, 1) 36s both;
+  animation: goh-streaker 10s cubic-bezier(0.3, 1, 0.55, 1) 28s both;
 }
 
 /* Streaker's bouncing run + flag wave loop the entire time the
@@ -603,32 +647,32 @@
  * animation delay so the bob/flag-wave start the instant he
  * appears. */
 .goh-splash--playing .goh-splash__streaker-bob {
-  animation: goh-streaker-bob 0.35s ease-in-out 36s infinite;
+  animation: goh-streaker-bob 0.35s ease-in-out 28s infinite;
 }
 
 .goh-splash--playing .goh-splash__streaker-flag--left .goh-splash__streaker-flag-spin {
-  animation: goh-streaker-flag-wave-l 0.4s ease-in-out 36s infinite;
+  animation: goh-streaker-flag-wave-l 0.4s ease-in-out 28s infinite;
   transform-origin: 0 0;
 }
 
 .goh-splash--playing .goh-splash__streaker-flag--right .goh-splash__streaker-flag-spin {
-  animation: goh-streaker-flag-wave-r 0.4s ease-in-out 36s infinite;
+  animation: goh-streaker-flag-wave-r 0.4s ease-in-out 28s infinite;
   transform-origin: 0 0;
 }
 
-/* Security — both guards start t=39s (3s after the streaker, so
- * they're pursuing rather than ambushing) and run 11s, ending at
- * t=50s. Their 55→100% drag-off phase fires ~0.65s after the
- * streaker's 60→100% drag-off, so the streaker just barely leads the
- * pack out — security catches up to the streaker at 40% (t=43.4s),
- * holds shoulder-to-shoulder until 55% (t=45.05s), then chases him
- * off the right edge in tight formation, all three converging on
- * the same off-screen exit point. The --enter-dy custom property is
- * different per guard (one cuts in slightly higher, one slightly
- * lower) so the SAME keyframe produces two distinct pursuit paths
- * from the same bottom-right origin where the streaker came in. */
+/* Security — both guards start t=31s (3s after the streaker, so
+ * they're pursuing rather than ambushing) and run 7s, ending at
+ * t=38s — the same instant the streaker fully exits and Higman
+ * reaches HIGMAN_FINAL. The streaker reaches centre at ~33s; security
+ * catches up at 40% (t=33.8s), holds shoulder-to-shoulder until 55%
+ * (t=34.85s), then chases the whole bundle off the right edge so all
+ * three converge on the same off-screen exit point by t=38s. The
+ * --enter-dy custom property is different per guard (one cuts in
+ * slightly higher, one slightly lower) so the SAME keyframe produces
+ * two distinct pursuit paths from the same bottom-right origin where
+ * the streaker came in. */
 .goh-splash--playing .goh-splash__security {
-  animation: goh-security 11s cubic-bezier(0.3, 1, 0.55, 1) 39s both;
+  animation: goh-security 7s cubic-bezier(0.3, 1, 0.55, 1) 31s both;
 }
 
 /* Reduced-motion fallback. Force every animated descendant of the
