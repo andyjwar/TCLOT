@@ -23,6 +23,7 @@ import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { GuardOfHonourSplash } from './GuardOfHonourSplash.jsx';
+import { EndOfSeasonSplash } from './EndOfSeasonSplash.jsx';
 import {
   REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
   REIGNING_CHAMPION_TEAM_NAME,
@@ -1243,6 +1244,13 @@ export function LiveScores({
   projectionsOnly = false,
   /** Mobile app shell: hide tile h2; GW toolbar sticks below section sub-pills. */
   compactMobileChrome = false,
+  /**
+   * Brand-header live status (cf. `deriveBrandHeaderStatus`) threaded down from
+   * App.jsx. Only consumed by the End-of-Season splash trigger — the auto-play
+   * condition `liveStatus.status === 'idle' && nextGw == null` matches the
+   * "Season complete" branch already surfaced by the brand-header status strip.
+   */
+  liveStatus = null,
 }) {
   const { error, fixturesDegradedNotice, events, eventSnapshot, squads, contributionLiveContext, lastUpdated } =
     useLiveScores({
@@ -1402,6 +1410,31 @@ export function LiveScores({
     squadByLeagueEntry,
     teams,
   ]);
+
+  /**
+   * End-of-Season splash — three-act cinematic that auto-plays on the live
+   * scores page once the FPL season is complete, mirroring the GoH bundle
+   * directly above. Production trigger reuses the brand-header `liveStatus`
+   * signal: `status === 'idle' && nextGw == null` is the "Season complete"
+   * condition already surfaced in the header strip (cf. App.jsx
+   * `BrandHeaderStatusBody`'s idle branch). A `?eosSplash=1` URL flag forces
+   * the splash so it can be previewed mid-season — same pattern as the GoH's
+   * `?gohSplash=1`. Dismiss state is local to this component instance and
+   * resets on page reload.
+   */
+  const eosForceFlag = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    try {
+      return new URLSearchParams(window.location.search).get('eosSplash') === '1';
+    } catch {
+      return false;
+    }
+  }, []);
+  const [eosDismissed, setEosDismissed] = useState(false);
+  const showEosSplash =
+    !eosDismissed &&
+    (eosForceFlag ||
+      (liveStatus?.status === 'idle' && liveStatus?.nextGw == null));
 
   /** Opponent’s live GW total for this GW (for projected Faced / GD / H2H pts). */
   const oppLiveGwByLeagueEntry = useMemo(() => {
@@ -1901,6 +1934,9 @@ export function LiveScores({
           opponentManagerSurname={championFixtureBundle.opponentManagerSurname}
           onDismiss={() => setGohDismissed(true)}
         />
+      ) : null}
+      {showEosSplash ? (
+        <EndOfSeasonSplash onDismiss={() => setEosDismissed(true)} />
       ) : null}
       {useFixtureLayout ? (
         <section

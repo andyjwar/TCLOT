@@ -22,6 +22,15 @@ export const REIGNING_CHAMPION_TEAM_NAME = 'Crouch End Oashisu';
 export const REIGNING_CHAMPION_SEASON_LABEL = '2025/26 CHAMPION';
 
 /**
+ * Manager surname for the league "wooden spoon" recipient — the manager whose
+ * end-of-season punishment is to assemble a jigsaw puzzle in a tiny enclosed
+ * space (the long-running league forfeit). Used as the standout label on the
+ * bathroom puzzle scene of the End-of-Season splash, the same way
+ * `REIGNING_CHAMPION_MANAGER_SURNAME` labels Higman on the Guard of Honour.
+ */
+export const WOODEN_SPOON_MANAGER_SURNAME = 'Tery';
+
+/**
  * Pull the surname (last whitespace-separated token) out of a manager's full
  * display name. Falls back to the full name when there's only one token (no
  * surname). Returns null for empty / nullish input so callers can branch.
