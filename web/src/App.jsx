@@ -8,7 +8,7 @@ import {
   useRef,
   useSyncExternalStore,
 } from 'react'
-import { gameWeekSelectLabel } from './gwLabel.js'
+import { gameWeekSelectLabel, gameWeekShortLabel } from './gwLabel.js'
 import { NavIcon } from './NavIcon.jsx'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
@@ -251,7 +251,6 @@ import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
-import { PlayerKit } from './PlayerKit.jsx'
 import { LiveScores } from './LiveScores'
 import { FplLiveGwTickerBar } from './FplLiveGwTickerBar'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
@@ -302,16 +301,8 @@ import { PlayersWorkbench } from './PlayersWorkbench.jsx'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
 import { firstWord } from './teamNameUtils.js'
-import { useMobileNarrowViewport } from './usePortraitMobile.js'
+import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import './App.css'
-
-/** Last whitespace-delimited segment (e.g. "Toronto Oizo" → "Oizo"). Single-word names unchanged. */
-function teamNameLastWord(name) {
-  if (typeof name !== 'string') return ''
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length <= 1) return parts[0] ?? ''
-  return parts[parts.length - 1]
-}
 
 /** Complete / future GW tiles: split so mobile can show first token only (narrow under 560px). */
 function teamNameFirstRest(name) {
@@ -342,25 +333,6 @@ function GwFixtureTightTeamName({ name }) {
       <span className="gw-fixture-name-text__rest">{rest}</span>
     </span>
   )
-}
-
-/** Matches `.trade-card` portrait rules: narrow view + portrait orientation. */
-function usePortraitTradeTeamAbbrev() {
-  const subscribe = useCallback((onChange) => {
-    if (typeof window === 'undefined') return () => {}
-    const mq = window.matchMedia(
-      '(max-width: 1080px) and (orientation: portrait)',
-    )
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-  const getSnapshot = useCallback(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia(
-      '(max-width: 1080px) and (orientation: portrait)',
-    ).matches
-  }, [])
-  return useSyncExternalStore(subscribe, getSnapshot, () => false)
 }
 
 /**
@@ -1784,9 +1756,6 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
    * primary scoreboard for the tab; the cumulative ("Live") career table
    * is a deeper drill-down users opt into. */
   const [view, setView] = useState('algorithm')
-  /* Touch/click toggle for the Algorithm info tooltip — hover + :focus-within
-   * cover pointer/keyboard; this `is-open` class handles tap on touch devices. */
-  const [infoOpen, setInfoOpen] = useState(false)
   const liveRows = useMemo(
     () => computeLiveHallManagerCareerRows(tableRows),
     [tableRows],
@@ -1795,14 +1764,6 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
     () => computeHallAlgorithmRows(tableRows),
     [tableRows],
   )
-
-  /* Collapse the touch tooltip whenever the view switches away from Algorithm. */
-  useEffect(() => {
-    if (view !== 'algorithm') setInfoOpen(false)
-  }, [view])
-
-  const algoInfoTitle =
-    'Algorithm total is calculated by:\n1 point for 1st place\n2 points for 2nd place\n3 points for 3rd place\nEtc...'
 
   return (
     <section
@@ -1842,27 +1803,6 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
         >
           {view === 'live' ? 'Live Table: All Time' : 'Algorithm Table'}
         </h2>
-        {view === 'algorithm' ? (
-          <span className={'cofc-info' + (infoOpen ? ' is-open' : '')}>
-            <button
-              type="button"
-              className="cofc-info__btn"
-              aria-label="How the algorithm total is calculated"
-              aria-expanded={infoOpen}
-              title={algoInfoTitle}
-              onClick={() => setInfoOpen((open) => !open)}
-            >
-              <span aria-hidden="true">i</span>
-            </button>
-            <span className="cofc-info__bubble" role="tooltip">
-              Algorithm total is calculated by:
-              <br />1 point for 1st place
-              <br />2 points for 2nd place
-              <br />3 points for 3rd place
-              <br />Etc...
-            </span>
-          </span>
-        ) : null}
       </div>
       {view === 'live' ? (
         <CofcLiveTable rows={liveRows} fullNameMap={fullNameMap} />
@@ -1949,162 +1889,257 @@ function FormCircles({ form }) {
   )
 }
 
-/** One player row inside a trade tile (offered or received leg). */
-function TradePlayerLine({ leg }) {
-  if (!leg) return null
-  const teamShort = leg.gained.teamShort
+/* FPL element_type → position label (GK shows as "GKP"). */
+const TRADE_POS_BY_TYPE = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
+
+/** Club crest badge (not a shirt) for a trade leg, with text fallback. */
+function TradeClubBadge({ player }) {
+  const [err, setErr] = useState(false)
+  const url = player?.badgeUrl
+  if (!url || err) {
+    return (
+      <span className="trade2__badge trade2__badge--text">
+        {(player?.teamShort ?? '?').slice(0, 3)}
+      </span>
+    )
+  }
   return (
-    <div className="trade-player-line">
-      <PlayerKit
-        shirtUrl={leg.gained.shirtUrl}
-        badgeUrl={leg.gained.badgeUrl}
-        teamShort={teamShort}
-      />
-      <div className="trade-player-line__text">
-        <ClickablePlayerName
-          element={leg.gained.elementId}
-          web_name={leg.gained.web_name}
-          teamShort={teamShort}
-          className="trade-player-line__name"
-        >
-          <span className="trade-player-line__name-text">{leg.gained.web_name}</span>
-          {teamShort ? (
-            <span className="trade-player-line__team-abbr muted"> ({teamShort})</span>
-          ) : null}
-        </ClickablePlayerName>
-        {leg.gwRangeLabel != null ? (
-          <span className="trade-player-line__pts muted tabular">
-            GW {leg.gwRangeLabel}
-            {leg.stillOnTeam ? ' · on squad' : ''}
-          </span>
-        ) : null}
+    <span className="trade2__badge">
+      <img src={url} alt="" loading="lazy" decoding="async" onError={() => setErr(true)} />
+    </span>
+  )
+}
+
+/** Plain-text position label (muted, no coloured pill). */
+function TradePosText({ typeId }) {
+  const pos = TRADE_POS_BY_TYPE[typeId]
+  if (!pos) return null
+  return <span className="trade2__pos">{pos}</span>
+}
+
+/** Tenure: weeks the acquired player stayed + kept/dropped state (coloured dot, muted text). */
+function TradeTenure({ leg }) {
+  const weeks = Math.max((leg.endGw ?? 0) - (leg.startGw ?? 0) + 1, 1)
+  const kept = leg.stillOnTeam
+  return (
+    <span className="trade2__tenure">
+      <span className="trade2__tenure-weeks">
+        <span className="tabular">{weeks}</span> GW{weeks === 1 ? '' : 's'}
+      </span>
+      <span className={'trade2__tenure-state' + (kept ? ' is-kept' : ' is-gone')}>
+        <span className="trade2__tenure-dot" aria-hidden />
+        {kept ? 'on squad' : <>dropped GW <span className="tabular">{leg.endGw}</span></>}
+      </span>
+    </span>
+  )
+}
+
+function tradeSumLegs(pairs, side) {
+  return (pairs || []).reduce((s, p) => s + (Number(p?.[side]?.totalPoints) || 0), 0)
+}
+
+/** One side (team column) of a head-to-head trade card. */
+function TradeSplitSide({ trade, side, teamLogoMap, kitIndexByEntry }) {
+  const isOff = side === 'offered'
+  const name = isOff ? trade.offeredTeamName : trade.receivedTeamName
+  const entry = isOff
+    ? trade.offeredLeagueEntry ?? trade.offeredFplEntry
+    : trade.receivedLeagueEntry ?? trade.receivedFplEntry
+  const total = tradeSumLegs(trade.pairs, isOff ? 'offeredLeg' : 'receivedLeg')
+  const legs = (trade.pairs || [])
+    .map((p) => (isOff ? p.offeredLeg : p.receivedLeg))
+    .filter(Boolean)
+  return (
+    <div className="trade2__side">
+      <div className="trade2__team">
+        <TeamAvatar
+          entryId={entry}
+          name={name}
+          size="sm"
+          logoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+        <span className="trade2__team-name" title={name}>
+          {name}
+        </span>
+        <span className="trade2__total tabular">{total}</span>
+      </div>
+      <div className="trade2__players">
+        {legs.map((leg, i) => (
+          <div className="trade2__pl" key={i}>
+            <TradeClubBadge player={leg.gained} />
+            <div className="trade2__pl-id">
+              <span className="trade2__pl-name-line">
+                <ClickablePlayerName
+                  element={leg.gained.elementId}
+                  web_name={leg.gained.web_name}
+                  teamShort={leg.gained.teamShort}
+                  className="trade2__pl-name"
+                >
+                  <span className="trade2__pl-name-text">{leg.gained.web_name}</span>
+                </ClickablePlayerName>
+                <TradePosText typeId={leg.gained.elementTypeId} />
+              </span>
+              <TradeTenure leg={leg} />
+            </div>
+            <span className="trade2__pl-pts tabular">{leg.totalPoints ?? 0}</span>
+          </div>
+        ))}
       </div>
     </div>
   )
 }
 
-/** Single processed-trade card (GW, date, managers, pairs + tenure points). */
-function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
-  const portraitAbbrev = usePortraitTradeTeamAbbrev()
-  const pairs = trade.pairs || []
-  const offeredPtsTotal = pairs.reduce(
-    (s, p) => s + (Number(p.offeredLeg?.totalPoints) || 0),
-    0,
-  )
-  const receivedPtsTotal = pairs.reduce(
-    (s, p) => s + (Number(p.receivedLeg?.totalPoints) || 0),
-    0,
-  )
-  const multiPair = pairs.length > 1
+/** Coloured result bar — purple winner segment on a grey track. */
+function TradeVerdictBar({ trade }) {
+  const offeredPts = tradeSumLegs(trade.pairs, 'offeredLeg')
+  const receivedPts = tradeSumLegs(trade.pairs, 'receivedLeg')
+  const diff = offeredPts - receivedPts
+  const total = Math.max(offeredPts + receivedPts, 1)
+  const offShare = (offeredPts / total) * 100
+  const offWin = diff > 0
+  const recWin = diff < 0
   return (
-    <article className="trade-card">
-      <div className="trade-card__head">
+    <div className="trade2__bar">
+      <div
+        className="trade2__bar-track"
+        role="img"
+        aria-label={`${trade.offeredTeamName} ${offeredPts} — ${receivedPts} ${trade.receivedTeamName}`}
+      >
+        <span
+          className={'trade2__bar-seg' + (offWin ? ' is-win' : '')}
+          style={{ width: `${offShare}%` }}
+        />
+        <span
+          className={'trade2__bar-seg' + (recWin ? ' is-win' : '')}
+          style={{ width: `${100 - offShare}%` }}
+        />
+      </div>
+      <div className="trade2__bar-legend">
+        <span className={'trade2__bar-pts tabular' + (offWin ? ' is-win' : '')}>{offeredPts}</span>
+        <span className={'trade2__bar-pts tabular' + (recWin ? ' is-win' : '')}>{receivedPts}</span>
+      </div>
+    </div>
+  )
+}
+
+/** Single processed-trade card — head-to-head split (GW chip, two team columns, result bar). */
+function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
+  return (
+    <article className="trade2">
+      <div className="trade2__head">
         {trade.event != null ? (
-          <span className="league-pill league-pill--sm">GW {trade.event}</span>
-        ) : null}
+          <span className="trade2__gw">GW {trade.event}</span>
+        ) : (
+          <span />
+        )}
         {trade.responseTime ? (
-          <time className="muted trade-card__date" dateTime={trade.responseTime}>
+          <time className="trade2__date" dateTime={trade.responseTime}>
             {new Date(trade.responseTime).toLocaleDateString(undefined, {
-              dateStyle: 'medium',
+              month: 'short',
+              day: 'numeric',
             })}
           </time>
         ) : null}
       </div>
-      <div
-        className="trade-card__teams-row"
-        aria-label="Teams and cumulative tenure points from this trade"
-      >
-        <div className="trade-card__mgr trade-card__mgr--left">
-          <TeamAvatar
-            entryId={trade.offeredLeagueEntry ?? trade.offeredFplEntry}
-            name={trade.offeredTeamName}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-          <span
-            className="trade-card__mgr-name"
-            title={trade.offeredTeamName}
-            aria-label={trade.offeredTeamName}
-          >
-            {portraitAbbrev
-              ? teamNameLastWord(trade.offeredTeamName)
-              : trade.offeredTeamName}
-          </span>
-        </div>
-        <div
-          className="trade-card__pts-summary trade-card__pts-summary--center"
-          aria-label="Total tenure points for players each side acquired in this trade"
-        >
-          <span className="trade-card__pts-summary-side tabular">
-            <strong>{offeredPtsTotal}</strong>
-            <span className="muted trade-card__pts-summary-label"> pts</span>
-          </span>
-          <span className="trade-card__vs trade-card__vs--summary" aria-hidden>
-            ·
-          </span>
-          <span className="trade-card__pts-summary-side tabular">
-            <strong>{receivedPtsTotal}</strong>
-            <span className="muted trade-card__pts-summary-label"> pts</span>
-          </span>
-        </div>
-        <div className="trade-card__mgr trade-card__mgr--right">
-          <TeamAvatar
-            entryId={trade.receivedLeagueEntry ?? trade.receivedFplEntry}
-            name={trade.receivedTeamName}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-          <span
-            className="trade-card__mgr-name"
-            title={trade.receivedTeamName}
-            aria-label={trade.receivedTeamName}
-          >
-            {portraitAbbrev
-              ? teamNameLastWord(trade.receivedTeamName)
-              : trade.receivedTeamName}
-          </span>
-        </div>
+      <div className="trade2__split">
+        <TradeSplitSide
+          trade={trade}
+          side="offered"
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+        <div className="trade2__rule" aria-hidden />
+        <TradeSplitSide
+          trade={trade}
+          side="received"
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
       </div>
-      <div className="trade-pairs-grid">
-        {multiPair ? (
-          <div className="trade-pair trade-pair--bundled">
-            <div className="trade-player-tile trade-player-tile--group">
-              {pairs.map((pair, pidx) => (
-                <TradePlayerLine key={`o-${pidx}`} leg={pair.offeredLeg} />
-              ))}
-            </div>
-            <span className="trade-pair__swap" aria-hidden="true" title="Swap">
-              ↔
-            </span>
-            <div className="trade-player-tile trade-player-tile--group">
-              {pairs.map((pair, pidx) => (
-                <TradePlayerLine key={`r-${pidx}`} leg={pair.receivedLeg} />
-              ))}
-            </div>
-          </div>
-        ) : (
-          pairs.map((pair, pidx) => (
-            <div key={pidx} className="trade-pair">
-              <div className="trade-player-tile">
-                <TradePlayerLine leg={pair.offeredLeg} />
-              </div>
-              <span
-                className="trade-pair__swap"
-                aria-hidden="true"
-                title="Swap"
-              >
-                ↔
-              </span>
-              <div className="trade-player-tile">
-                <TradePlayerLine leg={pair.receivedLeg} />
-              </div>
-            </div>
-          ))
-        )}
-      </div>
+      <TradeVerdictBar trade={trade} />
     </article>
+  )
+}
+
+/** Aggregate per-team trade outcomes: net = points won in minus points given away. */
+function buildTradeLedger(trades) {
+  const byTeam = new Map()
+  const touch = (key, name, entryId) => {
+    if (!byTeam.has(key)) {
+      byTeam.set(key, { key, name, entryId, in: 0, out: 0, count: 0 })
+    }
+    return byTeam.get(key)
+  }
+  for (const t of trades) {
+    const offKey = t.offeredLeagueEntry ?? t.offeredFplEntry
+    const recKey = t.receivedLeagueEntry ?? t.receivedFplEntry
+    const off = touch(offKey, t.offeredTeamName, offKey)
+    const rec = touch(recKey, t.receivedTeamName, recKey)
+    const offPts = tradeSumLegs(t.pairs, 'offeredLeg')
+    const recPts = tradeSumLegs(t.pairs, 'receivedLeg')
+    off.in += offPts
+    off.out += recPts
+    rec.in += recPts
+    rec.out += offPts
+    off.count += 1
+    rec.count += 1
+  }
+  return [...byTeam.values()]
+    .map((r) => ({ ...r, net: r.in - r.out }))
+    .sort((a, b) => b.net - a.net)
+}
+
+/** Per-team net trade ledger — diverging bars sorted by net points. */
+function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
+  const rows = useMemo(() => buildTradeLedger(trades), [trades])
+  if (!rows.length) return null
+  const maxAbs = Math.max(1, ...rows.map((r) => Math.abs(r.net)))
+  return (
+    <section className="tile tile--compact" aria-labelledby="trade-ledger-heading">
+      <h2 id="trade-ledger-heading" className="tile-title tile-title--sm">
+        Trade ledger
+      </h2>
+      <p className="muted muted--tight trade2-ledger__intro">
+        Net points won at the trade table — points gained from incoming players minus the points
+        the players they gave up scored elsewhere.
+      </p>
+      <div className="trade2-ledger">
+        {rows.map((r) => {
+          const pos = r.net >= 0
+          const w = (Math.abs(r.net) / maxAbs) * 100
+          return (
+            <div key={r.key} className="trade2-ledger__row">
+              <div className="trade2-ledger__team">
+                <TeamAvatar
+                  entryId={r.entryId}
+                  name={r.name}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span className="trade2-ledger__name" title={r.name}>
+                  {firstWord(r.name)}
+                </span>
+                <span className="trade2-ledger__count">
+                  {r.count} trade{r.count === 1 ? '' : 's'}
+                </span>
+              </div>
+              <div className="trade2-ledger__bar">
+                <span
+                  className={'trade2-ledger__fill' + (pos ? ' is-pos' : ' is-neg')}
+                  style={{ width: `${Math.max(w, 4)}%` }}
+                />
+              </div>
+              <div className={'trade2-ledger__net tabular' + (pos ? ' is-pos' : ' is-neg')}>
+                {pos ? '+' : '−'}
+                {Math.abs(r.net)}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </section>
   )
 }
 
@@ -2537,6 +2572,10 @@ function App() {
       setLiveGw(null)
     }
   }, [mergedFplCalendarCurrent, liveGw])
+
+  /** Mobile (tabbed single-column) layout for the waivers panel — drives the
+   *  compact "GW38" GW pill so it fits on the same row as the view toggle. */
+  const waiversMobileLayout = useMobileLayout()
 
   /** Waiver GW picker: drops-gw-live GWs plus draft bootstrap current/next (shows GW35 before redeploy). */
   const waiverGwPickerOptions = useMemo(() => {
@@ -3402,58 +3441,55 @@ function App() {
           ) : null}
 
           {dashboardView === 'teamSelection' && (
-            <section
-              className="tile tile--compact tile--team-selection"
-              aria-label="Moves"
-            >
-              <div className="section-chrome section-chrome--sticky">
-              <div
-                className="subnav"
-                role="tablist"
-                aria-label="Moves views"
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-team-selection-waivers"
-                  aria-selected={teamSelectionTab === 'waivers'}
-                  className={
-                    'subnav__tab' +
-                    (teamSelectionTab === 'waivers' ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => setTeamSelectionTab('waivers')}
+            <>
+              <div className="subview-subnav-strip">
+                <div
+                  className="subnav subview-subnav-capsule"
+                  role="tablist"
+                  aria-label="Moves views"
                 >
-                  Waivers
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-team-selection-trades"
-                  aria-selected={teamSelectionTab === 'trades'}
-                  className={
-                    'subnav__tab' +
-                    (teamSelectionTab === 'trades' ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => setTeamSelectionTab('trades')}
-                >
-                  Trades
-                </button>
-                <button
-                  type="button"
-                  role="tab"
-                  id="tab-team-selection-draft"
-                  aria-selected={teamSelectionTab === 'draft'}
-                  className={
-                    'subnav__tab' +
-                    (teamSelectionTab === 'draft' ? ' subnav__tab--active' : '')
-                  }
-                  onClick={() => setTeamSelectionTab('draft')}
-                >
-                  Draft
-                </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-team-selection-waivers"
+                    aria-selected={teamSelectionTab === 'waivers'}
+                    className={
+                      'subnav__tab' +
+                      (teamSelectionTab === 'waivers' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setTeamSelectionTab('waivers')}
+                  >
+                    Waivers
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-team-selection-trades"
+                    aria-selected={teamSelectionTab === 'trades'}
+                    className={
+                      'subnav__tab' +
+                      (teamSelectionTab === 'trades' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setTeamSelectionTab('trades')}
+                  >
+                    Trades
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-team-selection-draft"
+                    aria-selected={teamSelectionTab === 'draft'}
+                    className={
+                      'subnav__tab' +
+                      (teamSelectionTab === 'draft' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setTeamSelectionTab('draft')}
+                  >
+                    Draft
+                  </button>
+                </div>
               </div>
-              </div>
-              <div className="section-body">
+              <div className="subview-panel">
               {teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
               <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
@@ -3470,7 +3506,7 @@ function App() {
                     gwPill={
                       waiverGwPickerOptions.length > 0 ? (
                         <CompactSelectPill
-                          label="GW"
+                          label={waiversMobileLayout ? undefined : 'GW'}
                           ariaLabel="Waivers game week"
                           align="right"
                           isActive={false}
@@ -3478,7 +3514,9 @@ function App() {
                           onChange={(next) => setWaiverGwView(Number(next))}
                           options={waiverGwPickerOptions.map((gw) => ({
                             value: String(gw),
-                            label: gameWeekSelectLabel(gw),
+                            label: waiversMobileLayout
+                              ? gameWeekShortLabel(gw)
+                              : gameWeekSelectLabel(gw),
                           }))}
                         />
                       ) : null
@@ -3532,20 +3570,6 @@ function App() {
                 />
               </section>
 
-          <section className="tile tile--compact" aria-labelledby="waiver-totals-heading">
-            <div className="tile-head-row tile-head-row--tight">
-              <h2 id="waiver-totals-heading" className="tile-title tile-title--sm">
-                Waiver in / out — team totals
-              </h2>
-            </div>
-            <WaiverTotalsToggle
-              waiverInPointsByTeam={waiverInPointsByTeam}
-              waiverOutPointsByTeam={waiverOutPointsByTeam}
-              teamLogoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          </section>
-
           <section className="tile tile--compact" aria-labelledby="waiver-pickups-heading">
             <div className="tile-head-row tile-head-row--tight">
               <h2 id="waiver-pickups-heading" className="tile-title tile-title--sm">
@@ -3565,6 +3589,20 @@ function App() {
               }
             />
           </section>
+
+          <section className="tile tile--compact" aria-labelledby="waiver-totals-heading">
+            <div className="tile-head-row tile-head-row--tight">
+              <h2 id="waiver-totals-heading" className="tile-title tile-title--sm">
+                Waiver in / out — team totals
+              </h2>
+            </div>
+            <WaiverTotalsToggle
+              waiverInPointsByTeam={waiverInPointsByTeam}
+              waiverOutPointsByTeam={waiverOutPointsByTeam}
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+          </section>
             </div>
               )}
 
@@ -3575,7 +3613,7 @@ function App() {
                   Trades
                 </h2>
                 {tradesPanelRows?.length ? (
-                  <div className="trades-list">
+                  <div className="trades-list trades-list--h2h">
                     {tradesPanelRows.map((trade) => (
                       <TradeCardArticle
                         key={trade.id}
@@ -3593,6 +3631,13 @@ function App() {
                   </p>
                 )}
               </section>
+              {tradesPanelRows?.length ? (
+                <TradeLedger
+                  trades={tradesPanelRows}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              ) : null}
             </div>
               )}
 
@@ -3608,7 +3653,7 @@ function App() {
             </div>
               )}
               </div>
-            </section>
+            </>
           )}
 
           {dashboardView === 'more' ? (

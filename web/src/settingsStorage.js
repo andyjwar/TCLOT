@@ -8,7 +8,7 @@
 export const DEFAULT_TAB_OPTIONS = /** @type {const} */ ([
   { id: 'standings',     label: 'Standings' },
   { id: 'fplLive',       label: 'FPL Live' },
-  { id: 'teamSelection', label: 'Transactions' },
+  { id: 'teamSelection', label: 'Moves' },
   { id: 'players',       label: 'Players' },
   { id: 'hall',          label: 'Hall of Champions' },
 ])

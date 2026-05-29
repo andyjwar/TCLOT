@@ -23,6 +23,7 @@ import { NavIcon } from './NavIcon'
 import './Mockup.css'
 import { MOCKUP_PART2_SECTIONS } from './MockupSurfacesPart2.jsx'
 import './MockupSurfacesPart2.css'
+import { TradeViewsShowcase } from './MockupTradeViews.jsx'
 import {
   HALL_SEASON_FINAL_TABLES,
   hallManagerDisplayKey,
@@ -4181,16 +4182,54 @@ function PlayerRows({ rows = SAMPLE_PLAYERS }) {
 /* Section: draft board                                                 */
 /* ------------------------------------------------------------------ */
 const DRAFT_TEAMS = ['Cornershop', 'Oashisu', 'Oizo', 'York', 'Seoul 7', 'Loaf', 'Jamiroquai', 'Brampton']
+/* Each pick: player·club·pos·pts·status. status ∈ K (kept / on squad),
+ * D:gw (dropped at gw), T:code:gw (traded to team `code` at gw). The
+ * traded code references the 2-letter team chips in MD_TEAMS. */
 const DRAFT_PICKS = [
   // round 1
-  ['Haaland·MCI·FWD','Palmer·CHE·MID','Isak·LIV·FWD','B.Fernandes·MUN·MID','Bowen·WHU·MID','Watkins·AVL·FWD','Saka·ARS·MID','Salah·LIV·MID'],
+  ['Haaland·MCI·FWD·224·K','Palmer·CHE·MID·198·K','Isak·LIV·FWD·176·K','B.Fernandes·MUN·MID·188·K','Bowen·WHU·MID·142·D:28','Watkins·AVL·FWD·165·K','Saka·ARS·MID·171·T:BR:19','Salah·LIV·MID·232·K'],
   // round 2 — snake
-  ['Ekitiké·LIV·FWD','Mbeumo·MUN·MID','Wirtz·LIV·MID','Cunha·MUN·MID','Wood·NFO·FWD','Eze·ARS·MID','Foden·MCI·MID','Marmoush·MCI·FWD'],
+  ['Ekitiké·LIV·FWD·88·D:14','Mbeumo·MUN·MID·151·K','Wirtz·LIV·MID·96·T:OA:17','Cunha·MUN·MID·119·K','Wood·NFO·FWD·134·K','Eze·ARS·MID·127·K','Foden·MCI·MID·110·D:9','Marmoush·MCI·FWD·102·T:YK:11'],
   // round 3
-  ['Mateta·CRY·FWD','Solanke·TOT·FWD','Semenyo·BOU·MID','Gordon·NEW·MID','Wissa·BRE·FWD','Gibbs-White·NFO·MID','Gakpo·LIV·MID','Havertz·ARS·MID'],
+  ['Mateta·CRY·FWD·121·K','Solanke·TOT·FWD·98·D:22','Semenyo·BOU·MID·138·K','Gordon·NEW·MID·116·K','Wissa·BRE·FWD·129·K','Gibbs-White·NFO·MID·94·K','Gakpo·LIV·MID·112·T:S7:20','Havertz·ARS·MID·86·D:16'],
   // round 4 — snake
-  ['Neto·CHE·MID','Mitoma·BHA·MID','Rogers·AVL·MID','Bruno G.·NEW·MID','Delap·CHE·FWD','Gvardiol·MCI·DEF','Welbeck·BHA·FWD','Savinho·MCI·MID'],
+  ['Neto·CHE·MID·78·K','Mitoma·BHA·MID·104·K','Rogers·AVL·MID·122·K','Bruno G.·NEW·MID·99·K','Delap·CHE·FWD·91·D:25','Gvardiol·MCI·DEF·133·K','Welbeck·BHA·FWD·107·K','Savinho·MCI·MID·95·T:LF:13'],
 ]
+
+/** Parse the compact status token into { kind, gw?, to? }. */
+function parseDraftStatus(token) {
+  if (token === 'K') return { kind: 'kept' }
+  if (token.startsWith('D:')) return { kind: 'dropped', gw: Number(token.slice(2)) }
+  const [, to, gw] = token.split(':')
+  return { kind: 'traded', to, gw: Number(gw) }
+}
+
+/** Compact "where are they now" pill for a draft-board cell. */
+function DraftCellStatus({ status }) {
+  if (status.kind === 'kept') {
+    return (
+      <span className="mockup-draft__st mockup-draft__st--kept" title="On squad">
+        <span className="mockup-draft__st-dot" />On squad
+      </span>
+    )
+  }
+  if (status.kind === 'dropped') {
+    return (
+      <span className="mockup-draft__st mockup-draft__st--dropped" title={`Dropped at GW${status.gw}`}>
+        <span className="mockup-draft__st-dot" />Cut · GW{status.gw}
+      </span>
+    )
+  }
+  return (
+    <span
+      className="mockup-draft__st mockup-draft__st--traded"
+      title={`Traded to ${MD_TEAMS[status.to] ?? status.to} at GW${status.gw}`}
+    >
+      <span className="mockup-draft__st-dot" />→ {status.to} · GW{status.gw}
+    </span>
+  )
+}
+
 function DraftBoard() {
   let pickCounter = 0
   return (
@@ -4210,21 +4249,292 @@ function DraftBoard() {
             <div className="mockup-draft__row-num">{i + 1}</div>
             {ordered.map((pick, j) => {
               pickCounter += 1
-              const [name, club, pos] = pick.split('·')
+              const [name, club, pos, pts, statusToken] = pick.split('·')
+              const status = parseDraftStatus(statusToken)
               return (
                 <div className="mockup-draft__pick" key={j}>
                   <span className="mockup-draft__pick-num">{pickCounter}</span>
-                  <ClubCrest club={club} className="mockup-draft__pick-crest" size={24} />
-                  <span style={{ minWidth: 0 }}>
-                    <div className="mockup-draft__pick-name">{name}</div>
-                    <div className="mockup-draft__pick-meta">{pos}</div>
-                  </span>
+                  <div className="mockup-draft__pick-main">
+                    <ClubCrest club={club} className="mockup-draft__pick-crest" size={24} />
+                    <span style={{ minWidth: 0 }}>
+                      <div className="mockup-draft__pick-name">{name}</div>
+                      <div className="mockup-draft__pick-meta">{pos}</div>
+                    </span>
+                  </div>
+                  <div className="mockup-draft__pick-foot">
+                    <DraftCellStatus status={status} />
+                    <span className="mockup-draft__pick-pts" title="Total points">{pts}</span>
+                  </div>
                 </div>
               )
             })}
           </div>
         )
       })}
+    </div>
+  )
+}
+
+/* ================================================================== */
+/* MOBILE DRAFT · exploration                                          */
+/* ------------------------------------------------------------------ */
+/* The desktop "snake order grid" (DraftBoard above) is liked, but the */
+/* 8-column grid can't survive a 390px phone. These variants explore   */
+/* (a) a rich STAT view of the draft — who took whom, kept/dropped/    */
+/* traded, total points — and (b) a PURE GRID view, asking whether a   */
+/* snake grid is even viable on mobile. All mockup-only, scoped to     */
+/* .mockup-mdraft* so nothing collides with production or the desktop  */
+/* board. Sample data only.                                            */
+
+const MD_TEAMS = {
+  CS: 'Cornershop', OA: 'Oashisu', OZ: 'Oizo',  YK: 'York',
+  S7: 'Seoul 7',    LF: 'Loaf',    JQ: 'Jamiroquai', BR: 'Brampton',
+}
+const MD_TEAM_ORDER = ['CS', 'OA', 'OZ', 'YK', 'S7', 'LF', 'JQ', 'BR']
+
+/* Flat picks in overall (snake) order. status.kind ∈ kept|dropped|traded. */
+const MOBILE_DRAFT_PICKS = [
+  // round 1 — slot order CS→BR
+  { ovr: 1,  rnd: 1, team: 'CS', player: 'Haaland',      club: 'MCI', pos: 'FWD', pre: 1,  pts: 224, status: { kind: 'kept' } },
+  { ovr: 2,  rnd: 1, team: 'OA', player: 'Palmer',       club: 'CHE', pos: 'MID', pre: 4,  pts: 154, status: { kind: 'kept' } },
+  { ovr: 3,  rnd: 1, team: 'OZ', player: 'Isak',         club: 'NEW', pos: 'FWD', pre: 3,  pts: 168, status: { kind: 'traded', to: 'S7', gw: 9 } },
+  { ovr: 4,  rnd: 1, team: 'YK', player: 'B.Fernandes',  club: 'MUN', pos: 'MID', pre: 11, pts: 145, status: { kind: 'kept' } },
+  { ovr: 5,  rnd: 1, team: 'S7', player: 'Bowen',        club: 'WHU', pos: 'MID', pre: 18, pts: 132, status: { kind: 'dropped', gw: 21 } },
+  { ovr: 6,  rnd: 1, team: 'LF', player: 'Watkins',      club: 'AVL', pos: 'FWD', pre: 7,  pts: 121, status: { kind: 'kept' } },
+  { ovr: 7,  rnd: 1, team: 'JQ', player: 'Saka',         club: 'ARS', pos: 'MID', pre: 6,  pts: 168, status: { kind: 'kept' } },
+  { ovr: 8,  rnd: 1, team: 'BR', player: 'Salah',        club: 'LIV', pos: 'MID', pre: 2,  pts: 187, status: { kind: 'kept' } },
+  // round 2 — snake, slot order BR→CS
+  { ovr: 9,  rnd: 2, team: 'BR', player: 'Ekitiké',      club: 'LIV', pos: 'FWD', pre: 22, pts: 96,  status: { kind: 'dropped', gw: 14 } },
+  { ovr: 10, rnd: 2, team: 'JQ', player: 'Mbeumo',       club: 'MUN', pos: 'MID', pre: 15, pts: 141, status: { kind: 'kept' } },
+  { ovr: 11, rnd: 2, team: 'LF', player: 'Wirtz',        club: 'LIV', pos: 'MID', pre: 13, pts: 88,  status: { kind: 'traded', to: 'OA', gw: 17 } },
+  { ovr: 12, rnd: 2, team: 'S7', player: 'Cunha',        club: 'MUN', pos: 'MID', pre: 19, pts: 103, status: { kind: 'kept' } },
+  { ovr: 13, rnd: 2, team: 'YK', player: 'Wood',         club: 'NFO', pos: 'FWD', pre: 26, pts: 118, status: { kind: 'kept' } },
+  { ovr: 14, rnd: 2, team: 'OZ', player: 'Eze',          club: 'ARS', pos: 'MID', pre: 16, pts: 95,  status: { kind: 'kept' } },
+  { ovr: 15, rnd: 2, team: 'OA', player: 'Foden',        club: 'MCI', pos: 'MID', pre: 9,  pts: 112, status: { kind: 'dropped', gw: 6 } },
+  { ovr: 16, rnd: 2, team: 'CS', player: 'Marmoush',     club: 'MCI', pos: 'FWD', pre: 24, pts: 79,  status: { kind: 'traded', to: 'YK', gw: 11 } },
+]
+
+/** Group flat picks into rounds, indexed by team slot column. */
+function mdRounds() {
+  const map = {}
+  for (const p of MOBILE_DRAFT_PICKS) (map[p.rnd] ||= {})[p.team] = p
+  return Object.keys(map)
+    .map(Number)
+    .sort((a, b) => a - b)
+    .map((rnd) => ({ rnd, byTeam: map[rnd] }))
+}
+
+/** Compact team chip: 2-letter crest square + (optional) name.
+ * `crest={false}` drops the badge and shows the team name only. */
+function MdTeamChip({ code, withName = true, crest = true }) {
+  return (
+    <span className="mockup-mdraft-team">
+      {crest && <span className="mockup-mdraft-team__crest">{code}</span>}
+      {withName && <span className="mockup-mdraft-team__name">{MD_TEAMS[code]}</span>}
+    </span>
+  )
+}
+
+/** Status badge — kept / dropped@gw / traded→team@gw. */
+function MdStatus({ status, compact = false }) {
+  if (status.kind === 'kept') {
+    return (
+      <span className="mockup-mdraft-status mockup-mdraft-status--kept">
+        <span className="mockup-mdraft-status__dot" />{compact ? 'Squad' : 'On squad'}
+      </span>
+    )
+  }
+  if (status.kind === 'dropped') {
+    return (
+      <span className="mockup-mdraft-status mockup-mdraft-status--dropped">
+        <span className="mockup-mdraft-status__dot" />Dropped · GW{status.gw}
+      </span>
+    )
+  }
+  return (
+    <span className="mockup-mdraft-status mockup-mdraft-status--traded">
+      <span className="mockup-mdraft-status__dot" />→ {MD_TEAMS[status.to]} · GW{status.gw}
+    </span>
+  )
+}
+
+/* M1 · STAT LIST — round-grouped rich list (the "stat view"). */
+function MobileDraftStatList() {
+  return (
+    <div className="mockup-portrait-page">
+      <PortraitPageHeader title="Draft" meta="2025/26" />
+      <div className="mockup-portrait-page__filters">
+        <button type="button" className="mockup-filter-pill mockup-filter-pill--sm">
+          <span className="mockup-filter-pill__label">Round</span>
+          <span className="mockup-filter-pill__value">All</span>
+          <CaretIcon className="mockup-filter-pill__caret" />
+        </button>
+        <button type="button" className="mockup-filter-pill mockup-filter-pill--sm">
+          <span className="mockup-filter-pill__label">Team</span>
+          <span className="mockup-filter-pill__value">All</span>
+          <CaretIcon className="mockup-filter-pill__caret" />
+        </button>
+      </div>
+      <div className="mockup-mdraft-list">
+        {mdRounds().map(({ rnd }) => (
+          <Fragment key={rnd}>
+            <div className="mockup-mdraft-list__round">Round {rnd}</div>
+            {MOBILE_DRAFT_PICKS.filter((p) => p.rnd === rnd).map((p) => (
+              <div className="mockup-mdraft-row" key={p.ovr}>
+                <span className="mockup-mdraft-row__pick">{p.ovr}</span>
+                <ClubCrest club={p.club} size={26} className="mockup-mdraft-row__crest" />
+                <span className="mockup-mdraft-row__id">
+                  <span className="mockup-mdraft-row__name-line">
+                    <span className="mockup-mdraft-row__name">{p.player}</span>
+                    <MockupPlayersPos pos={p.pos} />
+                  </span>
+                  <span className="mockup-mdraft-row__sub">
+                    <MdTeamChip code={p.team} crest={false} />
+                    <MdStatus status={p.status} />
+                  </span>
+                </span>
+                <span className="mockup-mdraft-row__pts">
+                  <span className="mockup-mdraft-row__pts-val">{p.pts}</span>
+                  <span className="mockup-mdraft-row__pts-lbl">PTS</span>
+                </span>
+              </div>
+            ))}
+          </Fragment>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+/* M2 · BY-TEAM CARDS — reframe the draft by manager (non-list, stat-rich). */
+function MobileDraftByTeam() {
+  return (
+    <div className="mockup-portrait-page">
+      <PortraitPageHeader title="Draft" meta="By team" />
+      <div className="mockup-mdraft-teams">
+        {MD_TEAM_ORDER.slice(0, 4).map((code) => {
+          const picks = MOBILE_DRAFT_PICKS.filter((p) => p.team === code)
+          const kept = picks.filter((p) => p.status.kind === 'kept')
+          const keptPts = kept.reduce((s, p) => s + p.pts, 0)
+          return (
+            <div className="mockup-mdraft-card" key={code}>
+              <div className="mockup-mdraft-card__head">
+                <span className="mockup-mdraft-team__crest mockup-mdraft-team__crest--lg">{code}</span>
+                <span className="mockup-mdraft-card__title">{MD_TEAMS[code]}</span>
+                <span className="mockup-mdraft-card__total">
+                  <span className="mockup-mdraft-card__total-val">{keptPts}</span>
+                  <span className="mockup-mdraft-card__total-lbl">kept pts</span>
+                </span>
+              </div>
+              {picks.map((p) => (
+                <div className="mockup-mdraft-card__pick" key={p.ovr}>
+                  <span className="mockup-mdraft-card__rnd">R{p.rnd}</span>
+                  <ClubCrest club={p.club} size={20} className="mockup-mdraft-card__crest" />
+                  <span className="mockup-mdraft-card__player">{p.player}</span>
+                  <MockupPlayersPos pos={p.pos} />
+                  <MdStatus status={p.status} compact />
+                  <span className="mockup-mdraft-card__pts">{p.pts}</span>
+                </div>
+              ))}
+            </div>
+          )
+        })}
+        <div className="mockup-mdraft-teams__more">+ 4 more teams</div>
+      </div>
+    </div>
+  )
+}
+
+/* M3 · PURE GRID · crest-only — fits 8 columns on-screen, no scroll, no
+ * names. Position carried by the colour ring; tap a cell for detail. */
+function MobileDraftGridFit() {
+  const rounds = mdRounds()
+  return (
+    <div className="mockup-portrait-page">
+      <PortraitPageHeader title="Draft" meta="Board" />
+      <div className="mockup-mdraft-gridfit">
+        <div className="mockup-mdraft-gridfit__head">
+          <span className="mockup-mdraft-gridfit__corner" />
+          {MD_TEAM_ORDER.map((code) => (
+            <span className="mockup-mdraft-gridfit__th" key={code}>{code}</span>
+          ))}
+        </div>
+        {rounds.map(({ rnd, byTeam }) => (
+          <div className="mockup-mdraft-gridfit__row" key={rnd}>
+            <span className="mockup-mdraft-gridfit__rnd">
+              {rnd}
+              <span className="mockup-mdraft-gridfit__snake">{rnd % 2 === 1 ? '→' : '←'}</span>
+            </span>
+            {MD_TEAM_ORDER.map((code) => {
+              const p = byTeam[code]
+              if (!p) return <span className="mockup-mdraft-gridfit__cell" key={code} />
+              return (
+                <span
+                  className={`mockup-mdraft-gridfit__cell mockup-mdraft-gridfit__cell--${p.pos} mockup-mdraft-gridfit__cell--${p.status.kind}`}
+                  key={code}
+                  title={`${p.player} · ${MD_TEAMS[p.team]} · ${p.pts} pts`}
+                >
+                  <ClubCrest club={p.club} size={18} className="mockup-mdraft-gridfit__crest" />
+                  <span className="mockup-mdraft-gridfit__ovr">{p.ovr}</span>
+                </span>
+              )
+            })}
+          </div>
+        ))}
+      </div>
+      <div className="mockup-mdraft-legend">
+        <span><i className="mockup-mdraft-legend__sw mockup-mdraft-legend__sw--FWD" />FWD</span>
+        <span><i className="mockup-mdraft-legend__sw mockup-mdraft-legend__sw--MID" />MID</span>
+        <span><i className="mockup-mdraft-legend__sw mockup-mdraft-legend__sw--DEF" />DEF</span>
+        <span><i className="mockup-mdraft-legend__sw mockup-mdraft-legend__sw--GKP" />GKP</span>
+      </div>
+    </div>
+  )
+}
+
+/* M4 · PURE GRID · horizontal scroll — keeps the desktop snake board
+ * (names + crest + pts) but lets columns keep real width and scroll. */
+function MobileDraftGridScroll() {
+  const rounds = mdRounds()
+  return (
+    <div className="mockup-portrait-page">
+      <PortraitPageHeader title="Draft" meta="Board · scroll" />
+      <div className="mockup-mdraft-scroll">
+        <div className="mockup-mdraft-scroll__inner">
+          <div className="mockup-mdraft-scroll__head">
+            <span className="mockup-mdraft-scroll__corner">RND</span>
+            {MD_TEAM_ORDER.map((code) => (
+              <span className="mockup-mdraft-scroll__th" key={code}>{MD_TEAMS[code]}</span>
+            ))}
+          </div>
+          {rounds.map(({ rnd, byTeam }) => (
+            <div className="mockup-mdraft-scroll__row" key={rnd}>
+              <span className="mockup-mdraft-scroll__rnd">
+                {rnd}<span className="mockup-mdraft-scroll__snake">{rnd % 2 === 1 ? '→' : '←'}</span>
+              </span>
+              {MD_TEAM_ORDER.map((code) => {
+                const p = byTeam[code]
+                if (!p) return <span className="mockup-mdraft-scroll__cell" key={code} />
+                return (
+                  <span className="mockup-mdraft-scroll__cell" key={code}>
+                    <span className="mockup-mdraft-scroll__cell-top">
+                      <ClubCrest club={p.club} size={18} className="mockup-mdraft-scroll__crest" />
+                      <span className="mockup-mdraft-scroll__ovr">{p.ovr}</span>
+                    </span>
+                    <span className="mockup-mdraft-scroll__player">{p.player}</span>
+                    <span className="mockup-mdraft-scroll__cell-foot">
+                      <MockupPlayersPos pos={p.pos} />
+                      <span className={`mockup-mdraft-scroll__sdot mockup-mdraft-scroll__sdot--${p.status.kind}`} />
+                      <span className="mockup-mdraft-scroll__pts">{p.pts}</span>
+                    </span>
+                  </span>
+                )
+              })}
+            </div>
+          ))}
+        </div>
+      </div>
+      <div className="mockup-mdraft-scroll__hint">← swipe columns →</div>
     </div>
   )
 }
@@ -10658,7 +10968,9 @@ function readStoredMockupTheme() {
 const MOCKUP_TABS = [
   { id: 'standings', label: 'Standings' },
   { id: 'waivers',   label: 'Waivers' },
+  { id: 'trades',    label: 'Trades' },
   { id: 'wire',      label: 'Wire' },
+  { id: 'draft',     label: 'Draft' },
   { id: 'live',      label: 'Live' },
   { id: 'hall',      label: 'Hall of Fame' },
   { id: 'other',     label: 'Other' },
@@ -12258,6 +12570,58 @@ export function Mockup() {
         </section>
         </>)}
 
+        {activeTab === 'draft' && (<>
+        {/* ============ DRAFT · desktop (locked) ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Draft · desktop · locked ✓</div>
+          <h2 className="mockup__section-h">Snake order grid — now with status + points</h2>
+          <p className="mockup__section-sub">
+            The desktop board, locked in. Each pick now carries a{' '}
+            <strong>“where are they now”</strong> line — <span style={{ color: '#34d399', fontWeight: 600 }}>On squad</span>,{' '}
+            <span style={{ color: '#f87171', fontWeight: 600 }}>Cut · GW#</span>, or{' '}
+            <span style={{ color: '#fbbf24', fontWeight: 600 }}>→ traded · GW#</span> — plus the
+            player&apos;s <strong>total points</strong> on the right of each cell.
+          </p>
+          <DraftBoard />
+        </section>
+
+        {/* ============ DRAFT · mobile (M1 locked) ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Draft · mobile · locked ✓</div>
+          <h2 className="mockup__section-h">Mobile draft — M1 stat list (locked in)</h2>
+          <p className="mockup__section-sub">
+            <strong>M1 · stat list, grouped by round</strong> is the chosen mobile
+            view. Each pick carries the drafted-by team, a kept/dropped/traded
+            status, and total points. The other explorations are kept below,
+            collapsed, for reference only.
+          </p>
+          <div className="mockup-mdraft-grid mockup-mdraft-grid--single">
+            <div className="mockup-portrait-col">
+              <div className="mockup-portrait-col__h">M1 · Stat list — grouped by round · LOCKED ✓</div>
+              <PortraitFrame><MobileDraftStatList /></PortraitFrame>
+            </div>
+          </div>
+
+          <details className="mockup-mdraft-alts">
+            <summary>Other explorations (not chosen) — M2 by-team · M3/M4 pure grid</summary>
+            <div className="mockup-mdraft-grid">
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">M2 · Stat view — by-team cards</div>
+                <PortraitFrame><MobileDraftByTeam /></PortraitFrame>
+              </div>
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">M3 · Pure grid — crest-only, fits on-screen</div>
+                <PortraitFrame><MobileDraftGridFit /></PortraitFrame>
+              </div>
+              <div className="mockup-portrait-col">
+                <div className="mockup-portrait-col__h">M4 · Pure grid — names + horizontal scroll</div>
+                <PortraitFrame><MobileDraftGridScroll /></PortraitFrame>
+              </div>
+            </div>
+          </details>
+        </section>
+        </>)}
+
         {activeTab === 'waivers' && (<>
         {/* ============ WAIVERS REDESIGN · intro ============ */}
         <section className="mockup__section">
@@ -12430,6 +12794,27 @@ export function Mockup() {
               <li><strong>Biggest one-week steal:</strong> highlight the single best waiver pickup of the GW (highest picked-up GW points) as a hero chip above the feed.</li>
             </ul>
           </div>
+        </section>
+        </>)}
+
+        {activeTab === 'trades' && (<>
+        {/* ============ TRADES — modern trade views ============ */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Trades · concept</div>
+          <h2 className="mockup__section-h">Trade card — four options</h2>
+          <p className="mockup__section-sub">
+            Real processed trade data, built from the site’s shared atoms — club
+            badges, position pills, Geist Mono numerics. Each option shows a
+            single-player and a multi-player trade so the layout is judged on
+            both. Every card carries the points each acquired player scored and
+            how long they stayed on the new squad. The trade ledger below is
+            locked in.
+          </p>
+          <TradeViewsShowcase
+            trades={data?.tradesPanelRows ?? []}
+            teamLogoMap={data?.teamLogoMap ?? {}}
+            kitIndexByEntry={data?.defaultKitIndexByLeagueEntry ?? {}}
+          />
         </section>
         </>)}
 

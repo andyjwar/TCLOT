@@ -65,11 +65,14 @@ function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEnt
           const isFa = r.transactionKind === 'f'
           return (
             <li className="waivers-share__row" key={r.transactionId}>
-              <span className="waivers-share__rank tabular">
-                {!isFa && r.waiverProcessOrder != null ? r.waiverProcessOrder : ''}
-              </span>
-              <span className={'waivers-share__tag' + (isFa ? ' waivers-share__tag--fa' : '')}>
-                {isFa ? 'FA' : 'W'}
+              <span className="waivers-share__marker tabular">
+                {isFa ? (
+                  <span className="waivers-share__tag waivers-share__tag--fa">FA</span>
+                ) : r.waiverProcessOrder != null ? (
+                  r.waiverProcessOrder
+                ) : (
+                  ''
+                )}
               </span>
               <span className="waivers-share__crest">
                 <PlayerKit badgeUrl={r.pickedBadgeUrl} teamShort={r.pickedTeamShort} />

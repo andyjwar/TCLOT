@@ -41,10 +41,16 @@ function ClubCrest({ badgeUrl, teamShort, size = 22, out = false }) {
   )
 }
 
-/** Identity cell: club crest + clickable name + position chip (+ optional in/out arrow). */
-function WvPlayerCell({ element, name, badgeUrl, teamShort, pos, dir, hideArrow = false }) {
+/** Identity cell: optional in/out arrow + club crest + clickable name + position chip.
+ *  Reads left-to-right as: arrow · club badge · name · position chip. */
+function WvPlayerCell({ element, name, badgeUrl, teamShort, pos, dir }) {
   return (
     <span className="waivers-player">
+      {dir ? (
+        <span className={`waivers-dir waivers-dir--${dir}`} aria-hidden="true">
+          {dir === 'in' ? '↑' : '↓'}
+        </span>
+      ) : null}
       <ClubCrest badgeUrl={badgeUrl} teamShort={teamShort} size={22} out={dir === 'out'} />
       <ClickablePlayerName
         element={element}
@@ -55,11 +61,6 @@ function WvPlayerCell({ element, name, badgeUrl, teamShort, pos, dir, hideArrow 
         {name}
       </ClickablePlayerName>
       <WvPosChip pos={pos} />
-      {dir && !hideArrow ? (
-        <span className={`waivers-dir waivers-dir--${dir}`} aria-hidden="true">
-          {dir === 'in' ? '↑' : '↓'}
-        </span>
-      ) : null}
     </span>
   )
 }
@@ -286,14 +287,6 @@ function WeeklyWaiversGlance({ groups, teamLogoMap, kitIndexByEntry }) {
               <span className="waivers-glance__team">{firstWord(g.teamName)}</span>
               {hasMoves ? (
                 <>
-                  <span className="waivers-glance__counts">
-                    <span className="waivers-glance__count waivers-glance__count--in">
-                      ↑{ins.length}
-                    </span>
-                    <span className="waivers-glance__count waivers-glance__count--out">
-                      ↓{ins.length}
-                    </span>
-                  </span>
                   <span className="waivers-glance__crests">
                     {shownCrests.map((m) => (
                       <span className="waivers-glance__crest" key={m.transactionId}>
@@ -303,6 +296,13 @@ function WeeklyWaiversGlance({ groups, teamLogoMap, kitIndexByEntry }) {
                     {extraCrests > 0 ? (
                       <span className="waivers-glance__crest-more">+{extraCrests}</span>
                     ) : null}
+                  </span>
+                  <span className="waivers-glance__counts">
+                    <span className="waivers-glance__count">{ins.length}</span>
+                    <span className="waivers-glance__arrows" aria-hidden="true">
+                      <span className="waivers-glance__arrow waivers-glance__arrow--in">↑</span>
+                      <span className="waivers-glance__arrow waivers-glance__arrow--out">↓</span>
+                    </span>
                   </span>
                   <span
                     className={'waivers-glance__caret' + (isOpen ? ' is-open' : '')}
@@ -326,7 +326,6 @@ function WeeklyWaiversGlance({ groups, teamLogoMap, kitIndexByEntry }) {
                       teamShort={m.pickedTeamShort}
                       pos={m.pickedPos}
                       dir="in"
-                      hideArrow
                     />
                     <span className="waivers-swap__arrow" aria-hidden="true">
                       ⇄
@@ -338,7 +337,6 @@ function WeeklyWaiversGlance({ groups, teamLogoMap, kitIndexByEntry }) {
                       teamShort={m.droppedTeamShort}
                       pos={m.droppedPos}
                       dir="out"
-                      hideArrow
                     />
                     {m.transactionKind === 'f' ? (
                       <span className="waivers-fa-chip">FA</span>
@@ -409,7 +407,6 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
                       teamShort={m.pickedTeamShort}
                       pos={m.pickedPos}
                       dir="in"
-                      hideArrow
                     />
                     <span className="waivers-swap__arrow" aria-hidden="true">
                       ⇄
@@ -421,7 +418,6 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
                       teamShort={m.droppedTeamShort}
                       pos={m.droppedPos}
                       dir="out"
-                      hideArrow
                     />
                     {m.transactionKind === 'f' ? (
                       <span className="waivers-fa-chip">FA</span>
@@ -723,7 +719,10 @@ export function WaiverPickupsToggle({
       <ol className="waivers-rank-list">
         {mode === 'best'
           ? list.map((r, i) => (
-              <li className="waivers-rank-row" key={`${r.entry}-${r.elementId}`}>
+              <li
+                className="waivers-rank-row waivers-rank-row--best"
+                key={`${r.entry}-${r.elementId}`}
+              >
                 <span className="waivers-rank-row__rank tabular">{r.rank ?? i + 1}</span>
                 <WvPlayerCell
                   element={r.elementId}
@@ -732,14 +731,7 @@ export function WaiverPickupsToggle({
                   teamShort={r.teamShort}
                   pos={r.pos}
                 />
-                <span className="waivers-rank-row__owner">
-                  <TeamAvatar
-                    entryId={r.leagueEntryId}
-                    name={r.teamName}
-                    size="sm"
-                    logoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                  />
+                <span className="waivers-rank-row__meta">
                   <span className="waivers-rank-row__owner-name">{firstWord(r.teamName)}</span>
                   <span className="waivers-rank-row__range muted">
                     GW {r.firstGw}–{r.lastGw}
@@ -747,6 +739,15 @@ export function WaiverPickupsToggle({
                   </span>
                 </span>
                 <span className="waivers-pts waivers-pts--lg">{r.totalPointsForTeam}</span>
+                <span className="waivers-rank-row__crest">
+                  <TeamAvatar
+                    entryId={r.leagueEntryId}
+                    name={r.teamName}
+                    size="sm"
+                    logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </span>
               </li>
             ))
           : list.map((r, i) => (
@@ -759,9 +760,7 @@ export function WaiverPickupsToggle({
                   teamShort={r.teamShort}
                   pos={r.pos}
                 />
-                <span className="waivers-rank-row__owner waivers-rank-row__owner--muted muted">
-                  claimed by {r.claims} teams
-                </span>
+                <span aria-hidden />
                 <span className="waivers-pts waivers-pts--lg">{r.claims}</span>
               </li>
             ))}
