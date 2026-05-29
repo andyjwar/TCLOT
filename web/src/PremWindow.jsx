@@ -2,6 +2,11 @@ import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useLiveScores } from './useLiveScores';
 import { TeamAvatar } from './TeamAvatar';
 import { fetchEspnPremWindow } from './espnPremWindow.js';
+import {
+  clearAllCachedLineups,
+  getCachedLineup,
+  setCachedLineup,
+} from './lineupCache.js';
 import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
 import { mergePremWindowSources } from './premWindowMerger.js';
 import { buildOwnerByElementId } from './playerContributionEvents.js';
@@ -1108,55 +1113,141 @@ export function PremWindow({
   const [premWindowLoading, setPremWindowLoading] = useState(false);
   const [premWindowError, setPremWindowError] = useState(null);
   const [premWindowRows, setPremWindowRows] = useState(/** @type {any[]} */ ([]));
+  /** Wallclock of the latest successful network round-trip for the current
+   *  GW. Drives the "Updated …" badge next to the refresh icon. Reset to
+   *  null whenever the GW changes so we don't show a stamp from a different
+   *  gameweek. */
+  const [lastFetchedAt, setLastFetchedAt] = useState(/** @type {number | null} */ (null));
   /** Fetch-generation guard so a slow request for an older GW cannot overwrite the new one. */
   const premWindowGenRef = useRef(0);
 
   /**
    * Match data (score, lineups, events) for the GW's fixture list.
+   *
    * Pulselive (official PL backend) is primary, ESPN is fallback — same
    * pattern `useLiveScores` already uses to feed FPL pick rows. Pulselive
    * publishes confirmed lineups at T-75, ~15 minutes earlier than ESPN, so
    * preferring it gets the Lineups page populated sooner; per-fixture rows
    * fall back to ESPN automatically when Pulselive is missing data.
+   *
+   * # Caching
+   *
+   * Finished fixtures are immutable (XI, bench, events, score, status). For
+   * each `gwFixture.pulse_id`, we first look up a session-scoped cache via
+   * `getCachedLineup`. Cached rows are displayed immediately and the
+   * uncached subset is what we actually request from the network. If the
+   * whole GW is cached (e.g. browsing a completed GW after a tab-switch),
+   * no requests fire at all and the page lights up instantly.
+   *
+   * `forceRefresh: true` (used by the refresh button) wipes the cache and
+   * re-runs the full fetch graph so users always have a manual escape
+   * hatch against any caching mistake.
    */
-  const doPremWindowFetch = useCallback(async () => {
-    if (!gwFixtures || !teamById || !elementById) return;
-    if (!gwFixtures.length) {
-      setPremWindowRows([]);
+  const doPremWindowFetch = useCallback(
+    async ({ forceRefresh = false } = {}) => {
+      if (!gwFixtures || !teamById || !elementById) return;
+      if (!gwFixtures.length) {
+        setPremWindowRows([]);
+        setPremWindowError(null);
+        return;
+      }
+      premWindowGenRef.current += 1;
+      const gen = premWindowGenRef.current;
+      if (forceRefresh) clearAllCachedLineups();
+
+      /** Partition fixtures by cache state. `cachedById` keeps insertion
+       *  order so we can rebuild the final row list in `gwFixtures` order
+       *  by joining cached + fresh rows on `pulse_id`. */
+      const cachedById = new Map();
+      const uncachedFixtures = [];
+      for (const fx of gwFixtures) {
+        const pid = Number(fx?.pulse_id);
+        const cached =
+          !forceRefresh && Number.isFinite(pid) ? getCachedLineup(pid) : null;
+        if (cached) cachedById.set(pid, { ...cached, fplFixture: fx });
+        else uncachedFixtures.push(fx);
+      }
+
+      /** Surface cached rows immediately — progressive hydration so the
+       *  user sees finished fixtures the moment the component mounts even
+       *  when one or two live fixtures are still being fetched. */
+      if (cachedById.size > 0) {
+        const initialRows = gwFixtures
+          .map((fx) => cachedById.get(Number(fx?.pulse_id)))
+          .filter(Boolean);
+        setPremWindowRows(initialRows);
+      }
+
+      /** Whole-GW cache hit — short-circuit before touching the network. */
+      if (uncachedFixtures.length === 0) {
+        setPremWindowError(null);
+        setPremWindowLoading(false);
+        return;
+      }
+
+      setPremWindowLoading(true);
       setPremWindowError(null);
-      return;
-    }
-    premWindowGenRef.current += 1;
-    const gen = premWindowGenRef.current;
-    setPremWindowLoading(true);
-    setPremWindowError(null);
-    try {
-      const [pulseRows, espnRows] = await Promise.all([
-        fetchPulselivePremWindow({ gwFixtures, teamById, elementById }).catch(
-          () => [],
-        ),
-        fetchEspnPremWindow({ gwFixtures, teamById, elementById }).catch(
-          () => [],
-        ),
-      ]);
-      if (gen !== premWindowGenRef.current) return;
-      const merged = mergePremWindowSources(pulseRows, espnRows, {
-        primaryLabel: 'pulselive',
-        fallbackLabel: 'espn',
-      });
-      setPremWindowRows(merged);
-    } catch (e) {
-      if (gen !== premWindowGenRef.current) return;
-      setPremWindowError(e?.message || String(e));
-      setPremWindowRows([]);
-    } finally {
-      if (gen === premWindowGenRef.current) setPremWindowLoading(false);
-    }
-  }, [gwFixtures, teamById, elementById]);
+      try {
+        const [pulseRows, espnRows] = await Promise.all([
+          fetchPulselivePremWindow({
+            gwFixtures: uncachedFixtures,
+            teamById,
+            elementById,
+          }).catch(() => []),
+          fetchEspnPremWindow({
+            gwFixtures: uncachedFixtures,
+            teamById,
+            elementById,
+          }).catch(() => []),
+        ]);
+        if (gen !== premWindowGenRef.current) return;
+        const freshRows = mergePremWindowSources(pulseRows, espnRows, {
+          primaryLabel: 'pulselive',
+          fallbackLabel: 'espn',
+        });
+        /** Persist any newly-finished rows for the next mount. The cache
+         *  module gates on `isRowFullTime`, so live/pre-match rows are
+         *  silently rejected here. */
+        for (const row of freshRows) {
+          const pid = Number(row?.fplFixture?.pulse_id);
+          if (Number.isFinite(pid)) setCachedLineup(pid, row);
+        }
+        /** Build the final list in the order `gwFixtures` defines so the
+         *  day-grouping below picks up rows in kickoff order without an
+         *  extra sort pass. */
+        const byPulseId = new Map();
+        for (const [pid, row] of cachedById) byPulseId.set(pid, row);
+        for (const row of freshRows) {
+          const pid = Number(row?.fplFixture?.pulse_id);
+          if (Number.isFinite(pid)) byPulseId.set(pid, row);
+        }
+        const finalRows = gwFixtures
+          .map((fx) => byPulseId.get(Number(fx?.pulse_id)))
+          .filter(Boolean);
+        setPremWindowRows(finalRows);
+        setLastFetchedAt(Date.now());
+      } catch (e) {
+        if (gen !== premWindowGenRef.current) return;
+        setPremWindowError(e?.message || String(e));
+        /** Don't blow away the cached rows on a transient error; keep them
+         *  visible so the user can still see finished fixtures. */
+        if (cachedById.size === 0) setPremWindowRows([]);
+      } finally {
+        if (gen === premWindowGenRef.current) setPremWindowLoading(false);
+      }
+    },
+    [gwFixtures, teamById, elementById],
+  );
 
   useEffect(() => {
     void doPremWindowFetch();
   }, [doPremWindowFetch]);
+
+  /** Reset the "Updated …" stamp when the user moves between gameweeks so
+   *  the next successful fetch stamps fresh. */
+  useEffect(() => {
+    setLastFetchedAt(null);
+  }, [gameweek]);
 
   /**
    * Sort rows by earliest kickoff first. Split out live (in-play) fixtures
@@ -1239,6 +1330,22 @@ export function PremWindow({
   const noFixtures =
     liveFixtures.length === 0 && dayGroups.length === 0 && !premWindowLoading;
 
+  /** "Updated 12:34 PM" — uses the user's locale time formatter so devs in
+   *  other regions don't see a confusing AM/PM. We deliberately format on
+   *  every render rather than memoising: the page rerenders rarely enough
+   *  that the extra `Intl.DateTimeFormat` cost is meaningless. */
+  const lastFetchedLabel = useMemo(() => {
+    if (lastFetchedAt == null) return null;
+    try {
+      return new Date(lastFetchedAt).toLocaleTimeString([], {
+        hour: 'numeric',
+        minute: '2-digit',
+      });
+    } catch {
+      return null;
+    }
+  }, [lastFetchedAt]);
+
   return (
     <div className="dashboard-stack prem-window-root">
       <section className="prem-window-chrome" aria-label="Lineups">
@@ -1253,13 +1360,22 @@ export function PremWindow({
             onGameweekChange={onGameweekChange}
           />
           <span className="prem-lineup-toolbar__refresh">
+            {lastFetchedLabel ? (
+              <span
+                className="prem-lineup-toolbar__stamp"
+                title="Last successful refresh"
+                aria-live="polite"
+              >
+                Updated {lastFetchedLabel}
+              </span>
+            ) : null}
             <LiveRefreshIconButton
               title="Refresh squads and results"
               loading={refreshing}
               disabled={refreshing}
               onClick={() => {
                 void refreshLive();
-                void doPremWindowFetch();
+                void doPremWindowFetch({ forceRefresh: true });
               }}
             />
           </span>

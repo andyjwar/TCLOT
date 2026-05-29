@@ -17077,6 +17077,27 @@ button.live-xp__player-name:focus-visible {
   right: 12px;
   transform: translateY(-50%);
   z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+/* "Updated 12:34 PM" muted stamp sitting just left of the refresh icon. Tells
+   the user the page is showing cached data and when the last network round-trip
+   landed, which would otherwise be invisible given how aggressively we cache
+   finished gameweeks. */
+.prem-lineup-toolbar__stamp {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+@media (max-width: 420px) {
+  /* On the narrowest phones, drop the stamp text to keep the GW selector
+     centered and the refresh icon flush against the edge. */
+  .prem-lineup-toolbar__stamp {
+    display: none;
+  }
 }
 
 /* GW navigation cluster: ‹ • [GW 35 ▾] • › + refresh on the right */
