@@ -17418,25 +17418,6 @@ button.live-xp__player-name:focus-visible {
   text-overflow: ellipsis;
   min-width: 0;
 }
-.prem-mlu-toggle__formation {
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  padding: 1px 6px;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  flex-shrink: 0;
-}
-.prem-mlu-toggle__pill.is-active .prem-mlu-toggle__formation {
-  background: rgba(255, 255, 255, 0.18);
-  border-color: rgba(255, 255, 255, 0.35);
-  color: #fff;
-}
 .prem-mlu-toggle__count {
   font-size: 10.5px;
   font-weight: 800;
@@ -17482,37 +17463,29 @@ button.live-xp__player-name:focus-visible {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Plain-text position label: quiet metadata to the right of each player
+   name. No background, no border — just small uppercase muted text in a
+   fixed column slot so rows stay vertically aligned. */
 .prem-mlu-pos {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 38px;
-  height: 18px;
-  padding: 0 7px;
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  border-radius: 4px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+  display: inline-block;
+  min-width: 34px;
+  text-align: right;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
   text-transform: uppercase;
   flex-shrink: 0;
 }
-.prem-mlu-pos--GK  { color: #f59e0b; border-color: color-mix(in srgb, #f59e0b 38%, var(--border)); }
-.prem-mlu-pos--DEF { color: #22d3ee; border-color: color-mix(in srgb, #22d3ee 38%, var(--border)); }
-.prem-mlu-pos--MID { color: #c4b5fd; border-color: color-mix(in srgb, #a78bfa 38%, var(--border)); }
-.prem-mlu-pos--FWD { color: #fca5a5; border-color: color-mix(in srgb, #ef4444 38%, var(--border)); }
-.fotmob[data-theme='light'] .prem-mlu-pos--GK  { color: #b45309; }
-.fotmob[data-theme='light'] .prem-mlu-pos--DEF { color: #0e7490; }
-.fotmob[data-theme='light'] .prem-mlu-pos--MID { color: #6d28d9; }
-.fotmob[data-theme='light'] .prem-mlu-pos--FWD { color: #b91c1c; }
 
-/* Compact strip of bench players who aren't owned in fantasy. Mirrors the
-   visual shape of `.prem-nis` but renders one PL club crest on the left
-   followed by plain names separated by `|`. No owner tags, no per-row
-   crests, no position pills. Names wrap to a second row if needed. */
+/* Compact strip of bench players who aren't owned in fantasy. One PL crest
+   sits on the far left, then a tidy multi-row list of names with `|`
+   separators drawn as `border-left` on each cell. The inner `__items`
+   container has a negative `margin-left` equal to one cell's
+   `border-left + padding-left`, and the outer `__items-wrap` clips it with
+   `overflow: hidden`, hiding the leftmost border of every wrapped visual
+   row including the first. Net effect: names line up at a uniform left
+   edge on every row and no row starts with a stray `|`. */
 .prem-bench-other {
   display: flex;
   align-items: flex-start;
@@ -17528,25 +17501,27 @@ button.live-xp__player-name:focus-visible {
   object-fit: contain;
   margin-top: 1px;
 }
+.prem-bench-other__items-wrap {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
 .prem-bench-other__items {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px 4px;
-  min-width: 0;
-  flex: 1 1 auto;
+  row-gap: 3px;
+  /* Pull the whole list left by the cell's `border-left + padding-left`
+     so the first column's separator is clipped by the wrapper above. */
+  margin-left: -11px;
 }
 .prem-bench-other__item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  padding: 0 10px;
   min-width: 0;
-}
-.prem-bench-other__sep {
-  color: color-mix(in srgb, var(--text-muted) 55%, transparent);
-  font-weight: 400;
-  margin: 0 4px;
-  user-select: none;
+  border-left: 1px solid
+    color-mix(in srgb, var(--text-muted) 35%, transparent);
 }
 .prem-bench-other__name {
   font-size: 12.5px;

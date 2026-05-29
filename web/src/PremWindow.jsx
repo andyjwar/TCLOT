@@ -583,20 +583,18 @@ function MobileLineupRow({
         />
       ) : null}
       {posLabel ? (
-        <span className={`prem-mlu-pos prem-mlu-pos--${posLabel}`}>
-          {posLabel}
-        </span>
+        <span className="prem-mlu-pos">{posLabel}</span>
       ) : null}
     </div>
   );
 }
 
 /**
- * Compact one-row strip listing unowned bench players (PL crest left, names
- * separated by ` | `, no per-row crests / owner tags / position pills). Shape
- * mirrors `NotInSquadRow` but the "not on the matchday team" case has names
- * already, so this version takes raw lineup-shaped players + the club to
- * source the crest. Names wrap to a second line when they don't fit.
+ * Compact strip listing unowned bench players. One PL crest sits on the far
+ * left, then a flex-wrap list of names where the separator is a `border-left`
+ * on each cell. A negative `margin-left` + `overflow: hidden` clip on the
+ * inner names wrapper hides the leftmost border of every wrapped visual row
+ * so the strip reads as a tidy multi-row list (no leading ` | ` on row 2+).
  */
 function UnownedBenchStrip({ players, club, elementById }) {
   if (!players?.length) return null;
@@ -614,30 +612,31 @@ function UnownedBenchStrip({ players, club, elementById }) {
   return (
     <div className="prem-bench-other">
       {crest}
-      <span className="prem-bench-other__items">
-        {players.map((p, i) => {
-          const el =
-            p?.elementId != null && elementById ? elementById[p.elementId] : null;
-          const displayName = el
-            ? fplElementWebName(el, p.elementId)
-            : (p?.fplWebName?.trim() || p?.name || `#${p?.fotmobPlayerId ?? '?'}`);
-          return (
-            <span className="prem-bench-other__item" key={`bo-${i}`}>
-              {i > 0 ? (
-                <span className="prem-bench-other__sep" aria-hidden>
-                  |
-                </span>
-              ) : null}
-              <ClickablePlayerName
-                element={p?.elementId}
-                displayName={displayName}
-                web_name={displayName}
-              >
-                <span className="prem-bench-other__name">{displayName}</span>
-              </ClickablePlayerName>
-            </span>
-          );
-        })}
+      <span className="prem-bench-other__items-wrap">
+        <span className="prem-bench-other__items">
+          {players.map((p, i) => {
+            const el =
+              p?.elementId != null && elementById
+                ? elementById[p.elementId]
+                : null;
+            const displayName = el
+              ? fplElementWebName(el, p.elementId)
+              : (p?.fplWebName?.trim() ||
+                  p?.name ||
+                  `#${p?.fotmobPlayerId ?? '?'}`);
+            return (
+              <span className="prem-bench-other__item" key={`bo-${i}`}>
+                <ClickablePlayerName
+                  element={p?.elementId}
+                  displayName={displayName}
+                  web_name={displayName}
+                >
+                  <span className="prem-bench-other__name">{displayName}</span>
+                </ClickablePlayerName>
+              </span>
+            );
+          })}
+        </span>
       </span>
     </div>
   );
@@ -771,7 +770,6 @@ function MobileLineupBody({
       <div className="prem-mlu-toggle" role="tablist" aria-label="Choose team">
         {['home', 'away'].map((t) => {
           const isActive = team === t;
-          const s = t === 'home' ? homeSide : awaySide;
           const c = t === 'home' ? home : away;
           const owned = t === 'home' ? homeOwned : awayOwned;
           return (
@@ -794,9 +792,6 @@ function MobileLineupBody({
               <span className="prem-mlu-toggle__name">
                 {c?.name || (t === 'home' ? 'Home' : 'Away')}
               </span>
-              {s?.formation ? (
-                <span className="prem-mlu-toggle__formation">{s.formation}</span>
-              ) : null}
               <span className="prem-mlu-toggle__count">{owned}</span>
             </button>
           );
