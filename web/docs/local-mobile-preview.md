@@ -39,3 +39,14 @@ npm run preview
 ```
 
 Preview also uses port **5175** and the same proxies as dev when configured.
+
+## Design previews (local only)
+
+These query flags swap the whole app for a mockup page. They do not change production.
+
+| URL | What it shows |
+| --- | --- |
+| `/?wirelive=1` | Players / Wire during a live season vs the current post-season screen |
+| `/?gwstates=1` | Header + centre-nav across pre-season / live / FT states |
+| `/?tradepills=1` | Trade score-pill options |
+| `/?mockup=1` | Broader design-system mockup |
