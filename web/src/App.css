@@ -16319,20 +16319,18 @@ button.live-xp__player-name:focus-visible {
   color: var(--fm-muted);
 }
 
+/* Flex-center every count cell so Titan/Minnow plain numbers share the
+ * same vertical midline as the gold Titles pill (28px chip). */
 .heritage-shell .merged-history-timeline__mgr-col-num {
-  padding: 2px 8px 7px;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--fm-text-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-.heritage-shell .merged-history-timeline__mgr-col-num--titles {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 4px;
-  padding-bottom: 8px;
+  padding: 4px 8px 8px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--fm-text-strong);
+  font-variant-numeric: tabular-nums;
 }
 
 .heritage-shell .merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
