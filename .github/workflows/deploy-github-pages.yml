@@ -74,21 +74,37 @@ jobs:
           fi
           echo "VITE_FPL_PROXY_URL configured — baked into this build for FPL Live + draft picks in browser."
 
-      # League ID: Repository secret/variable FPL_LEAGUE_ID, OR Environment secret on github-pages
+      # League id: committed `league-id` file is source of truth. The github-pages
+      # Environment secret FPL_LEAGUE_ID silently overrides the repository secret
+      # of the same name — a stale 6802 there is what ingested a stranger's league
+      # in 26/27. Secrets/vars are a fallback only when the file is absent.
       - name: Fetch real league from FPL API
         if: steps.gate.outputs.proceed == '1'
         run: |
-          set -e
-          ID="${{ secrets.FPL_LEAGUE_ID }}"
-          if [ -z "$ID" ]; then ID="${{ vars.FPL_LEAGUE_ID }}"; fi
+          set -euo pipefail
+          FILE_ID=""
+          if [ -f league-id ]; then FILE_ID="$(tr -d '[:space:]' < league-id)"; fi
+          SECRET_ID="${{ secrets.FPL_LEAGUE_ID }}"
+          VAR_ID="${{ vars.FPL_LEAGUE_ID }}"
+          ID="$FILE_ID"
+          if [ -z "$ID" ]; then ID="$SECRET_ID"; fi
+          if [ -z "$ID" ]; then ID="$VAR_ID"; fi
+          if [ -n "$FILE_ID" ] && [ -n "$SECRET_ID" ] && [ "$SECRET_ID" != "$FILE_ID" ]; then
+            echo "::warning::github-pages/repo FPL_LEAGUE_ID secret differs from committed league-id ($FILE_ID). Using the committed file. Environment secrets override repository secrets — update Settings → Environments → github-pages as well as repository secrets. Names are case-sensitive (FPL_LEAGUE_ID, not FPL_League_ID)."
+          fi
           if [ -n "$ID" ]; then
-            echo "Ingest: league ID is configured — fetching from FPL…"
+            echo "Ingest: fetching FPL Draft league $ID"
             python3 -m pip install --user requests
             LEAGUE_ID="$ID" python3 ingest.py
-            echo "Ingest OK ($(wc -c < data/details.json) bytes)"
+            INGESTED="$(python3 -c "import json; print(json.load(open('data/details.json'))['league']['id'])")"
+            echo "Ingest OK — league id $INGESTED ($(wc -c < data/details.json) bytes)"
+            if [ -n "$FILE_ID" ] && [ "$INGESTED" != "$FILE_ID" ]; then
+              echo "::error::Ingested league id $INGESTED does not match committed league-id $FILE_ID"
+              exit 1
+            fi
           else
-            echo "No FPL_LEAGUE_ID — build will use committed web/public/league-data/ or demo."
-            echo "Add secret: Settings → Secrets → Actions → FPL_LEAGUE_ID (your draft league number)"
+            echo "No league-id file or FPL_LEAGUE_ID — build will use committed web/public/league-data/ or demo."
+            echo "Add a committed league-id file, or secret: Settings → Secrets → Actions → FPL_LEAGUE_ID"
           fi
 
       # Relative base (./) so JS + league-data load even if URL casing/path differs
@@ -97,7 +113,7 @@ jobs:
         working-directory: web
         env:
           VITE_BASE_PATH: "./"
-          # Same league as ingest — build-draft-picks.mjs regenerates draft_picks.json (avoids shipping a forked TCLOT file).
+          # Fallback only; readLeagueId prefers the committed league-id file.
           FPL_LEAGUE_ID: ${{ secrets.FPL_LEAGUE_ID || vars.FPL_LEAGUE_ID }}
           LEAGUE_ID: ${{ secrets.FPL_LEAGUE_ID || vars.FPL_LEAGUE_ID }}
           # Repository secret/variable, or add the same name under Settings → Environments → github-pages
@@ -110,8 +126,12 @@ jobs:
           else
             echo "VITE_FPL_PROXY_URL omitted (allowed only when FPL_PROXY_OPTIONAL=true)"
           fi
-          if [ -z "${FPL_LEAGUE_ID:-}" ]; then
-            echo "::notice::FPL_LEAGUE_ID not set for this build — build-draft-picks skipped; committed draft_picks.json is copied to dist. Set Repository or github-pages Environment Actions secret (or Variable) FPL_LEAGUE_ID to your draft league number so CI regenerates draft picks for this repo."
+          if [ -f ../league-id ]; then
+            export FPL_LEAGUE_ID="$(tr -d '[:space:]' < ../league-id)"
+            export LEAGUE_ID="$FPL_LEAGUE_ID"
+            echo "Using committed league-id $FPL_LEAGUE_ID for draft picks / wire stats"
+          elif [ -z "${FPL_LEAGUE_ID:-}" ]; then
+            echo "::notice::No league-id file or FPL_LEAGUE_ID — build-draft-picks skipped; committed draft_picks.json is copied to dist."
           else
             echo "FPL_LEAGUE_ID is set — build-draft-picks will run during npm run build"
           fi

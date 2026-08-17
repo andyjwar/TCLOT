@@ -21,16 +21,52 @@ DRAFT_API = "https://draft.premierleague.com/api"
 FPL_CLASSIC_API = "https://fantasy.premierleague.com/api"
 
 
+REPO_ROOT = Path(__file__).resolve().parent
+
+
+def _id_from_file(path: Path):
+    """Return int league id from a one-line file, or None."""
+    try:
+        line = path.read_text().strip().splitlines()[0].strip()
+    except (OSError, IndexError):
+        return None
+    return int(line) if line.isdigit() else None
+
+
 def get_league_id() -> int:
-    """Get league ID from environment or command-line argument."""
-    league_id = os.environ.get("LEAGUE_ID")
-    if league_id:
-        return int(league_id)
+    """CLI arg > committed league-id file > .fpl-league-id > env.
+
+    The committed `league-id` file is the source of truth. GitHub Environment
+    secrets (github-pages) silently override repository secrets of the same name,
+    which is how a stale FPL_LEAGUE_ID=6802 kept winning over a newer repo
+    secret. Env is used only when the file is absent, or when
+    ALLOW_LEAGUE_ID_OVERRIDE=1.
+    """
     if len(sys.argv) > 1:
         return int(sys.argv[1])
+
+    committed = _id_from_file(REPO_ROOT / "league-id")
+    env_raw = (os.environ.get("LEAGUE_ID") or os.environ.get("FPL_LEAGUE_ID") or "").strip()
+    env_id = int(env_raw) if env_raw.isdigit() else None
+
+    if os.environ.get("ALLOW_LEAGUE_ID_OVERRIDE") == "1" and env_id:
+        return env_id
+    if committed:
+        if env_id and env_id != committed:
+            print(
+                f"Using committed league-id {committed}; ignoring env LEAGUE_ID={env_id}. "
+                "Set ALLOW_LEAGUE_ID_OVERRIDE=1 to use the env value."
+            )
+        return committed
+    local = _id_from_file(REPO_ROOT / ".fpl-league-id")
+    if local:
+        return local
+    if env_id:
+        return env_id
     print(
         "Usage: python ingest.py <LEAGUE_ID>\n"
         "   or: LEAGUE_ID=12345 python ingest.py\n\n"
+        "This repo pins the current season in the committed `league-id` file.\n"
         "Find your league ID in the URL when viewing your league:\n"
         "  draft.premierleague.com/league/YOUR_LEAGUE_ID"
     )

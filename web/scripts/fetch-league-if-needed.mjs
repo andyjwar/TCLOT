@@ -3,17 +3,16 @@
  * Local dev/build: pulls your league into data/ so copy-data uses the right JSON.
  * CI (GITHUB_ACTIONS/CI): skipped — GitHub runs ingest.py instead.
  *
- * Create repo-root `.fpl-league-id` with one line: your draft league number
- * (same as draft.premierleague.com/league/THIS_NUMBER)
+ * League id comes from committed repo-root `league-id` (see readLeagueId.mjs).
  */
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { readLeagueId } from './readLeagueId.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, '../..')
 const dataDir = join(repoRoot, 'data')
-const idFile = join(repoRoot, '.fpl-league-id')
 
 if (process.env.SKIP_LEAGUE_FETCH === '1') {
   process.exit(0)
@@ -22,17 +21,7 @@ if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') {
   process.exit(0)
 }
 
-function readId() {
-  if (existsSync(idFile)) {
-    const t = readFileSync(idFile, 'utf8').trim().split(/\r?\n/)[0]?.trim()
-    if (t && /^\d+$/.test(t)) return t
-  }
-  const e = process.env.FPL_LEAGUE_ID?.trim() || process.env.LEAGUE_ID?.trim()
-  if (e && /^\d+$/.test(e)) return e
-  return null
-}
-
-const id = readId()
+const id = readLeagueId(repoRoot)
 if (!id) {
   process.exit(0)
 }

@@ -10,20 +10,17 @@ The live site reads **`league-data/details.json`** (and other JSON next to it).
 
 ### Path A — automatic (recommended)
 
-1. GitHub repo → **Settings** → **Secrets and variables** → **Actions**
-2. Add **Repository secret** named exactly: **`FPL_LEAGUE_ID`**
-3. Value = the number in your draft URL:  
-   `draft.premierleague.com/league/`**`123456`**
-4. Push any commit (or run the workflow).
+1. Put the current Draft league number in the committed **`league-id`** file (26/27 = **1577**). That file is the source of truth — not the GitHub secret.
+2. Optional fallback: GitHub repo → **Settings** → **Secrets and variables** → **Actions** → **`FPL_LEAGUE_ID`**. The name is case-sensitive. If you also have a **github-pages Environment** secret of the same name, **it overrides the repository secret**. A leftover **6802** there ingested a stranger's league after the 26/27 rollover; keep Environment and repository values in sync, or delete the Environment copy and rely on `league-id`.
+3. Push any commit (or run the workflow).
 
-On each build, GitHub runs **`ingest.py`** with that ID, then builds the site.  
-**If the secret lived only under “Environment” before, it never reached the build step** — that’s fixed now by tying the build job to the same `github-pages` environment, but **Repository secret** is still the simplest.
+On each build, GitHub runs **`ingest.py`** with the committed id, then builds the site.
 
 **Scheduled builds are gated** (`web/scripts/waiver-refresh-gate.mjs`): the hourly cron only deploys during ~36h after each FPL `waivers_time`, during **05:26–05:45 UTC** daily, or (after a finished gameweek) from **2h after that GW’s deadline** until **3h before the next GW deadline** — so H2H `details.json` can update when a week ends, not only when waivers run. **Pushes to `main` and manual “Run workflow” always deploy.** If the live site looks a week behind, run the workflow or push after `python3 ingest.py` + `npm run publish-real-league`; open `deploy-check.json` on the site and confirm `details.json` reflects the latest finished GW.
 
 You can also set **Repository variable** `FPL_LEAGUE_ID` (Settings → Variables) if you prefer — same name.
 
-**⚠ Season rollover — update the id every August.** FPL Draft issues a **new league id each season** and recycles old numbers, so last season's id starts resolving to a **stranger's league** on the API. `ingest.py` guards against this: it compares the fetched managers' last names with the committed `web/public/league-data/details.json` and **fails the build** on a mismatch instead of deploying someone else's league. When that happens (or every new season), grab the new number from `draft.premierleague.com/league/<ID>` while logged in, update the `FPL_LEAGUE_ID` secret, and re-run the workflow. Genuinely switching to a different league? Set `ALLOW_LEAGUE_IDENTITY_MISMATCH=1` for one run (or replace the committed league-data via Path B).
+**⚠ Season rollover — update `league-id` every August.** FPL Draft issues a **new league id each season** and recycles old numbers, so last season's id starts resolving to a **stranger's league** on the API. `ingest.py` also compares the fetched managers' last names with the committed `web/public/league-data/details.json` and **fails the build** on a mismatch. When that happens, update `league-id` (and any `FPL_LEAGUE_ID` secrets, including the **github-pages** Environment) to the new number from `draft.premierleague.com/league/<ID>`. Genuinely switching leagues? Set `ALLOW_LEAGUE_ID_OVERRIDE=1` / `ALLOW_LEAGUE_IDENTITY_MISMATCH=1` for one run (or replace the committed league-data via Path B).
 
 ### Path B — commit files
 
