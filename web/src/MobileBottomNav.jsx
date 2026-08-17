@@ -100,16 +100,16 @@ export function MobileBottomNav({ dashboardView, onSelect, liveStatus, navLocked
           <button
             type="button"
             className={
-              'mobile-tab-bar__btn' + (dashboardView === 'preseason' ? ' is-active' : '')
+              'mobile-tab-bar__btn' + (dashboardView === 'teamSelection' ? ' is-active' : '')
             }
-            onClick={() => onSelect('preseason')}
-            aria-current={dashboardView === 'preseason' ? 'page' : undefined}
-            aria-label="26/27 season hub"
+            onClick={() => onSelect('teamSelection')}
+            aria-current={dashboardView === 'teamSelection' ? 'page' : undefined}
+            aria-label="Draft board"
           >
             <span className="mobile-tab-bar__ico" aria-hidden>
-              <NavIcon name="film" size={22} />
+              <NavIcon name="users" size={22} />
             </span>
-            <span className="mobile-tab-bar__label">26/27</span>
+            <span className="mobile-tab-bar__label">Draft</span>
           </button>
           <button
             type="button"

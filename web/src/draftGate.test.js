@@ -79,9 +79,10 @@ test('transaction_mode leaving not-drafted counts as complete', () => {
   assert.equal(gate.navLocked, false)
 })
 
-test('isPreDraftAllowedView — only 26/27 hub and Heritage', () => {
-  assert.equal(isPreDraftAllowedView('preseason'), true)
+test('isPreDraftAllowedView — only Moves (Draft) and Heritage', () => {
+  assert.equal(isPreDraftAllowedView('teamSelection'), true)
   assert.equal(isPreDraftAllowedView('hall'), true)
+  assert.equal(isPreDraftAllowedView('preseason'), false)
   assert.equal(isPreDraftAllowedView('standings'), false)
   assert.equal(isPreDraftAllowedView('settings'), false)
   assert.equal(isPreDraftAllowedView('more'), false)

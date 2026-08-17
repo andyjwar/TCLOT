@@ -412,7 +412,7 @@ import {
   DEFAULT_TAB_STORAGE_KEY,
   readStoredDefaultTab,
 } from './settingsStorage'
-import { initialMovesTab } from './seasonOpenLanding.js'
+import { initialDashboardView, initialMovesTab } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
 import {
@@ -2331,16 +2331,15 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
   )
 }
 
-/** Resolve initial dashboard view: players hash > stored default-tab pref > Moves.
+/** Resolve initial dashboard view: players hash > archive > Moves/Draft.
  * Season-open default is Moves (Draft until the first Thursday waivers).
- * Stored `'preseason'` prefs are remapped in `readStoredDefaultTab`. */
+ * Stored Settings prefs do not override that landing. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'teamSelection'
-  if (parsePlayersHash()) return /** @type {const} */ ('players')
-  /** Archive view (?season=): land on the finished season's table — the
-   * preseason hub and stored default describe the *live* season. */
-  if (isArchiveView()) return /** @type {const} */ ('standings')
-  return readStoredDefaultTab()
+  return initialDashboardView({
+    hasPlayersHash: Boolean(parsePlayersHash()),
+    archiveView: isArchiveView(),
+  })
 }
 
 const STANDINGS_SORT_KEYS = /** @type {const} */ (['gf', 'ga', 'gd', 'total'])
@@ -2584,7 +2583,7 @@ function App() {
 
   const selectDashboardView = useCallback((view) => {
     if (draftGate.navLocked && !isPreDraftAllowedView(view)) {
-      setDashboardView('preseason')
+      setDashboardView('teamSelection')
     } else {
       setDashboardView(view)
     }
@@ -2600,7 +2599,7 @@ function App() {
   useEffect(() => {
     if (!draftGate.navLocked) return
     if (!isPreDraftAllowedView(dashboardView)) {
-      setDashboardView('preseason')
+      setDashboardView('teamSelection')
     }
   }, [draftGate.navLocked, dashboardView])
 

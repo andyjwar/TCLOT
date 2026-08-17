@@ -1,7 +1,17 @@
 /**
- * Season-open landing: Moves defaults to Draft until the first GW waivers
- * run, then Waivers. Independent of the retired preseason hub.
+ * Season-open landing: the site opens on Moves → Draft until the first GW
+ * waivers run, then Waivers. Independent of the retired preseason hub.
  */
+
+/** Cold-load dashboard view. Players hash and archive views still win. */
+export function initialDashboardView({
+  hasPlayersHash = false,
+  archiveView = false,
+} = {}) {
+  if (hasPlayersHash) return 'players'
+  if (archiveView) return 'standings'
+  return 'teamSelection'
+}
 
 function eventsArray(events) {
   if (Array.isArray(events)) return events
