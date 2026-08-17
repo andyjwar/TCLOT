@@ -23,6 +23,8 @@ On each build, GitHub runs **`ingest.py`** with that ID, then builds the site.
 
 You can also set **Repository variable** `FPL_LEAGUE_ID` (Settings → Variables) if you prefer — same name.
 
+**⚠ Season rollover — update the id every August.** FPL Draft issues a **new league id each season** and recycles old numbers, so last season's id starts resolving to a **stranger's league** on the API. `ingest.py` guards against this: it compares the fetched managers' last names with the committed `web/public/league-data/details.json` and **fails the build** on a mismatch instead of deploying someone else's league. When that happens (or every new season), grab the new number from `draft.premierleague.com/league/<ID>` while logged in, update the `FPL_LEAGUE_ID` secret, and re-run the workflow. Genuinely switching to a different league? Set `ALLOW_LEAGUE_IDENTITY_MISMATCH=1` for one run (or replace the committed league-data via Path B).
+
 ### Path B — commit files
 
 ```bash
