@@ -689,7 +689,10 @@ function processLeagueData(raw, extras = {}) {
   const details = { ...raw };
   delete details._tcMeta;
 
-  let leagueEntries = details.league_entries || [];
+  let leagueEntries = (details.league_entries || []).map((e) => ({
+    ...e,
+    entry_name: displayEntryName(e, extras.currentSeasonNameByManager),
+  }));
   const matches = details.matches || [];
   let standingsRaw = details.standings || [];
 
@@ -1094,7 +1097,7 @@ function processLeagueData(raw, extras = {}) {
 
   return {
     league: details.league,
-    /** Raw league members (FPL `entry_id`, internal `id`, names, `waiver_pick`). */
+    /** League members with current-season club names overlaid when known. */
     leagueEntries,
     /** `league_entry` / `entry_id` → 0–11 shirt kit (standings order). */
     defaultKitIndexByLeagueEntry,

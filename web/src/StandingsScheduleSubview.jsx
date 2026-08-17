@@ -16,13 +16,6 @@ function pad2(n) {
   return num < 10 ? `0${num}` : String(num)
 }
 
-function firstWord(name) {
-  if (typeof name !== 'string') return ''
-  const t = name.trim()
-  if (!t) return ''
-  return t.split(/\s+/)[0]
-}
-
 /**
  * Schedule sub-tab — all-teams chronological list (latest GW first) plus a team-filtered
  * compact mode with W-L-T / Streak / Avg pts header card. See StandingsSubnav for
@@ -314,9 +307,6 @@ function ScheduleFixtureItem({
           <span className="standings-schedule__fixture-name-full">
             {fx.homeName}
           </span>
-          <span className="standings-schedule__fixture-name-short">
-            {firstWord(fx.homeName)}
-          </span>
         </span>
       </span>
       {fx.finished && fx.homePts != null && fx.awayPts != null ? (
@@ -357,9 +347,6 @@ function ScheduleFixtureItem({
         >
           <span className="standings-schedule__fixture-name-full">
             {fx.awayName}
-          </span>
-          <span className="standings-schedule__fixture-name-short">
-            {firstWord(fx.awayName)}
           </span>
         </span>
         <TeamAvatar
@@ -554,9 +541,6 @@ function TeamScheduleCompact({
                   >
                     <span className="standings-schedule-team__opp-name-full">
                       {r.opponentName}
-                    </span>
-                    <span className="standings-schedule-team__opp-name-short">
-                      {firstWord(r.opponentName)}
                     </span>
                   </span>
                 </span>

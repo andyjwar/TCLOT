@@ -724,35 +724,8 @@
   flex-shrink: 0;
 }
 
-.position-chip--GKP {
-  color: #f59e0b;
-  border-color: color-mix(in srgb, #f59e0b 38%, var(--border));
-}
-.position-chip--DEF {
-  color: #22d3ee;
-  border-color: color-mix(in srgb, #22d3ee 38%, var(--border));
-}
-.position-chip--MID {
-  color: #c4b5fd;
-  border-color: color-mix(in srgb, #a78bfa 38%, var(--border));
-}
-.position-chip--FWD {
-  color: #fca5a5;
-  border-color: color-mix(in srgb, #ef4444 38%, var(--border));
-}
-
-.fotmob[data-theme='light'] .position-chip--GKP {
-  color: #b45309;
-}
-.fotmob[data-theme='light'] .position-chip--DEF {
-  color: #0e7490;
-}
-.fotmob[data-theme='light'] .position-chip--MID {
-  color: #6d28d9;
-}
-.fotmob[data-theme='light'] .position-chip--FWD {
-  color: #b91c1c;
-}
+/* Per-position tints live in App.css (`.position-chip--GKP` etc.) so
+ * Wire, Draft, Waivers, and player-detail share the same muted pastels. */
 
 /* =====================================================
    Player-cell trailing indicator cluster
@@ -1124,18 +1097,21 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   padding: 0.1rem;
   flex-shrink: 0;
   box-sizing: border-box;
+  background: transparent;
 }
 
+/* Home / away: club crest in a green square (home) or red circle (away).
+ * Outline only — no tinted fill. */
 .players-fixture-badge--home {
   border: 2px solid #439446;
   border-radius: 5px;
-  background: color-mix(in srgb, #439446 16%, transparent);
+  background: transparent;
 }
 
 .players-fixture-badge--away {
   border: 2px solid #b92c28;
   border-radius: 50%;
-  background: color-mix(in srgb, #b92c28 12%, transparent);
+  background: transparent;
 }
 
 .players-fixture-badge__crest {
@@ -1941,12 +1917,22 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     letter-spacing: 0;
   }
 
+  .players-wire-tile__id-row .players-table__name-indicators {
+    margin-left: 0;
+    gap: 4px;
+  }
+
+  .players-wire-tile__id-row .players-table__name-indicator--injury {
+    font-size: 12px;
+  }
+
   .players-wire-tile__sub-row {
     display: flex;
     align-items: center;
     gap: 6px;
     min-width: 0;
     flex-wrap: wrap;
+    padding-left: 32px;
   }
 
   .players-wire-tile__owner {
@@ -1963,16 +1949,6 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     height: 16px;
   }
 
-  /* Indicator cluster reused — only injury/sus dots show in this context. */
-  .players-wire-tile__sub-row .players-table__name-indicators {
-    margin-left: 0;
-    gap: 4px;
-  }
-
-  .players-wire-tile__sub-row .players-table__name-indicator--injury {
-    font-size: 11px;
-  }
-
   .players-wire-tile__fixtures {
     display: inline-flex;
     align-items: center;
@@ -1985,8 +1961,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     gap: 4px;
   }
 
-  /* Slim down the Next-3 chips so three fit comfortably alongside the
-   * left-column identity stack on a 360–390px phone. */
+  /* Slim crest chips: green square home, red circle away. */
   .players-wire-tile__fixtures .players-fixture-badge {
     width: 1.4rem;
     height: 1.4rem;

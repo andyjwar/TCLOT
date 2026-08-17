@@ -320,33 +320,11 @@ import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import './App.css'
 
-/** Complete / future GW tiles: split so mobile can show first token only (narrow under 560px). */
-function teamNameFirstRest(name) {
-  if (typeof name !== 'string') return { single: true, first: '', rest: '' }
-  const parts = name.trim().split(/\s+/u).filter(Boolean)
-  if (parts.length <= 1) return { single: true, first: parts[0] ?? '', rest: '' }
-  return { single: false, first: parts[0], rest: parts.slice(1).join(' ') }
-}
-
 function GwFixtureTightTeamName({ name }) {
-  const { single, first, rest } = teamNameFirstRest(name)
-  if (single) {
-    return (
-      <span className="gw-fixture-name-text team-name team-name--sidebar" title={name || undefined}>
-        {first || '—'}
-      </span>
-    )
-  }
+  const label = name?.trim() || '—'
   return (
-    <span
-      className="gw-fixture-name-text team-name team-name--sidebar gw-fixture-name-text--mobile-first-token"
-      title={name || undefined}
-    >
-      <span className="gw-fixture-name-text__first">{first}</span>
-      <span className="gw-fixture-name-text__sep" aria-hidden="true">
-        {' '}
-      </span>
-      <span className="gw-fixture-name-text__rest">{rest}</span>
+    <span className="gw-fixture-name-text team-name team-name--sidebar" title={name || undefined}>
+      {label}
     </span>
   )
 }
