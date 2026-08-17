@@ -1,0 +1,9 @@
+---
+description: This is the WRONG GitHub repo for TCLOT
+globs:
+alwaysApply: true
+---
+
+Stop. Canonical TCLOT is **https://github.com/andyjwa/tclot** (live: https://tclot.vercel.app).
+
+This repository (`andyjwar/TCLOT`, extra "r") is not production. Do not merge UI work here. Retarget origin to `andyjwa/tclot` and open agents from that repo. Install the Cursor GitHub App on `andyjwa/tclot`.
