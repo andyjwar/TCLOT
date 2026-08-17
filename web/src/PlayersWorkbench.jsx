@@ -554,42 +554,55 @@ function PortraitStatsDropdownPill({
   )
 }
 
-/** @param {{ fixtures: object[], nextOnly?: boolean }} props */
-function NextFixtureBadges({ fixtures, nextOnly = false }) {
+/** @param {{ fixtures: object[], nextOnly?: boolean, captionHa?: boolean }} props */
+function NextFixtureBadges({ fixtures, nextOnly = false, captionHa = false }) {
   const list = nextOnly && fixtures?.length ? [fixtures[0]] : fixtures
   if (!list?.length) {
     return <span className="players-fixtures-empty">—</span>
   }
   return (
     <span
-      className={`players-fixtures-badges${nextOnly ? ' players-fixtures-badges--next-only' : ''}`}
+      className={`players-fixtures-badges${nextOnly ? ' players-fixtures-badges--next-only' : ''}${
+        captionHa ? ' players-fixtures-badges--captioned' : ''
+      }`}
       role="list"
       aria-label={nextOnly ? 'Next fixture' : 'Next three opponents'}
     >
       {list.map((fx, i) => (
         <span
           key={`${fx.oppTeamId}-${fx.isHome ? 'H' : 'A'}-${i}`}
-          className={`players-fixture-badge${
-            fx.isHome ? ' players-fixture-badge--home' : ' players-fixture-badge--away'
+          className={`players-fixture-chip${
+            fx.isHome ? ' players-fixture-chip--home' : ' players-fixture-chip--away'
           }`}
           role="listitem"
           title={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
           aria-label={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
         >
-          {fx.badgeUrl ? (
-            <img
-              src={fx.badgeUrl}
-              alt=""
-              className="players-fixture-badge__crest"
-              width={28}
-              height={28}
-              loading="lazy"
-            />
-          ) : (
-            <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
-              {fx.shortName?.slice(0, 3) ?? '?'}
+          <span
+            className={`players-fixture-badge${
+              fx.isHome ? ' players-fixture-badge--home' : ' players-fixture-badge--away'
+            }`}
+          >
+            {fx.badgeUrl ? (
+              <img
+                src={fx.badgeUrl}
+                alt=""
+                className="players-fixture-badge__crest"
+                width={28}
+                height={28}
+                loading="lazy"
+              />
+            ) : (
+              <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
+                {fx.shortName?.slice(0, 3) ?? '?'}
+              </span>
+            )}
+          </span>
+          {captionHa ? (
+            <span className="players-fixture-chip__ha" aria-hidden>
+              {fx.isHome ? 'H' : 'A'}
             </span>
-          )}
+          ) : null}
         </span>
       ))}
     </span>
@@ -757,11 +770,6 @@ function PortraitWireTileList({
                 >
                   {posLetter}
                 </span>
-              </div>
-              {/* Single sub-row: injury dots + Next-3 fixtures. Position moved
-               * up next to the name; the owner avatar now sits in its own
-               * column aligned with the points total on the right. */}
-              <div className="players-wire-tile__sub-row">
                 <PlayerInlineIndicators
                   el={el}
                   owner={null}
@@ -769,8 +777,12 @@ function PortraitWireTileList({
                   logoMap={logoMap}
                   kitIndexByEntry={kitIndexByEntry}
                 />
+              </div>
+              {/* Next-3 fixtures sit under the name. Injury/suspension sits
+               * beside the position chip on the identity row. */}
+              <div className="players-wire-tile__sub-row">
                 <span className="players-wire-tile__fixtures">
-                  <NextFixtureBadges fixtures={nextFixtures} />
+                  <NextFixtureBadges fixtures={nextFixtures} captionHa />
                 </span>
               </div>
             </div>

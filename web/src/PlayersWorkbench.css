@@ -1115,6 +1115,13 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   gap: 0.38rem;
 }
 
+.players-fixture-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 .players-fixture-badge {
   display: inline-flex;
   align-items: center;
@@ -1124,18 +1131,45 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   padding: 0.1rem;
   flex-shrink: 0;
   box-sizing: border-box;
+  background: transparent;
 }
 
+/* Home / away: shape + hairline only. Square = home, circle = away.
+ * No tinted fill — the crest should read first. */
 .players-fixture-badge--home {
-  border: 2px solid #439446;
+  border: 1.5px solid color-mix(in srgb, #439446 72%, var(--border));
   border-radius: 5px;
-  background: color-mix(in srgb, #439446 16%, transparent);
+  background: transparent;
 }
 
 .players-fixture-badge--away {
-  border: 2px solid #b92c28;
+  border: 1.5px solid color-mix(in srgb, #b92c28 68%, var(--border));
   border-radius: 50%;
-  background: color-mix(in srgb, #b92c28 12%, transparent);
+  background: transparent;
+}
+
+.players-fixture-chip__ha {
+  display: none;
+}
+
+.players-fixtures-badges--captioned {
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.players-fixtures-badges--captioned .players-fixture-chip {
+  flex-direction: column;
+  gap: 1px;
+}
+
+.players-fixtures-badges--captioned .players-fixture-chip__ha {
+  display: block;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--text-muted);
+  text-align: center;
 }
 
 .players-fixture-badge__crest {
@@ -1941,12 +1975,22 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     letter-spacing: 0;
   }
 
+  .players-wire-tile__id-row .players-table__name-indicators {
+    margin-left: 0;
+    gap: 4px;
+  }
+
+  .players-wire-tile__id-row .players-table__name-indicator--injury {
+    font-size: 12px;
+  }
+
   .players-wire-tile__sub-row {
     display: flex;
     align-items: center;
     gap: 6px;
     min-width: 0;
     flex-wrap: wrap;
+    padding-left: 32px;
   }
 
   .players-wire-tile__owner {
@@ -1963,16 +2007,6 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     height: 16px;
   }
 
-  /* Indicator cluster reused — only injury/sus dots show in this context. */
-  .players-wire-tile__sub-row .players-table__name-indicators {
-    margin-left: 0;
-    gap: 4px;
-  }
-
-  .players-wire-tile__sub-row .players-table__name-indicator--injury {
-    font-size: 11px;
-  }
-
   .players-wire-tile__fixtures {
     display: inline-flex;
     align-items: center;
@@ -1985,8 +2019,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     gap: 4px;
   }
 
-  /* Slim down the Next-3 chips so three fit comfortably alongside the
-   * left-column identity stack on a 360–390px phone. */
+  /* Slim crest chips; H/A captions sit under each one. */
   .players-wire-tile__fixtures .players-fixture-badge {
     width: 1.4rem;
     height: 1.4rem;
