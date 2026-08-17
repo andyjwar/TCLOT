@@ -267,7 +267,6 @@ import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
-import { PreseasonHub } from './PreseasonHub.jsx'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
 import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverlay.jsx'
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
@@ -284,6 +283,7 @@ import {
   DEFAULT_TAB_STORAGE_KEY,
   readStoredDefaultTab,
 } from './settingsStorage'
+import { initialMovesTab } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
 import {
@@ -2197,13 +2197,11 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
   )
 }
 
-/** Resolve initial dashboard view: players hash > stored default-tab pref > Preseason.
- * Ahead of the 26/27 PL season the new global default is the `'preseason'` hub
- * (countdown + cinematics) — see `DEFAULT_TAB_FALLBACK` in `settingsStorage.js`.
- * Existing users with a stored default-tab pref keep whatever they picked.
- * Users who want a different landing tab can still pick one in Settings. */
+/** Resolve initial dashboard view: players hash > stored default-tab pref > Moves.
+ * Season-open default is Moves (Draft until the first Thursday waivers).
+ * Stored `'preseason'` prefs are remapped in `readStoredDefaultTab`. */
 function initialDashboardViewForViewport() {
-  if (typeof window === 'undefined') return 'preseason'
+  if (typeof window === 'undefined') return 'teamSelection'
   if (parsePlayersHash()) return /** @type {const} */ ('players')
   return readStoredDefaultTab()
 }
@@ -2343,10 +2341,11 @@ function App() {
     gwWeeksAtLast = [],
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // preseason | standings | teamSelection | hall | fplLive | players | more | settings
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
   const [teamSelectionTab, setTeamSelectionTab] = useState(
-    /** @type {'waivers' | 'trades' | 'draft'} */ ('waivers'),
+    /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
   )
+  const [movesTabPrimed, setMovesTabPrimed] = useState(false)
   /* FPL Live sub-tab. Legacy values are coerced to `'live'` so a persisted
    * pref or stale deep link cannot leave the Live tab blank: `'vibes'`
    * (cinematics, moved to the Preseason hub) and `'forecast'` (player
@@ -2495,6 +2494,15 @@ function App() {
 
   /** FPL draft calendar — fetched on mount so Waivers tab does not depend on opening Live first. */
   const draftBootstrapEvents = useDraftBootstrapEvents()
+
+  /** Draft until GW1 waivers_time, then Waivers. Only applied once so later tab clicks stick. */
+  useEffect(() => {
+    if (movesTabPrimed) return
+    const list = draftBootstrapEvents.events
+    if (!list) return
+    setTeamSelectionTab(initialMovesTab(list, statusNow))
+    setMovesTabPrimed(true)
+  }, [draftBootstrapEvents.events, movesTabPrimed, statusNow])
 
   /**
    * Page-global fixture summary for the brand-header status strip. PR #4 chose
@@ -3024,7 +3032,6 @@ function App() {
           onSelect={selectDashboardView}
         />
         <div className="dashboard-content">
-          {dashboardView === 'preseason' ? <PreseasonHub /> : null}
 
           {dashboardView === 'standings' && (
             <>
