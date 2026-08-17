@@ -124,12 +124,7 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
   const topItems = primaryItems.filter((i) => !i.bottomOnly)
   const unlockedItems = isBottom ? primaryItems : topItems
   const preDraftItems = [
-    {
-      id: /** @type {const} */ ('preseason'),
-      label: '26/27',
-      shortLabel: '26/27',
-      emoji: '🎬',
-    },
+    unlockedItems.find((i) => i.id === 'teamSelection'),
     unlockedItems.find((i) => i.id === 'hall'),
   ].filter(Boolean)
   const items = navLocked ? preDraftItems : unlockedItems
