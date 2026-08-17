@@ -5,7 +5,6 @@ import { DraftQuality } from './DraftQuality'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { compareLeagueEntriesByDraftSlot, minOverallPickByEntryId } from './draftTeamOrder'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
-import { firstWord } from './teamNameUtils.js'
 
 const POS_OPTIONS = ['GKP', 'DEF', 'MID', 'FWD']
 
@@ -319,7 +318,7 @@ export function DraftBoard({
                           logoMap={teamLogoMap}
                           kitIndexByEntry={kitIndexByEntry}
                         />
-                        <span className="draft-grid__th-name">{firstWord(col.teamName)}</span>
+                        <span className="draft-grid__th-name">{col.teamName}</span>
                       </div>
                     ))}
                   </div>
@@ -404,7 +403,7 @@ export function DraftBoard({
                               <span className="draft-rlist__sub">
                                 <span className="draft-rlist__team">
                                   <span className="draft-rlist__team-name">
-                                    {firstWord(p.teamName)}
+                                    {p.teamName}
                                   </span>
                                 </span>
                                 <DraftStatusPill pick={p} />

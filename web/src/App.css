@@ -3422,13 +3422,6 @@
   opacity: 0.9;
 }
 
-/* Complete / future GW rows: show first word only (e.g. Toronto, Brampton); full name in title */
-@media (max-width: 560px) {
-  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__rest,
-  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__sep {
-    display: none;
-  }
-}
 
 /* All Waivers tile */
 .latest-waivers__gw {
@@ -14668,23 +14661,8 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
-/* Desktop shows full team name; mobile shows first-word truncation only.
- * Spec: ≥768px = desktop full name; ≤767px = first-word. */
-.standings-schedule__fixture-name-short {
-  display: none;
-}
-
 .standings-schedule__fixture-name-full {
   display: inline;
-}
-
-@media (max-width: 767px) {
-  .standings-schedule__fixture-name-full {
-    display: none;
-  }
-  .standings-schedule__fixture-name-short {
-    display: inline;
-  }
 }
 
 .standings-schedule__fixture-name--winner {
@@ -14836,9 +14814,7 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Schedule team-filtered compact rows — opponent name fills the gap between
- * the crest and the score column. Mobile shows first word only (matches the
- * "Crouch / Hanson / Toronto" reference in the user's mobile screenshot);
- * desktop shows the full opponent name. */
+ * the crest and the score column. */
 .standings-schedule-team__opp-name {
   font-size: 0.85rem;
   font-weight: 600;
@@ -14849,20 +14825,14 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
-.standings-schedule-team__opp-name-short {
-  display: none;
-}
-
 .standings-schedule-team__opp-name-full {
   display: inline;
 }
 
 @media (max-width: 767px) {
-  .standings-schedule-team__opp-name-full {
-    display: none;
-  }
-  .standings-schedule-team__opp-name-short {
-    display: inline;
+  .standings-schedule__fixture-name {
+    white-space: normal;
+    line-height: 1.2;
   }
 }
 
