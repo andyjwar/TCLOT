@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Writes web/public/league-data/draft_picks.json from live draft API + local bootstrap_draft.
- * Run when FPL_LEAGUE_ID / LEAGUE_ID / .fpl-league-id is set (same as fetch-league-if-needed).
+ * Run when a league id is resolvable (committed league-id / .fpl-league-id / env).
  * Runs on GitHub Actions when the workflow passes the league ID so Pages builds are not stuck
  * with a forked TCLOT draft_picks.json. Lets the Draft tab work without browser→draft CORS.
  */
@@ -9,23 +9,12 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from '
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { reconstructDraftPicks } from '../src/draftBoardPicks.js'
+import { readLeagueId } from './readLeagueId.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, '../..')
 const webPublic = join(repoRoot, 'web/public/league-data')
-const idFile = join(repoRoot, '.fpl-league-id')
-
-function readId() {
-  if (existsSync(idFile)) {
-    const t = readFileSync(idFile, 'utf8').trim().split(/\r?\n/)[0]?.trim()
-    if (t && /^\d+$/.test(t)) return t
-  }
-  const e = process.env.FPL_LEAGUE_ID?.trim() || process.env.LEAGUE_ID?.trim()
-  if (e && /^\d+$/.test(e)) return e
-  return null
-}
-
-const leagueId = readId()
+const leagueId = readLeagueId(repoRoot)
 if (!leagueId) {
   process.exit(0)
 }

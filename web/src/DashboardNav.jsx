@@ -67,22 +67,15 @@ export function DashboardNav({ variant, dashboardView, onSelect }) {
   const isBottom = variant === 'bottom'
 
   // Single source of truth for nav order (left → right on desktop, also the
-  // bottom-pill order on legacy mobile callers): 26/27 · FPL Live ·
-  // Standings · Moves · Players · TCLOT Heritage · More. The new mobile
-  // bottom tab bar (MobileBottomNav.jsx) supplies its own slot list
-  // (Table · Moves · contextual centre · Players · More); the items defined
-  // here drive only the desktop top nav now. `More` is `bottomOnly` so it
-  // never renders on
-  // desktop; desktop gets a separate Settings gear button (rendered below
-  // the .map() loop), kept out of this array so its hairline-divider +
-  // margin-left:auto styling stays local to that button.
+  // bottom-pill order on legacy mobile callers): FPL Live · Standings ·
+  // Moves · Players · TCLOT Heritage · More. The cinematic 26/27 hub is
+  // retired; Live stays available before GW1 so fixtures and squads are
+  // ready. The new mobile bottom tab bar (MobileBottomNav.jsx) supplies its
+  // own slot list (Table · Moves · contextual centre · Players · More); the
+  // items defined here drive only the desktop top nav now. `More` is
+  // `bottomOnly` so it never renders on desktop; desktop gets a separate
+  // Settings gear button (rendered below the .map() loop).
   const primaryItems = [
-    {
-      id: /** @type {const} */ ('preseason'),
-      label: '26/27',
-      shortLabel: '26/27',
-      emoji: '🎬',
-    },
     {
       id: /** @type {const} */ ('fplLive'),
       label: 'FPL Live',
@@ -177,9 +170,9 @@ export function DashboardMorePanel({
   kitIndexByEntry = {},
 }) {
   // The persistent mobile bottom tab bar (MobileBottomNav.jsx) now surfaces
-  // Table (Standings), Moves, Players, and a contextual centre (26/27 hub in
-  // preseason, FPL Live otherwise) at the top level. That leaves only Heritage
-  // and Settings to reach through More, so this panel lists exactly those two.
+  // Table (Standings), Moves, Players, and a contextual centre (FPL Live)
+  // at the top level. That leaves only Heritage and Settings to reach
+  // through More, so this panel lists exactly those two.
   // ('more' is effectively mobile-only — the desktop top nav filters it out.)
   const rows = [
     { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },

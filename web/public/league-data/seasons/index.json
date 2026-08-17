@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "updatedAt": "2026-08-17T19:55:31.694Z",
+  "current": "2026-27",
+  "seasons": [
+    "2025-26"
+  ],
+  "note": "Archived prior seasons under seasons/<label>/. Current live season is in the parent league-data/."
+}

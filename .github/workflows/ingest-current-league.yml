@@ -1,0 +1,45 @@
+# Pulls the committed league-id (1577 for 26/27) from the FPL Draft API and
+# uploads the JSON as an artifact. Runs on PRs so a sandbox that cannot reach
+# draft.premierleague.com can still land current-season data.
+name: Ingest current league
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Fetch league from committed league-id
+        run: |
+          set -euo pipefail
+          ID="$(tr -d '[:space:]' < league-id)"
+          echo "Committed league-id: $ID"
+          python3 -m pip install --user requests
+          LEAGUE_ID="$ID" python3 ingest.py
+          python3 - <<'PY'
+          import json, sys
+          expected = int(open("league-id").read().strip())
+          d = json.load(open("data/details.json"))
+          got = d["league"]["id"]
+          entries = d.get("league_entries") or []
+          print(f'Fetched "{d["league"].get("name","?")}" id={got} teams={len(entries)}')
+          for e in entries:
+              print(f' - {e.get("entry_name")} | {e.get("player_first_name")} {e.get("player_last_name")}')
+          if got != expected:
+              print(f"ERROR: fetched id {got} != committed league-id {expected}", file=sys.stderr)
+              sys.exit(1)
+          PY
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: league-data-${{ github.sha }}
+          path: data/*.json
+          if-no-files-found: error
+          retention-days: 5
