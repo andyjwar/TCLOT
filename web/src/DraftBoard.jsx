@@ -351,7 +351,11 @@ export function DraftBoard({
                                     {renderPlayerName(p, p.playerName)}
                                   </span>
                                   {p.pos ? (
-                                    <span className="draft-pos" title={p.pos} aria-label={p.pos}>
+                                    <span
+                                      className={`draft-pos draft-pos--${p.pos}`}
+                                      title={p.pos}
+                                      aria-label={p.pos}
+                                    >
                                       {p.pos}
                                     </span>
                                   ) : null}
@@ -395,7 +399,11 @@ export function DraftBoard({
                                   {renderPlayerName(p, p.playerName)}
                                 </span>
                                 {p.pos ? (
-                                  <span className="draft-pos" title={p.pos} aria-label={p.pos}>
+                                  <span
+                                    className={`draft-pos draft-pos--${p.pos}`}
+                                    title={p.pos}
+                                    aria-label={p.pos}
+                                  >
                                     {p.pos}
                                   </span>
                                 ) : null}

@@ -751,7 +751,9 @@ function PortraitWireTileList({
                   {displayName}
                 </ClickablePlayerName>
                 <span
-                  className="players-wire-tile__pos-chip"
+                  className={`players-wire-tile__pos-chip${
+                    row.posLabel ? ` players-wire-tile__pos-chip--${row.posLabel}` : ''
+                  }`}
                   aria-label={`Position ${posLetter}`}
                   title={`Position ${posLetter}`}
                 >
