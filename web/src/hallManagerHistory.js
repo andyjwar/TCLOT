@@ -15,6 +15,8 @@ const NICK_M_TEAM_MATCHERS = [
   'london gaston',
   'hackney meat',
   'mordor',
+  'mordorlicious',
+  'msfg',
 ]
 
 export function hallManagerDisplayKey(teamName, managerFirstName) {

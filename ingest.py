@@ -21,16 +21,52 @@ DRAFT_API = "https://draft.premierleague.com/api"
 FPL_CLASSIC_API = "https://fantasy.premierleague.com/api"
 
 
+REPO_ROOT = Path(__file__).resolve().parent
+
+
+def _id_from_file(path: Path):
+    """Return int league id from a one-line file, or None."""
+    try:
+        line = path.read_text().strip().splitlines()[0].strip()
+    except (OSError, IndexError):
+        return None
+    return int(line) if line.isdigit() else None
+
+
 def get_league_id() -> int:
-    """Get league ID from environment or command-line argument."""
-    league_id = os.environ.get("LEAGUE_ID")
-    if league_id:
-        return int(league_id)
+    """CLI arg > committed league-id file > .fpl-league-id > env.
+
+    The committed `league-id` file is the source of truth. GitHub Environment
+    secrets (github-pages) silently override repository secrets of the same name,
+    which is how a stale FPL_LEAGUE_ID=6802 kept winning over a newer repo
+    secret. Env is used only when the file is absent, or when
+    ALLOW_LEAGUE_ID_OVERRIDE=1.
+    """
     if len(sys.argv) > 1:
         return int(sys.argv[1])
+
+    committed = _id_from_file(REPO_ROOT / "league-id")
+    env_raw = (os.environ.get("LEAGUE_ID") or os.environ.get("FPL_LEAGUE_ID") or "").strip()
+    env_id = int(env_raw) if env_raw.isdigit() else None
+
+    if os.environ.get("ALLOW_LEAGUE_ID_OVERRIDE") == "1" and env_id:
+        return env_id
+    if committed:
+        if env_id and env_id != committed:
+            print(
+                f"Using committed league-id {committed}; ignoring env LEAGUE_ID={env_id}. "
+                "Set ALLOW_LEAGUE_ID_OVERRIDE=1 to use the env value."
+            )
+        return committed
+    local = _id_from_file(REPO_ROOT / ".fpl-league-id")
+    if local:
+        return local
+    if env_id:
+        return env_id
     print(
         "Usage: python ingest.py <LEAGUE_ID>\n"
         "   or: LEAGUE_ID=12345 python ingest.py\n\n"
+        "This repo pins the current season in the committed `league-id` file.\n"
         "Find your league ID in the URL when viewing your league:\n"
         "  draft.premierleague.com/league/YOUR_LEAGUE_ID"
     )
@@ -44,12 +80,86 @@ def fetch_json(url: str) -> dict:
     return resp.json()
 
 
+def _normalize_name(value) -> str:
+    return str(value or "").strip().lower()
+
+
+def known_manager_last_names(committed_details_path: Path) -> set:
+    """Last names of this league's managers, from the committed prior snapshot."""
+    try:
+        d = json.loads(committed_details_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return set()
+    if d.get("isSample"):
+        return set()
+    return {
+        _normalize_name(e.get("player_last_name"))
+        for e in d.get("league_entries") or []
+        if _normalize_name(e.get("player_last_name"))
+    }
+
+
+def league_identity_matches(fetched_details: dict, known_last_names: set) -> bool:
+    """True when at least half the fetched managers share a last name with the
+    committed league. FPL Draft reissues league ids every season, so a stale
+    FPL_LEAGUE_ID silently resolves to a stranger's league — this catches that.
+    """
+    if not known_last_names:
+        return True
+    entries = fetched_details.get("league_entries") or []
+    if not entries:
+        return True  # emptiness is validated separately
+    matches = sum(
+        1 for e in entries if _normalize_name(e.get("player_last_name")) in known_last_names
+    )
+    return matches * 2 >= len(entries)
+
+
+def guard_league_identity(league_id: int, fetched_details: dict) -> None:
+    """Refuse to ingest a league that clearly isn't ours (stale id after rollover)."""
+    if os.environ.get("ALLOW_LEAGUE_IDENTITY_MISMATCH") == "1":
+        return
+    committed = Path(__file__).parent / "web/public/league-data/details.json"
+    known = known_manager_last_names(committed)
+    if league_identity_matches(fetched_details, known):
+        return
+    managers = ", ".join(
+        f"{e.get('player_first_name', '')} {e.get('player_last_name', '')}".strip()
+        for e in fetched_details.get("league_entries") or []
+    )
+    print(
+        f"\nERROR: league {league_id} on the FPL Draft API is a DIFFERENT league.\n"
+        f'  Fetched "{fetched_details.get("league", {}).get("name", "?")}" with managers: {managers}\n'
+        f"  None/few of them match this league's known managers ({', '.join(sorted(known))}).\n"
+        "  FPL Draft issues a NEW league id every season, so a stale FPL_LEAGUE_ID\n"
+        "  resolves to a stranger's league after rollover. Update the FPL_LEAGUE_ID\n"
+        "  secret/variable to the new season's id (the number in the URL at\n"
+        "  draft.premierleague.com/league/<ID> while logged in).\n"
+        "  Intentionally switching leagues? Re-run with ALLOW_LEAGUE_IDENTITY_MISMATCH=1.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
+
 def ingest_league(league_id: int, output_dir: Path) -> None:
     """Fetch all FPL Draft data for a league and save to output_dir."""
     output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Details first, validated BEFORE anything is written: if the id resolves to
+    # a stranger's league, nothing lands in data/ for copy-data to pick up.
+    print("Fetching details...")
+    try:
+        details = fetch_json(f"{DRAFT_API}/league/{league_id}/details")
+    except Exception as e:
+        print(f"\nERROR: could not fetch league {league_id} details: {e}", file=sys.stderr)
+        sys.exit(1)
+    guard_league_identity(league_id, details)
+    details_out = output_dir / "details.json"
+    with open(details_out, "w") as f:
+        json.dump(details, f, indent=2)
+    print(f"  -> saved to {details_out}")
+
     endpoints = [
-        ("details", f"{DRAFT_API}/league/{league_id}/details"),
         ("element_status", f"{DRAFT_API}/league/{league_id}/element-status"),
         ("transactions", f"{DRAFT_API}/draft/league/{league_id}/transactions"),
         ("trades", f"{DRAFT_API}/draft/league/{league_id}/trades"),

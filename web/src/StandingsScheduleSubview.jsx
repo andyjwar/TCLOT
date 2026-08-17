@@ -308,9 +308,6 @@ function ScheduleFixtureItem({
           <span className="standings-schedule__fixture-name-full">
             {fx.homeName}
           </span>
-          <span className="standings-schedule__fixture-name-short">
-            {firstWord(fx.homeName)}
-          </span>
         </span>
       </span>
       {fx.finished && fx.homePts != null && fx.awayPts != null ? (
@@ -351,9 +348,6 @@ function ScheduleFixtureItem({
         >
           <span className="standings-schedule__fixture-name-full">
             {fx.awayName}
-          </span>
-          <span className="standings-schedule__fixture-name-short">
-            {firstWord(fx.awayName)}
           </span>
         </span>
         <TeamAvatar
@@ -548,9 +542,6 @@ function TeamScheduleCompact({
                   >
                     <span className="standings-schedule-team__opp-name-full">
                       {r.opponentName}
-                    </span>
-                    <span className="standings-schedule-team__opp-name-short">
-                      {firstWord(r.opponentName)}
                     </span>
                   </span>
                 </span>

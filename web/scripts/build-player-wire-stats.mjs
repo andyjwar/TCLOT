@@ -3,17 +3,17 @@
  * Precomputes GP / 60+ / DefCon GW hits for every draft player at build time.
  * Avoids hundreds of browser→proxy element-summary calls on the Players tab.
  *
- * Runs when FPL_LEAGUE_ID / LEAGUE_ID / .fpl-league-id is set (same gate as build-draft-picks).
+ * Runs when a league id is resolvable (committed league-id / .fpl-league-id / env).
  * Fetches draft API server-side (no CORS / no Cloudflare Worker quota).
  */
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import { readLeagueId } from './readLeagueId.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const repoRoot = join(__dirname, '../..')
 const webPublic = join(repoRoot, 'web/public/league-data')
-const idFile = join(repoRoot, '.fpl-league-id')
 const outPath = join(webPublic, 'player-wire-stats.json')
 
 const DRAFT = 'https://draft.premierleague.com/api'
@@ -21,13 +21,7 @@ const BATCH = 12
 const BATCH_DELAY_MS = 80
 
 function readId() {
-  if (existsSync(idFile)) {
-    const t = readFileSync(idFile, 'utf8').trim().split(/\r?\n/)[0]?.trim()
-    if (t && /^\d+$/.test(t)) return t
-  }
-  const e = process.env.FPL_LEAGUE_ID?.trim() || process.env.LEAGUE_ID?.trim()
-  if (e && /^\d+$/.test(e)) return e
-  return null
+  return readLeagueId(repoRoot)
 }
 
 function currentGwFromBootstrap(boot) {

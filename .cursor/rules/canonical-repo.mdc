@@ -1,0 +1,9 @@
+---
+description: Canonical GitHub repo for TCLOT
+globs:
+alwaysApply: true
+---
+
+This codebase's GitHub home is **andyjwa/tclot** (https://github.com/andyjwa/tclot). Live site is https://tclot.vercel.app.
+
+Never push, open PRs, or merge into **andyjwar/TCLOT**. That account is the wrong GitHub login (extra "r"). If origin points there, retarget to `andyjwa/tclot` before committing.

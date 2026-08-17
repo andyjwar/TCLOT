@@ -91,17 +91,17 @@ Open **http://localhost:5173/TCLOT/** (or the path Vite prints).
 
 ### Local league data (recommended)
 
-`data/` is gitignored, so without it the app may use **old committed** `web/public/league-data/` (wrong league).
+`data/` is gitignored, so without it the app may use **old committed** `web/public/league-data/` (wrong season).
 
-1. Copy **`.fpl-league-id.example`** → **`.fpl-league-id`** in the repo root.
-2. Put **only your league ID** (the number in `draft.premierleague.com/league/THIS`) on the first line.
-3. Run **`cd web && npm run dev`** (or **`npm run build`**) — it will **download your league** into `data/` every time, then copy into `web/public/league-data/`.
+The current season's Draft league number is pinned in the committed **`league-id`** file at the repo root (26/27 = **1577**). `npm run dev` / `npm run build` download that league into `data/` and copy it into `web/public/league-data/`.
+
+To point at a different league locally, put the id in **`.fpl-league-id`** (gitignored) and set **`ALLOW_LEAGUE_ID_OVERRIDE=1`**, or run `python3 ingest.py YOUR_ID`.
 
 Optional: **`SKIP_LEAGUE_FETCH=1`** skips the download (uses existing `data/` or committed files).
 
 ### Wrong teams / not your league?
 
-**Fix:** add **`.fpl-league-id`** as above, or from the repo root:
+**Fix:** confirm **`league-id`** is the current season's number, or from the repo root:
 
 ```bash
 python3 ingest.py YOUR_LEAGUE_ID
@@ -116,13 +116,11 @@ cd web && npm run dev
 
 ### GitHub Pages — link the live site to your league
 
-1. On GitHub: **Settings → Secrets and variables → Actions → New repository secret**
-2. Name: **`FPL_LEAGUE_ID`** — Value: your league ID (the number in `draft.premierleague.com/league/**THIS**`)
-3. Push any change (or **Actions → Deploy site to Pages → Run workflow**)
+The deploy workflow ingests the id in committed **`league-id`** (currently **1577**). Update that file each August when FPL issues a new league number.
 
-Each deploy runs `ingest.py` with that ID, then builds the site with **real** standings, fixtures, and waivers — no need to commit JSON files. Re-push or **Run workflow** anytime you want a refresh.
+`FPL_LEAGUE_ID` is only a fallback for forks. If you do set it, use the exact name **`FPL_LEAGUE_ID`** (case-sensitive) on **both** repository secrets **and** **Settings → Environments → github-pages** — environment secrets override repo secrets of the same name, which is how a leftover **6802** ingested a stranger's league in 26/27.
 
-If **`FPL_LEAGUE_ID`** is not set, the build uses committed `web/public/league-data/` or demo data.
+Each deploy runs `ingest.py`, then builds with real standings, fixtures, and waivers. Re-push or **Actions → Deploy site to Pages → Run workflow** to refresh.
 
 ### Team logos (replace letter bubbles)
 

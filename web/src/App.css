@@ -10853,8 +10853,8 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
  *     .standings-table--variant-c-mobile .standings-table--live-
  *     mobile` with the condensed 5-column set
  *     (#, Team, For, PTS, Last). The variant-c-mobile base sizes
- *     the row padding and team-name truncation to fit a 390px
- *     viewport without horizontal scroll; the `--live-mobile`
+ *     the row padding so full club names fit a 390px viewport
+ *     without horizontal scroll; the `--live-mobile`
  *     suffix carries Live-only overrides (kill the variant-c
  *     hover/cursor since rows aren't clickable on Live).
  *
@@ -11017,36 +11017,44 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
     display: table-cell !important;
   }
 
-  /* Historic standings mobile fit (Task 6a/b) — 7 columns (# / Team / W / D /
-   * L / For / PTS) were spilling beyond the viewport, chopping PTS off as
-   * "PT?". Two-part fix:
-   *   (a) Tighter cell padding on the narrow numeric cells so the row stops
-   *       reserving the legacy 10px×2 padding for every column.
-   *   (b) A right-side breathing buffer on `L` so the visible eye-distance
-   *       between the W/D/L cluster and `For` reads as a real column gap
-   *       rather than a single wide L→For run-on.
-   * The PointsCell inside `td.col-pts` is rendered at 1.25rem so the column
-   * stays readable even at the tighter padding. */
+  /* All Time Standings uses the same W / D / L cluster on mobile. */
+  .standings-table.heritage-cofc__table .col-wdl {
+    display: table-cell !important;
+  }
+
+  /* Historic standings mobile fit — 7 columns (# / Team / W / D / L /
+   * For / PTS). Historic headers are *not* sortable, so do not reserve
+   * the sidebar sort-arrow gutter on the numeric cells (that gutter was
+   * shifting For / PTS numbers left of their labels). W / D / L share
+   * even padding so the cluster doesn't dump leftover space before For. */
   .standings-table.standings-table--historic th,
   .standings-table.standings-table--historic td {
     padding: 8px 4px;
   }
   .standings-table.standings-table--historic .col-wdl {
-    padding-left: 3px;
-    padding-right: 3px;
-  }
-  /* Adds a visible gap between the L cell and the For cell without bloating
-   * the For/PTS columns themselves. */
-  .standings-table.standings-table--historic .col-wdl:nth-of-type(6) {
-    padding-right: 10px;
+    padding-left: 4px;
+    padding-right: 4px;
+    text-align: right;
+    width: 2.1rem;
   }
   .standings-table.standings-table--historic .col-for,
   .standings-table.standings-table--historic .col-pts {
     padding-left: 6px;
     padding-right: 6px;
+    text-align: right;
+  }
+  /* Headers here have no sort arrows — undo the sidebar arrow-slot pad
+   * so the figures sit under For / PTS. */
+  .standings-table.standings-table--historic.standings-table--sidebar td.col-for,
+  .standings-table.standings-table--historic.standings-table--sidebar td.col-num.col-pts {
+    padding-right: 6px;
+  }
+  .standings-table.standings-table--historic.standings-table--sidebar th.col-for,
+  .standings-table.standings-table--historic.standings-table--sidebar th.col-num.col-pts {
+    min-width: 0;
   }
   /* Defeat the global `td.col-num.col-pts { text-align: center }` rule so
-   * the violet PointsCell sits flush right with the column header. */
+   * the PointsCell sits flush right with the column header. */
   .standings-table.standings-table--historic td.col-num.col-pts {
     text-align: right;
   }
@@ -14264,10 +14272,12 @@ button.live-xp__player-name:focus-visible {
   font-size: 0.64rem;
 }
 
-/* Team col — kill the legacy `.standings-table .col-team
- * { min-width: 140px }` floor so the column shrinks to content. */
+/* Team col — takes leftover width so full club names (minus MSFG)
+ * fit on a phone once the manager subtitle is gone. Kill the legacy
+ * `.standings-table .col-team { min-width: 140px }` floor. */
 .standings-table--variant-c-mobile .col-team {
   min-width: 0;
+  width: 46%;
   text-align: left;
 }
 .standings-table--variant-c-mobile td.col-team .team-avatar-frame--sm {
@@ -14276,23 +14286,25 @@ button.live-xp__player-name:focus-visible {
 }
 .standings-table--variant-c-mobile .team-cell {
   gap: 6px;
+  min-width: 0;
+}
+.standings-table--variant-c-mobile .standings-team-id {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .standings-table--variant-c-mobile .team-name--sidebar {
   font-size: 13px;
-  font-weight: 600;
-  line-height: 1.2;
-  /* First-word names are usually 6–8 chars and fit naturally; the
-   * cap is a safety net (and forces the manager line below to truncate
-   * with ellipsis when its full name would otherwise push the column
-   * wide enough to overflow a 360px viewport). */
+  font-weight: 700;
+  line-height: 1.25;
+  max-width: none;
+  /* Full names use leftover column width. Wrap at a space rather
+   * than truncating mid-word; clamp at two lines for the odd long
+   * name on a 360px viewport. */
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 72px;
-}
-.standings-table--variant-c-mobile .standings-team-mgr {
-  font-size: 10px;
-  max-width: 72px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 /* For / PTS — right-aligned tabular numerics. */
@@ -14824,23 +14836,8 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
-/* Desktop shows full team name; mobile shows first-word truncation only.
- * Spec: ≥768px = desktop full name; ≤767px = first-word. */
-.standings-schedule__fixture-name-short {
-  display: none;
-}
-
 .standings-schedule__fixture-name-full {
   display: inline;
-}
-
-@media (max-width: 767px) {
-  .standings-schedule__fixture-name-full {
-    display: none;
-  }
-  .standings-schedule__fixture-name-short {
-    display: inline;
-  }
 }
 
 .standings-schedule__fixture-name--winner {
@@ -14992,9 +14989,7 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Schedule team-filtered compact rows — opponent name fills the gap between
- * the crest and the score column. Mobile shows first word only (matches the
- * "Crouch / Hanson / Toronto" reference in the user's mobile screenshot);
- * desktop shows the full opponent name. */
+ * the crest and the score column. */
 .standings-schedule-team__opp-name {
   font-size: 0.85rem;
   font-weight: 600;
@@ -15005,20 +15000,14 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 
-.standings-schedule-team__opp-name-short {
-  display: none;
-}
-
 .standings-schedule-team__opp-name-full {
   display: inline;
 }
 
 @media (max-width: 767px) {
-  .standings-schedule-team__opp-name-full {
-    display: none;
-  }
-  .standings-schedule-team__opp-name-short {
-    display: inline;
+  .standings-schedule__fixture-name {
+    white-space: normal;
+    line-height: 1.2;
   }
 }
 
@@ -15502,9 +15491,9 @@ button.live-xp__player-name:focus-visible {
    * Scorebook ramp: one ordered light→dark interpolation so better/worse reads
    * instantly. 1st = saturated green anchor, positions 2-5 step down through
    * mint/sage tints to near-neutral card, 6-7 warm through soft rust tints, and
-   * 8th lands on the strongest rust anchor. Dark theme (default) mixes brighter
-   * anchors toward the dark card surfaces; the light override below mixes the
-   * deep racing-green / rust anchors toward cream paper. */
+   * 8th is a slightly stronger rust mix (not a solid brick). Dark theme mixes
+   * brighter anchors toward the dark card; the light override mixes racing-green
+   * / rust toward cream paper. */
   --heritage-pos-1-bg: color-mix(in srgb, #34d399 72%, var(--fm-card));
   --heritage-pos-1-fg: #0c1f15;
   --heritage-pos-2-bg: color-mix(in srgb, #34d399 40%, var(--fm-card));
@@ -15519,12 +15508,12 @@ button.live-xp__player-name:focus-visible {
   --heritage-pos-6-fg: var(--fm-text-strong);
   --heritage-pos-7-bg: color-mix(in srgb, #e08a5e 26%, var(--fm-card));
   --heritage-pos-7-fg: var(--fm-text-strong);
-  --heritage-pos-8-bg: color-mix(in srgb, #e08a5e 78%, var(--fm-card));
-  --heritage-pos-8-fg: #241009;
+  --heritage-pos-8-bg: color-mix(in srgb, #e08a5e 48%, var(--fm-card));
+  --heritage-pos-8-fg: var(--fm-text-strong);
 }
 
 /* Light theme: deep racing green (cream text) → sage/mint tints → cream paper
- * neutral mid-table → soft rust tints → strongest rust (cream text) for 8th. */
+ * neutral mid-table → soft rust tints → a stronger rust mix for 8th (dark ink). */
 .fotmob[data-theme='light'] .heritage-shell {
   --heritage-pos-1-bg: #17402f;
   --heritage-pos-1-fg: #f4f6f0;
@@ -15540,8 +15529,8 @@ button.live-xp__player-name:focus-visible {
   --heritage-pos-6-fg: #1a231a;
   --heritage-pos-7-bg: color-mix(in srgb, #b04f26 26%, var(--fm-card));
   --heritage-pos-7-fg: #1a231a;
-  --heritage-pos-8-bg: #b04f26;
-  --heritage-pos-8-fg: #f7ecdd;
+  --heritage-pos-8-bg: color-mix(in srgb, #b04f26 50%, var(--fm-card));
+  --heritage-pos-8-fg: #1a231a;
 }
 
 .heritage-subnav-strip {
@@ -16479,26 +16468,36 @@ button.live-xp__player-name:focus-visible {
   color: var(--fm-muted);
 }
 
+/* Flex-center every count cell so Titan/Minnow plain numbers share the
+ * same vertical midline as the gold Titles pill (28px chip). */
 .heritage-shell .merged-history-timeline__mgr-col-num {
-  padding: 2px 8px 7px;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--fm-text-strong);
-  font-variant-numeric: tabular-nums;
-}
-
-.heritage-shell .merged-history-timeline__mgr-col-num--titles {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 4px;
-  padding-bottom: 8px;
+  padding: 4px 8px 8px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--fm-text-strong);
+  font-variant-numeric: tabular-nums;
 }
 
 .heritage-shell .merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
   width: 28px;
   height: 28px;
   font-size: 13px;
+}
+
+/* Wrap Titan/Minnow digits so they are real flex items. Raw text nodes
+ * stay left-aligned in WebKit even when the cell is `justify-content:
+ * center` (Titles already used a span/pill, so it looked centered). */
+.heritage-shell .merged-history-timeline__plain-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 28px;
+  text-align: center;
 }
 
 .heritage-shell .merged-history-timeline__mgr-meta {
@@ -17048,6 +17047,9 @@ button.live-xp__player-name:focus-visible {
   display: none;
   font-weight: 600;
   color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Mobile: drop PL column + use first-word team names */
@@ -17055,6 +17057,13 @@ button.live-xp__player-name:focus-visible {
 
 @media (max-width: 720px) {
   .heritage-col--hide-portrait { display: none; }
+  .heritage-team-cell {
+    width: 100%;
+  }
+  .heritage-team-cell__name {
+    display: block;
+    overflow: hidden;
+  }
   .heritage-team-cell__name-full { display: none; }
   .heritage-team-cell__name-short { display: inline; }
 }
@@ -17120,7 +17129,16 @@ button.live-xp__player-name:focus-visible {
 
 .heritage-cofc__sort-btn { width: 100%; }
 
-.heritage-cofc__th--pts.is-active .standings-sort-btn__label { color: var(--tclot-logo-purple, #795bfb); }
+/* Scorebook green — same PTS cue as the live league table, not the
+ * Heritage purple used on titles / crests. */
+.heritage-cofc__th--pts.is-active .standings-sort-btn__label,
+.heritage-cofc__th--pts.is-league-default .standings-sort-btn__label {
+  color: var(--fm-accent, #12a15a);
+}
+
+.heritage-cofc__th--mgr .standings-sort-btn__label {
+  text-align: left;
+}
 
 .heritage-cofc__td-mgr {
   text-align: left;
@@ -17146,6 +17164,181 @@ button.live-xp__player-name:focus-visible {
 @media (max-width: 720px) {
   .heritage-cofc__mgr-name-full { display: none; }
   .heritage-cofc__mgr-name-short { display: inline; }
+}
+
+/* Mobile All Time Standings — keep Manager on one line and pin W / D /
+ * L / For / PTS to even, matching columns. The hall-career portrait
+ * sheet hyphenates headers (`Manag-er`) and table-layout:fixed without
+ * widths, which dumped leftover space between L and For. */
+.standings-table.heritage-cofc__table {
+  --cofc-sort-arrow: 0.9em;
+}
+
+.heritage-cofc__table .heritage-cofc__sort-btn {
+  grid-template-columns: minmax(0, 1fr) var(--cofc-sort-arrow);
+  gap: 2px;
+}
+
+.heritage-cofc__th--mgr .heritage-cofc__sort-btn {
+  text-align: left;
+}
+
+/* Numeric values sit in the label band, left of the reserved arrow slot
+ * — same treatment the live sidebar table uses for For / PTS. Beat
+ * hall-career’s tight PTS pad (`padding-right: 7px`) which left figures
+ * sitting under the arrows. */
+.standings-table.standings-table--hall-career.heritage-cofc__table td.col-wdl,
+.standings-table.standings-table--hall-career.heritage-cofc__table td.col-for,
+.standings-table.standings-table--hall-career.heritage-cofc__table td.col-pts {
+  padding-right: calc(4px + var(--cofc-sort-arrow));
+  text-align: right;
+}
+
+@media (max-width: 1080px) {
+  .standings-table.heritage-cofc__table {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+  }
+
+  .standings-table.heritage-cofc__table thead th {
+    white-space: nowrap;
+    hyphens: none;
+    overflow-wrap: normal;
+    vertical-align: bottom;
+  }
+
+  .standings-table.heritage-cofc__table thead th .standings-sort-btn__label {
+    white-space: nowrap;
+    overflow-wrap: normal;
+    font-size: 0.62rem;
+    line-height: 1;
+  }
+
+  .heritage-cofc__th--mgr {
+    width: 32%;
+  }
+
+  .heritage-cofc__th--wdl,
+  .standings-table.heritage-cofc__table .col-wdl {
+    width: 11%;
+  }
+
+  .standings-table.heritage-cofc__table th.col-for,
+  .standings-table.heritage-cofc__table td.col-for {
+    width: 17%;
+  }
+
+  .standings-table.heritage-cofc__table th.col-pts,
+  .standings-table.heritage-cofc__table td.col-pts {
+    width: 18%;
+  }
+
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-wdl,
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-for,
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-pts {
+    padding-right: calc(4px + var(--cofc-sort-arrow));
+  }
+}
+
+@media (max-width: 720px) {
+  .standings-table.heritage-cofc__table th,
+  .standings-table.heritage-cofc__table td {
+    padding: 8px 3px;
+  }
+
+  .heritage-cofc__td-mgr {
+    padding-left: 4px;
+  }
+
+  .standings-table.heritage-cofc__table thead th .standings-sort-btn__label {
+    letter-spacing: 0.02em;
+  }
+
+  .standings-table.heritage-cofc__table .standings-sort-arrow {
+    font-size: 0.78em;
+    width: var(--cofc-sort-arrow);
+  }
+
+  /* Idle ↕ eats the label band on phones. Keep the active PTS (or
+   * clicked-column) arrow; collapse the rest so W / D / L / For sit
+   * on their figures — same idea as the mobile league table. */
+  .standings-table.heritage-cofc__table .standings-sort-arrow:not(.standings-sort-arrow--active) {
+    visibility: hidden;
+    width: 0;
+    overflow: hidden;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__sort-btn {
+    grid-template-columns: minmax(0, 1fr) 0;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th.is-active .heritage-cofc__sort-btn,
+  .standings-table.heritage-cofc__table .heritage-cofc__th.is-league-default .heritage-cofc__sort-btn {
+    grid-template-columns: minmax(0, 1fr) var(--cofc-sort-arrow);
+  }
+
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-wdl,
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-for {
+    padding-right: 4px;
+  }
+
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-pts {
+    padding-right: calc(4px + var(--cofc-sort-arrow));
+  }
+
+  .standings-table.heritage-cofc__table th.col-wdl,
+  .standings-table.heritage-cofc__table td.col-wdl {
+    text-align: right;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .heritage-cofc__sort-btn {
+    display: flex;
+    justify-content: flex-end;
+    grid-template-columns: none;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .standings-sort-btn__label {
+    text-align: right;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th--right:not(.heritage-cofc__th--wdl) .heritage-cofc__sort-btn {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    grid-template-columns: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .standings-table.standings-table--historic {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .standings-table.standings-table--historic .col-rank {
+    width: 9%;
+  }
+
+  .standings-table.standings-table--historic .col-team {
+    min-width: 0;
+    width: 36%;
+  }
+
+  .standings-table.standings-table--historic th.col-wdl,
+  .standings-table.standings-table--historic td.col-wdl {
+    width: 9%;
+    text-align: right;
+  }
+
+  .standings-table.standings-table--historic th.col-for,
+  .standings-table.standings-table--historic td.col-for,
+  .standings-table.standings-table--historic th.col-pts,
+  .standings-table.standings-table--historic td.col-num.col-pts {
+    width: 14.5%;
+    text-align: right;
+  }
 }
 
 .heritage-cofc__crest {
@@ -17902,10 +18095,9 @@ button.live-xp__player-name:focus-visible {
   .draft-rlist { display: none; }
 }
 
-/* Shared position chip — same recipe as Waivers / player-detail hero
- * (`.waivers-pos-chip` / `.pdetail-p__hero-pos`): cream surface, 1px
- * border, monospace caps. No per-position colour — Scorebook chrome
- * carries accent, not GKP/DEF/MID/FWD. */
+/* Shared position chip — cream surface, 1px border, monospace caps.
+ * Per-position colour is a muted pastel wash (see `.position-chip--*`
+ * below), not neon G/D/M/F. */
 .draft-pos {
   flex: 0 0 auto;
   display: inline-flex;
@@ -17922,6 +18114,91 @@ button.live-xp__player-name:focus-visible {
   color: var(--text-muted, var(--fm-muted));
   border: 1px solid var(--border, var(--fm-border));
   border-radius: 3px;
+}
+
+/* Subtle GKP / DEF / MID / FWD wash — pale fill, matching border + ink.
+ * Used on Wire desktop chips, Wire portrait letters, Draft, Waivers,
+ * and player-detail heroes. Double-class so it beats local cream chips. */
+.position-chip.position-chip--GKP,
+.draft-pos.draft-pos--GKP,
+.waivers-pos-chip.waivers-pos-chip--GKP,
+.pdetail__hero-pos.pdetail__hero-pos--GKP,
+.pdetail-p__hero-pos.pdetail-p__hero-pos--GKP,
+.players-wire-tile__pos-chip.players-wire-tile__pos-chip--GKP {
+  color: #8a6a24;
+  border-color: color-mix(in srgb, #c4a35a 48%, var(--border, #ddd5b8));
+  background: color-mix(in srgb, #c4a35a 14%, var(--surface, #fffdf6));
+}
+.position-chip.position-chip--DEF,
+.draft-pos.draft-pos--DEF,
+.waivers-pos-chip.waivers-pos-chip--DEF,
+.pdetail__hero-pos.pdetail__hero-pos--DEF,
+.pdetail-p__hero-pos.pdetail-p__hero-pos--DEF,
+.players-wire-tile__pos-chip.players-wire-tile__pos-chip--DEF {
+  color: #2f6b5c;
+  border-color: color-mix(in srgb, #3f8a74 48%, var(--border, #ddd5b8));
+  background: color-mix(in srgb, #3f8a74 13%, var(--surface, #fffdf6));
+}
+.position-chip.position-chip--MID,
+.draft-pos.draft-pos--MID,
+.waivers-pos-chip.waivers-pos-chip--MID,
+.pdetail__hero-pos.pdetail__hero-pos--MID,
+.pdetail-p__hero-pos.pdetail-p__hero-pos--MID,
+.players-wire-tile__pos-chip.players-wire-tile__pos-chip--MID {
+  color: #5a4878;
+  border-color: color-mix(in srgb, #7a6a9a 48%, var(--border, #ddd5b8));
+  background: color-mix(in srgb, #7a6a9a 13%, var(--surface, #fffdf6));
+}
+.position-chip.position-chip--FWD,
+.draft-pos.draft-pos--FWD,
+.waivers-pos-chip.waivers-pos-chip--FWD,
+.pdetail__hero-pos.pdetail__hero-pos--FWD,
+.pdetail-p__hero-pos.pdetail-p__hero-pos--FWD,
+.players-wire-tile__pos-chip.players-wire-tile__pos-chip--FWD {
+  color: #8a4a3a;
+  border-color: color-mix(in srgb, #c47a6a 48%, var(--border, #ddd5b8));
+  background: color-mix(in srgb, #c47a6a 13%, var(--surface, #fffdf6));
+}
+
+.fotmob:not([data-theme='light']) .position-chip.position-chip--GKP,
+.fotmob:not([data-theme='light']) .draft-pos.draft-pos--GKP,
+.fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--GKP,
+.fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--GKP,
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--GKP,
+.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--GKP {
+  color: #e0c57a;
+  border-color: color-mix(in srgb, #c4a35a 40%, var(--border));
+  background: color-mix(in srgb, #c4a35a 16%, transparent);
+}
+.fotmob:not([data-theme='light']) .position-chip.position-chip--DEF,
+.fotmob:not([data-theme='light']) .draft-pos.draft-pos--DEF,
+.fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--DEF,
+.fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--DEF,
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--DEF,
+.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--DEF {
+  color: #9dcebc;
+  border-color: color-mix(in srgb, #3f8a74 40%, var(--border));
+  background: color-mix(in srgb, #3f8a74 18%, transparent);
+}
+.fotmob:not([data-theme='light']) .position-chip.position-chip--MID,
+.fotmob:not([data-theme='light']) .draft-pos.draft-pos--MID,
+.fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--MID,
+.fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--MID,
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--MID,
+.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--MID {
+  color: #c4b5e0;
+  border-color: color-mix(in srgb, #7a6a9a 40%, var(--border));
+  background: color-mix(in srgb, #7a6a9a 18%, transparent);
+}
+.fotmob:not([data-theme='light']) .position-chip.position-chip--FWD,
+.fotmob:not([data-theme='light']) .draft-pos.draft-pos--FWD,
+.fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--FWD,
+.fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--FWD,
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--FWD,
+.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--FWD {
+  color: #e0a090;
+  border-color: color-mix(in srgb, #c47a6a 40%, var(--border));
+  background: color-mix(in srgb, #c47a6a 18%, transparent);
 }
 
 /* Shared "where are they now" status pill */

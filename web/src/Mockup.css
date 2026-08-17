@@ -14184,24 +14184,31 @@
   letter-spacing: 0.1em;
   color: var(--text-muted);
 }
+/* Flex-center every count cell so Titan/Minnow plain numbers share the
+ * same vertical midline as the gold Titles pill (28px chip). */
 .merged-history-timeline__mgr-col-num {
-  padding: 2px 8px 7px;
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text-strong);
-  font-variant-numeric: tabular-nums;
-}
-.merged-history-timeline__mgr-col-num--titles {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-top: 4px;
-  padding-bottom: 8px;
+  padding: 4px 8px 8px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--text-strong);
+  font-variant-numeric: tabular-nums;
 }
 .merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
   width: 28px;
   height: 28px;
   font-size: 13px;
+}
+.merged-history-timeline__plain-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 28px;
+  text-align: center;
 }
 .merged-history-timeline__cards {
   display: grid;

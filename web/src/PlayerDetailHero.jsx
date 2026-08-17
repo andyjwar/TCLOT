@@ -106,7 +106,7 @@ function PlayerDetailHeroDesktop({
 
       <div className="pdetail__hero-body">
         <div className="pdetail__hero-meta">
-          <span className="pdetail__hero-pos">{posLabel}</span>
+          <span className={`pdetail__hero-pos pdetail__hero-pos--${posLabel}`}>{posLabel}</span>
           {team?.name ? (
             <span className="pdetail__hero-club">{team.name}</span>
           ) : null}
@@ -202,7 +202,7 @@ function PlayerDetailHeroPortrait({
         <div className="pdetail-p__hero-body">
           <div className="pdetail-p__hero-name-row">
             <div className="pdetail-p__hero-name" title={fullName}>{webName}</div>
-            <span className="pdetail-p__hero-pos">{posLabel}</span>
+            <span className={`pdetail-p__hero-pos pdetail-p__hero-pos--${posLabel}`}>{posLabel}</span>
           </div>
           <div className="pdetail-p__hero-meta">
             {ownerName ? (

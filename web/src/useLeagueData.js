@@ -2,6 +2,10 @@ import { useState, useEffect } from 'react';
 import { fplElementWebName } from './fplElementNames.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
+import {
+  currentSeasonNameByManagerKey,
+  overlayCurrentSeasonEntryName,
+} from './currentSeasonClubNames.js';
 
 import { leagueDataBase } from './seasonArchive.js';
 
@@ -332,6 +336,19 @@ export function useLeagueData() {
         } catch {
           /* optional file */
         }
+        let currentSeasonNameByManager = new Map();
+        try {
+          const r = await fetch(
+            `${import.meta.env.BASE_URL}team-logos/preseason-manifest.json`,
+          );
+          if (r.ok) {
+            currentSeasonNameByManager = currentSeasonNameByManagerKey(
+              await r.json(),
+            );
+          }
+        } catch {
+          /* optional file — keep FPL entry_name */
+        }
         if (!cancelled)
           setData({
             ...processLeagueData(details, {
@@ -340,6 +357,7 @@ export function useLeagueData() {
               waiverOutGw,
               waiverInTenureTop,
               tradesPanel,
+              currentSeasonNameByManager,
             }),
             teamLogoMap,
             fetchFailedDemo,
@@ -403,8 +421,10 @@ function formSequence(entryId, finishedMatches, n, teams) {
   });
 }
 
-function displayEntryName(e) {
+function displayEntryName(e, currentSeasonNameByManager) {
   if (!e) return 'Unknown';
+  const overlay = overlayCurrentSeasonEntryName(e, currentSeasonNameByManager);
+  if (overlay) return overlay;
   const name = (e.entry_name || '').trim();
   if (name) return name;
   const mgr = `${e.player_first_name || ''} ${e.player_last_name || ''}`.trim();
@@ -415,11 +435,11 @@ function displayEntryName(e) {
 }
 
 /** FPL draft uses `id` in matches/standings; `entry_id` can differ — index both. */
-function buildTeamsMap(leagueEntries) {
+function buildTeamsMap(leagueEntries, currentSeasonNameByManager) {
   const teams = {};
   for (const e of leagueEntries || []) {
     if (!e || e.id == null) continue;
-    const row = { ...e, entry_name: displayEntryName(e) };
+    const row = { ...e, entry_name: displayEntryName(e, currentSeasonNameByManager) };
     teams[e.id] = row;
     if (e.entry_id != null && e.entry_id !== e.id) {
       teams[e.entry_id] = row;
@@ -672,11 +692,14 @@ function processLeagueData(raw, extras = {}) {
   const details = { ...raw };
   delete details._tcMeta;
 
-  let leagueEntries = details.league_entries || [];
+  let leagueEntries = (details.league_entries || []).map((e) => ({
+    ...e,
+    entry_name: displayEntryName(e, extras.currentSeasonNameByManager),
+  }));
   const matches = details.matches || [];
   let standingsRaw = details.standings || [];
 
-  const teams = buildTeamsMap(leagueEntries);
+  const teams = buildTeamsMap(leagueEntries, extras.currentSeasonNameByManager);
   const finishedCount = matches.filter((m) => m.finished).length;
 
   if (finishedCount > 0 && leagueEntries.length > 0) {
@@ -1077,7 +1100,7 @@ function processLeagueData(raw, extras = {}) {
 
   return {
     league: details.league,
-    /** Raw league members (FPL `entry_id`, internal `id`, names, `waiver_pick`). */
+    /** League members with current-season club names overlaid when known. */
     leagueEntries,
     /** `league_entry` / `entry_id` → 0–11 shirt kit (standings order). */
     defaultKitIndexByLeagueEntry,

@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { PointsCell } from './PointsCell.jsx';
-import { firstWord } from './teamNameUtils.js';
+import { standingsMobileTeamName } from './teamNameUtils.js';
 import { ClickableTeamName } from './TeamDetailOverlay.jsx';
 
 /**
@@ -29,11 +29,13 @@ function liveStandingsRowClass(row) {
 
 /**
  * Render the team cell content (avatar + name + +3/+1 chip + ↑/↓ move
- * indicator). On mobile the team name collapses to its first word via
- * {@link firstWord} so a long club fits the viewport without wrapping.
+ * indicator). On mobile Standings / Live Table we show the full club
+ * name (MSFG stays `MSFG`) now that the manager subtitle is gone.
  */
 function LiveTeamCell({ row, teamLogoMap, kitIndexByEntry, mobile }) {
-  const displayName = mobile ? firstWord(row.teamName) : row.teamName;
+  const displayName = mobile
+    ? standingsMobileTeamName(row.teamName)
+    : row.teamName;
   const moveUp = row.rankMove > 0;
   const moveDown = row.rankMove < 0;
   return (

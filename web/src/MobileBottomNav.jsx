@@ -11,9 +11,8 @@
  * phase, derived from the shared brand-header status (`deriveBrandHeaderStatus`,
  * passed in as `liveStatus`):
  *
- *   - PRESEASON (status 'pre-season' / 'unknown'): a "26/27" skin — film/clapper
- *     icon + label "26/27", NO purple, in line with the other tabs. Routes to
- *     the Preseason hub (`dashboardView 'preseason'`).
+ *   - PRESEASON (status 'pre-season' / 'unknown'): FPL Live so fixtures and
+ *     squads are ready before GW1. Same routing as Live/Scores.
  *   - LIVE GW (status 'live' — deadline passed, GW not finished): a solid
  *     green Geist Mono "LIVE" chip with a subtly blinking tick (option D of
  *     the scorestab mockup sheet); label "Live" (accent). Routes to FPL Live
@@ -39,7 +38,7 @@ import './MobileBottomNav.css'
 /**
  * Collapse the shared brand-header status into the three nav centre states.
  * `'pre-season'` and `'unknown'` (and any missing status) fall back to the
- * preseason "26/27" skin so the bar always has a sensible centre.
+ * Live tab so fixtures are reachable before the first kickoff.
  *
  * @param {'live' | 'idle' | 'pre-season' | 'unknown' | undefined | null} status
  * @returns {'pre' | 'live' | 'over'}
@@ -58,9 +57,9 @@ const TABS = [
 
 /** Per-phase copy + routing for the contextual centre slot. */
 const CENTER_BY_STATE = {
-  pre:  { label: '26/27',  view: /** @type {const} */ ('preseason'), aria: '26/27 season hub' },
-  live: { label: 'Live',   view: /** @type {const} */ ('fplLive'),   aria: 'FPL Live' },
-  over: { label: 'Scores', view: /** @type {const} */ ('fplLive'),   aria: 'FPL Live scores' },
+  pre:  { label: 'Live',   view: /** @type {const} */ ('fplLive'), aria: 'FPL Live fixtures and scores' },
+  live: { label: 'Live',   view: /** @type {const} */ ('fplLive'), aria: 'FPL Live' },
+  over: { label: 'Scores', view: /** @type {const} */ ('fplLive'), aria: 'FPL Live scores' },
 }
 
 /**
@@ -155,7 +154,7 @@ export function MobileBottomNav({ dashboardView, onSelect, liveStatus, navLocked
           >
             {gwState === 'pre' ? (
               <span className="mobile-tab-bar__preicon" aria-hidden>
-                <NavIcon name="film" size={20} />
+                <NavIcon name="pulsing-dot" size={20} />
               </span>
             ) : gwState === 'live' ? (
               <span

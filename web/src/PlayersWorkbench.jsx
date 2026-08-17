@@ -751,17 +751,14 @@ function PortraitWireTileList({
                   {displayName}
                 </ClickablePlayerName>
                 <span
-                  className="players-wire-tile__pos-chip"
+                  className={`players-wire-tile__pos-chip${
+                    row.posLabel ? ` players-wire-tile__pos-chip--${row.posLabel}` : ''
+                  }`}
                   aria-label={`Position ${posLetter}`}
                   title={`Position ${posLetter}`}
                 >
                   {posLetter}
                 </span>
-              </div>
-              {/* Single sub-row: injury dots + Next-3 fixtures. Position moved
-               * up next to the name; the owner avatar now sits in its own
-               * column aligned with the points total on the right. */}
-              <div className="players-wire-tile__sub-row">
                 <PlayerInlineIndicators
                   el={el}
                   owner={null}
@@ -769,6 +766,10 @@ function PortraitWireTileList({
                   logoMap={logoMap}
                   kitIndexByEntry={kitIndexByEntry}
                 />
+              </div>
+              {/* Next-3 fixtures sit under the name. Injury/suspension sits
+               * beside the position chip on the identity row. */}
+              <div className="players-wire-tile__sub-row">
                 <span className="players-wire-tile__fixtures">
                   <NextFixtureBadges fixtures={nextFixtures} />
                 </span>

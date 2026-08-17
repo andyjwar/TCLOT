@@ -6,20 +6,18 @@
 
 /** Mirrors `dashboardView` IDs in App.jsx — keep these in sync. */
 export const DEFAULT_TAB_OPTIONS = /** @type {const} */ ([
-  { id: 'preseason',     label: '26/27' },
-  { id: 'standings',     label: 'Standings' },
-  { id: 'fplLive',       label: 'FPL Live' },
   { id: 'teamSelection', label: 'Moves' },
+  { id: 'fplLive',       label: 'FPL Live' },
+  { id: 'standings',     label: 'Standings' },
   { id: 'players',       label: 'Players' },
   { id: 'hall',          label: 'Hall of Champions' },
 ])
 
 export const DEFAULT_TAB_STORAGE_KEY = 'tclot:settings:default-tab'
-/* New default for the 26/27 pre-season window — the Preseason hub hosts the
- * countdown and cinematics, so it makes the most sense as the landing tab
- * while the league is in the offseason. Stored prefs from earlier sessions
- * still override this fallback. */
-export const DEFAULT_TAB_FALLBACK = 'preseason'
+/* Season-open default: Moves (Draft until the first Thursday waivers, then
+ * Waivers). The 26/27 cinematic hub is retired. Stored `'preseason'` prefs
+ * are treated as missing so they don't resurrect the hub. */
+export const DEFAULT_TAB_FALLBACK = 'teamSelection'
 
 const VALID_TAB_IDS = new Set(DEFAULT_TAB_OPTIONS.map((o) => o.id))
 
@@ -28,6 +26,7 @@ export function readStoredDefaultTab() {
   if (typeof window === 'undefined') return DEFAULT_TAB_FALLBACK
   try {
     const stored = window.localStorage.getItem(DEFAULT_TAB_STORAGE_KEY)
+    if (stored === 'preseason') return DEFAULT_TAB_FALLBACK
     if (stored && VALID_TAB_IDS.has(stored)) return stored
   } catch { /* ignore */ }
   return DEFAULT_TAB_FALLBACK

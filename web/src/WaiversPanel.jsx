@@ -22,7 +22,11 @@ function WvPosChip({ pos }) {
   if (!pos) return null
   const label = String(pos).toUpperCase()
   return (
-    <span className="waivers-pos-chip" title={label} aria-label={label}>
+    <span
+      className={`waivers-pos-chip waivers-pos-chip--${label}`}
+      title={label}
+      aria-label={label}
+    >
       {label}
     </span>
   )
