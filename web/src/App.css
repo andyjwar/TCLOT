@@ -16868,6 +16868,9 @@ button.live-xp__player-name:focus-visible {
   display: none;
   font-weight: 600;
   color: var(--fm-text-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* Mobile: drop PL column + use first-word team names */
@@ -16875,6 +16878,13 @@ button.live-xp__player-name:focus-visible {
 
 @media (max-width: 720px) {
   .heritage-col--hide-portrait { display: none; }
+  .heritage-team-cell {
+    width: 100%;
+  }
+  .heritage-team-cell__name {
+    display: block;
+    overflow: hidden;
+  }
   .heritage-team-cell__name-full { display: none; }
   .heritage-team-cell__name-short { display: inline; }
 }
@@ -17104,11 +17114,20 @@ button.live-xp__player-name:focus-visible {
   }
 
   .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .heritage-cofc__sort-btn {
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    grid-template-columns: none;
   }
 
   .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .standings-sort-btn__label {
     text-align: center;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th--right:not(.heritage-cofc__th--wdl) .heritage-cofc__sort-btn {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    grid-template-columns: none;
   }
 }
 
@@ -17125,12 +17144,12 @@ button.live-xp__player-name:focus-visible {
 
   .standings-table.standings-table--historic .col-team {
     min-width: 0;
-    width: 32%;
+    width: 36%;
   }
 
   .standings-table.standings-table--historic th.col-wdl,
   .standings-table.standings-table--historic td.col-wdl {
-    width: 10%;
+    width: 9%;
     text-align: center;
   }
 
