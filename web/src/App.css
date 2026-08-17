@@ -17070,6 +17070,77 @@ button.live-xp__player-name:focus-visible {
     font-size: 0.78em;
     width: var(--cofc-sort-arrow);
   }
+
+  /* Idle ↕ eats the label band on phones. Keep the active PTS (or
+   * clicked-column) arrow; collapse the rest so W / D / L / For sit
+   * on their figures — same idea as the mobile league table. */
+  .standings-table.heritage-cofc__table .standings-sort-arrow:not(.standings-sort-arrow--active) {
+    visibility: hidden;
+    width: 0;
+    overflow: hidden;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__sort-btn {
+    grid-template-columns: minmax(0, 1fr) 0;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th.is-active .heritage-cofc__sort-btn,
+  .standings-table.heritage-cofc__table .heritage-cofc__th.is-league-default .heritage-cofc__sort-btn {
+    grid-template-columns: minmax(0, 1fr) var(--cofc-sort-arrow);
+  }
+
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-wdl,
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-for {
+    padding-right: 4px;
+  }
+
+  .standings-table.standings-table--hall-career.heritage-cofc__table td.col-pts {
+    padding-right: calc(4px + var(--cofc-sort-arrow));
+  }
+
+  .standings-table.heritage-cofc__table th.col-wdl,
+  .standings-table.heritage-cofc__table td.col-wdl {
+    text-align: center;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .heritage-cofc__sort-btn {
+    text-align: center;
+  }
+
+  .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .standings-sort-btn__label {
+    text-align: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .standings-table.standings-table--historic {
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .standings-table.standings-table--historic .col-rank {
+    width: 9%;
+  }
+
+  .standings-table.standings-table--historic .col-team {
+    min-width: 0;
+    width: 32%;
+  }
+
+  .standings-table.standings-table--historic th.col-wdl,
+  .standings-table.standings-table--historic td.col-wdl {
+    width: 10%;
+    text-align: center;
+  }
+
+  .standings-table.standings-table--historic th.col-for,
+  .standings-table.standings-table--historic td.col-for,
+  .standings-table.standings-table--historic th.col-pts,
+  .standings-table.standings-table--historic td.col-num.col-pts {
+    width: 14.5%;
+    text-align: right;
+  }
 }
 
 .heritage-cofc__crest {
