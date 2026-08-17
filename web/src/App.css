@@ -15342,9 +15342,9 @@ button.live-xp__player-name:focus-visible {
    * Scorebook ramp: one ordered light→dark interpolation so better/worse reads
    * instantly. 1st = saturated green anchor, positions 2-5 step down through
    * mint/sage tints to near-neutral card, 6-7 warm through soft rust tints, and
-   * 8th lands on the strongest rust anchor. Dark theme (default) mixes brighter
-   * anchors toward the dark card surfaces; the light override below mixes the
-   * deep racing-green / rust anchors toward cream paper. */
+   * 8th is a slightly stronger rust mix (not a solid brick). Dark theme mixes
+   * brighter anchors toward the dark card; the light override mixes racing-green
+   * / rust toward cream paper. */
   --heritage-pos-1-bg: color-mix(in srgb, #34d399 72%, var(--fm-card));
   --heritage-pos-1-fg: #0c1f15;
   --heritage-pos-2-bg: color-mix(in srgb, #34d399 40%, var(--fm-card));
@@ -15359,12 +15359,12 @@ button.live-xp__player-name:focus-visible {
   --heritage-pos-6-fg: var(--fm-text-strong);
   --heritage-pos-7-bg: color-mix(in srgb, #e08a5e 26%, var(--fm-card));
   --heritage-pos-7-fg: var(--fm-text-strong);
-  --heritage-pos-8-bg: color-mix(in srgb, #e08a5e 78%, var(--fm-card));
-  --heritage-pos-8-fg: #241009;
+  --heritage-pos-8-bg: color-mix(in srgb, #e08a5e 48%, var(--fm-card));
+  --heritage-pos-8-fg: var(--fm-text-strong);
 }
 
 /* Light theme: deep racing green (cream text) → sage/mint tints → cream paper
- * neutral mid-table → soft rust tints → strongest rust (cream text) for 8th. */
+ * neutral mid-table → soft rust tints → a stronger rust mix for 8th (dark ink). */
 .fotmob[data-theme='light'] .heritage-shell {
   --heritage-pos-1-bg: #17402f;
   --heritage-pos-1-fg: #f4f6f0;
@@ -15380,8 +15380,8 @@ button.live-xp__player-name:focus-visible {
   --heritage-pos-6-fg: #1a231a;
   --heritage-pos-7-bg: color-mix(in srgb, #b04f26 26%, var(--fm-card));
   --heritage-pos-7-fg: #1a231a;
-  --heritage-pos-8-bg: #b04f26;
-  --heritage-pos-8-fg: #f7ecdd;
+  --heritage-pos-8-bg: color-mix(in srgb, #b04f26 50%, var(--fm-card));
+  --heritage-pos-8-fg: #1a231a;
 }
 
 .heritage-subnav-strip {
