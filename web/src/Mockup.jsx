@@ -10315,13 +10315,13 @@ function MergedHistoryTHD() {
                     className="merged-history-timeline__mgr-col-num tabular"
                     title="Seasons finishing 1st–4th (top half)"
                   >
-                    {row.titan}
+                    <span className="merged-history-timeline__plain-count">{row.titan}</span>
                   </div>
                   <div
                     className="merged-history-timeline__mgr-col-num tabular"
                     title="Seasons finishing 5th–8th (bottom half)"
                   >
-                    {row.minnow}
+                    <span className="merged-history-timeline__plain-count">{row.minnow}</span>
                   </div>
                 </div>
               </div>

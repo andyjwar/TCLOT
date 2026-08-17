@@ -14202,6 +14202,14 @@
   height: 28px;
   font-size: 13px;
 }
+.merged-history-timeline__plain-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 28px;
+  text-align: center;
+}
 .merged-history-timeline__cards {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));

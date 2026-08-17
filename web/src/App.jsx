@@ -911,13 +911,13 @@ function TeamJourneyStatCols({ row, titleWins }) {
         className="merged-history-timeline__mgr-col-num tabular"
         title="Seasons finishing 1st–4th (top half)"
       >
-        {row.titanCount}
+        <span className="merged-history-timeline__plain-count">{row.titanCount}</span>
       </div>
       <div
         className="merged-history-timeline__mgr-col-num tabular"
         title="Seasons finishing 5th–8th (bottom half)"
       >
-        {row.minnowCount}
+        <span className="merged-history-timeline__plain-count">{row.minnowCount}</span>
       </div>
     </div>
   )
