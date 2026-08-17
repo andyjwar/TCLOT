@@ -316,7 +316,7 @@ import { StandingsStatsSubview } from './StandingsStatsSubview.jsx'
 import { PlayersWorkbench } from './PlayersWorkbench.jsx'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
-import { firstWord } from './teamNameUtils.js'
+import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import './App.css'
 
@@ -3107,7 +3107,7 @@ function App() {
                   const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
                   const isSelected = selectedStandingsEntry === leader.league_entry
                   const leaderDisplayName = isMobileStandings
-                    ? firstWord(leader.teamName)
+                    ? standingsMobileTeamName(leader.teamName)
                     : leader.teamName
                   const leaderForm = (leader.form ?? []).slice(-5)
                   const seasonEnded = nextGwForFixtureTile == null && (leader.pl ?? 0) > 0
@@ -3119,7 +3119,7 @@ function App() {
                     <div
                       className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
                       tabIndex={0}
-                      aria-label={`${leader.teamName}${leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, ${seasonEnded ? 'champion' : 'top of the league'}`}
+                      aria-label={`${leaderDisplayName}${!isMobileStandings && leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, ${seasonEnded ? 'champion' : 'top of the league'}`}
                       onClick={() => toggleStandingsHighlight(leader.league_entry)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -3169,7 +3169,7 @@ function App() {
                               {leaderDisplayName}
                             </ClickableTeamName>
                           </div>
-                          {leaderMgr ? (
+                          {!isMobileStandings && leaderMgr ? (
                             <div className="standings-hero-card__mgr">{leaderMgr}</div>
                           ) : null}
                         </div>
@@ -3215,14 +3215,13 @@ function App() {
                       <tbody>
                         {mobileNonLeaderStandingsRows.map((row) => {
                           const isSelected = selectedStandingsEntry === row.league_entry
-                          const mgr = managerByEntry.get(row.league_entry) ?? ''
                           const rowClass = [
                             row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
                             isSelected ? 'is-selected' : '',
                           ]
                             .filter(Boolean)
                             .join(' ')
-                          const displayName = firstWord(row.teamName)
+                          const displayName = standingsMobileTeamName(row.teamName)
                           const form5 = (row.form ?? []).slice(-5)
                           return (
                             <Fragment key={row.league_entry}>
@@ -3264,9 +3263,6 @@ function App() {
                                     >
                                       {displayName}
                                     </ClickableTeamName>
-                                    {mgr ? (
-                                      <span className="standings-team-mgr">{mgr}</span>
-                                    ) : null}
                                   </span>
                                 </span>
                               </td>

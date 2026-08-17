@@ -10693,8 +10693,8 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
  *     .standings-table--variant-c-mobile .standings-table--live-
  *     mobile` with the condensed 5-column set
  *     (#, Team, For, PTS, Last). The variant-c-mobile base sizes
- *     the row padding and team-name truncation to fit a 390px
- *     viewport without horizontal scroll; the `--live-mobile`
+ *     the row padding so full club names fit a 390px viewport
+ *     without horizontal scroll; the `--live-mobile`
  *     suffix carries Live-only overrides (kill the variant-c
  *     hover/cursor since rows aren't clickable on Live).
  *
@@ -14104,10 +14104,12 @@ button.live-xp__player-name:focus-visible {
   font-size: 0.64rem;
 }
 
-/* Team col — kill the legacy `.standings-table .col-team
- * { min-width: 140px }` floor so the column shrinks to content. */
+/* Team col — takes leftover width so full club names (minus MSFG)
+ * fit on a phone once the manager subtitle is gone. Kill the legacy
+ * `.standings-table .col-team { min-width: 140px }` floor. */
 .standings-table--variant-c-mobile .col-team {
   min-width: 0;
+  width: 46%;
   text-align: left;
 }
 .standings-table--variant-c-mobile td.col-team .team-avatar-frame--sm {
@@ -14116,23 +14118,25 @@ button.live-xp__player-name:focus-visible {
 }
 .standings-table--variant-c-mobile .team-cell {
   gap: 6px;
+  min-width: 0;
+}
+.standings-table--variant-c-mobile .standings-team-id {
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .standings-table--variant-c-mobile .team-name--sidebar {
   font-size: 13px;
-  font-weight: 600;
-  line-height: 1.2;
-  /* First-word names are usually 6–8 chars and fit naturally; the
-   * cap is a safety net (and forces the manager line below to truncate
-   * with ellipsis when its full name would otherwise push the column
-   * wide enough to overflow a 360px viewport). */
+  font-weight: 700;
+  line-height: 1.25;
+  max-width: none;
+  /* Full names use leftover column width. Wrap at a space rather
+   * than truncating mid-word; clamp at two lines for the odd long
+   * name on a 360px viewport. */
+  white-space: normal;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  max-width: 72px;
-}
-.standings-table--variant-c-mobile .standings-team-mgr {
-  font-size: 10px;
-  max-width: 72px;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 /* For / PTS — right-aligned tabular numerics. */
