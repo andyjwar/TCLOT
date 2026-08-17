@@ -554,55 +554,42 @@ function PortraitStatsDropdownPill({
   )
 }
 
-/** @param {{ fixtures: object[], nextOnly?: boolean, captionHa?: boolean }} props */
-function NextFixtureBadges({ fixtures, nextOnly = false, captionHa = false }) {
+/** @param {{ fixtures: object[], nextOnly?: boolean }} props */
+function NextFixtureBadges({ fixtures, nextOnly = false }) {
   const list = nextOnly && fixtures?.length ? [fixtures[0]] : fixtures
   if (!list?.length) {
     return <span className="players-fixtures-empty">—</span>
   }
   return (
     <span
-      className={`players-fixtures-badges${nextOnly ? ' players-fixtures-badges--next-only' : ''}${
-        captionHa ? ' players-fixtures-badges--captioned' : ''
-      }`}
+      className={`players-fixtures-badges${nextOnly ? ' players-fixtures-badges--next-only' : ''}`}
       role="list"
       aria-label={nextOnly ? 'Next fixture' : 'Next three opponents'}
     >
       {list.map((fx, i) => (
         <span
           key={`${fx.oppTeamId}-${fx.isHome ? 'H' : 'A'}-${i}`}
-          className={`players-fixture-chip${
-            fx.isHome ? ' players-fixture-chip--home' : ' players-fixture-chip--away'
+          className={`players-fixture-badge${
+            fx.isHome ? ' players-fixture-badge--home' : ' players-fixture-badge--away'
           }`}
           role="listitem"
           title={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
           aria-label={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
         >
-          <span
-            className={`players-fixture-badge${
-              fx.isHome ? ' players-fixture-badge--home' : ' players-fixture-badge--away'
-            }`}
-          >
-            {fx.badgeUrl ? (
-              <img
-                src={fx.badgeUrl}
-                alt=""
-                className="players-fixture-badge__crest"
-                width={28}
-                height={28}
-                loading="lazy"
-              />
-            ) : (
-              <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
-                {fx.shortName?.slice(0, 3) ?? '?'}
-              </span>
-            )}
-          </span>
-          {captionHa ? (
-            <span className="players-fixture-chip__ha" aria-hidden>
-              {fx.isHome ? 'H' : 'A'}
+          {fx.badgeUrl ? (
+            <img
+              src={fx.badgeUrl}
+              alt=""
+              className="players-fixture-badge__crest"
+              width={28}
+              height={28}
+              loading="lazy"
+            />
+          ) : (
+            <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
+              {fx.shortName?.slice(0, 3) ?? '?'}
             </span>
-          ) : null}
+          )}
         </span>
       ))}
     </span>
@@ -782,7 +769,7 @@ function PortraitWireTileList({
                * beside the position chip on the identity row. */}
               <div className="players-wire-tile__sub-row">
                 <span className="players-wire-tile__fixtures">
-                  <NextFixtureBadges fixtures={nextFixtures} captionHa />
+                  <NextFixtureBadges fixtures={nextFixtures} />
                 </span>
               </div>
             </div>

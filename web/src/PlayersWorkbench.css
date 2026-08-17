@@ -1115,13 +1115,6 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   gap: 0.38rem;
 }
 
-.players-fixture-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-
 .players-fixture-badge {
   display: inline-flex;
   align-items: center;
@@ -1134,42 +1127,18 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   background: transparent;
 }
 
-/* Home / away: shape + hairline only. Square = home, circle = away.
- * No tinted fill — the crest should read first. */
+/* Home / away: club crest in a green square (home) or red circle (away).
+ * Outline only — no tinted fill. */
 .players-fixture-badge--home {
-  border: 1.5px solid color-mix(in srgb, #439446 72%, var(--border));
+  border: 2px solid #439446;
   border-radius: 5px;
   background: transparent;
 }
 
 .players-fixture-badge--away {
-  border: 1.5px solid color-mix(in srgb, #b92c28 68%, var(--border));
+  border: 2px solid #b92c28;
   border-radius: 50%;
   background: transparent;
-}
-
-.players-fixture-chip__ha {
-  display: none;
-}
-
-.players-fixtures-badges--captioned {
-  align-items: flex-start;
-  gap: 0.5rem;
-}
-
-.players-fixtures-badges--captioned .players-fixture-chip {
-  flex-direction: column;
-  gap: 1px;
-}
-
-.players-fixtures-badges--captioned .players-fixture-chip__ha {
-  display: block;
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  line-height: 1;
-  color: var(--text-muted);
-  text-align: center;
 }
 
 .players-fixture-badge__crest {
@@ -2019,7 +1988,7 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     gap: 4px;
   }
 
-  /* Slim crest chips; H/A captions sit under each one. */
+  /* Slim crest chips: green square home, red circle away. */
   .players-wire-tile__fixtures .players-fixture-badge {
     width: 1.4rem;
     height: 1.4rem;
