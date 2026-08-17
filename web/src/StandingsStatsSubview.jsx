@@ -5,13 +5,7 @@ import { TeamH2HRivals } from './TeamH2HRivals.jsx'
 import { WIN_MARGIN_BUCKET_KEYS } from './useLeagueData'
 import { useMobileNarrowViewport } from './usePortraitMobile'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
-
-function firstWord(name) {
-  if (typeof name !== 'string') return ''
-  const t = name.trim()
-  if (!t) return ''
-  return t.split(/\s+/)[0]
-}
+import { firstWord } from './teamNameUtils.js'
 
 /** Map bucket key → human-readable description for header/cell tooltips. */
 function bucketTitle(key, kind) {

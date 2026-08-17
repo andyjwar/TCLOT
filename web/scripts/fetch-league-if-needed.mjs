@@ -58,6 +58,15 @@ try {
   await save('transactions', `${DRAFT}/draft/league/${id}/transactions`)
   await save('trades', `${DRAFT}/draft/league/${id}/trades`)
   await save('bootstrap_draft', `${DRAFT}/bootstrap-static`)
+  // Classic bootstrap-static: `events` drives prediction gameweek resolution (mirrors ingest.py).
+  // Without this refresh, a stale data/bootstrap_fpl.json pins predictions to an old season's GW.
+  const cb = await fetch(`${FPL_CLASSIC}/bootstrap-static/`)
+  if (cb.ok) {
+    writeFileSync(
+      join(dataDir, 'bootstrap_fpl.json'),
+      JSON.stringify(await cb.json(), null, 2)
+    )
+  }
   const fx = await fetch(`${FPL_CLASSIC}/fixtures`)
   if (fx.ok) {
     writeFileSync(

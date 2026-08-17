@@ -12,12 +12,12 @@ import { gameWeekSelectLabel, gameWeekShortLabel } from './gwLabel.js'
 import { NavIcon } from './NavIcon.jsx'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
-const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2025-26 season'
+const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2026-27 season'
 /** Single source of truth for the header season label. Hardcoded for now — when we
  * introduce dynamic season detection (driven off `events.data[0].deadline_time` or a
  * build-time constant), update this and `brandHeaderStatus.deriveBrandHeaderStatus`'s
  * `season` arg in lockstep. */
-const BRAND_HEADER_SEASON = '2025/26'
+const BRAND_HEADER_SEASON = '2026/27'
 const BRAND_HEADER_TOP_N = 8
 
 // Lion silhouette extracted verbatim from public/tclot-fantasy-style-banner.svg.
@@ -320,33 +320,28 @@ import { firstWord } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import './App.css'
 
-/** Complete / future GW tiles: split so mobile can show first token only (narrow under 560px). */
-function teamNameFirstRest(name) {
-  if (typeof name !== 'string') return { single: true, first: '', rest: '' }
-  const parts = name.trim().split(/\s+/u).filter(Boolean)
-  if (parts.length <= 1) return { single: true, first: parts[0] ?? '', rest: '' }
-  return { single: false, first: parts[0], rest: parts.slice(1).join(' ') }
-}
-
+/**
+ * Complete / future GW tiles: full team name on desktop, curated short label
+ * ({@link firstWord}) on narrow viewports (under 560px — see App.css
+ * `gw-fixture-name-text--mobile-first-token` rules).
+ */
 function GwFixtureTightTeamName({ name }) {
-  const { single, first, rest } = teamNameFirstRest(name)
-  if (single) {
+  const full = typeof name === 'string' ? name.trim() : ''
+  const short = firstWord(name)
+  if (!full || short === full) {
     return (
-      <span className="gw-fixture-name-text team-name team-name--sidebar" title={name || undefined}>
-        {first || '—'}
+      <span className="gw-fixture-name-text team-name team-name--sidebar" title={full || undefined}>
+        {short || '—'}
       </span>
     )
   }
   return (
     <span
       className="gw-fixture-name-text team-name team-name--sidebar gw-fixture-name-text--mobile-first-token"
-      title={name || undefined}
+      title={full}
     >
-      <span className="gw-fixture-name-text__first">{first}</span>
-      <span className="gw-fixture-name-text__sep" aria-hidden="true">
-        {' '}
-      </span>
-      <span className="gw-fixture-name-text__rest">{rest}</span>
+      <span className="gw-fixture-name-text__first">{short}</span>
+      <span className="gw-fixture-name-text__rest">{full}</span>
     </span>
   )
 }

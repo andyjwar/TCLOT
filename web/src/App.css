@@ -3423,10 +3423,18 @@
   opacity: 0.9;
 }
 
-/* Complete / future GW rows: show first word only (e.g. Toronto, Brampton); full name in title */
+/* Complete / future GW rows: short label (e.g. To. Gimli, MSFG) on mobile, full name on
+   desktop; full name always in title. The component renders both spans; each breakpoint
+   hides the other. */
 @media (max-width: 560px) {
   .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__rest,
   .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__sep {
+    display: none;
+  }
+}
+
+@media (min-width: 561px) {
+  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__first {
     display: none;
   }
 }

@@ -28,3 +28,18 @@ test('firstWord — leading whitespace is trimmed before splitting', () => {
 test('firstWord — non-string inputs are coerced via String()', () => {
   assert.equal(firstWord(42), '42');
 });
+
+test('firstWord — 2026-27 squads use curated mobile labels', () => {
+  assert.equal(firstWord('Atlético Bilbo'), 'Atleti Bilbo');
+  assert.equal(firstWord('Toronto Gimli'), 'To. Gimli');
+  assert.equal(firstWord('Suffolk Sméagol'), 'Sméagol');
+  assert.equal(firstWord('Rokesly Regorasu'), 'Regorasu');
+  assert.equal(firstWord('Hackney Rohirrim'), 'Rohirrim');
+  assert.equal(firstWord('Mordor S.F.G'), 'MSFG');
+  assert.equal(firstWord('Seoul Shire'), 'Seoul Shire');
+  assert.equal(firstWord('Brampton Balrogs'), 'Balrogs');
+});
+
+test('firstWord — curated labels match on trimmed input', () => {
+  assert.equal(firstWord('  Toronto Gimli  '), 'To. Gimli');
+});

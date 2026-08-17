@@ -9,18 +9,12 @@ import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx'
 import { useHistoricGwFixtureSquads } from './useHistoricGwFixtureSquads.js'
 import { useNarrowViewport } from './usePortraitMobile.js'
+import { firstWord } from './teamNameUtils.js'
 
 function pad2(n) {
   const num = Number(n)
   if (!Number.isFinite(num)) return '?'
   return num < 10 ? `0${num}` : String(num)
-}
-
-function firstWord(name) {
-  if (typeof name !== 'string') return ''
-  const t = name.trim()
-  if (!t) return ''
-  return t.split(/\s+/)[0]
 }
 
 /**

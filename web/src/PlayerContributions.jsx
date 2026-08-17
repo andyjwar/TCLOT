@@ -31,6 +31,7 @@ import {
   fplElementWebName,
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
+import { firstWord } from './teamNameUtils.js';
 
 /**
  * ESPN supplies real wallclock (epoch-ms) ordering for these. We prefer its ordering when it matches
@@ -209,20 +210,16 @@ function liveStatMinutesLabel(liveFull, elementId) {
   return `${Math.min(120, Math.floor(m))}'`;
 }
 
-/** First word of fantasy / waiver label — e.g. “Toronto Oizo” → “Toronto”. */
+/** Short label of fantasy / waiver owner — e.g. “Toronto Gimli” → “To. Gimli”. */
 function fantasyTeamFirstLabel(ownerLeagueEntryId, ownerTeamName, ownerLine) {
   if (ownerLeagueEntryId == null) {
     return 'Waiver';
   }
-  const t = String(ownerTeamName ?? ownerLine ?? '').trim();
-  if (!t) return '—';
-  return t.split(/\s+/)[0] || t;
+  return firstWord(ownerTeamName ?? ownerLine) || '—';
 }
 
 function firstWordOnly(s) {
-  const t = String(s ?? '').trim();
-  if (!t) return '';
-  return t.split(/\s+/)[0] || t;
+  return firstWord(s);
 }
 
 /** Yellow, red, DC, and save rows only if the player is on a league roster (starters or bench). */
