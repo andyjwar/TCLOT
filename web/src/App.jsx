@@ -3829,11 +3829,7 @@ function App() {
                       waiverOutGwRows.length ? (
                         <>No waiver or free-agency activity in GW {waiverGwEffective}.</>
                       ) : (
-                        <>
-                          No waiver / free-agency rows in <code>drops-gw-live.json</code> yet. Run{' '}
-                          <code>npm run dev</code> / <code>npm run build</code> (runs waiver
-                          analytics) after <code>transactions.json</code> is present.
-                        </>
+                        <>First waivers are on Thursday 20th</>
                       )
                     }
                   />
@@ -3917,11 +3913,7 @@ function App() {
                     ))}
                   </div>
                 ) : (
-                  <p className="muted muted--tight">
-                    No trade analytics yet. Ingest <code>trades.json</code> (included in{' '}
-                    <code>ingest.py</code> / local fetch), run <code>npm run dev</code> or{' '}
-                    <code>npm run build</code> to generate <code>trades-panel.json</code>.
-                  </p>
+                  <p className="muted muted--tight">No Trades yet (man up lads)</p>
                 )}
               </section>
               {tradesPanelRows?.length ? (
