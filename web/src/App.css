@@ -436,6 +436,10 @@
   scrollbar-width: thin;
 }
 
+.dashboard-layout--with-nav > .dashboard-nav.dashboard-nav--pre-draft {
+  overflow-x: hidden;
+}
+
 .dashboard-layout--with-nav > .dashboard-content {
   grid-column: 1;
   grid-row: 3;
@@ -656,6 +660,43 @@
 @media (max-width: 1080px) {
   .dashboard-nav--top {
     display: none !important;
+  }
+
+  /* 26/27 hub fills the space above the tab bar. Keep overflow/height off
+   * `.app` — the tab bar is a child, and locking `.app` / html/body makes
+   * iOS inflate safe-area-inset-bottom into a huge empty footer. */
+  .app.fotmob[data-dashboard-view='preseason'] {
+    min-height: 0;
+    padding-top: 0;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: calc(var(--mobile-bottom-nav-h) + min(env(safe-area-inset-bottom, 0px), 34px));
+    box-sizing: border-box;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .dashboard-layout--with-nav {
+    display: flex;
+    flex-direction: column;
+    height: calc(100svh - var(--mobile-bottom-nav-h) - min(env(safe-area-inset-bottom, 0px), 34px));
+    max-height: calc(100svh - var(--mobile-bottom-nav-h) - min(env(safe-area-inset-bottom, 0px), 34px));
+    min-height: 0;
+    gap: 0;
+    overflow: hidden;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .dashboard-page-hero {
+    flex: 0 0 auto;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .tile.tile--brand-header {
+    margin: 0;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .dashboard-content {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    gap: 0;
   }
 
   .app.fotmob.dashboard-layout-host,
@@ -1181,12 +1222,11 @@
    * The segmented capsule becomes flat text tabs with a purple underline
    * under the active tab. Applied to every sub-nav tablist (FPL Live, Moves,
    * Standings, sub-views, Heritage) for one consistent, lightweight menu.
-   * The :not() guards skip the two inline toggles that sit beside a title
-   * (CofC Live/Algorithm) or inside the league-info modal, which must stay
-   * compact capsules. The sticky full-bleed "track" (page bg + bottom
-   * hairline that the underline rests on) is set on each tablist's wrapper —
-   * see the "Sub-nav tab tracks" block later in this file. */
-  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) {
+   * The :not() guard skips the league-info modal sub-nav, which must stay a
+   * compact capsule. The sticky full-bleed "track" (page bg + bottom hairline
+   * that the underline rests on) is set on each tablist's wrapper — see the
+   * "Sub-nav tab tracks" block later in this file. */
+  .subnav:not(.li-subnav) {
     display: inline-flex;
     width: auto;
     min-width: 100%;
@@ -1196,7 +1236,7 @@
     border: 0;
     border-radius: 0;
   }
-  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) .subnav__tab {
+  .subnav:not(.li-subnav) .subnav__tab {
     flex: 0 0 auto;
     position: relative;
     min-height: 0;
@@ -1207,12 +1247,12 @@
     background: none;
     border-radius: 0;
   }
-  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) .subnav__tab--active {
+  .subnav:not(.li-subnav) .subnav__tab--active {
     background: none;
     box-shadow: none;
     color: var(--text-strong);
   }
-  .subnav:not(.heritage-cofc__viewtoggle):not(.li-subnav) .subnav__tab--active::after {
+  .subnav:not(.li-subnav) .subnav__tab--active::after {
     content: '';
     position: absolute;
     left: 14px;
@@ -4449,10 +4489,11 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-/* Centre total — winner number in brand purple. */
+/* Centre total — Option D / face-off Option C: both numbers ink; soft
+ * brand glass pill behind the winner only (no brand-coloured digits). */
 .trade2__total {
   display: inline-flex;
-  align-items: baseline;
+  align-items: center;
   gap: 8px;
   flex-shrink: 0;
   font-size: 18px;
@@ -4460,9 +4501,23 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
   color: var(--fm-text-strong);
   white-space: nowrap;
 }
-.trade2__total-num { color: color-mix(in srgb, var(--fm-text-strong) 88%, transparent); }
-.trade2__total-num.is-win { color: var(--brand); }
-.trade2__total-sep { font-weight: 500; color: var(--fm-muted); }
+.trade2__total-num {
+  display: inline-block;
+  color: var(--fm-text-strong);
+  font-weight: 700;
+  border-radius: 0.3em;
+}
+.trade2__total-num.is-win {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.15em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+}
+.trade2__total-sep {
+  font-weight: 500;
+  color: var(--fm-muted);
+  /* Clear the winner glass spread so the pill doesn’t kiss the dash. */
+  padding: 0 0.1em;
+}
 
 /* Per-swap rows — one row per traded player: a player on each side of a
    neutral centre score, with the kept/dropped tenure beneath each name
@@ -4524,16 +4579,30 @@ button.player-history-name-btn.first-waiver-pick-card__player-name {
 }
 .trade2__pl-name:hover .trade2__pl-name-text { text-decoration: underline; }
 .trade2__pl-name-text { color: inherit; }
-/* Per-swap score — neutral + light; never carries the winner colour. */
+/* Per-swap score — Option D: muted by default; winner gets the same
+ * soft glass pill as the centre total (smaller). */
 .trade2__pl-score {
   display: inline-flex;
-  align-items: baseline;
-  gap: 5px;
+  align-items: center;
+  gap: 6px;
   flex-shrink: 0;
   font-size: 13px;
   font-weight: 500;
   color: var(--fm-muted);
   white-space: nowrap;
+}
+.trade2__pl-score-num {
+  display: inline-block;
+  color: var(--fm-muted);
+  font-weight: 500;
+  border-radius: 0.3em;
+}
+.trade2__pl-score-num.is-win {
+  color: var(--fm-text-strong);
+  font-weight: 700;
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.12em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 .trade2__pl-score-sep {
   font-size: 11px;
@@ -8723,6 +8792,98 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   font-variant-numeric: tabular-nums;
 }
 
+/* Season switcher — the season meta becomes a menu button once archived
+ * seasons exist under league-data/seasons/ (see SeasonSwitcher in App.jsx). */
+.season-switch {
+  position: relative;
+  overflow: visible;
+}
+.brand-header__meta.season-switch {
+  overflow: visible;
+}
+.season-switch__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 6px;
+  margin: -2px -6px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+.season-switch__btn:hover,
+.season-switch__btn[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.1);
+}
+.fotmob[data-theme='light'] .season-switch__btn:hover,
+.fotmob[data-theme='light'] .season-switch__btn[aria-expanded='true'] {
+  background: rgba(0, 0, 0, 0.07);
+}
+.season-switch__caret {
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+.season-switch__menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 40;
+  min-width: 168px;
+  padding: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--surface);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  text-transform: none;
+  letter-spacing: normal;
+}
+.fotmob[data-theme='light'] .season-switch__menu {
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.1),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+}
+.season-switch__item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  color: var(--fm-text-strong);
+  font-family: 'Geist Mono', monospace;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+}
+.season-switch__item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+.fotmob[data-theme='light'] .season-switch__item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.season-switch__item--selected {
+  background: rgba(255, 255, 255, 0.06);
+}
+.fotmob[data-theme='light'] .season-switch__item--selected {
+  background: rgba(0, 0, 0, 0.04);
+}
+.season-switch__tag {
+  font-family: inherit;
+  font-size: 0.7em;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
 /* Crest row — 8 fantasy team crests in current standings order
  * (rank 1 leftmost → rank 8 rightmost). 32px each, 6px flat gap (no
  * overlap — the shirt-silhouette fallback used for fantasy teams
@@ -8870,6 +9031,14 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
     justify-self: end;
     color: rgba(255, 255, 255, 0.78);
   }
+  /* Trigger sits on the right edge — open the menu leftward so it
+   * stays on-screen instead of clipping past the viewport. */
+  .season-switch__menu {
+    left: auto;
+    right: 0;
+    min-width: 156px;
+    max-width: min(220px, calc(100vw - 24px));
+  }
   .brand-header__crests {
     display: none;
   }
@@ -8944,6 +9113,17 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .data-banner--error {
   background: rgba(239, 68, 68, 0.14);
   border-color: rgba(248, 113, 113, 0.45);
+}
+
+/* Archive-view banner (SeasonSwitcher / ?season=) — neutral, not a warning. */
+.data-banner--archive {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.35);
+}
+.data-banner__link {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
 }
 
 .data-banner code {
@@ -10352,9 +10532,12 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   font-weight: 600;
   letter-spacing: 0.07em;
   text-transform: uppercase;
-  color: var(--fm-muted);
-  background: transparent;
-  border-bottom: 1px solid var(--fm-border);
+  color: var(--text-muted, var(--fm-muted));
+  /* Match Waivers / portrait Live Table header band. Landscape phones
+   * flip to this desktop table (>767px wide) — transparent here dropped
+   * the Scorebook surface-2 strip and looked unthemed. */
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
+  border-bottom: 1px solid var(--border, var(--fm-border));
 }
 .standings-table--live th,
 .standings-table--live td {
@@ -11984,30 +12167,33 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* ============================================================ */
 
 /* Per-fixture seeding pill ("1st vs 8th"), left-aligned above the face-off
-   row in the exact FotMob "GROUP A / GROUP B" treatment: a quiet grey rounded
-   pill with uppercase tracked text. Each team's live rank is threaded in from
-   `liveStandingsRows` (see LiveScores). Block-level so it sits on its own line
-   above the row; the left margin lines it up with the row's content inset. */
+   row. Locked to Scorebook "quiet pill" (seed mockup Option B / `?seed=1`):
+   shorter mono chip, hairline border, muted weight — no longer the taller
+   FotMob GROUP pill. Each team's live rank is threaded in from
+   `liveStandingsRows` (see LiveScores). */
 .live-banner-row__seed {
   display: flex;
   width: fit-content;
   align-items: center;
-  height: 22px;
+  height: 16px;
   margin: 10px 0 0 14px;
-  padding: 0 11px;
+  padding: 0 8px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--fm-surface-2) 70%, transparent);
-  color: var(--fm-muted);
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
+  background: var(--surface-2, var(--fm-surface-2));
+  border: 1px solid var(--border, var(--fm-border));
+  color: var(--text-muted, var(--fm-muted));
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
+  line-height: 1;
 }
 .live-banner-row__seed--compact {
-  height: 20px;
-  margin: 9px 0 0 12px;
-  padding: 0 10px;
-  font-size: 10px;
+  height: 15px;
+  margin: 8px 0 0 12px;
+  padding: 0 7px;
+  font-size: 9px;
 }
 
 .live-banner-row {
@@ -12869,16 +13055,16 @@ button.live-xp__player-name:focus-visible {
   text-decoration-color: color-mix(in srgb, #dc2626 55%, transparent);
 }
 
-/* Orange dot — player is currently on the pitch */
-.live-xp__player-dot {
-  width: 6px;
-  height: 6px;
+/* Amber dot — FPL awarded clean-sheet points (GK / DEF / MID only) */
+.live-xp__player-cs {
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
-  background: #f59e0b;
+  background: #fbbf24;
   flex-shrink: 0;
   display: inline-block;
 }
-.fotmob[data-theme='light'] .live-xp__player-dot {
+.fotmob[data-theme='light'] .live-xp__player-cs {
   background: #d97706;
 }
 .live-xp__player-icon {
@@ -13512,9 +13698,12 @@ button.live-xp__player-name:focus-visible {
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
+/* Positive points: same soft brand pill as Live Table PTS
+ * (`.standings-table--live .pts-cell__value`) — ink number on a 15%
+ * brand wash so the feed and table read as one system. */
 .live-contrib-row__pts--pos {
-  color: var(--data-positive);
-  background: color-mix(in srgb, var(--data-positive) 16%, transparent);
+  color: var(--fm-text-strong);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 .live-contrib-row__pts--neg {
   color: var(--data-negative);
@@ -13908,6 +14097,16 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* ----- Condensed table — shared (mobile + desktop variants) -------- */
+
+/* Header band — same surface-2 strip as Waivers / Players. Landscape
+ * phones use the desktop variant-c table (width >767px), not
+ * `--variant-c-mobile`; without this they keep `--fm-card` and lose
+ * the Scorebook header treatment. */
+.standings-table--variant-c thead th {
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-card)));
+  color: var(--text-muted, var(--fm-muted));
+  border-bottom: 1px solid var(--border, var(--fm-border));
+}
 
 /* Manager name muted, under each team name. */
 .standings-table--variant-c .standings-team-id {
@@ -16241,48 +16440,80 @@ button.live-xp__player-name:focus-visible {
   text-overflow: ellipsis;
 }
 
-.merged-history-timeline__mgr-stats--grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1px;
-  background: var(--fm-border);
+/* Titles · Titan · Minnow count columns (Titles uses gold 1st-place pill).
+ * Scoped under .heritage-shell so production tokens win over Mockup.css
+ * (same class names, loaded later via the always-imported Mockup module). */
+.heritage-shell .merged-history-timeline__mgr-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.heritage-shell .merged-history-timeline__mgr-cols {
   border: 1px solid var(--fm-border);
   border-radius: 6px;
   overflow: hidden;
+  background: var(--fm-border);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
 }
 
-.merged-history-timeline__mgr-stats--grid .merged-history-timeline__mgr-stat {
+.heritage-shell .merged-history-timeline__mgr-cols--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.heritage-shell .merged-history-timeline__mgr-col-label,
+.heritage-shell .merged-history-timeline__mgr-col-num {
   background: var(--fm-card);
-  padding: 7px 10px;
+  text-align: center;
 }
 
-.merged-history-timeline__mgr-stat {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  font-size: 10px;
+.heritage-shell .merged-history-timeline__mgr-col-label {
+  padding: 5px 8px 2px;
+  font-size: 9.5px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   color: var(--fm-muted);
+}
+
+.heritage-shell .merged-history-timeline__mgr-col-num {
+  padding: 2px 8px 7px;
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
   font-variant-numeric: tabular-nums;
 }
 
-.merged-history-timeline__mgr-stat-num {
-  font-size: 12px;
-  font-weight: 800;
-  color: var(--fm-text-strong);
+.heritage-shell .merged-history-timeline__mgr-col-num--titles {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 4px;
+  padding-bottom: 8px;
 }
 
-.merged-history-timeline__mgr-stat-label {
-  font-size: 9.5px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: var(--fm-muted);
+.heritage-shell .merged-history-timeline__titles-pill.merged-history-mv__pos-chip {
+  width: 28px;
+  height: 28px;
+  font-size: 13px;
 }
 
-.merged-history-timeline__mgr-meta {
+.heritage-shell .merged-history-timeline__mgr-meta {
   font-size: 11px;
+}
+
+.heritage-shell .merged-history-mv__journey-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 14px 10px;
+}
+
+.heritage-shell .merged-history-mv__accordion-item > .merged-history-mv__journey-stats {
+  background: var(--fm-card);
 }
 
 .merged-history-timeline__cards {
@@ -16527,7 +16758,7 @@ button.live-xp__player-name:focus-visible {
   border: none;
   width: 100%;
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr) auto 14px;
+  grid-template-columns: 24px minmax(0, 1fr) 14px;
   align-items: center;
   gap: 10px;
   padding: 10px 12px;
@@ -16607,11 +16838,15 @@ button.live-xp__player-name:focus-visible {
   transform: rotate(90deg);
 }
 
+.merged-history-mv__journey-wrap {
+  background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 4%, var(--fm-card)));
+}
+
 .merged-history-mv__journey {
   list-style: none;
   margin: 0;
   padding: 4px 14px 12px;
-  background: var(--fm-surface-2, color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 4%, var(--fm-card)));
+  background: transparent;
 }
 
 .merged-history-mv__journey-row {
@@ -16825,18 +17060,35 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* ============ Sub-tab 4: Champion of Champions ============ */
+/* Heading + View CompactSelectPill — same row pattern as Historic Standings. */
 
 .heritage-cofc__head {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 10px 12px;
+  margin-bottom: 10px;
 }
 
-.heritage-cofc__viewtoggle {
-  flex-wrap: nowrap;
+.heritage-cofc__head .heritage-cofc__title {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.heritage-cofc__head .cpsp {
+  flex: 0 0 auto;
+}
+
+@media (max-width: 360px) {
+  .heritage-cofc__head {
+    gap: 6px 10px;
+  }
+
+  .heritage-cofc__head .cpsp__btn {
+    padding: 5px 8px 5px 10px;
+  }
 }
 
 .heritage-cofc__table .heritage-cofc__th {
@@ -17650,33 +17902,27 @@ button.live-xp__player-name:focus-visible {
   .draft-rlist { display: none; }
 }
 
-/* Shared position chip */
+/* Shared position chip — same recipe as Waivers / player-detail hero
+ * (`.waivers-pos-chip` / `.pdetail-p__hero-pos`): cream surface, 1px
+ * border, monospace caps. No per-position colour — Scorebook chrome
+ * carries accent, not GKP/DEF/MID/FWD. */
 .draft-pos {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  min-width: 26px;
-  height: 16px;
-  padding: 0 5px;
+  height: 15px;
+  padding: 0 4px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.06em;
-  border-radius: 3px;
-  border: 1px solid var(--fm-border, #333);
-  background: color-mix(in srgb, var(--fm-text, #fff) 6%, transparent);
-  color: color-mix(in srgb, var(--fm-text, #fff) 62%, transparent);
+  line-height: 1;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  flex-shrink: 0;
-  font-variant-numeric: tabular-nums;
+  background: var(--surface-2, var(--fm-surface-2));
+  color: var(--text-muted, var(--fm-muted));
+  border: 1px solid var(--border, var(--fm-border));
+  border-radius: 3px;
 }
-.draft-pos--GKP { color: #f59e0b; border-color: color-mix(in srgb, #f59e0b 38%, var(--fm-border, #333)); }
-.draft-pos--DEF { color: #22d3ee; border-color: color-mix(in srgb, #22d3ee 38%, var(--fm-border, #333)); }
-.draft-pos--MID { color: #c4b5fd; border-color: color-mix(in srgb, #a78bfa 38%, var(--fm-border, #333)); }
-.draft-pos--FWD { color: #fca5a5; border-color: color-mix(in srgb, #ef4444 38%, var(--fm-border, #333)); }
-.fotmob[data-theme='light'] .draft-pos--GKP { color: #b45309; }
-.fotmob[data-theme='light'] .draft-pos--DEF { color: #0e7490; }
-.fotmob[data-theme='light'] .draft-pos--MID { color: #6d28d9; }
-.fotmob[data-theme='light'] .draft-pos--FWD { color: #b91c1c; }
 
 /* Shared "where are they now" status pill */
 .draft-status {
@@ -17686,27 +17932,32 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
   font-size: 10px;
   font-weight: 400;
-  color: color-mix(in srgb, var(--fm-text, #fff) 60%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .draft-status__dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
-/* Only the dot carries colour; the label stays light + muted. */
-.draft-status--kept .draft-status__dot { background: #34d399; }
-.draft-status--dropped .draft-status__dot { background: #f87171; }
-.draft-status--traded .draft-status__dot { background: #fbbf24; }
-.draft-status--unknown .draft-status__dot { background: color-mix(in srgb, var(--fm-text, #fff) 35%, transparent); }
+/* Only the dot carries colour; the label stays muted. Semantic tokens
+ * follow Scorebook (pitch green / rust / gold). */
+.draft-status--kept .draft-status__dot { background: var(--data-positive); }
+.draft-status--dropped .draft-status__dot { background: var(--data-negative); }
+/* Traded uses Scorebook lilac (villain / special-callout token), distinct
+ * from Cut rust and On-squad green. */
+.draft-status--traded .draft-status__dot { background: var(--live-villain-color); }
+.draft-status--unknown .draft-status__dot {
+  background: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 55%, transparent);
+}
 
 /* ── Desktop snake grid ─────────────────────────────────────────── */
 .draft-grid {
   margin-top: 4px;
-  border: 1px solid var(--fm-border, #333);
-  border-radius: 12px;
+  border: 1px solid var(--border, var(--fm-border));
+  border-radius: var(--r-md, 12px);
   overflow: hidden;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  background: var(--fm-card, #1e1e1e);
+  background: var(--surface, var(--fm-card));
 }
 .draft-grid__inner { min-width: calc(2.4rem + var(--draft-grid-cols, 8) * 96px); }
 .draft-grid__head,
@@ -17715,8 +17966,8 @@ button.live-xp__player-name:focus-visible {
   grid-template-columns: 2.4rem repeat(var(--draft-grid-cols, 8), minmax(96px, 1fr));
 }
 .draft-grid__head {
-  background: color-mix(in srgb, var(--fm-text, #fff) 4%, var(--fm-card, #1e1e1e));
-  border-bottom: 1px solid var(--fm-border, #333);
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-table-head)));
+  border-bottom: 1px solid var(--border, var(--fm-border));
   position: sticky;
   top: 0;
   z-index: 1;
@@ -17725,11 +17976,12 @@ button.live-xp__player-name:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
+  color: var(--text-muted, var(--fm-muted));
 }
 .draft-grid__th {
   display: flex;
@@ -17737,7 +17989,7 @@ button.live-xp__player-name:focus-visible {
   align-items: center;
   gap: 3px;
   padding: 8px 6px;
-  border-left: 1px solid var(--fm-border, #333);
+  border-left: 1px solid var(--border, var(--fm-border));
   text-align: center;
   min-width: 0;
 }
@@ -17747,22 +17999,23 @@ button.live-xp__player-name:focus-visible {
   font-weight: 700;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fm-text, #fff) 60%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
 }
-.draft-grid__row { border-top: 1px solid var(--fm-border, #333); }
+.draft-grid__row { border-top: 1px solid var(--border, var(--fm-border)); }
 .draft-grid__rnd {
   display: flex;
   align-items: center;
   justify-content: center;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
-  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
-  background: color-mix(in srgb, var(--fm-text, #fff) 4%, var(--fm-card, #1e1e1e));
-  border-right: 1px solid var(--fm-border, #333);
+  color: var(--text-muted, var(--fm-muted));
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-table-head)));
+  border-right: 1px solid var(--border, var(--fm-border));
 }
 .draft-grid__cell {
   position: relative;
@@ -17770,22 +18023,23 @@ button.live-xp__player-name:focus-visible {
   flex-direction: column;
   gap: 6px;
   padding: 12px 8px 8px;
-  border-left: 1px solid var(--fm-border, #333);
+  border-left: 1px solid var(--border, var(--fm-border));
   min-height: 64px;
   min-width: 0;
 }
 .draft-grid__cell--empty {
-  background: color-mix(in srgb, var(--fm-text, #fff) 2.5%, transparent);
+  background: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 6%, transparent);
 }
 .draft-grid__cell:not(.draft-grid__cell--empty):hover {
-  background: color-mix(in srgb, var(--brand, #795bfb) 6%, transparent);
+  background: var(--row-hi, var(--fm-row-hi, color-mix(in srgb, var(--brand) 6%, transparent)));
 }
 .draft-grid__pick {
   position: absolute;
   top: 3px;
   right: 6px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;
-  color: color-mix(in srgb, var(--fm-text, #fff) 45%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   font-variant-numeric: tabular-nums;
 }
 .draft-grid__main {
@@ -17796,21 +18050,23 @@ button.live-xp__player-name:focus-visible {
 }
 .draft-grid__club { width: 22px; height: 22px; object-fit: contain; display: block; flex-shrink: 0; }
 .draft-grid__id { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.draft-grid__name-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
 .draft-grid__name {
   font-size: 0.84rem;
   font-weight: 600;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .draft-grid__name a { color: inherit; text-decoration: none; }
 .draft-grid__name a:hover { text-decoration: underline; }
-.draft-grid__pos {
-  font-size: 0.7rem;
-  color: color-mix(in srgb, var(--fm-text, #fff) 55%, transparent);
-  letter-spacing: 0.02em;
-}
 .draft-grid__foot {
   display: flex;
   align-items: center;
@@ -17818,13 +18074,14 @@ button.live-xp__player-name:focus-visible {
   gap: 6px;
   margin-top: auto;
   padding-top: 5px;
-  border-top: 1px dashed var(--fm-border, #333);
+  border-top: 1px dashed var(--border, var(--fm-border));
   min-width: 0;
 }
 .draft-grid__pts {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.82rem;
   font-weight: 700;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   font-variant-numeric: tabular-nums;
   flex-shrink: 0;
 }
@@ -17832,34 +18089,36 @@ button.live-xp__player-name:focus-visible {
 /* ── Mobile M1 stat list ────────────────────────────────────────── */
 .draft-rlist {
   margin-top: 4px;
-  border: 1px solid var(--fm-border, #333);
-  border-radius: 12px;
+  border: 1px solid var(--border, var(--fm-border));
+  border-radius: var(--r-md, 12px);
   overflow: hidden;
-  background: var(--fm-card, #1e1e1e);
+  background: var(--surface, var(--fm-card));
 }
 .draft-rlist__round {
   padding: 7px 14px;
-  background: color-mix(in srgb, var(--fm-text, #fff) 5%, var(--fm-card, #1e1e1e));
-  border-bottom: 1px solid var(--fm-border, #333);
+  background: var(--surface-2, var(--fm-surface-2, var(--fm-table-head)));
+  border-bottom: 1px solid var(--border, var(--fm-border));
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: color-mix(in srgb, var(--fm-text, #fff) 60%, transparent);
+  color: var(--text-muted, var(--fm-muted));
 }
-.draft-rlist__round:not(:first-child) { border-top: 1px solid var(--fm-border, #333); }
+.draft-rlist__round:not(:first-child) { border-top: 1px solid var(--border, var(--fm-border)); }
 .draft-rlist__row {
   display: grid;
   grid-template-columns: 1.6rem 26px minmax(0, 1fr) auto;
   align-items: center;
   gap: 10px;
   padding: 8px 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--fm-border, #333) 60%, transparent);
+  border-bottom: 1px solid color-mix(in srgb, var(--border, var(--fm-border)) 60%, transparent);
 }
 .draft-rlist__row:last-child { border-bottom: none; }
 .draft-rlist__pick {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 0.78rem;
-  color: color-mix(in srgb, var(--fm-text, #fff) 50%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   font-variant-numeric: tabular-nums;
   text-align: right;
 }
@@ -17869,10 +18128,11 @@ button.live-xp__player-name:focus-visible {
 .draft-rlist__name {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .draft-rlist__name a { color: inherit; text-decoration: none; }
 .draft-rlist__name a:hover { text-decoration: underline; }
@@ -17881,22 +18141,23 @@ button.live-xp__player-name:focus-visible {
 .draft-rlist__team .team-avatar-frame { width: 16px; height: 16px; flex-shrink: 0; }
 .draft-rlist__team-name {
   font-size: 0.78rem;
-  color: color-mix(in srgb, var(--fm-text, #fff) 65%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .draft-rlist__pts { display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
 .draft-rlist__pts-val {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 1rem;
   font-weight: 700;
-  color: var(--fm-text-strong, #fff);
+  color: var(--text-strong, var(--fm-text-strong));
   font-variant-numeric: tabular-nums;
 }
 .draft-rlist__pts-lbl {
   font-size: 8px;
   letter-spacing: 0.08em;
-  color: color-mix(in srgb, var(--fm-text, #fff) 45%, transparent);
+  color: var(--text-muted, var(--fm-muted));
   margin-top: 2px;
 }
 

@@ -59,6 +59,41 @@
   .preseason-hub {
     width: calc(100% + 32px);
     margin-inline: -16px;
+    background-attachment: scroll;
+  }
+}
+
+@media (max-width: 1080px) {
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-hub {
+    width: 100%;
+    margin: 0;
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    background-attachment: scroll;
+    padding: 8px 12px 10px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-hub__inner {
+    height: 100%;
+    min-height: 0;
+    max-width: none;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-countdown {
+    flex: 0 0 auto;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-countdown__value {
+    font-size: clamp(1.45rem, 6.4vw, 2.15rem);
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .preseason-countdown__sep {
+    min-height: 34px;
   }
 }
 

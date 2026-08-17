@@ -10,15 +10,26 @@ import {
 } from 'react'
 import { gameWeekSelectLabel, gameWeekShortLabel } from './gwLabel.js'
 import { NavIcon } from './NavIcon.jsx'
+import {
+  archivedSeasonLabel,
+  isArchiveView,
+  seasonLabelDisplay,
+  seasonHref,
+  fetchSeasonCatalog,
+} from './seasonArchive.js'
+import { getSeasonLabel } from './seasonString.js'
+import { isPreDraftAllowedView, resolveDraftGate } from './draftGate.js'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
-const LEAGUE_TITLE = 'Tri-Continental League of Titans, 2026-27 season'
-/** Single source of truth for the header season label. Hardcoded for now — when we
- * introduce dynamic season detection (driven off `events.data[0].deadline_time` or a
- * build-time constant), update this and `brandHeaderStatus.deriveBrandHeaderStatus`'s
- * `season` arg in lockstep. */
-const BRAND_HEADER_SEASON = '2026/27'
 const BRAND_HEADER_TOP_N = 8
+
+function wallClockSeasonLabel() {
+  return getSeasonLabel()
+}
+
+function leagueTitle(seasonLabel) {
+  return `Tri-Continental League of Titans, ${seasonLabel || wallClockSeasonLabel()} season`
+}
 
 // Lion silhouette extracted verbatim from public/tclot-fantasy-style-banner.svg.
 // Kept inline so it inherits currentColor (no second network fetch, themable).
@@ -162,6 +173,103 @@ function BrandHeaderStatusBody({ liveStatus }) {
 }
 
 /**
+ * Header season pill. Renders as the plain label until archived seasons exist
+ * (discovered via `league-data/seasons/index.json`), then becomes a button with
+ * a menu switching between the current season and archives. Selecting a season
+ * navigates with `?season=<label>` — a full reload; the data layer resolves the
+ * archived subtree at module init (see seasonArchive.js).
+ */
+function SeasonSwitcher({ currentSeasonLabel, archivedSeasons = [] }) {
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef(null)
+  const viewingLabel = archivedSeasonLabel()
+  const currentDisplay = seasonLabelDisplay(currentSeasonLabel)
+
+  useEffect(() => {
+    if (!open) return undefined
+    function onDocPointerDown(e) {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) setOpen(false)
+    }
+    function onKeyDown(e) {
+      if (e.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onDocPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onDocPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
+  const displayLabel = viewingLabel
+    ? seasonLabelDisplay(viewingLabel)
+    : currentDisplay
+
+  // No archives (and not somehow parked on one) — the original static label.
+  if (!archivedSeasons.length && !viewingLabel) {
+    return (
+      <span className="brand-header__meta brand-header__meta--season">
+        {currentDisplay}
+      </span>
+    )
+  }
+
+  const options = [
+    { label: null, display: currentDisplay, archived: false },
+    ...archivedSeasons.map((l) => ({
+      label: l,
+      display: seasonLabelDisplay(l),
+      archived: true,
+    })),
+  ]
+
+  return (
+    <span
+      className="brand-header__meta brand-header__meta--season season-switch"
+      ref={wrapRef}
+    >
+      <button
+        type="button"
+        className="season-switch__btn"
+        aria-haspopup="menu"
+        aria-expanded={open}
+        title="Switch season"
+        onClick={() => setOpen((v) => !v)}
+      >
+        {displayLabel}
+        <span className="season-switch__caret" aria-hidden="true">
+          ▾
+        </span>
+      </button>
+      {open ? (
+        <span className="season-switch__menu" role="menu" aria-label="Season">
+          {options.map((o) => {
+            const selected = (o.label ?? null) === (viewingLabel ?? null)
+            return (
+              <a
+                key={o.label ?? 'current'}
+                role="menuitem"
+                className={
+                  'season-switch__item' +
+                  (selected ? ' season-switch__item--selected' : '')
+                }
+                href={seasonHref(o.label)}
+                aria-current={selected ? 'true' : undefined}
+              >
+                <span>{o.display}</span>
+                <span className="season-switch__tag">
+                  {o.archived ? 'Archive' : 'Current'}
+                </span>
+              </a>
+            )
+          })}
+        </span>
+      ) : null}
+    </span>
+  )
+}
+
+/**
  * Header tile carrying the brand pill + season meta + top-8 fantasy crests
  * (rank 1 leftmost → rank 8 rightmost), with the status strip beneath. Spec:
  * variant 4 of HEADER · POST-PR-#2 EVOLUTION (Mockup.jsx `HeroVariantBSeasonAndCrests`).
@@ -172,6 +280,7 @@ function BrandHeaderStatusBody({ liveStatus }) {
  *   teamLogoMap?: Record<string, string>,
  *   kitIndexByEntry?: Record<string, number>,
  *   liveStatus?: object | null,
+ *   hideStatusStrip?: boolean,
  * }} props
  */
 function BrandHeader({
@@ -182,6 +291,9 @@ function BrandHeader({
   liveStatus,
   leagueInfoOpen = false,
   onOpenLeagueInfo,
+  currentSeasonLabel,
+  archivedSeasons = [],
+  hideStatusStrip = false,
 }) {
   const entryById = useMemo(() => {
     const m = new Map()
@@ -193,16 +305,32 @@ function BrandHeader({
 
   const topRows = useMemo(() => {
     const list = Array.isArray(tableRows) ? tableRows : []
-    const sorted = [...list].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
-    return sorted.slice(0, BRAND_HEADER_TOP_N)
-  }, [tableRows])
+    if (list.length > 0) {
+      const sorted = [...list].sort((a, b) => (a.rank ?? 99) - (b.rank ?? 99))
+      return sorted.slice(0, BRAND_HEADER_TOP_N)
+    }
+    // Pre-season / no table yet — show joined clubs in join order.
+    const entries = Array.isArray(leagueEntries) ? [...leagueEntries] : []
+    return entries
+      .filter((e) => e?.id != null)
+      .sort((a, b) => String(a.joined_time ?? '').localeCompare(String(b.joined_time ?? '')))
+      .slice(0, BRAND_HEADER_TOP_N)
+      .map((e, i) => ({ league_entry: e.id, rank: i + 1 }))
+  }, [tableRows, leagueEntries])
 
-  const showStatusStrip = !!liveStatus && liveStatus.status !== 'unknown'
+  /** Archive view: the strip's countdowns/live cues describe the *current*
+   * season and would mislead against frozen data — the archive banner below
+   * the header carries the context instead. */
+  const showStatusStrip =
+    !hideStatusStrip &&
+    !isArchiveView() &&
+    !!liveStatus &&
+    liveStatus.status !== 'unknown'
 
   return (
     <section
       className="tile tile--brand-header"
-      aria-label={`${LEAGUE_TITLE_ABBR} — ${LEAGUE_TITLE}`}
+      aria-label={`${LEAGUE_TITLE_ABBR} — ${leagueTitle(currentSeasonLabel)}`}
     >
       <div className="brand-header__row">
         <BrandHeaderWordmark
@@ -211,9 +339,10 @@ function BrandHeader({
           isOpen={leagueInfoOpen}
           onOpen={onOpenLeagueInfo}
         />
-        <span className="brand-header__meta brand-header__meta--season">
-          {BRAND_HEADER_SEASON}
-        </span>
+        <SeasonSwitcher
+          currentSeasonLabel={currentSeasonLabel}
+          archivedSeasons={archivedSeasons}
+        />
         <span
           className="brand-header__crests"
           aria-label="League standings — top 8"
@@ -298,7 +427,6 @@ import {
 } from './waiverMovesSort.js'
 import {
   HALL_SEASON_FINAL_TABLES,
-  LIVE_HALL_SEASON_LABEL,
   buildManagerFullNameByHallKey,
   computeHallAlgorithmRows,
   computeHallManagerJourney,
@@ -745,7 +873,7 @@ function HeritageTrophyRoom() {
 /* ---------------- TCLOT Records (sits below the trophy carousel) ----
  * League-wide all-time records — derived from `HALL_SEASON_FINAL_TABLES`
  * via `computeHallRecords()`. Records auto-refresh as new seasons land
- * (or when the live `2025-26` season exceeds an existing ceiling/floor)
+ * (or when the live `2026-27` season exceeds an existing ceiling/floor)
  * — no UI edits required. The two GW-level records (highest losing /
  * lowest winning GW points) are still manually curated since we don't
  * archive fixture-level history yet; flagged in the data via `_static`. */
@@ -871,12 +999,77 @@ function resolveManagerFull(displayKey, fallbackFull, fullNameMap) {
   return null
 }
 
+/** Titles (gold pill) · Titan (top-4 count) · Minnow (bottom-4 count). */
+function TeamJourneyStatCols({ row, titleWins }) {
+  const titleTooltip =
+    titleWins.length > 0
+      ? titleWins
+          .map(
+            (s) =>
+              `${shortenHallSeasonLabel(s.season)}${s.team ? ` · ${s.team}` : ''}`,
+          )
+          .join(', ')
+      : 'Seasons finished 1st'
+  /* Flat grid children — no `display: contents` row wrappers (those can
+   * drop cells in some WebKit layouts and hide Titan/Minnow). */
+  return (
+    <div
+      className="merged-history-timeline__mgr-cols merged-history-timeline__mgr-cols--3"
+      role="group"
+      aria-label="Titles, Titan, and Minnow finishes"
+    >
+      <div
+        className="merged-history-timeline__mgr-col-label"
+        title="Seasons finished 1st"
+      >
+        Titles
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-label"
+        title="Seasons finishing 1st–4th (top half)"
+      >
+        Titan
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-label"
+        title="Seasons finishing 5th–8th (bottom half)"
+      >
+        Minnow
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
+        title={titleTooltip}
+      >
+        <span
+          className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
+          aria-label={`${row.titles} titles`}
+        >
+          {row.titles}
+        </span>
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-num tabular"
+        title="Seasons finishing 1st–4th (top half)"
+      >
+        {row.titanCount}
+      </div>
+      <div
+        className="merged-history-timeline__mgr-col-num tabular"
+        title="Seasons finishing 5th–8th (bottom half)"
+      >
+        {row.minnowCount}
+      </div>
+    </div>
+  )
+}
+
 function TeamHistoryDesktop({ journey, fullNameMap }) {
   return (
     <div className="merged-history-timeline">
       {journey.map((row) => {
         const seasonsPlayed = row.seasons.length
         const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
+        const titleWins = row.seasons.filter((s) => Number(s.rank) === 1)
         return (
           <div key={row.key} className="merged-history-timeline__row">
             <div className="merged-history-timeline__mgr">
@@ -891,34 +1084,11 @@ function TeamHistoryDesktop({ journey, fullNameMap }) {
                 </div>
               </div>
               <div
-                className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
+                className="merged-history-timeline__mgr-stats"
                 role="group"
                 aria-label={`Career stats for ${row.key}`}
               >
-                <div className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">
-                    {row.titles === 1 ? 'title' : 'titles'}
-                  </span>
-                </div>
-                <div className="merged-history-timeline__mgr-stat">
-                  <span className="merged-history-timeline__mgr-stat-num">{row.runnerUps}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
-                </div>
-                <div
-                  className="merged-history-timeline__mgr-stat"
-                  title="Seasons finishing 1st–4th (top half)"
-                >
-                  <span className="merged-history-timeline__mgr-stat-num">{row.titanCount}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">titan</span>
-                </div>
-                <div
-                  className="merged-history-timeline__mgr-stat"
-                  title="Seasons finishing 5th–8th (bottom half)"
-                >
-                  <span className="merged-history-timeline__mgr-stat-num">{row.minnowCount}</span>
-                  <span className="merged-history-timeline__mgr-stat-label">minnow</span>
-                </div>
+                <TeamJourneyStatCols row={row} titleWins={titleWins} />
               </div>
               <div className="merged-history-timeline__mgr-meta muted tabular">
                 {seasonsPlayed} {seasonsPlayed === 1 ? 'season' : 'seasons'}
@@ -978,12 +1148,13 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
           const open = openKeys.has(row.key)
           const managerFull = resolveManagerFull(row.key, row.managerFull, fullNameMap)
           const place = idx + 1
+          const titleWins = row.seasons.filter((s) => Number(s.rank) === 1)
           return (
             <li key={row.key} className="merged-history-mv__accordion-item">
               <button
                 type="button"
                 aria-expanded={open}
-                aria-label={`${managerFull ?? row.key}, ${row.titles ?? 0} titles. Tap for per-season journey.`}
+                aria-label={`${managerFull ?? row.key}, ${row.titles ?? 0} titles, ${row.titanCount} titan, ${row.minnowCount} minnow. Tap for per-season journey.`}
                 className={
                   'merged-history-mv__accordion-toggle' + (open ? ' is-open' : '')
                 }
@@ -1001,12 +1172,6 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
                 <span className="merged-history-mv__accordion-mgr-name">
                   {managerFull ?? row.key}
                 </span>
-                <PointsCell
-                  value={row.titles ?? 0}
-                  label="TITLES"
-                  size="md"
-                  className="merged-history-mv__accordion-titles"
-                />
                 <span
                   className="merged-history-mv__chevron"
                   aria-hidden="true"
@@ -1014,29 +1179,38 @@ function TeamHistoryMobileAccordion({ journey, fullNameMap }) {
                   ›
                 </span>
               </button>
+              <div
+                className="merged-history-mv__journey-stats"
+                role="group"
+                aria-label={`Career stats for ${row.key}`}
+              >
+                <TeamJourneyStatCols row={row} titleWins={titleWins} />
+              </div>
               {open ? (
-                <ul className="merged-history-mv__journey">
-                  {row.seasons.map((s) => (
-                    <li
-                      key={s.season}
-                      className={
-                        'merged-history-mv__journey-row ' + heritageCellPosClass(s.rank)
-                      }
-                    >
-                      <span className="merged-history-mv__journey-season tabular">
-                        {shortenHallSeasonLabel(s.season)}
-                      </span>
-                      <span className="merged-history-mv__journey-team">{s.team ?? '—'}</span>
-                      <span
+                <div className="merged-history-mv__journey-wrap">
+                  <ul className="merged-history-mv__journey">
+                    {row.seasons.map((s) => (
+                      <li
+                        key={s.season}
                         className={
-                          'merged-history-mv__pos-chip ' + heritageCellPosClass(s.rank)
+                          'merged-history-mv__journey-row ' + heritageCellPosClass(s.rank)
                         }
                       >
-                        {s.rank ?? '—'}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        <span className="merged-history-mv__journey-season tabular">
+                          {shortenHallSeasonLabel(s.season)}
+                        </span>
+                        <span className="merged-history-mv__journey-team">{s.team ?? '—'}</span>
+                        <span
+                          className={
+                            'merged-history-mv__pos-chip ' + heritageCellPosClass(s.rank)
+                          }
+                        >
+                          {s.rank ?? '—'}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               ) : null}
             </li>
           )
@@ -1188,7 +1362,7 @@ function formatHeritageSeasonLabel(seasonKey) {
 
 /** When rendered embedded inside the History sub-tab, `headingTag` is `'h3'`. */
 function HeritageHistoricStandings({ fullNameMap, headingTag = 'h3' }) {
-  /* Completed historic seasons only — current 25/26 lives on the Standings tab. */
+  /* Completed historic seasons only — current 26/27 lives on the Standings tab. */
   const seasonOptions = useMemo(
     () => [...HALL_SEASON_FINAL_TABLES].reverse(),
     [],
@@ -1360,7 +1534,7 @@ const COFC_LIVE_COLUMNS = [
   { key: 'totalD', label: 'D', numeric: true, align: 'right', mobile: true, title: 'Draws (cumulative)' },
   { key: 'totalL', label: 'L', numeric: true, align: 'right', mobile: true, title: 'Losses (cumulative)' },
   { key: 'totalPf', label: 'For', numeric: true, align: 'right', mobile: true, title: 'Total FPL points scored' },
-  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (live season only — historic data not yet transcribed)' },
+  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (from 2025-26 onward; earlier seasons not yet transcribed)' },
   { key: 'totalPts', label: 'PTS', numeric: true, align: 'right', mobile: true, title: 'League points (3 / 1 / 0 per H2H)' },
   { key: 'titles', label: 'Titles', numeric: true, align: 'right', mobile: false, title: 'Seasons finished 1st' },
   { key: 'lastRank', label: 'Last', numeric: true, align: 'right', mobile: false, title: 'Most recent finishing position' },
@@ -1784,30 +1958,17 @@ function HeritageChampionOfChampions({ tableRows, fullNameMap }) {
         >
           {view === 'live' ? 'All Time Standings' : 'Algorithm Table'}
         </h2>
-        <div
-          className="subnav heritage-cofc__viewtoggle"
-          role="tablist"
-          aria-label="Champion of Champions view"
-        >
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'live'}
-            className={'subnav__tab' + (view === 'live' ? ' subnav__tab--active' : '')}
-            onClick={() => setView('live')}
-          >
-            Live
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={view === 'algorithm'}
-            className={'subnav__tab' + (view === 'algorithm' ? ' subnav__tab--active' : '')}
-            onClick={() => setView('algorithm')}
-          >
-            Algorithm
-          </button>
-        </div>
+        <CompactSelectPill
+          label="View"
+          ariaLabel="Champion of Champions view"
+          align="right"
+          value={view}
+          onChange={(next) => setView(String(next))}
+          options={[
+            { value: 'live', label: 'Live' },
+            { value: 'algorithm', label: 'Algorithm' },
+          ]}
+        />
       </div>
       {view === 'live' ? (
         <CofcLiveTable rows={liveRows} fullNameMap={fullNameMap} />
@@ -1999,19 +2160,21 @@ function TradePlayerCell({ leg, side }) {
   )
 }
 
-/** Per-swap row: offered player · neutral pts–pts score · received player. */
+/** Per-swap row: offered player · pts–pts score (winner glass) · received. */
 function TradePairRow({ pair }) {
   const offPts = Number(pair?.offeredLeg?.totalPoints) || 0
   const recPts = Number(pair?.receivedLeg?.totalPoints) || 0
+  const offWin = offPts >= recPts
+  const recWin = recPts > offPts
   return (
     <div className="trade2__pair">
       <TradePlayerCell leg={pair?.offeredLeg} side="offered" />
       <span className="trade2__pl-score tabular" aria-label={`${offPts} to ${recPts}`}>
-        <span>{offPts}</span>
+        <span className={'trade2__pl-score-num' + (offWin ? ' is-win' : '')}>{offPts}</span>
         <span className="trade2__pl-score-sep" aria-hidden>
           {'\u2013'}
         </span>
-        <span>{recPts}</span>
+        <span className={'trade2__pl-score-num' + (recWin ? ' is-win' : '')}>{recPts}</span>
       </span>
       <TradePlayerCell leg={pair?.receivedLeg} side="received" />
     </div>
@@ -2019,8 +2182,8 @@ function TradePairRow({ pair }) {
 }
 
 /** Single processed-trade card — face-off layout: team totals at the top
- *  centre (winner in brand purple), then one row per swapped player with a
- *  neutral per-swap score and the kept/dropped tenure beneath each name. */
+ *  centre (winner glass pill, Option D), then one row per swapped player
+ *  with the same winner treatment and kept/dropped tenure under each name. */
 function TradeCardArticle({ trade, teamLogoMap, kitIndexByEntry = {} }) {
   const offeredPts = tradeSumLegs(trade.pairs, 'offeredLeg')
   const receivedPts = tradeSumLegs(trade.pairs, 'receivedLeg')
@@ -2165,6 +2328,9 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'preseason'
   if (parsePlayersHash()) return /** @type {const} */ ('players')
+  /** Archive view (?season=): land on the finished season's table — the
+   * preseason hub and stored default describe the *live* season. */
+  if (isArchiveView()) return /** @type {const} */ ('standings')
   return readStoredDefaultTab()
 }
 
@@ -2279,6 +2445,23 @@ function App() {
     const id = window.setInterval(() => setStatusNow(new Date()), 60_000)
     return () => window.clearInterval(id)
   }, [])
+  const [seasonCatalog, setSeasonCatalog] = useState(() => ({
+    current: wallClockSeasonLabel(),
+    archived: /** @type {string[]} */ ([]),
+  }))
+  useEffect(() => {
+    let cancelled = false
+    fetchSeasonCatalog().then((cat) => {
+      if (cancelled) return
+      setSeasonCatalog({
+        current: cat.current || wallClockSeasonLabel(),
+        archived: cat.archived,
+      })
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
   const {
     tableRows = [],
     teamsForFormSelect = [],
@@ -2295,6 +2478,7 @@ function App() {
     winMarginBucketRows = [],
     lossMarginBucketRows = [],
     tradesPanelRows = [],
+    league = null,
     matches = [],
     waiverOutGwRows = [],
     firstWaiverOrderPicks = [],
@@ -2373,14 +2557,27 @@ function App() {
    * of the dashboard layout) share the same open state. */
   const [leagueInfoOpen, setLeagueInfoOpen] = useState(false)
 
+  const draftGate = useMemo(
+    () => resolveDraftGate(league, statusNow, { archiveView: isArchiveView() }),
+    [league, statusNow],
+  )
+  const mobileLayout = useMobileLayout()
+  const hideMobileStatusStrip =
+    mobileLayout && draftGate.hideMobileStatusStrip
+
   const bottomNavHidden = useAutoHideBottomNav({
     enabled:
+      !draftGate.navLocked &&
       dashboardView !== 'more' &&
       !playerDetailOverlayOpen,
   })
 
   const selectDashboardView = useCallback((view) => {
-    setDashboardView(view)
+    if (draftGate.navLocked && !isPreDraftAllowedView(view)) {
+      setDashboardView('preseason')
+    } else {
+      setDashboardView(view)
+    }
     setPlayerDetailOverlayOpen(false)
     if (view !== 'players') {
       stripPlayersHash()
@@ -2388,7 +2585,14 @@ function App() {
     if (typeof window !== 'undefined') {
       window.scrollTo(0, 0)
     }
-  }, [])
+  }, [draftGate.navLocked])
+
+  useEffect(() => {
+    if (!draftGate.navLocked) return
+    if (!isPreDraftAllowedView(dashboardView)) {
+      setDashboardView('preseason')
+    }
+  }, [draftGate.navLocked, dashboardView])
 
   useLayoutEffect(() => {
     document.body.dataset.tclotTheme = colorTheme
@@ -2399,11 +2603,12 @@ function App() {
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
     function onPlayersHashNavigate() {
+      if (draftGate.navLocked) return
       if (parsePlayersHash()) setDashboardView('players')
     }
     window.addEventListener('hashchange', onPlayersHashNavigate)
     return () => window.removeEventListener('hashchange', onPlayersHashNavigate)
-  }, [])
+  }, [draftGate.navLocked])
 
   useEffect(() => {
     try {
@@ -2486,7 +2691,7 @@ function App() {
         currentEvent: draftBootstrapEvents.currentEvent,
         nextEvent: draftBootstrapEvents.nextEvent,
         lastFinishedEvent: draftBootstrapEvents.lastFinishedEvent,
-        season: BRAND_HEADER_SEASON,
+        season: seasonLabelDisplay(seasonCatalog.current),
         now: statusNow,
         liveFixtureCount: brandLiveFixtureCount,
         minute: brandLiveMinute,
@@ -2497,6 +2702,7 @@ function App() {
       draftBootstrapEvents.currentEvent,
       draftBootstrapEvents.nextEvent,
       draftBootstrapEvents.lastFinishedEvent,
+      seasonCatalog.current,
       statusNow,
       brandLiveFixtureCount,
       brandLiveMinute,
@@ -2611,7 +2817,6 @@ function App() {
 
   /** Mobile (tabbed single-column) layout for the waivers panel — drives the
    *  compact "GW38" GW pill so it fits on the same row as the view toggle. */
-  const waiversMobileLayout = useMobileLayout()
 
   /** Waiver GW picker: drops-gw-live GWs plus draft bootstrap current/next (shows GW35 before redeploy). */
   const waiverGwPickerOptions = useMemo(() => {
@@ -2843,7 +3048,11 @@ function App() {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
         <header className="page-header">
-          <BrandHeader liveStatus={brandHeaderStatus} />
+          <BrandHeader
+            liveStatus={brandHeaderStatus}
+            currentSeasonLabel={seasonCatalog.current}
+            archivedSeasons={seasonCatalog.archived}
+          />
         </header>
         <main className="main-tiles">
           <section className="tile error-tile">
@@ -2946,6 +3155,7 @@ function App() {
       className="app fotmob"
       data-theme={colorTheme}
       data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
+      data-dashboard-view={dashboardView}
     >
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
@@ -2958,6 +3168,9 @@ function App() {
               liveStatus={brandHeaderStatus}
               leagueInfoOpen={leagueInfoOpen}
               onOpenLeagueInfo={() => setLeagueInfoOpen(true)}
+              currentSeasonLabel={seasonCatalog.current}
+              archivedSeasons={seasonCatalog.archived}
+              hideStatusStrip={hideMobileStatusStrip}
             />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
@@ -2976,12 +3189,24 @@ function App() {
                 <code>web/public/league-data/</code>. ID: <code>draft.premierleague.com/league/YOUR_ID</code>
               </div>
             )}
+            {isArchiveView() && (
+              <div className="data-banner data-banner--archive" role="status">
+                <strong>
+                  {seasonLabelDisplay(archivedSeasonLabel())} season archive
+                </strong>{' '}
+                — final standings and moves, frozen at end of season.{' '}
+                <a className="data-banner__link" href={seasonHref(null)}>
+                  Back to current season
+                </a>
+              </div>
+            )}
           </header>
         </div>
         <DashboardNav
           variant="top"
           dashboardView={dashboardView}
           onSelect={selectDashboardView}
+          navLocked={draftGate.navLocked}
         />
         <div className="dashboard-content">
           {dashboardView === 'preseason' ? <PreseasonHub /> : null}
@@ -3574,7 +3799,7 @@ function App() {
                     gwPill={
                       waiverGwPickerOptions.length > 0 ? (
                         <CompactSelectPill
-                          label={waiversMobileLayout ? undefined : 'GW'}
+                          label={mobileLayout ? undefined : 'GW'}
                           ariaLabel="Waivers game week"
                           align="right"
                           isActive={false}
@@ -3582,7 +3807,7 @@ function App() {
                           onChange={(next) => setWaiverGwView(Number(next))}
                           options={waiverGwPickerOptions.map((gw) => ({
                             value: String(gw),
-                            label: waiversMobileLayout
+                            label: mobileLayout
                               ? gameWeekShortLabel(gw)
                               : gameWeekSelectLabel(gw),
                           }))}
@@ -3594,7 +3819,7 @@ function App() {
                         gw={waiversForSelectedGw.gw}
                         groups={waiversForSelectedGw.groups}
                         leagueTitleAbbr={LEAGUE_TITLE_ABBR}
-                        leagueTitle={LEAGUE_TITLE}
+                        leagueTitle={leagueTitle(seasonCatalog.current)}
                         teamLogoMap={teamLogoMap}
                         kitIndexByEntry={kitIndexByEntry}
                         showGwPicker={false}
@@ -3823,6 +4048,7 @@ function App() {
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
         liveStatus={brandHeaderStatus}
+        navLocked={draftGate.navLocked}
       />
       <LeagueInfoModal
         open={leagueInfoOpen}

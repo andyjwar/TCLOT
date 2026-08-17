@@ -41,6 +41,8 @@
   object-fit: cover;
   user-select: none;
   -webkit-user-drag: none;
+  touch-action: none;
+  pointer-events: none;
   /* Soft feathered edges so the header's green texture fades into
    * the page parchment instead of showing a hard rectangular seam.
    * Both axes get the same feather; the centre of the image (where
@@ -185,5 +187,47 @@
 
   .league-ring__cell-name-short {
     display: inline;
+  }
+}
+
+@media (max-width: 1080px) {
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+    gap: 8px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__header {
+    aspect-ratio: auto;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__header-img {
+    object-fit: contain;
+    object-position: center center;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__roster {
+    flex: 0 0 auto;
+    overflow: hidden;
+    padding-top: 0;
+    row-gap: 8px;
+    column-gap: 6px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__cell {
+    gap: 4px;
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__cell-badge {
+    width: clamp(48px, 14vw, 72px);
+  }
+
+  .app.fotmob[data-dashboard-view='preseason'] .league-ring__cell-name {
+    min-height: 0;
+    font-size: clamp(0.58rem, 2.7vw, 0.74rem);
   }
 }

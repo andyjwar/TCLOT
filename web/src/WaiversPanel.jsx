@@ -373,6 +373,16 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
               aria-expanded={isOpen}
               onClick={() => toggle(g.entry)}
             >
+              {Number.isFinite(teamOrder) ? (
+                <span
+                  className="waivers-weekly-tile__rank tabular"
+                  title="First waiver run order this GW (1 = first)"
+                >
+                  {teamOrder}
+                </span>
+              ) : (
+                <span className="waivers-weekly-tile__rank waivers-weekly-tile__rank--empty" aria-hidden="true" />
+              )}
               <TeamAvatar
                 entryId={g.leagueEntryId}
                 name={g.teamName}
@@ -381,11 +391,6 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
                 kitIndexByEntry={kitIndexByEntry}
               />
               <span className="waivers-weekly-tile__team">{g.teamName}</span>
-              {Number.isFinite(teamOrder) ? (
-                <span className="waivers-order" title="First waiver run order this GW (1 = first)">
-                  #{teamOrder}
-                </span>
-              ) : null}
               <span className="waivers-weekly-tile__count muted">
                 {(g.moves || []).length}
               </span>
@@ -535,7 +540,7 @@ export function WaiverTotalsToggle({
             league_entry: r.league_entry,
             teamName: r.teamName,
             value: r.totalWaiverInPoints,
-            count: r.distinctWaiverPlayers,
+            count: r.waiverInCount,
             avg: r.averageWaiverInPerPlayer ?? 0,
           }))
         : waiverOutPointsByTeam.map((r) => ({

@@ -323,7 +323,7 @@ const DECISIONS_DECIDED = [
     items: [
       'Stat tracking: tabbed table — G · A · CS · DC · B columns',
       'Status pills (XI / BN / OUT) on each row',
-      'Goal / assist event dots; clean-sheet dot',
+      'Name-side amber dot = FPL clean_sheets > 0 for GK/DEF/MID only (no on-pitch / live badge)',
       'Defensive-contribution threshold: green / bold when met per position',
       'Softer yellow / red in dark mode',
       'Live banner group: shared status header (not per-card)',
@@ -2814,7 +2814,7 @@ function ExpandedHeader() {
 // xi: PL matchday squad status — 'xi' (in starting XI) | 'bench' (on PL bench) | 'absent' (not in squad)
 // goals/assists: integer counts. defcon: total defensive contributions. bonus: BPS-bonus number.
 // played: derived true/false — used to gate the second-line stats strip.
-// cs: clean sheet active (>60 mins played, 0 conceded). Only shown for GK/DEF/MID.
+// cs: confirmed clean-sheet points from FPL (`clean_sheets` > 0). Dot only for GK/DEF/MID.
 // opp: opponent club 3-letter code (replaces minute/kickoff display).
 const TEAM_CO = {
   code: 'CO',
@@ -2825,19 +2825,19 @@ const TEAM_CO = {
     { club: 'ARS', name: 'Saliba',      pos: 'DEF', opp: 'NFO', played: true,  min: 90, pts: 9,  xi: 'xi',     g: 0, a: 0, dc: 14, b: 1, cs: true  },
     { club: 'LIV', name: 'Van Dijk',    pos: 'DEF', opp: 'CHE', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 0, a: 0, dc: 11, b: 0, cs: true  },
     { club: 'TOT', name: 'Porro',       pos: 'DEF', opp: 'BRE', played: true,  min: 67, pts: 4,  xi: 'xi',     g: 0, a: 1, dc: 8,  b: 0, cs: false },
-    { club: 'LIV', name: 'M.Salah',     pos: 'MID', opp: 'CHE', played: true,  min: 67, pts: 18, xi: 'xi', g: 1, a: 1, dc: 0, b: 3, cs: true },
+    { club: 'LIV', name: 'M.Salah',     pos: 'MID', opp: 'CHE', played: true,  min: 67, pts: 18, xi: 'xi',     g: 1, a: 1, dc: 0,  b: 3, cs: true  },
     { club: 'NEW', name: 'Bruno G.',    pos: 'MID', opp: 'WHU', played: true,  min: 90, pts: 8,  xi: 'xi',     g: 0, a: 1, dc: 12, b: 0, cs: false },
     { club: 'CHE', name: 'Palmer',      pos: 'MID', opp: 'LIV', played: true,  min: 67, pts: 7,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false },
-    { club: 'AVL', name: 'McGinn',      pos: 'MID', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0, b: 0, cs: false },
-    { club: 'MCI', name: 'Haaland',     pos: 'FWD', opp: 'BHA', played: true,  min: 90, pts: 5,  xi: 'xi',     g: 1, a: 0, dc: 0, b: 0, cs: false },
-    { club: 'NEW', name: 'Isak',        pos: 'FWD', opp: 'WHU', played: true,  min: 58, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 1, b: 0, cs: false, inj: true },
-    { club: 'BOU', name: 'Evanilson',   pos: 'FWD', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0, b: 0, cs: false },
+    { club: 'AVL', name: 'McGinn',      pos: 'MID', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'MCI', name: 'Haaland',     pos: 'FWD', opp: 'BHA', played: true,  min: 90, pts: 5,  xi: 'xi',     g: 1, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'NEW', name: 'Isak',        pos: 'FWD', opp: 'WHU', played: true,  min: 58, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false, inj: true },
+    { club: 'BOU', name: 'Evanilson',   pos: 'FWD', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false },
   ],
   bench: [
     { club: 'BHA', name: 'Verbruggen',  pos: 'GK',  opp: 'MCI', played: true,  min: 90, pts: 2,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false },
     { club: 'WHU', name: 'Wan-Bissaka', pos: 'DEF', opp: 'NEW', played: true,  min: 67, pts: 1,  xi: 'xi',     g: 0, a: 0, dc: 8,  b: 0, cs: false, autosub: true },
-    { club: 'CRY', name: 'Eze',         pos: 'MID', opp: 'BOU', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0, b: 0, cs: false },
-    { club: 'FUL', name: 'Muniz',       pos: 'FWD', opp: 'IPS', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0, b: 0, cs: false },
+    { club: 'CRY', name: 'Eze',         pos: 'MID', opp: 'BOU', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'FUL', name: 'Muniz',       pos: 'FWD', opp: 'IPS', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false },
   ],
 }
 
@@ -2848,21 +2848,21 @@ const TEAM_TO = {
   starters: [
     { club: 'NFO', name: 'Sels',        pos: 'GK',  opp: 'ARS', played: true,  min: 90, pts: 7,  xi: 'xi',     g: 0, a: 0, dc: 3,  b: 0, cs: false },
     { club: 'ARS', name: 'Gabriel',     pos: 'DEF', opp: 'NFO', played: true,  min: 90, pts: 6,  xi: 'xi',     g: 0, a: 1, dc: 14, b: 1, cs: true  },
-    { club: 'BOU', name: 'Kerkez',      pos: 'DEF', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0, b: 0, cs: false },
-    { club: 'AVL', name: 'Konsa',       pos: 'DEF', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0, b: 0, cs: false },
-    { club: 'TOT', name: 'Maddison',    pos: 'MID', opp: 'BRE', played: true,  min: 67, pts: 9,  xi: 'xi', g: 0, a: 1, dc: 5, b: 0, cs: false },
-    { club: 'BRE', name: 'Mbeumo',      pos: 'MID', opp: 'TOT', played: true,  min: 90, pts: 11, xi: 'xi',     g: 1, a: 0, dc: 6, b: 1, cs: false },
-    { club: 'WHU', name: 'Bowen',       pos: 'MID', opp: 'NEW', played: true,  min: 67, pts: 5,  xi: 'xi',     g: 0, a: 1, dc: 2, b: 0, cs: false, inj: true },
-    { club: 'NEW', name: 'Gordon',      pos: 'MID', opp: 'WHU', played: true,  min: 90, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 4, b: 0, cs: false },
-    { club: 'CHE', name: 'N.Jackson',   pos: 'FWD', opp: 'LIV', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 1, a: 0, dc: 1, b: 0, cs: false },
-    { club: 'IPS', name: 'Delap',       pos: 'FWD', opp: 'FUL', played: true,  min: 88, pts: 7,  xi: 'xi',     g: 1, a: 0, dc: 1, b: 0, cs: false },
-    { club: 'BRI', name: 'João Pedro',  pos: 'FWD', opp: 'WOL', played: true,  min: 64, pts: 6,  xi: 'bench',  g: 0, a: 1, dc: 1, b: 0, cs: false },
+    { club: 'BOU', name: 'Kerkez',      pos: 'DEF', opp: 'CRY', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'AVL', name: 'Konsa',       pos: 'DEF', opp: 'LEI', played: false, min: 0,  pts: 0,  xi: 'xi',     g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'TOT', name: 'Maddison',    pos: 'MID', opp: 'BRE', played: true,  min: 67, pts: 9,  xi: 'xi',     g: 0, a: 1, dc: 5,  b: 0, cs: false },
+    { club: 'BRE', name: 'Mbeumo',      pos: 'MID', opp: 'TOT', played: true,  min: 90, pts: 11, xi: 'xi',     g: 1, a: 0, dc: 6,  b: 1, cs: false },
+    { club: 'WHU', name: 'Bowen',       pos: 'MID', opp: 'NEW', played: true,  min: 67, pts: 5,  xi: 'xi',     g: 0, a: 1, dc: 2,  b: 0, cs: false, inj: true },
+    { club: 'NEW', name: 'Gordon',      pos: 'MID', opp: 'WHU', played: true,  min: 90, pts: 4,  xi: 'xi',     g: 0, a: 0, dc: 4,  b: 0, cs: false },
+    { club: 'CHE', name: 'N.Jackson',   pos: 'FWD', opp: 'LIV', played: true,  min: 67, pts: 6,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false },
+    { club: 'IPS', name: 'Delap',       pos: 'FWD', opp: 'FUL', played: true,  min: 88, pts: 7,  xi: 'xi',     g: 1, a: 0, dc: 1,  b: 0, cs: false },
+    { club: 'BRI', name: 'João Pedro',  pos: 'FWD', opp: 'WOL', played: true,  min: 64, pts: 6,  xi: 'bench',  g: 0, a: 1, dc: 1,  b: 0, cs: false },
   ],
   bench: [
     { club: 'EVE', name: 'Pickford',    pos: 'GK',  opp: 'SOU', played: true,  min: 90, pts: 2,  xi: 'xi',     g: 0, a: 0, dc: 1,  b: 0, cs: false },
     { club: 'LEI', name: 'Justin',      pos: 'DEF', opp: 'AVL', played: true,  min: 67, pts: 1,  xi: 'xi',     g: 0, a: 0, dc: 6,  b: 0, cs: false, autosub: true },
-    { club: 'WOL', name: 'Cunha',       pos: 'MID', opp: 'BRI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0, b: 0, cs: false },
-    { club: 'SOU', name: 'Armstrong',   pos: 'FWD', opp: 'EVE', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0, b: 0, cs: false },
+    { club: 'WOL', name: 'Cunha',       pos: 'MID', opp: 'BRI', played: false, min: 0,  pts: 0,  xi: 'bench',  g: 0, a: 0, dc: 0,  b: 0, cs: false },
+    { club: 'SOU', name: 'Armstrong',   pos: 'FWD', opp: 'EVE', played: false, min: 0,  pts: 0,  xi: 'absent', g: 0, a: 0, dc: 0,  b: 0, cs: false },
   ],
 }
 
@@ -3001,7 +3001,13 @@ function TableRow({ p, bench }) {
         <ClubCrest club={p.club} size={18} className="mockup-table__player-crest" />
         <span className={`mockup-table__player-name mockup-table__player-name--${p.xi}`}>
           {p.name}
-          {showCS && <span className="mockup-table__cs" aria-label="Clean sheet" />}
+          {showCS && (
+            <span
+              className="mockup-table__cs"
+              aria-label="Clean sheet points"
+              title="Clean sheet points"
+            />
+          )}
           {p.inj && <span className="mockup-table__inj" aria-label="Injury doubt" title="Injury doubt">🚑</span>}
           {p.autosub && <span className="mockup-table__autosub" aria-label="Autosubbed in" title="Autosubbed in">🔄</span>}
         </span>
@@ -3087,6 +3093,42 @@ function PortraitExpandedPreview() {
         <PortraitFrame>
           <ExpandedTable />
         </PortraitFrame>
+      </div>
+    </div>
+  )
+}
+
+/** Focused mock of lineup row indicators: clean-sheet dots only. */
+function LiveRowIndicatorsLegend() {
+  return (
+    <div className="mockup-lu-ind-legend" aria-label="Row indicator key">
+      <div className="mockup-lu-ind-legend__item">
+        <span className="mockup-table__cs" aria-hidden />
+        <span>
+          Amber dot — FPL clean-sheet points awarded (GK / DEF / MID only)
+        </span>
+      </div>
+      <div className="mockup-lu-ind-legend__item mockup-lu-ind-legend__item--muted">
+        <span className="mockup-lu-ind-legend__strike" aria-hidden>●</span>
+        <span>No on-pitch / live badges beside names</span>
+      </div>
+    </div>
+  )
+}
+
+function LiveRowIndicatorsPreview() {
+  return (
+    <div className="mockup-lu-ind-preview">
+      <LiveRowIndicatorsLegend />
+      <div className="mockup-portrait-row">
+        <div className="mockup-portrait-col">
+          <div className="mockup-portrait-col__h">
+            Lineups table · clean-sheet dots
+          </div>
+          <PortraitFrame>
+            <ExpandedTable />
+          </PortraitFrame>
+        </div>
       </div>
     </div>
   )
@@ -10200,82 +10242,111 @@ function mergedCellPosClass(rank) {
  * shows team name on top + big position below (heatmap-tinted).
  *
  * Locked spec: identity column is a vertical stack — badge + bold
- * full name on a top row, then a full-width 2×2 grid of uppercase
- * stats (TITLES · RUNNER-UP · TITAN · MINNOW) that mirrors the 25/26
- * year-label treatment (caps, muted, letter-spaced).
- *   TITLES   — finishes at 1st
- *   RUNNER-UP — finishes at 2nd
- *   TITAN    — top-half finishes (1st–4th)
- *   MINNOW   — bottom-half finishes (5th–8th)
+ * full name on a top row, then a 3-column stats strip:
+ *   TITLES  — 1st-place count in the gold pos-1 pill
+ *   TITAN   — top-half finishes (1st–4th)
+ *   MINNOW  — bottom-half finishes (5th–8th)
  * TITAN + MINNOW = seasons played. Tooltips on the TITAN/MINNOW
  * cells carry the position-range clarification so the inline labels
- * stay short. */
+ * stay short; Titles tooltip lists championship seasons. */
 function MergedHistoryTHD() {
   return (
     <div className="merged-history-timeline">
-      {MERGED_HISTORY_SORTED.map((row) => (
-        <div key={row.key} className="merged-history-timeline__row">
-          <div className="merged-history-timeline__mgr">
-            <div className="merged-history-timeline__mgr-head">
-              <span
-                className="merged-history-timeline__crest"
-                style={{ background: row.meta.color }}
-              >
-                {row.meta.initials}
-              </span>
-              <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
-            </div>
-            <div
-              className="merged-history-timeline__mgr-stats merged-history-timeline__mgr-stats--grid"
-              role="group"
-              aria-label="Career stats"
-            >
-              <div className="merged-history-timeline__mgr-stat">
-                <span className="merged-history-timeline__mgr-stat-num">{row.titles}</span>
-                <span className="merged-history-timeline__mgr-stat-label">
-                  {row.titles === 1 ? 'title' : 'titles'}
+      {MERGED_HISTORY_SORTED.map((row) => {
+        const titleWins = row.seasons.filter((s) => Number(s.rank) === 1)
+        const titleTooltip =
+          titleWins.length > 0
+            ? titleWins
+                .map((s) => `${s.season}${s.team ? ` · ${s.team}` : ''}`)
+                .join(', ')
+            : 'Seasons finished 1st'
+        return (
+          <div key={row.key} className="merged-history-timeline__row">
+            <div className="merged-history-timeline__mgr">
+              <div className="merged-history-timeline__mgr-head">
+                <span
+                  className="merged-history-timeline__crest"
+                  style={{ background: row.meta.color }}
+                >
+                  {row.meta.initials}
                 </span>
-              </div>
-              <div className="merged-history-timeline__mgr-stat">
-                <span className="merged-history-timeline__mgr-stat-num">{row.ru}</span>
-                <span className="merged-history-timeline__mgr-stat-label">runner-up</span>
+                <div className="merged-history-timeline__mgr-name">{row.meta.fullName}</div>
               </div>
               <div
-                className="merged-history-timeline__mgr-stat"
-                title="Seasons finishing 1st–4th (top half)"
+                className="merged-history-timeline__mgr-stats"
+                role="group"
+                aria-label="Career stats"
               >
-                <span className="merged-history-timeline__mgr-stat-num">{row.titan}</span>
-                <span className="merged-history-timeline__mgr-stat-label">titan</span>
-              </div>
-              <div
-                className="merged-history-timeline__mgr-stat"
-                title="Seasons finishing 5th–8th (bottom half)"
-              >
-                <span className="merged-history-timeline__mgr-stat-num">{row.minnow}</span>
-                <span className="merged-history-timeline__mgr-stat-label">minnow</span>
+                <div
+                  className="merged-history-timeline__mgr-cols merged-history-timeline__mgr-cols--3"
+                  role="group"
+                  aria-label="Titles, Titan, and Minnow finishes"
+                >
+                  <div
+                    className="merged-history-timeline__mgr-col-label"
+                    title="Seasons finished 1st"
+                  >
+                    Titles
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-label"
+                    title="Seasons finishing 1st–4th (top half)"
+                  >
+                    Titan
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-label"
+                    title="Seasons finishing 5th–8th (bottom half)"
+                  >
+                    Minnow
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-num merged-history-timeline__mgr-col-num--titles"
+                    title={titleTooltip}
+                  >
+                    <span
+                      className="merged-history-timeline__titles-pill merged-history-mv__pos-chip is-pos-1"
+                      aria-label={`${row.titles} titles`}
+                    >
+                      {row.titles}
+                    </span>
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-num tabular"
+                    title="Seasons finishing 1st–4th (top half)"
+                  >
+                    {row.titan}
+                  </div>
+                  <div
+                    className="merged-history-timeline__mgr-col-num tabular"
+                    title="Seasons finishing 5th–8th (bottom half)"
+                  >
+                    {row.minnow}
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="merged-history-timeline__cards">
-            {row.seasons.map((s) => (
-              <div
-                key={s.season}
-                className={
-                  'merged-history-timeline__card ' + mergedCellPosClass(s.rank)
-                }
-              >
-                <div className="merged-history-timeline__card-season">{s.season}</div>
-                <div className="merged-history-timeline__card-team" title={s.team ?? ''}>
-                  {s.team ?? '—'}
+            <div className="merged-history-timeline__cards">
+              {row.seasons.map((s) => (
+                <div
+                  key={s.season}
+                  className={
+                    'merged-history-timeline__card ' + mergedCellPosClass(s.rank)
+                  }
+                >
+                  <div className="merged-history-timeline__card-season">{s.season}</div>
+                  <div className="merged-history-timeline__card-team" title={s.team ?? ''}>
+                    {s.team ?? '—'}
+                  </div>
+                  <div className="merged-history-timeline__card-pos">
+                    {s.rank ?? '—'}
+                  </div>
                 </div>
-                <div className="merged-history-timeline__card-pos">
-                  {s.rank ?? '—'}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }
@@ -11053,18 +11124,18 @@ const WV_WEEKLY = [
   { team: 'DN',  order: null, moves: [] },
 ]
 
-/* Per-team season totals — both directions. inPts/players mirror
- * pickups-tenure teamWaiverInTotals; outPts/outCount mirror the
- * "waived out — team totals" (sum of dropped GW points). */
+/* Per-team season totals — both directions. inPts from pickups-tenure
+ * teamWaiverInTotals; outPts = sum of dropped GW points. inCount/outCount
+ * are both successful waiver claim counts (same volume per team). */
 const WV_TOTALS = [
-  { team: 'CO',  inPts: 1157, inPlayers: 41, outPts: 98, outCount: 22 },
-  { team: 'SZM', inPts: 1151, inPlayers: 38, outPts: 86, outCount: 19 },
-  { team: 'DB',  inPts: 1075, inPlayers: 35, outPts: 110, outCount: 26 },
-  { team: 'TW',  inPts: 1072, inPlayers: 33, outPts: 74, outCount: 18 },
-  { team: 'ER',  inPts: 1030, inPlayers: 36, outPts: 121, outCount: 28 },
-  { team: 'DN',  inPts: 1025, inPlayers: 40, outPts: 64, outCount: 15 },
-  { team: 'SCC', inPts: 901,  inPlayers: 31, outPts: 92,  outCount: 24 },
-  { team: 'PFO', inPts: 753,  inPlayers: 29, outPts: 58,  outCount: 16 },
+  { team: 'CO',  inPts: 1157, inCount: 128, outPts: 319, outCount: 128 },
+  { team: 'SZM', inPts: 1151, inCount: 62,  outPts: 146, outCount: 62 },
+  { team: 'DB',  inPts: 1075, inCount: 77,  outPts: 173, outCount: 77 },
+  { team: 'TW',  inPts: 1072, inCount: 36,  outPts: 48,  outCount: 36 },
+  { team: 'ER',  inPts: 1030, inCount: 58,  outPts: 142, outCount: 58 },
+  { team: 'DN',  inPts: 1025, inCount: 96,  outPts: 186, outCount: 96 },
+  { team: 'SCC', inPts: 901,  inCount: 70,  outPts: 151, outCount: 70 },
+  { team: 'PFO', inPts: 753,  inCount: 94,  outPts: 219, outCount: 94 },
 ]
 
 /* First waiver pick per GW, newest first (matches the production
@@ -11370,9 +11441,9 @@ function WvTotalsToggle() {
     const mapped = WV_TOTALS.map((r) => ({
       team: r.team,
       value: mode === 'in' ? r.inPts : r.outPts,
-      count: mode === 'in' ? r.inPlayers : r.outCount,
+      count: mode === 'in' ? r.inCount : r.outCount,
       avg: mode === 'in'
-        ? (r.inPts / r.inPlayers)
+        ? (r.inCount ? r.inPts / r.inCount : 0)
         : (r.outCount ? r.outPts / r.outCount : 0),
     }))
     mapped.sort((a, b) => b.value - a.value)
@@ -12174,6 +12245,21 @@ export function Mockup() {
             "FT", DNP players show their kickoff time.
           </p>
           <PortraitExpandedPreview />
+        </section>
+
+        {/* 11a-3b. Lineup row indicators — CS dots only */}
+        <section className="mockup__section">
+          <div className="mockup__eyebrow">Lineups · row indicators</div>
+          <h2 className="mockup__section-h">
+            Clean-sheet dots only (from FPL live stats)
+          </h2>
+          <p className="mockup__section-sub">
+            No on-pitch or live badges beside names. The amber name-side dot
+            appears when FPL’s live element stat <code>clean_sheets</code> is
+            greater than 0, and only for GK / DEF / MID (forwards never score
+            CS points).
+          </p>
+          <LiveRowIndicatorsPreview />
         </section>
 
         {/* 11b. Header-only state strip */}
