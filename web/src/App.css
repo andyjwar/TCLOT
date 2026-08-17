@@ -10867,7 +10867,7 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   .standings-table.standings-table--historic .col-wdl {
     padding-left: 4px;
     padding-right: 4px;
-    text-align: center;
+    text-align: right;
     width: 2.1rem;
   }
   .standings-table.standings-table--historic .col-for,
@@ -17110,17 +17110,17 @@ button.live-xp__player-name:focus-visible {
 
   .standings-table.heritage-cofc__table th.col-wdl,
   .standings-table.heritage-cofc__table td.col-wdl {
-    text-align: center;
+    text-align: right;
   }
 
   .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .heritage-cofc__sort-btn {
     display: flex;
-    justify-content: center;
+    justify-content: flex-end;
     grid-template-columns: none;
   }
 
   .standings-table.heritage-cofc__table .heritage-cofc__th--wdl .standings-sort-btn__label {
-    text-align: center;
+    text-align: right;
   }
 
   .standings-table.heritage-cofc__table .heritage-cofc__th--right:not(.heritage-cofc__th--wdl) .heritage-cofc__sort-btn {
@@ -17150,7 +17150,7 @@ button.live-xp__player-name:focus-visible {
   .standings-table.standings-table--historic th.col-wdl,
   .standings-table.standings-table--historic td.col-wdl {
     width: 9%;
-    text-align: center;
+    text-align: right;
   }
 
   .standings-table.standings-table--historic th.col-for,
