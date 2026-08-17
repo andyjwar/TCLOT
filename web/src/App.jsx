@@ -315,6 +315,11 @@ import { StandingsScheduleSubview } from './StandingsScheduleSubview.jsx'
 import { StandingsStatsSubview } from './StandingsStatsSubview.jsx'
 import { PlayersWorkbench } from './PlayersWorkbench.jsx'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import {
+  COFC_LIVE_COLUMNS,
+  nextCofcLiveSort,
+  sortCofcLiveRows,
+} from './heritageCofcSort.js'
 import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
 import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
@@ -906,13 +911,13 @@ function TeamJourneyStatCols({ row, titleWins }) {
         className="merged-history-timeline__mgr-col-num tabular"
         title="Seasons finishing 1st–4th (top half)"
       >
-        {row.titanCount}
+        <span className="merged-history-timeline__plain-count">{row.titanCount}</span>
       </div>
       <div
         className="merged-history-timeline__mgr-col-num tabular"
         title="Seasons finishing 5th–8th (bottom half)"
       >
-        {row.minnowCount}
+        <span className="merged-history-timeline__plain-count">{row.minnowCount}</span>
       </div>
     </div>
   )
@@ -1382,60 +1387,73 @@ function HeritageHistory({ tableRows, fullNameMap }) {
 
 /* ---------------- Champion of Champions (sub-tab 4) ---------------- */
 
-const COFC_LIVE_COLUMNS = [
-  { key: 'key', label: 'Manager', numeric: false, align: 'left', mobile: true },
-  { key: 'seasons', label: 'Seasons', numeric: true, align: 'right', mobile: false },
-  { key: 'totalW', label: 'W', numeric: true, align: 'right', mobile: true, title: 'Wins (cumulative)' },
-  { key: 'totalD', label: 'D', numeric: true, align: 'right', mobile: true, title: 'Draws (cumulative)' },
-  { key: 'totalL', label: 'L', numeric: true, align: 'right', mobile: true, title: 'Losses (cumulative)' },
-  { key: 'totalPf', label: 'For', numeric: true, align: 'right', mobile: true, title: 'Total FPL points scored' },
-  { key: 'totalPa', label: 'Faced', numeric: true, align: 'right', mobile: false, title: 'Total FPL points faced (live season only — historic data not yet transcribed)' },
-  { key: 'totalPts', label: 'PTS', numeric: true, align: 'right', mobile: true, title: 'League points (3 / 1 / 0 per H2H)' },
-  { key: 'titles', label: 'Titles', numeric: true, align: 'right', mobile: false, title: 'Seasons finished 1st' },
-  { key: 'lastRank', label: 'Last', numeric: true, align: 'right', mobile: false, title: 'Most recent finishing position' },
-  { key: 'avgRank', label: 'Avg Rank', numeric: true, align: 'right', mobile: false, title: 'Mean finishing position (lower is better)' },
-]
+function cofcColumnKindClass(col) {
+  if (col.key === 'key') return ' heritage-cofc__th--mgr'
+  if (col.key === 'totalW' || col.key === 'totalD' || col.key === 'totalL') {
+    return ' col-num col-wdl heritage-cofc__th--wdl'
+  }
+  if (col.key === 'totalPf') return ' col-num col-for'
+  if (col.key === 'totalPts') return ' col-pts heritage-cofc__th--pts'
+  return ''
+}
 
-function sortCofcLiveRows(rows, sort) {
-  if (!sort) return rows
-  const col = COFC_LIVE_COLUMNS.find((c) => c.key === sort.key)
-  if (!col) return rows
-  const dir = sort.dir === 'asc' ? 1 : -1
-  const arr = [...rows]
-  arr.sort((a, b) => {
-    const av = a[col.key]
-    const bv = b[col.key]
-    if (col.numeric) {
-      const an = Number(av ?? 0)
-      const bn = Number(bv ?? 0)
-      return (an - bn) * dir
-    }
-    return String(av ?? '').localeCompare(String(bv ?? '')) * dir
-  })
-  return arr
+function cofcCellKindClass(col) {
+  if (col.key === 'totalW' || col.key === 'totalD' || col.key === 'totalL') {
+    return ' col-num col-wdl'
+  }
+  if (col.key === 'totalPf') return ' col-num col-for'
+  if (col.key === 'totalPts') return ' col-pts'
+  return ''
 }
 
 function CofcLiveSortTh({ col, sort, onSort }) {
+  const isPts = col.key === 'totalPts'
   const active = sort?.key === col.key
   const dir = active ? sort.dir : null
+  /** League table is ordered by points high → low; show green ↓ on PTS in that order */
+  const ptsLeagueDefault = isPts && sort === null
+
   let arrowGlyph = '↕'
   let arrowClass = 'standings-sort-arrow'
-  if (active) {
+  if (isPts) {
+    if (ptsLeagueDefault) {
+      arrowGlyph = '↓'
+      arrowClass += ' standings-sort-arrow--active standings-sort-arrow--desc'
+    } else if (active) {
+      arrowGlyph = dir === 'asc' ? '↑' : '↓'
+      arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
+    }
+  } else if (active) {
     arrowGlyph = dir === 'asc' ? '↑' : '↓'
     arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
   }
-  const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined
-  const ariaLabel = active
-    ? `${col.label}: sorted ${dir === 'asc' ? 'low to high' : 'high to low'}. Click to reverse.`
-    : `Sort by ${col.label}`
+
+  const ariaSort = ptsLeagueDefault
+    ? 'descending'
+    : active
+      ? dir === 'asc'
+        ? 'ascending'
+        : 'descending'
+      : undefined
+  const ariaLabel = isPts
+    ? ptsLeagueDefault
+      ? 'League order (points high to low). Click to sort by points.'
+      : active
+        ? `PTS: sorted ${dir === 'desc' ? 'high to low' : 'low to high'}. Click to reverse.`
+        : 'Sort by points'
+    : active
+      ? `${col.label}: sorted ${dir === 'desc' ? 'high to low' : 'low to high'}. Click to reverse.`
+      : `Sort by ${col.label}`
+
   return (
     <th
       scope="col"
       className={
         'heritage-cofc__th heritage-cofc__th--' + col.align +
-        (col.key === 'totalPts' ? ' heritage-cofc__th--pts' : '') +
+        cofcColumnKindClass(col) +
         (col.mobile ? '' : ' heritage-col--hide-portrait') +
-        (active ? ' is-active' : '')
+        (active ? ' is-active' : '') +
+        (ptsLeagueDefault ? ' is-league-default' : '')
       }
       aria-sort={ariaSort}
       title={col.title || undefined}
@@ -1454,17 +1472,10 @@ function CofcLiveSortTh({ col, sort, onSort }) {
 }
 
 function CofcLiveTable({ rows, fullNameMap }) {
-  const [sort, setSort] = useState({ key: 'totalPts', dir: 'desc' })
+  const [sort, setSort] = useState(null)
   const sortedRows = useMemo(() => sortCofcLiveRows(rows, sort), [rows, sort])
   const handleSort = useCallback((key) => {
-    setSort((prev) => {
-      if (prev?.key === key) {
-        return { key, dir: prev.dir === 'asc' ? 'desc' : 'asc' }
-      }
-      const col = COFC_LIVE_COLUMNS.find((c) => c.key === key)
-      const defaultDir = col?.numeric ? 'desc' : 'asc'
-      return { key, dir: defaultDir }
-    })
+    setSort((prev) => nextCofcLiveSort(prev, key))
   }, [])
 
   return (
@@ -1489,8 +1500,8 @@ function CofcLiveTable({ rows, fullNameMap }) {
                 const isMobileOnly = col.mobile
                 const tdClass =
                   'heritage-cofc__td heritage-cofc__td--' + col.align +
-                  (isMobileOnly ? '' : ' heritage-col--hide-portrait') +
-                  (col.key === 'totalPts' ? ' col-pts' : '')
+                  cofcCellKindClass(col) +
+                  (isMobileOnly ? '' : ' heritage-col--hide-portrait')
                 if (col.key === 'key') {
                   const managerFull = resolveManagerFull(r.key, r.managerFull, fullNameMap)
                   return (
