@@ -3849,13 +3849,7 @@ function App() {
                   rows={firstWaiverOrderPicks}
                   teamLogoMap={teamLogoMap}
                   kitIndexByEntry={kitIndexByEntry}
-                  emptyMessage={
-                    <>
-                      Need <code>transactions.json</code> with waiver <code>index</code> fields. Run
-                      a full ingest, then <code>npm run dev</code> / build for GW points in{' '}
-                      <code>drops-gw-live.json</code>.
-                    </>
-                  }
+                  emptyMessage={<>First waivers are on Thursday 20th</>}
                 />
               </section>
 
@@ -3870,12 +3864,7 @@ function App() {
               mostRows={mostWaiveredPlayers}
               teamLogoMap={teamLogoMap}
               kitIndexByEntry={kitIndexByEntry}
-              emptyMessage={
-                <>
-                  Run <code>npm run dev</code> / build so <code>pickups-tenure.json</code> is
-                  generated (needs <code>transactions.json</code> + finished GWs).
-                </>
-              }
+              emptyMessage={<>First waivers are on Thursday 20th</>}
             />
           </section>
 

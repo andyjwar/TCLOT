@@ -41,11 +41,11 @@ function resolveNamedSource(filename) {
   return null
 }
 
-async function writeCoverPng(inPath, outPath) {
+async function writeCoverPng(inPath, outPath, size = 192) {
   const st = statSync(inPath)
   if (existsSync(outPath) && statSync(outPath).mtimeMs >= st.mtimeMs) return false
   const img = await Jimp.read(inPath)
-  await img.cover({ w: 192, h: 192 })
+  await img.cover({ w: size, h: size })
   await img.write(outPath)
   return true
 }
@@ -85,6 +85,20 @@ async function main() {
       }
     } catch (e) {
       console.warn('team-logos-web manifest skip', id, filename, e.message)
+    }
+
+    // Named copy for consumers that address logos by manifest filename
+    // (LeagueRing preseason splash loads team-logos-web/{file} directly).
+    const namedSrc = join(SRC, filename)
+    if (existsSync(namedSrc)) {
+      const namedOut = join(OUT, filename)
+      try {
+        if (await writeCoverPng(namedSrc, namedOut, 384)) {
+          console.log('team-logos-web:', filename)
+        }
+      } catch (e) {
+        console.warn('team-logos-web named skip', filename, e.message)
+      }
     }
   }
 }
