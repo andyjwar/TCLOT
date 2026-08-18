@@ -1,7 +1,7 @@
-import { draftCurrentGameweek } from './draftBoardRosterStatus'
+import { draftCurrentGameweek } from './draftBoardRosterStatus.js'
 import { fplElementWebName } from './fplElementNames.js'
-import { defensiveContributionPointThreshold } from './fplBonusFromBps'
-import { draftResourceUrl, fplApiBase } from './fplDraftUrl'
+import { defensiveContributionPointThreshold } from './fplBonusFromBps.js'
+import { draftResourceUrl, fplApiBase } from './fplDraftUrl.js'
 
 export const POS_FILTER_ALL = 'all'
 export const POS_LABEL = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
@@ -702,6 +702,24 @@ export function sortKeysForPositionFilter(positionFilter) {
   return [...base.slice(0, 5), 'clean_sheets', ...base.slice(5)]
 }
 
+/**
+ * True while FPL's bootstrap element stats are still last season's totals.
+ * Pre-season the draft API carries every player's previous-season
+ * `total_points` / `goals_scored` / … until GW1 kicks off (then it zeroes
+ * them): `events.current` stays null and nothing is finished. The Players
+ * wire blanks those columns to '—' during that window so 25/26 carry-over
+ * isn't mistaken for live 26/27 data.
+ *
+ * @param {object | null | undefined} bootstrap draft bootstrap payload
+ */
+export function elementStatsAreCarryOver(bootstrap) {
+  const ev = bootstrap?.events
+  if (ev == null) return false
+  if (typeof ev.current === 'number' && ev.current >= 1) return false
+  const data = Array.isArray(ev.data) ? ev.data : []
+  return !data.some((e) => e?.is_current === true || e?.finished === true)
+}
+
 export function parseElementStat(v) {
   if (typeof v === 'number' && Number.isFinite(v)) return v
   if (typeof v === 'string' && v.trim() !== '') {
@@ -845,7 +863,7 @@ export function wireStatToneClass(value) {
  * @param {object} el bootstrap element
  * @param {{ defConHits?: number | null, gamesPlayed?: number | null, sixtyPlus?: number | null } | null | undefined} summary
  * @param {boolean} [summaryLoading]
- * @param {{ portraitPosAbbrev?: boolean }} [options]
+ * @param {{ portraitPosAbbrev?: boolean, blankCarryOver?: boolean }} [options]
  */
 export function formatWireStatValue(statId, el, summary, summaryLoading = false, options = {}) {
   const def = WIRE_STAT_CATALOG[statId]
@@ -860,6 +878,11 @@ export function formatWireStatValue(statId, el, summary, summaryLoading = false,
     }
     return POS_LABEL[el.element_type] ?? '—'
   }
+
+  // Pre-season: every non-position stat is either last season's carry-over
+  // (element fields) or an empty current season (summary counts) — blank
+  // them all until GW1 starts. See elementStatsAreCarryOver.
+  if (options.blankCarryOver) return '—'
 
   if (def.format === 'summary_gp') {
     if (summary != null && summary.gamesPlayed != null) return String(summary.gamesPlayed)
