@@ -577,20 +577,7 @@ function NextFixtureBadges({ fixtures, nextOnly = false }) {
           title={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
           aria-label={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
         >
-          {fx.badgeUrl ? (
-            <img
-              src={fx.badgeUrl}
-              alt=""
-              className="players-fixture-badge__crest"
-              width={28}
-              height={28}
-              loading="lazy"
-            />
-          ) : (
-            <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
-              {fx.shortName?.slice(0, 3) ?? '?'}
-            </span>
-          )}
+          {(fx.shortName ?? '?').slice(0, 3).toUpperCase()}
         </span>
       ))}
     </span>
