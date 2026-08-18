@@ -171,6 +171,16 @@ export function WeeklyRecap({ teamLogoMap = {}, kitIndexByEntry }) {
               </span>
             </span>
           ) : null}
+          {activeGw.superlatives.starPlayer ? (
+            <span className="weekly-recap__superlative">
+              <span className="weekly-recap__superlative-label">Star player</span>
+              <span className="weekly-recap__superlative-value">
+                {activeGw.superlatives.starPlayer.name} ·{' '}
+                <span className="tabular">{activeGw.superlatives.starPlayer.pts}</span> (
+                {standingsMobileTeamName(activeGw.superlatives.starPlayer.teamName)})
+              </span>
+            </span>
+          ) : null}
         </div>
       </section>
 
@@ -300,6 +310,15 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
             <span className="weekly-recap-matchup__team-record tabular">
               {t.record.w}-{t.record.d}-{t.record.l}
             </span>
+            {t.players?.top ? (
+              <span
+                className="weekly-recap-matchup__team-top"
+                title={`Top scorer: ${t.players.top.name} (${t.players.top.pts})`}
+              >
+                ★ {t.players.top.name}{' '}
+                <span className="tabular">{t.players.top.pts}</span>
+              </span>
+            ) : null}
             {t.streak && t.streak.len >= 2 ? (
               <span
                 className={

@@ -131,6 +131,63 @@ test('fun fact: heavyweight fixture when combined points run high', () => {
   assert.match(out[3], /148 combined points/)
 })
 
+test('player sentence: winner carried by one player', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({
+      points: 55,
+      players: { top: { name: 'Salah', pts: 24 }, share: 0.436, haul: { name: 'Salah', pts: 24 }, flop: null },
+    }),
+    away: {
+      ...base.away,
+      players: { top: { name: 'Watkins', pts: 8 }, share: 0.18, haul: null, flop: null },
+    },
+  })
+  assert.equal(out.length, 5)
+  const player = out[3]
+  assert.match(player, /Salah/)
+  assert.match(player, /single-handed|one-man-army/)
+})
+
+test('player sentence: haul against a headline blank names both', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({
+      players: { top: { name: 'Haaland', pts: 17 }, share: 0.28, haul: { name: 'Haaland', pts: 17 }, flop: null },
+    }),
+    away: {
+      ...base.away,
+      players: { top: { name: 'Gabriel', pts: 6 }, share: 0.13, haul: null, flop: { name: 'Isak', pts: 1, xp: 6.2 } },
+    },
+  })
+  const player = out[3]
+  assert.match(player, /Haaland hauled 17/)
+  assert.match(player, /Isak/)
+  assert.match(player, /just 1/)
+})
+
+test('player sentence omitted when nothing notable happened', () => {
+  const quiet = { top: { name: 'A', pts: 8 }, share: 0.15, haul: null, flop: null }
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({ players: quiet }),
+    away: { ...base.away, players: { ...quiet, top: { name: 'B', pts: 7 } } },
+  })
+  assert.equal(out.length, 4)
+  for (const s of out) assert.doesNotMatch(s, /\bA\b \(8\)/)
+})
+
+test('player sentence: losing side haul reads as wasted', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    away: {
+      ...base.away,
+      players: { top: { name: 'Palmer', pts: 19 }, share: 0.42, haul: { name: 'Palmer', pts: 19 }, flop: null },
+    },
+  })
+  assert.match(out[3], /Palmer's 19 .* deserved more/)
+})
+
 test('variantIndex is stable and in range', () => {
   for (const key of ['a', 'b', 'team-1-gw3', '']) {
     const v = variantIndex(key, 3)

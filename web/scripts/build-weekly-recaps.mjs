@@ -18,10 +18,15 @@
  * Run AFTER build-season-predictions.mjs (odds + model record come from it):
  *   node scripts/build-weekly-recaps.mjs
  */
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { recapFactsForGw } from '../src/seasonPredictionsModel.js'
+import {
+  recapFactsForGw,
+  findArchivedH2hRow,
+  archivedXi,
+  sidePlayerFacts,
+} from '../src/seasonPredictionsModel.js'
 import { matchupRecapSentences } from '../src/weeklyRecapText.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
@@ -52,6 +57,16 @@ const snapshotByGw = new Map(predictions.snapshots.map((s) => [s.asOfGw, s]))
 const recordByGw = new Map(
   (predictions.modelRecord?.gameweeks ?? []).map((g) => [g.gw, g]),
 )
+
+function loadHistory(gw) {
+  const p = join(dataDir, 'projections-history', `gw-${String(gw).padStart(2, '0')}.json`)
+  if (!existsSync(p)) return null
+  try {
+    return JSON.parse(readFileSync(p, 'utf8'))
+  } catch {
+    return null
+  }
+}
 
 function titleOddsAt(asOfGw, entryId) {
   const snap = snapshotByGw.get(asOfGw)
@@ -88,6 +103,7 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
   const facts = recapFactsForGw(matches, entryIds, nameById, gw)
   if (!facts) continue
   const gwRecord = recordByGw.get(gw)
+  const history = loadHistory(gw)
   const recordRows = new Map(
     (gwRecord?.matches ?? []).map((r) => [`${r.home}-${r.away}`, r]),
   )
@@ -98,6 +114,9 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
   const matchups = facts.matches.map((row) => {
     const home = teamOut(facts.teams.get(row.home), gw)
     const away = teamOut(facts.teams.get(row.away), gw)
+    const archRow = findArchivedH2hRow(history, row.home, row.away)
+    home.players = sidePlayerFacts(archivedXi(archRow, row.home))
+    away.players = sidePlayerFacts(archivedXi(archRow, row.away))
     const rec = recordRows.get(`${row.home}-${row.away}`)
     const odds =
       rec && Number.isFinite(rec.homeWinPct) && rec.favorite != null
@@ -127,6 +146,17 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
       sentences: matchupRecapSentences({ gw, home, away, odds, leagueAvg }),
     }
   })
+
+  // Star of the week: the top player score across every archived XI.
+  let starPlayer = null
+  for (const m of matchups) {
+    for (const side of [m.home, m.away]) {
+      const top = side.players?.top
+      if (top && (!starPlayer || top.pts > starPlayer.pts)) {
+        starPlayer = { name: top.name, pts: top.pts, teamName: side.name }
+      }
+    }
+  }
 
   // Odds vs reality summary: every decided pre-match call, plus the upset the
   // model rated least likely.
@@ -182,6 +212,7 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
             margin: facts.superlatives.closest.margin,
           }
         : null,
+      starPlayer,
     },
     matchups,
   })

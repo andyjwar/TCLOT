@@ -11,6 +11,8 @@ import {
   matchFavorite,
   findArchivedH2hRow,
   archivedScoreError,
+  archivedXi,
+  sidePlayerFacts,
 } from './seasonPredictionsModel.js'
 
 const IDS = [1, 2, 3, 4]
@@ -203,4 +205,50 @@ test('archivedScoreError orients by entry id', () => {
     absErr: 2,
   })
   assert.equal(archivedScoreError(null, 1), null)
+})
+
+test('archivedXi orients by entry id and tolerates old schemas', () => {
+  const xi1 = [{ id: 10, name: 'Haaland', pos: 'FWD', pts: 13, xp: 6.1 }]
+  const xi2 = [{ id: 20, name: 'Saka', pos: 'MID', pts: 8, xp: 5.4 }]
+  const row = { league_entry_1: 1, league_entry_2: 2, xi1, xi2 }
+  assert.equal(archivedXi(row, 1), xi1)
+  assert.equal(archivedXi(row, 2), xi2)
+  assert.equal(archivedXi({ league_entry_1: 1, league_entry_2: 2 }, 1), null)
+  assert.equal(archivedXi(null, 1), null)
+})
+
+test('sidePlayerFacts: top scorer, share, haul and flop detection', () => {
+  const xi = [
+    { id: 1, name: 'Salah', pos: 'MID', pts: 21, xp: 7.2 },
+    { id: 2, name: 'Isak', pos: 'FWD', pts: 2, xp: 6.0 },
+    { id: 3, name: 'Gabriel', pos: 'DEF', pts: 6, xp: 4.1 },
+    { id: 4, name: 'Raya', pos: 'GK', pts: 1, xp: 3.9 },
+  ]
+  const f = sidePlayerFacts(xi)
+  assert.deepEqual(f.top, { name: 'Salah', pts: 21 })
+  assert.equal(f.share, +(21 / 30).toFixed(3))
+  assert.deepEqual(f.haul, { name: 'Salah', pts: 21 })
+  // Isak is the flop (xp >= 5, pts <= 2); Raya's 1 doesn't count (xp < 5).
+  assert.deepEqual(f.flop, { name: 'Isak', pts: 2, xp: 6.0 })
+})
+
+test('sidePlayerFacts: quiet weeks produce no haul or flop', () => {
+  const xi = [
+    { id: 1, name: 'A', pos: 'MID', pts: 7, xp: 5.5 },
+    { id: 2, name: 'B', pos: 'FWD', pts: 6, xp: 5.8 },
+  ]
+  const f = sidePlayerFacts(xi)
+  assert.deepEqual(f.top, { name: 'A', pts: 7 })
+  assert.equal(f.haul, null)
+  assert.equal(f.flop, null)
+  assert.equal(sidePlayerFacts([]), null)
+  assert.equal(sidePlayerFacts(null), null)
+})
+
+test('sidePlayerFacts: modest score still counts as haul when it doubles the call', () => {
+  const xi = [
+    { id: 1, name: 'Mbeumo', pos: 'MID', pts: 13, xp: 5.0 },
+    { id: 2, name: 'B', pos: 'FWD', pts: 4, xp: 4.0 },
+  ]
+  assert.deepEqual(sidePlayerFacts(xi).haul, { name: 'Mbeumo', pts: 13 })
 })

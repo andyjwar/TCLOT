@@ -7,7 +7,10 @@
  *  2. Odds vs reality — what the model said pre-match and how that aged
  *     (omitted when no pre-match call exists).
  *  3. Table context — where the result leaves both sides (rank, move, record).
- *  4. Fun fact / theme — the most interesting thing the data offers: a
+ *  4. Players — only when there's a story: someone carried their side, hauled,
+ *     or a headline pick blanked (omitted otherwise; the card already lists
+ *     top scorers).
+ *  5. Fun fact / theme — the most interesting thing the data offers: a
  *     season-high, a streak, a title-odds swing, or the fixture's weight.
  */
 
@@ -151,6 +154,75 @@ function contextSentence(m, key) {
   )
 }
 
+/**
+ * Player storyline, when one exists. Facts come from the archived XI
+ * (m.home.players / m.away.players via sidePlayerFacts): `top` scorer,
+ * `share` of team points, `haul` and `flop`. Returns null when the week was
+ * unremarkable or no player data is archived.
+ */
+function playerSentence(m, key) {
+  const { winner, loser } = sides(m)
+  const ph = m.home.players
+  const pa = m.away.players
+  if (!ph && !pa) return null
+  const pWinner = winner ? (winner === m.home ? ph : pa) : null
+  const pLoser = loser ? (loser === m.home ? ph : pa) : null
+
+  // Carried: the winner's top scorer did over a third of the work.
+  if (pWinner?.top && pWinner.top.pts >= 15 && pWinner.share >= 0.33) {
+    if (pWinner.share >= 0.4 && pWinner.top.pts >= 20) {
+      return pick(
+        [
+          `${pWinner.top.name} practically won it single-handed — ${pWinner.top.pts} of ${winner.name}'s ${winner.points}.`,
+          `Strip out ${pWinner.top.name}'s ${pWinner.top.pts} and ${winner.name} lose this one; one-man-army stuff.`,
+        ],
+        key,
+      )
+    }
+    return pick(
+      [
+        `${pWinner.top.name} did the heavy lifting for ${winner.name} with ${pWinner.top.pts} — over a third of their total.`,
+        `${winner.name} leaned hard on ${pWinner.top.name}, whose ${pWinner.top.pts} carried the scoring.`,
+      ],
+      key,
+    )
+  }
+
+  // Haul + opposite-side blank is the juiciest combination.
+  if (pWinner?.haul && pLoser?.flop) {
+    return `${pWinner.haul.name} hauled ${pWinner.haul.pts} for ${winner.name} while ${loser.name}'s ${pLoser.flop.name} — pegged for ${pLoser.flop.xp} — managed just ${pLoser.flop.pts}.`
+  }
+  if (pWinner?.haul) {
+    return pick(
+      [
+        `${pWinner.haul.name} led the charge for ${winner.name} with a ${pWinner.haul.pts}-point haul.`,
+        `The difference-maker: ${pWinner.haul.name}'s ${pWinner.haul.pts} for ${winner.name}.`,
+      ],
+      key,
+    )
+  }
+  if (pLoser?.flop) {
+    return pick(
+      [
+        `${loser.name} will point at ${pLoser.flop.name}: projected for ${pLoser.flop.xp}, he returned ${pLoser.flop.pts}.`,
+        `The blank that hurt: ${loser.name}'s ${pLoser.flop.name} (${pLoser.flop.pts} against a ${pLoser.flop.xp}-point call).`,
+      ],
+      key,
+    )
+  }
+  // Losing side's haul wasted, or a draw with a standout.
+  const pDrawSides = [
+    { facts: ph, team: m.home },
+    { facts: pa, team: m.away },
+  ]
+  for (const { facts, team } of pDrawSides) {
+    if (facts?.haul && (!winner || team === loser)) {
+      return `${facts.haul.name}'s ${facts.haul.pts} for ${team.name} deserved more than it got.`
+    }
+  }
+  return null
+}
+
 function funFactSentence(m, key) {
   const { winner, loser } = sides(m)
   const candidates = []
@@ -212,12 +284,13 @@ function funFactSentence(m, key) {
 }
 
 /**
- * The recap paragraph for one matchup: 3 sentences (4 when a pre-match model
- * call exists).
+ * The recap paragraph for one matchup: 3–5 sentences depending on whether a
+ * pre-match model call exists and whether the players gave us a story.
  *
  * @param {{
  *   gw: number,
- *   home: object, away: object,   // team facts (points, rank, record, streak, titleOdds, …)
+ *   home: object, away: object,   // team facts (points, rank, record, streak,
+ *                                 //  titleOdds, players via sidePlayerFacts, …)
  *   odds: { favoriteSide: 'home'|'away', favoritePct: number } | null,
  *   leagueAvg?: number | null,    // average team score this GW
  * }} m
@@ -228,6 +301,8 @@ export function matchupRecapSentences(m) {
   const odds = oddsSentence(m, `${key}-o`)
   if (odds) out.push(odds)
   out.push(contextSentence(m, `${key}-c`))
+  const players = playerSentence(m, `${key}-p`)
+  if (players) out.push(players)
   out.push(funFactSentence(m, `${key}-f`))
   return out
 }

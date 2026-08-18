@@ -221,6 +221,12 @@
 .weekly-recap-matchup__team-record {
   min-width: 44px;
 }
+.weekly-recap-matchup__team-top {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
 .weekly-recap-matchup__streak {
   font-size: 10px;
   font-weight: 800;

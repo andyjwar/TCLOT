@@ -389,3 +389,45 @@ export function archivedScoreError(row, entryId) {
   if (!Number.isFinite(pred) || !Number.isFinite(actual)) return null
   return { predicted: pred, actual, absErr: +Math.abs(pred - actual).toFixed(2) }
 }
+
+/**
+ * One side's archived XI rows ({ id, name, pos, pts, xp }) from an archived
+ * h2h row, oriented by entry id. Null when the archive predates
+ * schemaVersion 3 (no per-player rows).
+ */
+export function archivedXi(row, entryId) {
+  if (!row) return null
+  const isE1 = Number(row.league_entry_1) === Number(entryId)
+  const xi = isE1 ? row.xi1 : row.xi2
+  return Array.isArray(xi) && xi.length > 0 ? xi : null
+}
+
+/**
+ * Player storylines for one side of a matchup, from archived XI rows:
+ *  - `top`: the side's top scorer.
+ *  - `share`: top scorer's share of the team's XI points.
+ *  - `haul`: top scorer again when the week counts as a haul (>= 15, or >= 13
+ *    while beating the model's pre-match call for them by 2.5x).
+ *  - `flop`: the biggest letdown — the highest-xP player who was expected to
+ *    lead (xP >= 5) and returned 2 points or fewer.
+ */
+export function sidePlayerFacts(xi) {
+  if (!Array.isArray(xi) || xi.length === 0) return null
+  const total = xi.reduce((s, p) => s + (Number(p.pts) || 0), 0)
+  let top = xi[0]
+  for (const p of xi) if ((Number(p.pts) || 0) > (Number(top.pts) || 0)) top = p
+  const topPts = Number(top.pts) || 0
+  const isHaul =
+    topPts >= 15 || (topPts >= 13 && Number.isFinite(top.xp) && topPts >= top.xp * 2.5)
+  let flop = null
+  for (const p of xi) {
+    if (!Number.isFinite(p.xp) || p.xp < 5 || (Number(p.pts) || 0) > 2) continue
+    if (!flop || p.xp > flop.xp) flop = p
+  }
+  return {
+    top: { name: top.name, pts: topPts },
+    share: total > 0 ? +(topPts / total).toFixed(3) : 0,
+    haul: isHaul ? { name: top.name, pts: topPts } : null,
+    flop: flop ? { name: flop.name, pts: Number(flop.pts) || 0, xp: flop.xp } : null,
+  }
+}
