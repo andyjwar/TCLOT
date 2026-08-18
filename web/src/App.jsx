@@ -571,7 +571,7 @@ const HALL_OF_CHAMPIONS = [
   },
   {
     season: '2024-25',
-    team: 'Soul Ze Moles',
+    team: 'Seoul Ze Moles',
     bannerImage: 'hall-champions/soul-ze-moles.png',
     bg: '#e71b74',
     ink: '#f0c441',
