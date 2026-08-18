@@ -3427,9 +3427,17 @@
   overflow-wrap: normal;
 }
 
-/* Match standings size/weight; standings max-width would wrap long names here */
+/* GW fixture names use the draft-list rendered style (0.9rem / 400);
+ * standings max-width would wrap long names here */
 .gw-fixture-name-cell .team-name--sidebar {
   max-width: none;
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+/* Keep the winner emphasis once a result exists */
+.gw-fixture-name-cell.gw-fixture-name--winner .team-name--sidebar {
+  font-weight: 600;
 }
 
 /* Match standings `.team-name--sidebar`; winner color comes from parent cell */
@@ -3469,22 +3477,6 @@
 .gw-fixture-name--winner .gw-fixture-rank {
   color: inherit;
   opacity: 0.9;
-}
-
-/* Complete / future GW rows: short label (e.g. To. Gimli, MSFG) on mobile, full name on
-   desktop; full name always in title. The component renders both spans; each breakpoint
-   hides the other. */
-@media (max-width: 560px) {
-  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__rest,
-  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__sep {
-    display: none;
-  }
-}
-
-@media (min-width: 561px) {
-  .gw-fixture-list--tight .gw-fixture-name-text--mobile-first-token .gw-fixture-name-text__first {
-    display: none;
-  }
 }
 
 /* All Waivers tile */
@@ -14839,8 +14831,9 @@ button.live-xp__player-name:focus-visible {
 }
 
 .standings-schedule__fixture-name {
-  font-size: 0.85rem;
-  font-weight: 600;
+  /* Draft-list rendered style; winner/loser contrast stays color-based. */
+  font-size: 0.9rem;
+  font-weight: 400;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -15015,8 +15008,9 @@ button.live-xp__player-name:focus-visible {
 /* Schedule team-filtered compact rows — opponent name fills the gap between
  * the crest and the score column. */
 .standings-schedule-team__opp-name {
-  font-size: 0.85rem;
-  font-weight: 600;
+  /* Draft-list rendered style, matching the GW fixture rows above. */
+  font-size: 0.9rem;
+  font-weight: 400;
   color: var(--fm-text-strong);
   white-space: nowrap;
   overflow: hidden;
