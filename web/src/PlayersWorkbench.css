@@ -724,8 +724,9 @@
   flex-shrink: 0;
 }
 
-/* Per-position tints live in App.css (`.position-chip--GKP` etc.) so
- * Wire, Draft, Waivers, and player-detail share the same muted pastels. */
+/* Players list chips stay the cream letter box — position is the letter
+ * (G / D / M / F), not a per-position colour. Draft / Waivers / player
+ * detail still use the pastel washes in App.css. */
 
 /* =====================================================
    Player-cell trailing indicator cluster

@@ -18108,8 +18108,8 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Shared position chip — cream surface, 1px border, monospace caps.
- * Per-position colour is a muted pastel wash (see `.position-chip--*`
- * below), not neon G/D/M/F. */
+ * Players list uses this base (letter only, no wash). Draft / Waivers /
+ * player-detail add a muted pastel via `.draft-pos--*` etc. below. */
 .draft-pos {
   flex: 0 0 auto;
   display: inline-flex;
@@ -18129,85 +18129,69 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Subtle GKP / DEF / MID / FWD wash — pale fill, matching border + ink.
- * Used on Wire desktop chips, Wire portrait letters, Draft, Waivers,
- * and player-detail heroes. Double-class so it beats local cream chips. */
-.position-chip.position-chip--GKP,
+ * Draft, Waivers, and player-detail heroes only. Players list chips stay
+ * the uncoloured letter box. Double-class so it beats local cream chips. */
 .draft-pos.draft-pos--GKP,
 .waivers-pos-chip.waivers-pos-chip--GKP,
 .pdetail__hero-pos.pdetail__hero-pos--GKP,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--GKP,
-.players-wire-tile__pos-chip.players-wire-tile__pos-chip--GKP {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--GKP {
   color: #8a6a24;
   border-color: color-mix(in srgb, #c4a35a 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #c4a35a 14%, var(--surface, #fffdf6));
 }
-.position-chip.position-chip--DEF,
 .draft-pos.draft-pos--DEF,
 .waivers-pos-chip.waivers-pos-chip--DEF,
 .pdetail__hero-pos.pdetail__hero-pos--DEF,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--DEF,
-.players-wire-tile__pos-chip.players-wire-tile__pos-chip--DEF {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--DEF {
   color: #2f6b5c;
   border-color: color-mix(in srgb, #3f8a74 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #3f8a74 13%, var(--surface, #fffdf6));
 }
-.position-chip.position-chip--MID,
 .draft-pos.draft-pos--MID,
 .waivers-pos-chip.waivers-pos-chip--MID,
 .pdetail__hero-pos.pdetail__hero-pos--MID,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--MID,
-.players-wire-tile__pos-chip.players-wire-tile__pos-chip--MID {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--MID {
   color: #5a4878;
   border-color: color-mix(in srgb, #7a6a9a 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #7a6a9a 13%, var(--surface, #fffdf6));
 }
-.position-chip.position-chip--FWD,
 .draft-pos.draft-pos--FWD,
 .waivers-pos-chip.waivers-pos-chip--FWD,
 .pdetail__hero-pos.pdetail__hero-pos--FWD,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--FWD,
-.players-wire-tile__pos-chip.players-wire-tile__pos-chip--FWD {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--FWD {
   color: #8a4a3a;
   border-color: color-mix(in srgb, #c47a6a 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #c47a6a 13%, var(--surface, #fffdf6));
 }
 
-.fotmob:not([data-theme='light']) .position-chip.position-chip--GKP,
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--GKP,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--GKP,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--GKP,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--GKP,
-.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--GKP {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--GKP {
   color: #e0c57a;
   border-color: color-mix(in srgb, #c4a35a 40%, var(--border));
   background: color-mix(in srgb, #c4a35a 16%, transparent);
 }
-.fotmob:not([data-theme='light']) .position-chip.position-chip--DEF,
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--DEF,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--DEF,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--DEF,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--DEF,
-.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--DEF {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--DEF {
   color: #9dcebc;
   border-color: color-mix(in srgb, #3f8a74 40%, var(--border));
   background: color-mix(in srgb, #3f8a74 18%, transparent);
 }
-.fotmob:not([data-theme='light']) .position-chip.position-chip--MID,
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--MID,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--MID,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--MID,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--MID,
-.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--MID {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--MID {
   color: #c4b5e0;
   border-color: color-mix(in srgb, #7a6a9a 40%, var(--border));
   background: color-mix(in srgb, #7a6a9a 18%, transparent);
 }
-.fotmob:not([data-theme='light']) .position-chip.position-chip--FWD,
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--FWD,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--FWD,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--FWD,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--FWD,
-.fotmob:not([data-theme='light']) .players-wire-tile__pos-chip.players-wire-tile__pos-chip--FWD {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--FWD {
   color: #e0a090;
   border-color: color-mix(in srgb, #c47a6a 40%, var(--border));
   background: color-mix(in srgb, #c47a6a 18%, transparent);
