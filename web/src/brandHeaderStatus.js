@@ -44,9 +44,7 @@ export function formatDeadlineDate(iso) {
 }
 
 /**
- * Format a timestamp as a local month/day + time label, e.g. `Mar 14 at 13:30`.
- * The waiver cutoff and gameweek deadline are moments, not date-only events,
- * so idle-state milestone copy always uses this richer form.
+ * Format a timestamp as a local month/day + 24h time, e.g. `Aug 20, 1830`.
  *
  * @param {string | number | Date | null | undefined} value
  * @returns {string | null}
@@ -60,21 +58,20 @@ export function formatMilestoneDateTime(value) {
       month: 'short',
       day: 'numeric',
     }).format(d)
-    const time = new Intl.DateTimeFormat('en-GB', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    }).format(d)
-    return `${date} at ${time}`
+    const hh = String(d.getHours()).padStart(2, '0')
+    const mm = String(d.getMinutes()).padStart(2, '0')
+    return `${date}, ${hh}${mm}`
   } catch {
     return null
   }
 }
 
+function pad2(n) {
+  return String(n).padStart(2, '0')
+}
+
 /**
- * Compact countdown to a future milestone. Days/hours are favored for long
- * waits; minutes appear inside the final day so the header stays useful as
- * the cutoff approaches.
+ * Live countdown clock (`2d 16:23:05`, or `16:23:05` inside the final day).
  *
  * @param {string | number | Date | null | undefined} target
  * @param {Date} now
@@ -84,14 +81,14 @@ export function formatMilestoneCountdown(target, now = new Date()) {
   if (target == null) return null
   const d = target instanceof Date ? target : new Date(target)
   if (Number.isNaN(d.getTime()) || Number.isNaN(now.getTime())) return null
-  const totalMinutes = Math.max(0, Math.ceil((d.getTime() - now.getTime()) / 60_000))
-  if (totalMinutes <= 0) return null
-  const days = Math.floor(totalMinutes / (24 * 60))
-  const hours = Math.floor((totalMinutes % (24 * 60)) / 60)
-  const minutes = totalMinutes % 60
-  if (days > 0) return hours > 0 ? `${days}d ${hours}h` : `${days}d`
-  if (hours > 0) return minutes > 0 ? `${hours}h ${minutes}m` : `${hours}h`
-  return `${minutes}m`
+  const totalSeconds = Math.floor((d.getTime() - now.getTime()) / 1000)
+  if (totalSeconds <= 0) return null
+  const days = Math.floor(totalSeconds / 86400)
+  const hours = Math.floor((totalSeconds % 86400) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  const clock = `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`
+  return days > 0 ? `${days}d ${clock}` : clock
 }
 
 /**
@@ -127,6 +124,9 @@ function validInstant(value) {
  *   kind: 'waivers' | 'gameweek',
  *   countdownLabel: string,
  *   dateTimeLabel: string,
+ *   targetIso: string,
+ *   waiversTime: string | number | Date | null,
+ *   deadlineTime: string | number | Date | null,
  * } | null}
  */
 export function nextCalendarMilestone(nextEvent, now = new Date()) {
@@ -145,7 +145,14 @@ export function nextCalendarMilestone(nextEvent, now = new Date()) {
   const countdownLabel = formatMilestoneCountdown(target, now)
   const dateTimeLabel = formatMilestoneDateTime(target)
   if (!countdownLabel || !dateTimeLabel) return null
-  return { kind, countdownLabel, dateTimeLabel }
+  return {
+    kind,
+    countdownLabel,
+    dateTimeLabel,
+    targetIso: target.toISOString(),
+    waiversTime: nextEvent?.waivers_time ?? null,
+    deadlineTime: nextEvent?.deadline_time ?? null,
+  }
 }
 
 /**
@@ -180,9 +187,9 @@ function kickoffLabelWithin24h(deadlineIso, now) {
  *           failure). Optional `finishedFixtureCount` / `totalFixtureCount` drive
  *           the `progressLabel` ("2 of 10 complete") added in PR #5h.
  * - `idle`: `events.current` is finished (between GWs). Until FPL's
- *           `waivers_time`, the next milestone is `Waivers in {countdown} ·
+ *           `waivers_time`, the next milestone is `Waivers in {clock} -
  *           {dateTime}`. After that cutoff, it advances to `GW {next} starts
- *           in {countdown} · {dateTime}`.
+ *           in {clock} - {dateTime}`.
  * - `pre-season`: no event has finished yet. Same waiver/GW milestone as
  *           `idle`, prefixed with `Pre-season`. If no future `waivers_time`
  *           / deadline is available, fall back to `{seasonShort} season
@@ -214,6 +221,9 @@ function kickoffLabelWithin24h(deadlineIso, now) {
  *     kind: 'waivers' | 'gameweek',
  *     countdownLabel: string,
  *     dateTimeLabel: string,
+ *     targetIso: string,
+ *     waiversTime: string | number | Date | null,
+ *     deadlineTime: string | number | Date | null,
  *   } | null,
  * }}
  */

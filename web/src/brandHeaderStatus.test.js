@@ -22,25 +22,42 @@ test('formatDeadlineDate — ISO → "Aug 15"', () => {
   assert.equal(formatDeadlineDate('not-a-date'), null)
 })
 
-test('formatMilestoneDateTime — includes both local date and time', () => {
-  const out = formatMilestoneDateTime('2026-03-14T13:30:00Z')
-  assert.match(out, /^[A-Z][a-z]{2} \d{1,2} at \d{2}:\d{2}$/)
+test('formatMilestoneDateTime — local month/day and 24h time without a colon', () => {
+  const local = new Date(2026, 7, 20, 18, 30, 0)
+  assert.equal(formatMilestoneDateTime(local), 'Aug 20, 1830')
+  assert.match(
+    formatMilestoneDateTime('2026-03-14T13:30:00Z'),
+    /^[A-Z][a-z]{2} \d{1,2}, \d{4}$/,
+  )
   assert.equal(formatMilestoneDateTime('not-a-date'), null)
 })
 
-test('formatMilestoneCountdown — favors days/hours, then hours/minutes', () => {
+test('formatMilestoneCountdown — second-resolution clock', () => {
   const now = new Date('2026-03-10T10:00:00Z')
   assert.equal(
     formatMilestoneCountdown('2026-03-14T13:30:00Z', now),
-    '4d 3h',
+    '4d 03:30:00',
   )
   assert.equal(
     formatMilestoneCountdown('2026-03-10T14:30:00Z', now),
-    '4h 30m',
+    '04:30:00',
   )
   assert.equal(
     formatMilestoneCountdown('2026-03-10T10:42:00Z', now),
-    '42m',
+    '00:42:00',
+  )
+  const target = new Date('2026-08-20T17:30:00Z')
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-18T01:00:00Z')),
+    '2d 16:30:00',
+  )
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-18T01:00:01Z')),
+    '2d 16:29:59',
+  )
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-20T17:29:05Z')),
+    '00:00:55',
   )
 })
 
@@ -78,11 +95,13 @@ test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and n
   assert.equal(out.nextGw, 29)
   assert.equal(out.nextDeadlineLabel, 'Mar 15')
   assert.equal(out.idleMilestone.kind, 'waivers')
-  assert.equal(out.idleMilestone.countdownLabel, '4d 3h')
+  assert.equal(out.idleMilestone.countdownLabel, '4d 03:30:00')
   assert.match(
     out.idleMilestone.dateTimeLabel,
-    /^[A-Z][a-z]{2} \d{1,2} at \d{2}:\d{2}$/,
+    /^[A-Z][a-z]{2} \d{1,2}, \d{4}$/,
   )
+  assert.ok(out.idleMilestone.targetIso)
+  assert.equal(out.idleMilestone.waiversTime, '2026-03-14T13:30:00Z')
 })
 
 test('deriveBrandHeaderStatus — after waivers, idle milestone advances to GW start', () => {
@@ -99,7 +118,7 @@ test('deriveBrandHeaderStatus — after waivers, idle milestone advances to GW s
   })
   assert.equal(out.status, 'idle')
   assert.equal(out.idleMilestone.kind, 'gameweek')
-  assert.equal(out.idleMilestone.countdownLabel, '23h 30m')
+  assert.equal(out.idleMilestone.countdownLabel, '23:30:00')
 })
 
 test('deriveBrandHeaderStatus — pre-season when no event has finished', () => {
@@ -131,7 +150,7 @@ test('deriveBrandHeaderStatus — pre-season uses FPL waivers_time before the fi
   })
   assert.equal(out.status, 'pre-season')
   assert.equal(out.idleMilestone.kind, 'waivers')
-  assert.equal(out.idleMilestone.countdownLabel, '2d 16h')
+  assert.equal(out.idleMilestone.countdownLabel, '2d 16:30:00')
 })
 
 test('deriveBrandHeaderStatus — unknown when bootstrap not loaded yet', () => {
@@ -456,7 +475,7 @@ test('nextCalendarMilestone — prefers official waivers_time over GW deadline',
     now,
   )
   assert.equal(out.kind, 'waivers')
-  assert.equal(out.countdownLabel, '2d 16h')
+  assert.equal(out.countdownLabel, '2d 16:30:00')
 })
 
 test('nextCalendarMilestone — advances to GW deadline after waivers_time', () => {
@@ -470,7 +489,7 @@ test('nextCalendarMilestone — advances to GW deadline after waivers_time', () 
     now,
   )
   assert.equal(out.kind, 'gameweek')
-  assert.equal(out.countdownLabel, '23h 30m')
+  assert.equal(out.countdownLabel, '23:30:00')
 })
 
 test('deriveBrandHeaderStatus — kickoffLabel null on live state (defensive)', () => {
