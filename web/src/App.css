@@ -14281,8 +14281,8 @@ button.live-xp__player-name:focus-visible {
   text-align: left;
 }
 .standings-table--variant-c-mobile td.col-team .team-avatar-frame--sm {
-  width: 20px;
-  height: 20px;
+  width: 28px;
+  height: 28px;
 }
 .standings-table--variant-c-mobile .team-cell {
   gap: 6px;
@@ -14333,10 +14333,10 @@ button.live-xp__player-name:focus-visible {
   color: transparent;
 }
 
-/* Next opponent — 16px crest, right-aligned. */
+/* Next opponent — same 28px crest as the fixture list below. */
 .standings-table--variant-c-mobile td.col-next .team-avatar-frame--sm {
-  width: 16px;
-  height: 16px;
+  width: 28px;
+  height: 28px;
 }
 .standings-table--variant-c-mobile .col-next {
   text-align: right;
