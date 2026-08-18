@@ -45,12 +45,11 @@ export function ForbiddenWaivers() {
       <p className="tile-hint muted tile-hint--tight">
         {closed
           ? `The GW${data.windowClosesAfterGw} window has closed — this list is final. Players added to the game from now on are fair game.`
-          : `League rule: anyone added to the FPL game after Aug 18 (3:30 PM EST) cannot be picked up by any team. Checked automatically on every data refresh until GW${data.windowClosesAfterGw} is done.`}
+          : 'League rule: anyone added to the FPL game after Aug 18 (3:30 PM EST) cannot be picked up by any team until GW8 waivers.'}
       </p>
       {players.length === 0 ? (
         <p className="forbidden-waivers__empty">
-          No new players have entered the game since the cutoff — the player pool
-          is clean.
+          No new players have entered the game since the cutoff.
         </p>
       ) : (
         <ul className="forbidden-waivers__list">
