@@ -2,7 +2,8 @@
 /**
  * GitHub Actions scheduled deploy gate: only "proceed" when a full ingest/build is worth
  * doing — i.e. soon after a gameweek's FPL `waivers_time` (so transactions land in
- * `drops-gw-live` after build-waiver-gw-analytics) or at the daily UTC catch-all.
+ * `drops-gw-live` after build-waiver-gw-analytics), every 3 hours in the 24h leading
+ * up to `waivers_time`, or at one of the thrice-daily UTC catch-alls.
  *
  * Not invoked for push / workflow_dispatch (the workflow skips this logic there).
  * Data: draft bootstrap-static { events: { data: [{ id, waivers_time }, ...] } }.
@@ -24,10 +25,16 @@ const POST_DEADLINE_INGEST_DELAY_MS = 2 * 60 * 60 * 1000
 /** Stop hourly post-deadline ingests once the next GW deadline is this close */
 const POST_DEADLINE_STOP_BEFORE_NEXT_DEADLINE_MS = 3 * 60 * 60 * 1000
 /**
- * When the daily cron `30 5 * * *` fires (~05:30 UTC), always allow full refresh
- * (also covers missed windows). Accept a few minutes' drift.
+ * When a daily catch-all cron (`30 5/13/21 * * *`, ~05:30/13:30/21:30 UTC) fires,
+ * always allow full refresh (also covers missed windows). Accept a few minutes' drift.
  */
-const DAILY_UTC = { startMin: 5 * 60 + 26, endMin: 5 * 60 + 45 } // 05:26–05:45
+const DAILY_UTC_WINDOWS = [5, 13, 21].map((h) => ({
+  startMin: h * 60 + 26,
+  endMin: h * 60 + 45,
+}))
+/** In the day before a GW's `waivers_time`, refresh on this UTC-hour cadence. */
+const PRE_WAIVER_WINDOW_MS = 24 * 60 * 60 * 1000
+const PRE_WAIVER_CADENCE_HOURS = 3
 
 function minuteOfDayUtc(d) {
   return d.getUTCHours() * 60 + d.getUTCMinutes()
@@ -35,7 +42,7 @@ function minuteOfDayUtc(d) {
 
 function inDailyCatchAllWindow() {
   const m = minuteOfDayUtc(new Date())
-  return m >= DAILY_UTC.startMin && m <= DAILY_UTC.endMin
+  return DAILY_UTC_WINDOWS.some((w) => m >= w.startMin && m <= w.endMin)
 }
 
 /**
@@ -82,6 +89,33 @@ export function postDeadlineIngestEvent(eventList, nowMs) {
   return null
 }
 
+/**
+ * Every-3-hours refresh in the 24 hours leading up to a GW's `waivers_time`,
+ * so waiver-day decisions (free agents, forbidden list, projections) run on
+ * fresh data. The hourly cron fires at minute 0; this admits only runs whose
+ * UTC hour is on the 3-hour cadence (00/03/06/…/21).
+ *
+ * @param {object[]} eventList — bootstrap `events.data`
+ * @param {number} nowMs
+ * @returns {{ id: number, waiversTime: string } | null}
+ */
+export function preWaiverRefreshEvent(eventList, nowMs) {
+  if (!Array.isArray(eventList)) return null
+  const now = Number(nowMs)
+  if (!Number.isFinite(now)) return null
+  if (new Date(now).getUTCHours() % PRE_WAIVER_CADENCE_HOURS !== 0) return null
+  for (const e of eventList) {
+    const raw = e?.waivers_time
+    if (typeof raw !== 'string' || !raw) continue
+    const wt = Date.parse(raw)
+    if (!Number.isFinite(wt)) continue
+    if (now >= wt - PRE_WAIVER_WINDOW_MS && now < wt) {
+      return { id: e.id, waiversTime: raw }
+    }
+  }
+  return null
+}
+
 async function main() {
   if (inDailyCatchAllWindow()) {
     console.log(
@@ -120,6 +154,14 @@ async function main() {
     }
   }
 
+  const preGw = preWaiverRefreshEvent(list, now)
+  if (preGw) {
+    console.log(
+      `waiver-refresh-gate: within 24h of GW${preGw.id} waivers (${preGw.waiversTime}), on 3-hour cadence — run deploy`,
+    )
+    process.exit(0)
+  }
+
   const postGw = postDeadlineIngestEvent(list, now)
   if (postGw) {
     console.log(
@@ -129,7 +171,7 @@ async function main() {
   }
 
   console.log(
-    'waiver-refresh-gate: not in post-waivers, post-deadline, or daily window — skip deploy',
+    'waiver-refresh-gate: not in post-waivers, pre-waivers, post-deadline, or daily window — skip deploy',
   )
   process.exit(1)
 }
