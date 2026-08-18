@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { gameWeekSpokenLabel } from './gwLabel.js'
 import './GameweekStatesMockup.css'
 
 const STATES = [
@@ -262,7 +263,7 @@ function StandingsPage({ state, mobile }) {
       </section>
       {showNext ? (
         <section className="gwsm-next">
-          <div><span>NEXT GAMEWEEK</span><strong>GW {state.nextGw}</strong></div>
+          <div><span>Next</span><strong>{gameWeekSpokenLabel(state.nextGw)}</strong></div>
           <div className="gwsm-nextmatch"><MiniCrest text="HY" /><span>Hanson</span><b>v</b><span>Toronto</span><MiniCrest text="TO" /></div>
           <div className="gwsm-nextmatch"><MiniCrest text="HM" /><span>Hackney</span><b>v</b><span>Crouch</span><MiniCrest text="CE" /></div>
         </section>

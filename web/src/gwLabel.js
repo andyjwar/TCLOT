@@ -9,6 +9,48 @@ export function gameWeekSelectLabel(n) {
   return `Game Week ${g}`
 }
 
+const SMALL = [
+  'Zero',
+  'One',
+  'Two',
+  'Three',
+  'Four',
+  'Five',
+  'Six',
+  'Seven',
+  'Eight',
+  'Nine',
+  'Ten',
+  'Eleven',
+  'Twelve',
+  'Thirteen',
+  'Fourteen',
+  'Fifteen',
+  'Sixteen',
+  'Seventeen',
+  'Eighteen',
+  'Nineteen',
+]
+const TENS = ['', '', 'Twenty', 'Thirty', 'Forty']
+
+/** Title-case words for a gameweek number (`1` → `One`, `21` → `Twenty-One`). */
+export function gameWeekNumberWords(n) {
+  const g = Number(n)
+  if (!Number.isFinite(g) || g < 1) return ''
+  if (g < 20) return SMALL[g]
+  const tens = Math.floor(g / 10)
+  const ones = g % 10
+  if (!TENS[tens]) return String(g)
+  if (ones === 0) return TENS[tens]
+  return `${TENS[tens]}-${SMALL[ones]}`
+}
+
+/** Spoken heading label (`1` → `Game Week One`). */
+export function gameWeekSpokenLabel(n) {
+  const words = gameWeekNumberWords(n)
+  return words ? `Game Week ${words}` : 'Game Week'
+}
+
 /**
  * Compact gameweek label for tight, space-constrained triggers (e.g. mobile
  * pills). Renders "GW38" with no separator.
