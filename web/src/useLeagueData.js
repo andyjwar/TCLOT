@@ -7,7 +7,7 @@ import {
   overlayCurrentSeasonEntryName,
 } from './currentSeasonClubNames.js';
 
-import { leagueDataBase } from './seasonArchive.js';
+import { isArchiveView, leagueDataBase } from './seasonArchive.js';
 
 /** Resolves to `league-data/seasons/<label>` in archive view (see seasonArchive.js). */
 const DATA_BASE = leagueDataBase();
@@ -336,18 +336,23 @@ export function useLeagueData() {
         } catch {
           /* optional file */
         }
+        // Current-season club names apply to the live tree only — an archived
+        // season must keep the entry names it finished with, not the manager's
+        // 26/27 rebrand (badges already stay archival via the season logo map).
         let currentSeasonNameByManager = new Map();
-        try {
-          const r = await fetch(
-            `${import.meta.env.BASE_URL}team-logos/preseason-manifest.json`,
-          );
-          if (r.ok) {
-            currentSeasonNameByManager = currentSeasonNameByManagerKey(
-              await r.json(),
+        if (!isArchiveView()) {
+          try {
+            const r = await fetch(
+              `${import.meta.env.BASE_URL}team-logos/preseason-manifest.json`,
             );
+            if (r.ok) {
+              currentSeasonNameByManager = currentSeasonNameByManagerKey(
+                await r.json(),
+              );
+            }
+          } catch {
+            /* optional file — keep FPL entry_name */
           }
-        } catch {
-          /* optional file — keep FPL entry_name */
         }
         if (!cancelled)
           setData({
