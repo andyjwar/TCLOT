@@ -475,6 +475,8 @@ import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryConte
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
 import { SeasonPreview } from './SeasonPreview'
+import { SeasonPredictions } from './SeasonPredictions'
+import { WeeklyRecap } from './WeeklyRecap'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
@@ -2564,16 +2566,15 @@ function App() {
     /** @type {'waivers' | 'trades' | 'draft' | 'preview'} */ ('draft'),
   )
   const [movesTabPrimed, setMovesTabPrimed] = useState(false)
-  /* FPL Live sub-tab. Legacy values are coerced to `'live'` so a persisted
-   * pref or stale deep link cannot leave the Live tab blank: `'vibes'`
-   * (cinematics, moved to the Preseason hub) and `'forecast'` (player
-   * forecast leaderboard, hidden — the forecast data still powers the
-   * fixture Odds tab). */
+  /* FPL Live sub-tab. `null` = no explicit choice yet — the rendered tab then
+   * follows the season phase (see `fplLiveTab` below, derived after the brand
+   * header status). Legacy values are coerced to `'live'` so a persisted pref
+   * or stale deep link cannot leave the Live tab blank: `'vibes'` (cinematics,
+   * moved to the Preseason hub) and `'forecast'` (player forecast leaderboard,
+   * hidden — the forecast data still powers the fixture Odds tab). */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {'squads' | 'live'} */ ('live'),
+    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions'} */ (null),
   )
-  const fplLiveTab =
-    fplLiveTabRaw === 'vibes' || fplLiveTabRaw === 'forecast' ? 'live' : fplLiveTabRaw
   const setFplLiveTab = useCallback((next) => {
     setFplLiveTabRaw(next === 'vibes' || next === 'forecast' ? 'live' : next)
   }, [])
@@ -2659,6 +2660,16 @@ function App() {
       window.scrollTo(0, 0)
     }
   }, [draftGate.navLocked])
+
+  /** Contextual centre button: routes to FPL Live AND lands on the sub-tab
+   * matching the season phase (Scores when live, Recap/Predictions otherwise). */
+  const selectLiveHub = useCallback(
+    (view, tab) => {
+      if (tab) setFplLiveTab(tab)
+      selectDashboardView(view)
+    },
+    [selectDashboardView, setFplLiveTab],
+  )
 
   useEffect(() => {
     if (!draftGate.navLocked) return
@@ -2792,6 +2803,18 @@ function App() {
       brandTotalFixtureCount,
     ],
   )
+
+  /* Effective FPL Live sub-tab. Until the user picks one, the default follows
+   * the season phase: live GW → Scores; between GWs → Recap; pre-season (and
+   * unknown) → Predictions before GW1 else Scores. Any explicit choice —
+   * sub-tab tap or the contextual centre button — wins from then on. */
+  const fplLiveTab =
+    fplLiveTabRaw ??
+    (brandHeaderStatus?.status === 'idle'
+      ? 'recap'
+      : brandHeaderStatus?.status === 'pre-season'
+        ? 'predictions'
+        : 'live')
 
   const rankByEntryId = useMemo(() => {
     const m = new Map()
@@ -4088,6 +4111,32 @@ function App() {
                 >
                   Lineups
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-recap"
+                  aria-selected={fplLiveTab === 'recap'}
+                  className={
+                    'subnav__tab' +
+                    (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('recap')}
+                >
+                  Recap
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-predictions"
+                  aria-selected={fplLiveTab === 'predictions'}
+                  className={
+                    'subnav__tab' +
+                    (fplLiveTab === 'predictions' ? ' subnav__tab--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('predictions')}
+                >
+                  Predictions
+                </button>
               </div>
               </div>
               <div className="section-body">
@@ -4118,6 +4167,22 @@ function App() {
                   compactMobileChrome
                 />
               ) : null}
+              {fplLiveTab === 'recap' ? (
+                <div className="dashboard-stack">
+                  <WeeklyRecap
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </div>
+              ) : null}
+              {fplLiveTab === 'predictions' ? (
+                <div className="dashboard-stack">
+                  <SeasonPredictions
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </div>
+              ) : null}
               </div>
             </section>
           )}
@@ -4127,6 +4192,7 @@ function App() {
       <MobileBottomNav
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
+        onCenterSelect={selectLiveHub}
         liveStatus={brandHeaderStatus}
         navLocked={draftGate.navLocked}
       />

@@ -22,6 +22,7 @@ import {
   simulateFantasyH2hPercents,
   simulateFantasyH2hPercentsFromProjBlends,
   sumPredictedXpForPickRows,
+  predictedXpForPickRow,
   predictedStatsForPickRow,
 } from '../src/livePredictionMappers.js';
 import { projectedGwTotalLiveBlendForElement } from '../src/liveGwMidProjection.js';
@@ -481,6 +482,23 @@ async function main() {
       const actualXiHome = xiSumPointsFromLive(stH, liveByPts);
       const actualXiAway = xiSumPointsFromLive(stA, liveByPts);
 
+      // Per-player XI rows (schemaVersion ≥ 3): GW points + the same
+      // pre-match xP that xPtsXi sums (matching per-row salts), so the
+      // weekly recap can talk about hauls, blanks and one-man-army weeks.
+      const xiRows = (starters, salt) =>
+        starters.map((row, i) => {
+          const pid = Number(row.element);
+          const el = elementById[pid];
+          const xp = predictedXpForPickRow(row, ctx, teamsById, gw, UI_MODEL_CONFIG, salt + i);
+          return {
+            id: pid,
+            name: el?.web_name ?? String(pid),
+            pos: POS_MAP[Number(el?.element_type)] ?? 'MID',
+            pts: Number(liveByPts[pid]?.total_points) || 0,
+            xp: xp != null ? r1(xp) : null,
+          };
+        });
+
       const preStatsHome = teamPredictedStats(stH, ctx, teamsById, gw, 21);
       const preStatsAway = teamPredictedStats(stA, ctx, teamsById, gw, 521);
       const actStatsHome = teamActualStats(stH, elementById, liveFullByElementId);
@@ -550,11 +568,14 @@ async function main() {
         actualCs2: actStatsAway.cs,
         actualDefcon1: actStatsHome.defcon,
         actualDefcon2: actStatsAway.defcon,
+        /** Effective XI per side with GW points + pre-match xP (schemaVersion ≥ 3). */
+        xi1: xiRows(stH, 11),
+        xi2: xiRows(stA, 511),
       });
     }
 
     const snapshot = {
-      schemaVersion: 2,
+      schemaVersion: 3,
       gameweek: gw,
       generatedAt: new Date().toISOString(),
       leagueId: Number(details.league?.id) || null,
