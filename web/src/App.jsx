@@ -3899,6 +3899,8 @@ function App() {
               <div className="subview-panel">
               {teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
+              <ForbiddenWaivers />
+
               <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
                 <div className="tile-head-row tile-head-row--tight">
                   <h2 id="all-waivers-heading" className="tile-title tile-title--sm">
@@ -3949,8 +3951,6 @@ function App() {
                   />
                 </div>
               </section>
-
-              <ForbiddenWaivers />
 
               <section className="tile tile--compact" aria-labelledby="first-waiver-picks-heading">
                 <div className="tile-head-row tile-head-row--tight">
