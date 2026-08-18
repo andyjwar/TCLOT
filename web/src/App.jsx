@@ -8,7 +8,11 @@ import {
   useRef,
   useSyncExternalStore,
 } from 'react'
-import { gameWeekSelectLabel, gameWeekShortLabel } from './gwLabel.js'
+import {
+  gameWeekSelectLabel,
+  gameWeekShortLabel,
+  gameWeekSpokenLabel,
+} from './gwLabel.js'
 import { NavIcon } from './NavIcon.jsx'
 import {
   archivedSeasonLabel,
@@ -3674,13 +3678,13 @@ function App() {
                           className="tile-title tile-title--sm tile--standings-next-gw__title"
                         >
                           <span className="tile--standings-next-gw__eyebrow">
-                            Next gameweek
+                            Next
                           </span>
                           <span className="tile--standings-next-gw__sep" aria-hidden="true">
                             ·
                           </span>
-                          <span className="tile--standings-next-gw__gw tabular">
-                            GW {nextGwForFixtureTile}
+                          <span className="tile--standings-next-gw__gw">
+                            {gameWeekSpokenLabel(nextGwForFixtureTile)}
                           </span>
                         </h2>
                       </div>
