@@ -2056,6 +2056,14 @@
   scrollbar-width: none;
 }
 
+/* An `overflow-x: auto` box clips vertically too, so an open
+   CompactSelectPill menu (absolutely positioned below its pill) was cut
+   off behind the draft rounds. While a menu is open, stop clipping — the
+   horizontal scroll affordance only matters while the pills are closed. */
+.draft-board-filter-scroll:has(.cpsp__btn--open) {
+  overflow-x: visible;
+}
+
 .draft-board-filter-scroll::-webkit-scrollbar {
   display: none;
 }
