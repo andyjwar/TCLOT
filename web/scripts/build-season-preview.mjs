@@ -24,6 +24,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { simulateSeasonAsOf } from '../src/seasonPredictionsModel.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -137,88 +138,41 @@ for (const t of modeled) {
 }
 
 /** Monte Carlo over the real schedule. */
-const schedule = details.matches.map((m) => ({
-  a: Number(m.league_entry_1),
-  b: Number(m.league_entry_2),
-}))
+/** Pre-season = "as of GW0" of the shared living model: nothing banked, the
+ * whole schedule simulated, and each team's strength drawn per iteration
+ * around its estimate (se = sigma/√prior-weight) so the odds honestly carry
+ * how little a draft alone can tell us. */
+const PRIOR_WEIGHT = 6
 const ids = modeled.map((t) => t.leagueEntryId)
-const idx = new Map(ids.map((id, i) => [id, i]))
-const mu = modeled.map((t) => t.strength)
-const sd = modeled.map((t) => t.sigma)
-
-let seed = 20262027
-function rand() {
-  // xorshift32 — deterministic output so rebuilds don't churn the JSON
-  seed ^= seed << 13
-  seed ^= seed >>> 17
-  seed ^= seed << 5
-  seed >>>= 0
-  return seed / 4294967296
-}
-function gauss() {
-  const u = Math.max(rand(), 1e-9)
-  const v = rand()
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v)
-}
-
-const n = ids.length
-const sumPts = new Array(n).fill(0)
-const sumPf = new Array(n).fill(0)
-const sumWins = new Array(n).fill(0)
-const sumDraws = new Array(n).fill(0)
-const finishCounts = Array.from({ length: n }, () => new Array(n).fill(0))
-
-for (let s = 0; s < SIMS; s++) {
-  const pts = new Array(n).fill(0)
-  const pf = new Array(n).fill(0)
-  const w = new Array(n).fill(0)
-  const d = new Array(n).fill(0)
-  for (const m of schedule) {
-    const i = idx.get(m.a)
-    const j = idx.get(m.b)
-    const si = Math.max(0, Math.round(mu[i] + sd[i] * gauss()))
-    const sj = Math.max(0, Math.round(mu[j] + sd[j] * gauss()))
-    pf[i] += si
-    pf[j] += sj
-    if (si > sj) {
-      pts[i] += 3
-      w[i]++
-    } else if (sj > si) {
-      pts[j] += 3
-      w[j]++
-    } else {
-      pts[i] += 1
-      pts[j] += 1
-      d[i]++
-      d[j]++
-    }
-  }
-  const order = [...Array(n).keys()].sort((a, b) => pts[b] - pts[a] || pf[b] - pf[a])
-  order.forEach((teamIdx, rank) => {
-    finishCounts[teamIdx][rank]++
-  })
-  for (let i = 0; i < n; i++) {
-    sumPts[i] += pts[i]
-    sumPf[i] += pf[i]
-    sumWins[i] += w[i]
-    sumDraws[i] += d[i]
-  }
-}
+const strengths = new Map(
+  modeled.map((t) => [
+    t.leagueEntryId,
+    { mu: t.strength, sigma: t.sigma, se: t.sigma / Math.sqrt(PRIOR_WEIGHT) },
+  ]),
+)
+const sim = simulateSeasonAsOf({
+  matches: details.matches,
+  entryIds: ids,
+  throughGw: 0,
+  strengths,
+  sims: SIMS,
+  seed: 20262027,
+})
 
 const GRADES = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C']
 const byStrength = [...modeled].sort((a, b) => b.strength - a.strength)
 const gradeByEntry = new Map(byStrength.map((t, i) => [t.leagueEntryId, GRADES[i]]))
 
 const outTeams = modeled.map((t) => {
-  const i = idx.get(t.leagueEntryId)
-  const finishes = finishCounts[i]
-  const avgFinish = finishes.reduce((s, c, r) => s + c * (r + 1), 0) / SIMS
+  const s = sim.get(t.leagueEntryId)
   return {
     leagueEntryId: t.leagueEntryId,
     name: t.name,
     grade: gradeByEntry.get(t.leagueEntryId),
     shape: `1-${t.shape}`,
     weeklyProjection: +t.strength.toFixed(1),
+    /** Weekly score spread — the prior sigma for the living season model. */
+    weeklySigma: +t.sigma.toFixed(2),
     benchProjection: +t.benchStrength.toFixed(1),
     carryTotal: t.carryTotal,
     keyPlayer: {
@@ -239,15 +193,15 @@ const outTeams = modeled.map((t) => {
         }
       : null,
     sim: {
-      avgFinish: +avgFinish.toFixed(2),
-      titlePct: +((finishes[0] / SIMS) * 100).toFixed(1),
-      topHalfPct: +((finishes.slice(0, 4).reduce((a, b) => a + b, 0) / SIMS) * 100).toFixed(1),
-      lastPct: +((finishes[n - 1] / SIMS) * 100).toFixed(1),
-      avgPts: +(sumPts[i] / SIMS).toFixed(1),
-      avgPf: Math.round(sumPf[i] / SIMS),
-      avgW: +(sumWins[i] / SIMS).toFixed(1),
-      avgD: +(sumDraws[i] / SIMS).toFixed(1),
-      finishDistribution: finishes.map((c) => +((c / SIMS) * 100).toFixed(1)),
+      avgFinish: s.avgFinish,
+      titlePct: s.titlePct,
+      topHalfPct: s.topHalfPct,
+      lastPct: s.lastPct,
+      avgPts: s.projPts,
+      avgPf: s.projPf,
+      avgW: s.avgW,
+      avgD: s.avgD,
+      finishDistribution: s.finishDistribution,
     },
     verdict: VERDICTS[t.leagueEntryId] ?? '',
   }
