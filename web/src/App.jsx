@@ -474,6 +474,7 @@ import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverla
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
+import { SeasonPreview } from './SeasonPreview'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
@@ -2560,7 +2561,7 @@ function App() {
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
   const [teamSelectionTab, setTeamSelectionTab] = useState(
-    /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
+    /** @type {'waivers' | 'trades' | 'draft' | 'preview'} */ ('draft'),
   )
   const [movesTabPrimed, setMovesTabPrimed] = useState(false)
   /* FPL Live sub-tab. Legacy values are coerced to `'live'` so a persisted
@@ -3856,6 +3857,19 @@ function App() {
                   >
                     Draft
                   </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    id="tab-team-selection-preview"
+                    aria-selected={teamSelectionTab === 'preview'}
+                    className={
+                      'subnav__tab' +
+                      (teamSelectionTab === 'preview' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setTeamSelectionTab('preview')}
+                  >
+                    Preview
+                  </button>
                 </div>
               </div>
               <div className="subview-panel">
@@ -3997,6 +4011,15 @@ function App() {
                 league={data?.league}
                 leagueEntries={leagueEntries}
                 tableRows={tableRows}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            </div>
+              )}
+
+              {teamSelectionTab === 'preview' && (
+            <div className="dashboard-stack">
+              <SeasonPreview
                 teamLogoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />

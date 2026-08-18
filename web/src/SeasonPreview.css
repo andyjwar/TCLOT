@@ -1,0 +1,279 @@
+/* 26/27 Season Preview — projected table, per-team verdict cards, method note. */
+
+.season-preview__strap {
+  margin: 2px 0 12px;
+  font-size: 0.85rem;
+  color: var(--fm-muted);
+  line-height: 1.45;
+}
+
+.season-preview__table-wrap {
+  overflow-x: auto;
+}
+
+.season-preview__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.season-preview__th {
+  text-align: left;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fm-muted);
+  padding: 4px 8px 6px;
+  border-bottom: 1px solid var(--fm-line);
+  white-space: nowrap;
+}
+
+.season-preview__th--rank {
+  width: 22px;
+}
+
+.season-preview__th--num,
+.season-preview__td--num {
+  text-align: right;
+}
+
+.season-preview__th--grade,
+.season-preview__td--grade {
+  text-align: center;
+}
+
+.season-preview__td {
+  padding: 7px 8px;
+  border-bottom: 1px solid var(--fm-line);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+.season-preview__table tbody tr:last-child .season-preview__td {
+  border-bottom: none;
+}
+
+.season-preview__td--rank {
+  color: var(--fm-muted);
+  font-size: 0.8rem;
+}
+
+.season-preview__team-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.season-preview__team-name {
+  font-size: 0.9rem;
+  font-weight: 400;
+}
+
+.season-preview__odds {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.season-preview__odds-track {
+  width: 64px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-muted) 18%, transparent);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.season-preview__odds-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--fm-pitch);
+}
+
+.season-preview__odds-num {
+  font-size: 0.8rem;
+  color: var(--fm-muted);
+  min-width: 42px;
+}
+
+.season-preview__grade {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 30px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.season-preview__grade--lg {
+  min-width: 38px;
+  padding: 4px 9px;
+  font-size: 0.95rem;
+}
+
+.season-preview__grade--a {
+  background: color-mix(in srgb, #439446 16%, transparent);
+  color: #2c6b30;
+}
+
+.season-preview__grade--b {
+  background: color-mix(in srgb, #c2851a 16%, transparent);
+  color: #8f6112;
+}
+
+.season-preview__grade--c {
+  background: color-mix(in srgb, var(--fm-muted) 16%, transparent);
+  color: var(--fm-muted);
+}
+
+body[data-tclot-theme='dark'] .season-preview__grade--a {
+  background: color-mix(in srgb, #439446 26%, transparent);
+  color: #9fd8a2;
+}
+
+body[data-tclot-theme='dark'] .season-preview__grade--b {
+  background: color-mix(in srgb, #c2851a 26%, transparent);
+  color: #ecc884;
+}
+
+.season-preview__awards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--fm-line);
+}
+
+.season-preview__award {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.season-preview__award-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fm-muted);
+}
+
+.season-preview__award-value {
+  font-size: 0.88rem;
+}
+
+/* ---- per-team cards ---- */
+
+.season-preview-card__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.season-preview-card__rank {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--fm-muted);
+  min-width: 20px;
+  text-align: center;
+}
+
+.season-preview-card__title {
+  min-width: 0;
+  flex: 1;
+}
+
+.season-preview-card__name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.season-preview-card__sub {
+  display: block;
+  margin-top: 1px;
+  font-size: 0.76rem;
+  color: var(--fm-muted);
+}
+
+.season-preview-card__verdict {
+  margin: 10px 0 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.season-preview-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  margin: 12px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--fm-line);
+}
+
+.season-preview-card__meta-item dt {
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--fm-muted);
+}
+
+.season-preview-card__meta-item dd {
+  margin: 1px 0 0;
+  font-size: 0.86rem;
+}
+
+.season-preview-card__meta-dim {
+  color: var(--fm-muted);
+  font-size: 0.78rem;
+}
+
+/* ---- method footnote ---- */
+
+.season-preview-method__title {
+  margin: 0 0 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fm-muted);
+}
+
+.season-preview__note {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--fm-muted);
+}
+
+@media (max-width: 560px) {
+  .season-preview__odds-track {
+    width: 40px;
+  }
+
+  .season-preview__odds-num {
+    min-width: 34px;
+  }
+
+  .season-preview__td,
+  .season-preview__th {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  /* Keep the grade on-screen at phone widths: drop the projected record,
+   * which is the least load-bearing column (avg points already tell it). */
+  .season-preview__th--record,
+  .season-preview__td--record {
+    display: none;
+  }
+}
