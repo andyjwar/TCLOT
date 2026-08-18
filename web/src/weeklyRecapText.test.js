@@ -1,16 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { teamRecapSentences, variantIndex, ordinal } from './weeklyRecapText.js'
+import { matchupRecapSentences, variantIndex, ordinal } from './weeklyRecapText.js'
 
-const base = {
+const team = (over = {}) => ({
   entryId: 1,
-  gw: 3,
   name: 'Mordor S.F.G',
-  oppName: 'Seoul Shire',
   points: 61,
-  oppPoints: 45,
-  result: 'W',
-  margin: 16,
   rank: 2,
   prevRank: 4,
   record: { w: 2, d: 0, l: 1 },
@@ -18,71 +13,122 @@ const base = {
   seasonAvg: 52.3,
   isSeasonHigh: false,
   isWeekHigh: false,
+  titleOdds: null,
+  ...over,
+})
+
+const base = {
+  gw: 3,
+  home: team(),
+  away: team({
+    entryId: 2,
+    name: 'Seoul Shire',
+    points: 45,
+    rank: 7,
+    prevRank: 6,
+    record: { w: 1, d: 0, l: 2 },
+    streak: { type: 'L', len: 1 },
+    seasonAvg: 47.0,
+  }),
+  odds: { favoriteSide: 'home', favoritePct: 62 },
+  leagueAvg: 52,
 }
 
-test('always three sentences, deterministic for same inputs', () => {
-  const a = teamRecapSentences(base, { before: 20, after: 28 })
-  const b = teamRecapSentences(base, { before: 20, after: 28 })
-  assert.equal(a.length, 3)
+test('four sentences with a model call, deterministic for same inputs', () => {
+  const a = matchupRecapSentences(base)
+  const b = matchupRecapSentences(base)
+  assert.equal(a.length, 4)
   assert.deepEqual(a, b)
   for (const s of a) assert.ok(s.length > 10, `sentence too short: "${s}"`)
 })
 
-test('result sentence carries the score and both names', () => {
-  const [result] = teamRecapSentences(base, null)
+test('three sentences when no pre-match call exists', () => {
+  const out = matchupRecapSentences({ ...base, odds: null })
+  assert.equal(out.length, 3)
+})
+
+test('result sentence: winner first with winner-first score', () => {
+  const [result] = matchupRecapSentences(base)
   assert.match(result, /61–45/)
-  assert.match(result, /Mordor S\.F\.G/)
-  assert.match(result, /Seoul Shire/)
-})
-
-test('loss sentences keep score in a consistent perspective', () => {
-  // Every loss variant must show the score so that the loser's points come
-  // right after a "loser first" phrasing or flipped for "winner first".
-  for (let entryId = 1; entryId <= 12; entryId++) {
-    const f = {
-      ...base,
-      entryId,
-      result: 'L',
-      points: 40,
-      oppPoints: 52,
-      margin: 12,
-    }
-    const [result] = teamRecapSentences(f, null)
-    const nameFirst = result.indexOf('Mordor') < result.indexOf('Seoul')
-    if (nameFirst) {
-      assert.match(result, /40–52/, `loser-first phrasing must use 40–52: "${result}"`)
-    } else {
-      assert.match(result, /52–40/, `winner-first phrasing must use 52–40: "${result}"`)
-    }
-  }
-})
-
-test('trend sentence: rank climb to top is called out', () => {
-  const f = { ...base, rank: 1, prevRank: 3, streak: { type: 'W', len: 1 } }
-  const [, trend] = teamRecapSentences(f, null)
-  assert.match(trend, /top/)
-})
-
-test('trend sentence: long streaks beat rank moves', () => {
-  const f = { ...base, streak: { type: 'L', len: 4 }, result: 'L' }
-  const [, trend] = teamRecapSentences(f, null)
-  assert.match(trend, /4 straight defeats/)
-})
-
-test('model sentence: odds swing when it moved, fallback otherwise', () => {
-  const [, , withSwing] = teamRecapSentences(base, { before: 20, after: 31.5 })
-  assert.match(withSwing, /20% → 31\.5%/)
-  const [, , noSwing] = teamRecapSentences(
-    { ...base, points: 52, seasonAvg: 52.0 },
-    { before: 20, after: 20.4 },
+  assert.ok(
+    result.indexOf('Mordor') < result.indexOf('Seoul'),
+    `winner named first: "${result}"`,
   )
-  assert.doesNotMatch(noSwing, /→/)
+  // Away winner flips both order and score
+  const flipped = matchupRecapSentences({
+    ...base,
+    home: team({ points: 45 }),
+    away: { ...base.away, points: 61 },
+    odds: null,
+  })
+  assert.match(flipped[0], /61–45/)
+  assert.ok(flipped[0].indexOf('Seoul') < flipped[0].indexOf('Mordor'))
 })
 
-test('model sentence: season-high beats average talk', () => {
-  const f = { ...base, isSeasonHigh: true, points: 80 }
-  const [, , model] = teamRecapSentences(f, null)
-  assert.match(model, /season-high/)
+test('odds sentence: favorite winning is called chalk/lean, upset flagged', () => {
+  const [, chalk] = matchupRecapSentences({
+    ...base,
+    odds: { favoriteSide: 'home', favoritePct: 71 },
+  })
+  assert.match(chalk, /71%/)
+  const [, upset] = matchupRecapSentences({
+    ...base,
+    odds: { favoriteSide: 'away', favoritePct: 70 },
+  })
+  assert.match(upset, /upset|script/i)
+})
+
+test('draw: stalemate result and no-side odds sentence', () => {
+  const drawn = matchupRecapSentences({
+    ...base,
+    home: team({ points: 50 }),
+    away: { ...base.away, points: 50 },
+  })
+  assert.match(drawn[0], /50–50/)
+  assert.match(drawn[1], /refused to pick a side/)
+})
+
+test('context sentence covers both teams with ranks and records', () => {
+  const out = matchupRecapSentences(base)
+  const context = out[2]
+  assert.match(context, /2-0-1/)
+  assert.match(context, /1-0-2/)
+  assert.match(context, /2nd/)
+  assert.match(context, /7th/)
+})
+
+test('fun fact priority: season-high wins (from GW3), title swing next', () => {
+  const [, , , seasonHigh] = matchupRecapSentences({
+    ...base,
+    home: team({ isSeasonHigh: true, points: 80 }),
+  })
+  assert.match(seasonHigh, /best week of the season/)
+  // GW2 season-highs are too trivial to mention
+  const gw2 = matchupRecapSentences({
+    ...base,
+    gw: 2,
+    home: team({ isSeasonHigh: true, points: 80, titleOdds: { before: 20, after: 31 } }),
+  })
+  assert.doesNotMatch(gw2[3], /best week/)
+  assert.match(gw2[3], /title odds/)
+})
+
+test('fun fact: long losing streak raises alarm bells', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    away: { ...base.away, streak: { type: 'L', len: 4 } },
+  })
+  assert.match(out[3], /4 defeats on the spin/)
+})
+
+test('fun fact: heavyweight fixture when combined points run high', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({ points: 78 }),
+    away: { ...base.away, points: 70 },
+    leagueAvg: 50,
+  })
+  assert.match(out[3], /148 combined points/)
 })
 
 test('variantIndex is stable and in range', () => {

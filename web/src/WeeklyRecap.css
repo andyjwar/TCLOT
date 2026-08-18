@@ -1,4 +1,5 @@
-/* Weekly recap — per-GW results, superlatives and team recap cards. */
+/* Weekly recap — matchup-centric: odds-vs-reality strip, superlatives, and
+ * one card per fixture. */
 
 .weekly-recap__note {
   font-size: 12px;
@@ -31,11 +32,75 @@
   cursor: pointer;
 }
 
+/* Odds vs reality strip */
+.weekly-recap__model {
+  padding: 8px 10px;
+  margin: 8px 0 10px;
+  border: 1px solid var(--line, rgba(139, 147, 167, 0.25));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--surface-2, #171b26) 70%, transparent);
+}
+.weekly-recap__model-line {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.weekly-recap__model-label {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim, #8b93a7);
+}
+.weekly-recap__model-value {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text, #e8ecf4);
+}
+.weekly-recap__model-note {
+  font-size: 12px;
+  color: var(--text-dim, #8b93a7);
+}
+.weekly-recap__calls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 7px;
+}
+.weekly-recap__call {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(139, 147, 167, 0.3));
+  color: var(--text-dim, #8b93a7);
+}
+.weekly-recap__call--hit {
+  color: var(--positive, #4ade80);
+  border-color: color-mix(in srgb, var(--positive, #4ade80) 45%, transparent);
+}
+.weekly-recap__call--miss {
+  color: var(--negative, #f87171);
+  border-color: color-mix(in srgb, var(--negative, #f87171) 40%, transparent);
+}
+.weekly-recap__call-mark {
+  font-size: 10px;
+}
+.weekly-recap__upset {
+  margin: 7px 0 0;
+  font-size: 12px;
+  color: var(--text, #e8ecf4);
+}
+
 .weekly-recap__superlatives {
   display: flex;
   flex-wrap: wrap;
   gap: 6px 16px;
-  margin: 8px 0 10px;
+  margin: 2px 0 0;
 }
 .weekly-recap__superlative {
   display: inline-flex;
@@ -54,132 +119,124 @@
   color: var(--text, #e8ecf4);
 }
 
-.weekly-recap__results {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 4px;
-}
-.weekly-recap__result {
+/* Matchup cards */
+.weekly-recap-matchup__scoreline {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: center;
   gap: 10px;
-  padding: 6px 8px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--surface-2, #171b26) 60%, transparent);
-  font-size: 13px;
 }
-.weekly-recap__result-team {
+.weekly-recap-matchup__side {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
   color: var(--text-dim, #8b93a7);
+}
+.weekly-recap-matchup__side--home {
+  justify-content: flex-end;
+  text-align: right;
+}
+.weekly-recap-matchup__side--won {
+  color: var(--text, #e8ecf4);
+}
+.weekly-recap-matchup__side--won .weekly-recap-matchup__side-name {
+  font-weight: 800;
+}
+.weekly-recap-matchup__side-name {
+  font-size: 13.5px;
+  font-weight: 600;
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-.weekly-recap__result-team--home {
-  text-align: right;
-}
-.weekly-recap__result-team--won {
-  color: var(--text, #e8ecf4);
-  font-weight: 700;
-}
-.weekly-recap__result-score {
+.weekly-recap-matchup__score {
+  font-size: 19px;
   font-weight: 800;
-  font-size: 14px;
   color: var(--text, #e8ecf4);
   white-space: nowrap;
 }
 
-/* Team cards */
-.weekly-recap-card__head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.weekly-recap-card__title {
-  min-width: 0;
-  flex: 1;
-}
-.weekly-recap-card__name {
-  margin: 0;
-  font-size: 15px;
-  font-weight: 800;
-  letter-spacing: -0.01em;
-}
-.weekly-recap-card__sub {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 12px;
+.weekly-recap-matchup__precall {
+  margin: 8px 0 0;
+  font-size: 11.5px;
   color: var(--text-dim, #8b93a7);
+  text-align: center;
 }
-.weekly-recap-card__result-chip {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
-  font-size: 10px;
+.weekly-recap-matchup__outcome {
+  margin-left: 6px;
   font-weight: 800;
 }
-.weekly-recap-card__result-chip--w {
-  background: color-mix(in srgb, var(--positive, #4ade80) 22%, transparent);
+.weekly-recap-matchup__outcome--hit {
   color: var(--positive, #4ade80);
 }
-.weekly-recap-card__result-chip--l {
-  background: color-mix(in srgb, var(--negative, #f87171) 20%, transparent);
+.weekly-recap-matchup__outcome--miss {
   color: var(--negative, #f87171);
 }
-.weekly-recap-card__result-chip--d {
-  background: color-mix(in srgb, var(--text-dim, #8b93a7) 22%, transparent);
-  color: var(--text-dim, #8b93a7);
-}
-.weekly-recap-card__rank {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--text, #e8ecf4);
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-.weekly-recap-card__rank-move {
-  font-size: 10px;
-}
-.weekly-recap-card__rank-move--up {
-  color: var(--positive, #4ade80);
-}
-.weekly-recap-card__rank-move--down {
-  color: var(--negative, #f87171);
-}
-.weekly-recap-card__prose {
+
+.weekly-recap-matchup__prose {
   margin: 10px 0 0;
   font-size: 13.5px;
   line-height: 1.6;
   color: var(--text, #e8ecf4);
 }
-.weekly-recap-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 20px;
-  margin: 10px 0 0;
+
+.weekly-recap-matchup__teams {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid var(--line, rgba(139, 147, 167, 0.18));
 }
-.weekly-recap-card__meta-item {
+.weekly-recap-matchup__team-row {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.weekly-recap-card__meta-item dt {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
   color: var(--text-dim, #8b93a7);
 }
-.weekly-recap-card__meta-item dd {
-  margin: 0;
-  font-size: 12.5px;
+.weekly-recap-matchup__team-row .team-avatar-frame {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.weekly-recap-matchup__team-rank {
+  font-weight: 800;
   color: var(--text, #e8ecf4);
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 34px;
+}
+.weekly-recap-matchup__rank-move {
+  font-size: 9px;
+}
+.weekly-recap-matchup__rank-move--up {
+  color: var(--positive, #4ade80);
+}
+.weekly-recap-matchup__rank-move--down {
+  color: var(--negative, #f87171);
+}
+.weekly-recap-matchup__team-record {
+  min-width: 44px;
+}
+.weekly-recap-matchup__streak {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(139, 147, 167, 0.3));
+}
+.weekly-recap-matchup__streak--w {
+  color: var(--positive, #4ade80);
+  border-color: color-mix(in srgb, var(--positive, #4ade80) 45%, transparent);
+}
+.weekly-recap-matchup__streak--l {
+  color: var(--negative, #f87171);
+  border-color: color-mix(in srgb, var(--negative, #f87171) 40%, transparent);
+}
+.weekly-recap-matchup__team-odds {
+  margin-left: auto;
+  white-space: nowrap;
 }

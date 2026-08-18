@@ -174,12 +174,14 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
   let hits = 0
   let misses = 0
   let draws = 0
+  let gwErrSum = 0
+  let gwErrCount = 0
   for (const m of gwMatches) {
     const h = Number(m.league_entry_1)
     const a = Number(m.league_entry_2)
     const hp = Number(m.league_entry_1_points) || 0
     const ap = Number(m.league_entry_2_points) || 0
-    const { favorite, source } = matchFavorite(m, history, preStrengths)
+    const { favorite, source, homePct, awayPct } = matchFavorite(m, history, preStrengths)
     const actual = hp > ap ? h : ap > hp ? a : null
     let outcome
     if (actual == null) {
@@ -195,14 +197,16 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
       misses++
     }
     const archRow = findArchivedH2hRow(history, h, a)
-    for (const id of [h, a]) {
-      const e = archivedScoreError(archRow, id)
-      if (e) {
-        errSum += e.absErr
-        errCount++
-        if (!biggestMiss || e.absErr > biggestMiss.absErr) {
-          biggestMiss = { gw, teamName: nameById.get(id), ...e }
-        }
+    const errHome = archivedScoreError(archRow, h)
+    const errAway = archivedScoreError(archRow, a)
+    for (const [id, e] of [[h, errHome], [a, errAway]]) {
+      if (!e) continue
+      errSum += e.absErr
+      errCount++
+      gwErrSum += e.absErr
+      gwErrCount++
+      if (!biggestMiss || e.absErr > biggestMiss.absErr) {
+        biggestMiss = { gw, teamName: nameById.get(id), ...e }
       }
     }
     rows.push({
@@ -212,13 +216,26 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
       awayPts: ap,
       favorite,
       favoriteSource: source,
+      /** Pre-match win % oriented to this row's home/away. */
+      homeWinPct: homePct,
+      awayWinPct: awayPct,
+      /** Pre-match engine points call per side (archive xPtsXi), when known. */
+      predHome: errHome ? errHome.predicted : null,
+      predAway: errAway ? errAway.predicted : null,
       outcome,
     })
   }
   record.hits += hits
   record.misses += misses
   record.draws += draws
-  record.gameweeks.push({ gw, hits, misses, draws, matches: rows })
+  record.gameweeks.push({
+    gw,
+    hits,
+    misses,
+    draws,
+    avgAbsErr: gwErrCount > 0 ? +(gwErrSum / gwErrCount).toFixed(1) : null,
+    matches: rows,
+  })
 }
 
 const output = {

@@ -296,12 +296,37 @@ export function recapFactsForGw(matches, entryIds, nameById, gw) {
   }
 }
 
+/** Standard normal CDF (Abramowitz–Stegun erf approximation). */
+function normCdf(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z))
+  const d = 0.3989423 * Math.exp((-z * z) / 2)
+  let p =
+    d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))))
+  if (z > 0) p = 1 - p
+  return p
+}
+
+/** P(home outscores away) from two normal strengths, as a clamped percent. */
+export function strengthWinPct(home, away) {
+  const sd = Math.sqrt(home.sigma ** 2 + away.sigma ** 2)
+  if (!(sd > 0)) return home.mu > away.mu ? 99 : home.mu < away.mu ? 1 : 50
+  const p = normCdf((home.mu - away.mu) / sd)
+  return Math.min(99, Math.max(1, Math.round(p * 100)))
+}
+
 /**
- * Model favorite for one match. Prefers the archived pre-match engine odds
- * (projections-history gw file `h2h` rows — the same forecast the live win
- * bar starts from); falls back to the strength model when no archive exists.
+ * Model favorite + pre-match win percentages for one match. Prefers the
+ * archived pre-match engine odds (projections-history gw file `h2h` rows —
+ * the same forecast the live win bar starts from); falls back to the
+ * strength model when no archive exists. Percentages are oriented to the
+ * match's own home/away (league_entry_1 / league_entry_2).
  *
- * @returns {{ favorite: number|null, source: 'engine'|'strength' }}
+ * @returns {{
+ *   favorite: number|null,
+ *   source: 'engine'|'strength',
+ *   homePct: number|null,
+ *   awayPct: number|null,
+ * }}
  */
 export function matchFavorite(match, history, strengths) {
   const h = Number(match.league_entry_1)
@@ -313,16 +338,30 @@ export function matchFavorite(match, history, strengths) {
     const hw = Number(row?.xPtsMc?.homeWinPct)
     const aw = Number(row?.xPtsMc?.awayWinPct)
     if (Number.isFinite(hw) && Number.isFinite(aw) && hw !== aw) {
-      const homeFav = hw > aw
-      return { favorite: homeFav === homeIsH ? h : a, source: 'engine' }
+      const homePct = homeIsH ? hw : aw
+      const awayPct = homeIsH ? aw : hw
+      return {
+        favorite: homePct > awayPct ? h : a,
+        source: 'engine',
+        homePct,
+        awayPct,
+      }
     }
   }
   const sh = strengths?.get(h)
   const sa = strengths?.get(a)
-  if (sh && sa && sh.mu !== sa.mu) {
-    return { favorite: sh.mu > sa.mu ? h : a, source: 'strength' }
+  if (sh && sa) {
+    const homePct = strengthWinPct(sh, sa)
+    if (sh.mu !== sa.mu) {
+      return {
+        favorite: sh.mu > sa.mu ? h : a,
+        source: 'strength',
+        homePct,
+        awayPct: 100 - homePct,
+      }
+    }
   }
-  return { favorite: null, source: 'strength' }
+  return { favorite: null, source: 'strength', homePct: null, awayPct: null }
 }
 
 /** The archived h2h row for a pairing, in either orientation, or null. */

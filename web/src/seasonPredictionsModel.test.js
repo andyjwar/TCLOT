@@ -152,12 +152,16 @@ test('matchFavorite prefers the archived engine odds over strengths', () => {
   assert.deepEqual(matchFavorite(match, history, strengths), {
     favorite: 2,
     source: 'engine',
+    homePct: 30,
+    awayPct: 60,
   })
-  assert.deepEqual(matchFavorite(match, null, strengths), {
-    favorite: 1,
-    source: 'strength',
-  })
+  const fallback = matchFavorite(match, null, strengths)
+  assert.equal(fallback.favorite, 1)
+  assert.equal(fallback.source, 'strength')
+  assert.ok(fallback.homePct > 90, `strength gap of 20 → strong favorite, got ${fallback.homePct}`)
+  assert.equal(fallback.homePct + fallback.awayPct, 100)
   assert.equal(matchFavorite(match, null, null).favorite, null)
+  assert.equal(matchFavorite(match, null, null).homePct, null)
 })
 
 test('matchFavorite handles reversed archive orientation', () => {
@@ -171,7 +175,11 @@ test('matchFavorite handles reversed archive orientation', () => {
       },
     ],
   }
-  assert.equal(matchFavorite(match, history, null).favorite, 2)
+  const rev = matchFavorite(match, history, null)
+  assert.equal(rev.favorite, 2)
+  // Pcts stay oriented to the MATCH's home/away, not the archive row's.
+  assert.equal(rev.homePct, 20)
+  assert.equal(rev.awayPct, 70)
 })
 
 test('archivedScoreError orients by entry id', () => {
