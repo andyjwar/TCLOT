@@ -7,6 +7,11 @@ import {
   getCachedLineup,
   setCachedLineup,
 } from './lineupCache.js';
+import { isValidPulseId } from './fplPulseId.js';
+import {
+  joinPremWindowRows,
+  partitionPremWindowCache,
+} from './premWindowRows.js';
 import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
 import { mergePremWindowSources } from './premWindowMerger.js';
 import { buildOwnerByElementId } from './playerContributionEvents.js';
@@ -1126,7 +1131,7 @@ export function PremWindow({
    * # Caching
    *
    * Finished fixtures are immutable (XI, bench, events, score, status). For
-   * each `gwFixture.pulse_id`, we first look up a session-scoped cache via
+   * each real `gwFixture.pulse_id` (id > 0), we first look up a session-scoped cache via
    * `getCachedLineup`. Cached rows are displayed immediately and the
    * uncached subset is what we actually request from the network. If the
    * whole GW is cached (e.g. browsing a completed GW after a tab-switch),
@@ -1149,27 +1154,20 @@ export function PremWindow({
       const gen = premWindowGenRef.current;
       if (forceRefresh) clearAllCachedLineups();
 
-      /** Partition fixtures by cache state. `cachedById` keeps insertion
-       *  order so we can rebuild the final row list in `gwFixtures` order
-       *  by joining cached + fresh rows on `pulse_id`. */
-      const cachedById = new Map();
-      const uncachedFixtures = [];
-      for (const fx of gwFixtures) {
-        const pid = Number(fx?.pulse_id);
-        const cached =
-          !forceRefresh && Number.isFinite(pid) ? getCachedLineup(pid) : null;
-        if (cached) cachedById.set(pid, { ...cached, fplFixture: fx });
-        else uncachedFixtures.push(fx);
-      }
+      /** Partition fixtures by cache state. Join on FPL fixture `id` —
+       *  new-season rows ship `pulse_id: 0` until Opta ids are assigned, and
+       *  treating that as a cache/join key collapsed the whole GW onto one match. */
+      const { cachedByFxId, uncachedFixtures } = partitionPremWindowCache(
+        gwFixtures,
+        getCachedLineup,
+        { forceRefresh },
+      );
 
       /** Surface cached rows immediately — progressive hydration so the
        *  user sees finished fixtures the moment the component mounts even
        *  when one or two live fixtures are still being fetched. */
-      if (cachedById.size > 0) {
-        const initialRows = gwFixtures
-          .map((fx) => cachedById.get(Number(fx?.pulse_id)))
-          .filter(Boolean);
-        setPremWindowRows(initialRows);
+      if (cachedByFxId.size > 0) {
+        setPremWindowRows(joinPremWindowRows(gwFixtures, cachedByFxId, []));
       }
 
       /** Whole-GW cache hit — short-circuit before touching the network. */
@@ -1204,27 +1202,20 @@ export function PremWindow({
          *  silently rejected here. */
         for (const row of freshRows) {
           const pid = Number(row?.fplFixture?.pulse_id);
-          if (Number.isFinite(pid)) setCachedLineup(pid, row);
+          if (isValidPulseId(pid)) setCachedLineup(pid, row);
         }
         /** Build the final list in the order `gwFixtures` defines so the
          *  day-grouping below picks up rows in kickoff order without an
          *  extra sort pass. */
-        const byPulseId = new Map();
-        for (const [pid, row] of cachedById) byPulseId.set(pid, row);
-        for (const row of freshRows) {
-          const pid = Number(row?.fplFixture?.pulse_id);
-          if (Number.isFinite(pid)) byPulseId.set(pid, row);
-        }
-        const finalRows = gwFixtures
-          .map((fx) => byPulseId.get(Number(fx?.pulse_id)))
-          .filter(Boolean);
-        setPremWindowRows(finalRows);
+        setPremWindowRows(
+          joinPremWindowRows(gwFixtures, cachedByFxId, freshRows),
+        );
       } catch (e) {
         if (gen !== premWindowGenRef.current) return;
         setPremWindowError(e?.message || String(e));
         /** Don't blow away the cached rows on a transient error; keep them
          *  visible so the user can still see finished fixtures. */
-        if (cachedById.size === 0) setPremWindowRows([]);
+        if (cachedByFxId.size === 0) setPremWindowRows([]);
       } finally {
         if (gen === premWindowGenRef.current) setPremWindowLoading(false);
       }

@@ -20,6 +20,7 @@
  */
 
 import { pulseliveResourceUrl } from './pulseliveUrl.js';
+import { isValidPulseId } from './fplPulseId.js';
 
 /** Pulselive comp id for the Premier League. Stable across seasons. */
 export const PL_COMP_ID = 1;
@@ -254,9 +255,10 @@ export function findPulseliveMatchForFixture(fx, pulseToFpl, pulseRows) {
   const ta = Number(fx?.team_a);
   if (!Number.isFinite(th) || !Number.isFinite(ta)) return null;
 
-  /** Step 1: prefer FPL's `pulse_id` mapping when available. */
+  /** Step 1: prefer FPL's `pulse_id` mapping when assigned (not the
+   *  new-season placeholder `0`). */
   const pulseId = Number(fx?.pulse_id);
-  if (Number.isFinite(pulseId)) {
+  if (isValidPulseId(pulseId)) {
     const direct = pulseRows.find((row) => row.fixtureId === pulseId);
     if (direct) return direct;
   }

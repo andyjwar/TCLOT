@@ -247,6 +247,39 @@ test('findPulseliveMatchForFixture — picks closest kickoff when pulse_id missi
   assert.equal(hit?.fixtureId, 91234);
 });
 
+test('findPulseliveMatchForFixture — ignores placeholder pulse_id 0', () => {
+  const pulseRows = [
+    {
+      fixtureId: 0,
+      homeId: 99,
+      awayId: 98,
+      homeAbbr: 'ZZZ',
+      awayAbbr: 'YYY',
+      kickoffMs: Date.parse('2026-08-24T19:00:00Z'),
+    },
+    {
+      fixtureId: 91234,
+      homeId: 10,
+      awayId: 1,
+      homeAbbr: 'MCI',
+      awayAbbr: 'ARS',
+      kickoffMs: Date.parse('2026-08-22T14:00:00Z'),
+    },
+  ];
+  const pulseToFpl = new Map([
+    [10, 11],
+    [1, 1],
+  ]);
+  const fx = {
+    team_h: 11,
+    team_a: 1,
+    kickoff_time: '2026-08-22T14:00:00Z',
+    pulse_id: 0,
+  };
+  const hit = findPulseliveMatchForFixture(fx, pulseToFpl, pulseRows);
+  assert.equal(hit?.fixtureId, 91234);
+});
+
 test('parsePulseliveLineups — happy path with full XI on both sides marks confirmed', () => {
   const fplFixture = { id: 1001, team_h: 11, team_a: 1 };
   const pulseToFpl = new Map([
