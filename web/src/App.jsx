@@ -527,27 +527,17 @@ import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js
 import './App.css'
 
 /**
- * Complete / future GW tiles: full team name on desktop, curated short label
- * ({@link firstWord}) on narrow viewports (under 560px — see App.css
- * `gw-fixture-name-text--mobile-first-token` rules).
+ * Complete / future GW tiles: full club name at every width — matching the
+ * Schedule tab — with the one standing exception that MSFG stays `MSFG`.
  */
 function GwFixtureTightTeamName({ name }) {
-  const full = typeof name === 'string' ? name.trim() : ''
-  const short = firstWord(name)
-  if (!full || short === full) {
-    return (
-      <span className="gw-fixture-name-text team-name team-name--sidebar" title={full || undefined}>
-        {short || '—'}
-      </span>
-    )
-  }
+  const label = standingsMobileTeamName(name)
   return (
     <span
-      className="gw-fixture-name-text team-name team-name--sidebar gw-fixture-name-text--mobile-first-token"
-      title={full}
+      className="gw-fixture-name-text team-name team-name--sidebar"
+      title={label || undefined}
     >
-      <span className="gw-fixture-name-text__first">{short}</span>
-      <span className="gw-fixture-name-text__rest">{full}</span>
+      {label || '—'}
     </span>
   )
 }
