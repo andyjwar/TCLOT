@@ -38,6 +38,7 @@ const details = read('details.json')
 const SIMS = 5000
 const forecastById = new Map(predictions.players.map((p) => [p.id, p]))
 const carryById = new Map(bootstrap.elements.map((e) => [e.id, e.total_points]))
+const statusById = new Map(bootstrap.elements.map((e) => [e.id, e.status]))
 
 /** 3-sentence pundit verdicts, keyed by leagueEntryId. Written against the
  * simulated numbers — regenerate data freely, edit prose here only. */
@@ -65,8 +66,13 @@ for (const p of picksDoc.picks) {
   teams.get(p.leagueEntryId).picks.push(p)
 }
 
-/** Blended weekly score + sigma for one drafted player. */
+/** Blended weekly score + sigma for one drafted player. Players FPL marks
+ * unavailable ('u' — left the league, e.g. "Has joined X permanently") are
+ * worth nothing going forward: no forecast AND no last-season carry credit. */
 function playerWeekly(pick) {
+  if (statusById.get(pick.element) === 'u') {
+    return { ev: 0, weekly: 0, sd: 0, carry: 0 }
+  }
   const f = forecastById.get(pick.element)
   const ev = f?.forecast?.totalPoints ?? 0
   const p10 = f?.forecast?.percentiles?.p10 ?? 0

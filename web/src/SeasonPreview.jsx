@@ -235,8 +235,17 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
           their 25/26 scoring ({method.blend}). Team strength is the best legal XI from the
           drafted fifteen, then the {method.schedule} is simulated{' '}
           {method.simulations.toLocaleString()} times to produce finishes, points and title odds.
-          It's a pre-season model, not a prophecy — waivers, trades and hamstrings will have their
-          say.
+          Availability uses FPL's own flags: injured and suspended players lose forecast value,
+          and anyone who has left the league counts for nothing. For injury detail see{' '}
+          <a
+            href="https://www.premierinjuries.com/injury-table.php"
+            target="_blank"
+            rel="noreferrer"
+          >
+            premierinjuries.com
+          </a>
+          . It's a pre-season model, not a prophecy — waivers, trades and hamstrings will have
+          their say.
         </p>
       </section>
     </>

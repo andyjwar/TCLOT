@@ -358,11 +358,17 @@ export function bootstrapTeamToPredictionTeam(bootTeam) {
  * FPL classic bootstrap often sends `chance_of_playing_this_round: null` for available players.
  * `Number(null) === 0` would falsely treat them as maximally doubtful and crush xP / minutes.
  *
- * @param {object | null | undefined} el — bootstrap-style element (`status`, `chance_of_playing_this_round`)
+ * Status flags: 'i' (injured), 'u' (unavailable — left the league or otherwise
+ * out of the game) and 's' (suspended) are all "not playing". The draft
+ * bootstrap has no `chance_of_playing_this_round`, so fall back to
+ * `chance_of_playing_next_round` — otherwise 75%-doubt players read as fully fit.
+ *
+ * @param {object | null | undefined} el — bootstrap-style element (`status`, chance-of-playing fields)
  */
 export function injuryDoubtScoreFromClassicElement(el) {
-  if (el?.status === 'i') return 3;
-  const raw = el?.chance_of_playing_this_round;
+  const status = el?.status;
+  if (status === 'i' || status === 'u' || status === 's') return 3;
+  const raw = el?.chance_of_playing_this_round ?? el?.chance_of_playing_next_round;
   if (raw === null || raw === undefined || raw === '') return 0;
   const c = Number(raw);
   if (!Number.isFinite(c)) return 0;

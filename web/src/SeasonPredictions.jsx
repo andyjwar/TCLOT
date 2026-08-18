@@ -233,7 +233,17 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
           every gameweek the rest of the season is simulated 5,000 times on the real
           fixture list. Weekly winner calls come from the same pre-match forecast the
           live win bars use, so the record above is scored against what the model
-          actually said at the time.
+          actually said at the time. Player availability comes from FPL's own flags on
+          every data refresh — injuries, suspensions and players who leave the league;
+          for the human-readable physio room see{' '}
+          <a
+            href="https://www.premierinjuries.com/injury-table.php"
+            target="_blank"
+            rel="noreferrer"
+          >
+            premierinjuries.com
+          </a>
+          .
         </p>
       </section>
     </>
