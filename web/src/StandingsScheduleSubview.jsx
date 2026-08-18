@@ -12,6 +12,7 @@ import { LiveExpandedFixture } from './LiveExpandedFixture.jsx'
 import { useHistoricGwFixtureSquads } from './useHistoricGwFixtureSquads.js'
 import { useNarrowViewport } from './usePortraitMobile.js'
 import { firstWord } from './teamNameUtils.js'
+import { ClickableTeamName } from './TeamDetailOverlay.jsx'
 
 function pad2(n) {
   const num = Number(n)
@@ -533,7 +534,10 @@ function TeamScheduleCompact({
                 >
                   {r.location}
                 </span>
-                <span
+                {/* Whole opponent cell (crest + name) opens the team detail
+                    card — the row itself is inert, so nesting is valid. */}
+                <ClickableTeamName
+                  leagueEntryId={r.opponentId}
                   className="standings-schedule-team__opp"
                   title={r.opponentName}
                 >
@@ -552,7 +556,7 @@ function TeamScheduleCompact({
                       {r.opponentName}
                     </span>
                   </span>
-                </span>
+                </ClickableTeamName>
                 <span className="standings-schedule-team__score tabular">
                   {showScore ? (
                     <>
