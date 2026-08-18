@@ -26,6 +26,7 @@ import { isPreDraftAllowedView, resolveDraftGate } from './draftGate.js'
 import {
   deriveBrandHeaderStatus,
   formatMilestoneCountdown,
+  MILESTONE_SECONDS_WITHIN_MS,
   nextCalendarMilestone,
 } from './brandHeaderStatus.js'
 
@@ -61,22 +62,11 @@ function TclotLionIcon({ size = 22 }) {
   )
 }
 
-function useTickingNow(active) {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => {
-    if (!active || typeof window === 'undefined') return undefined
-    setNow(new Date())
-    const id = window.setInterval(() => setNow(new Date()), 1000)
-    return () => window.clearInterval(id)
-  }, [active])
-  return now
-}
-
 function BrandHeaderMilestoneTrail({ idleMilestone, nextGw, fallback = null }) {
   const active = Boolean(
     idleMilestone?.waiversTime || idleMilestone?.deadlineTime || idleMilestone?.targetIso,
   )
-  const now = useTickingNow(active)
+  const [now, setNow] = useState(() => new Date())
   const live =
     nextCalendarMilestone(
       {
@@ -85,6 +75,21 @@ function BrandHeaderMilestoneTrail({ idleMilestone, nextGw, fallback = null }) {
       },
       now,
     ) || idleMilestone
+  const remainingMs = live?.targetIso
+    ? Date.parse(live.targetIso) - now.getTime()
+    : Number.POSITIVE_INFINITY
+  const intervalMs =
+    Number.isFinite(remainingMs) &&
+    remainingMs > 0 &&
+    remainingMs < MILESTONE_SECONDS_WITHIN_MS
+      ? 1000
+      : 60_000
+  useEffect(() => {
+    if (!active || typeof window === 'undefined') return undefined
+    setNow(new Date())
+    const id = window.setInterval(() => setNow(new Date()), intervalMs)
+    return () => window.clearInterval(id)
+  }, [active, intervalMs])
   const countdownLabel = live?.targetIso
     ? formatMilestoneCountdown(live.targetIso, now)
     : live?.countdownLabel

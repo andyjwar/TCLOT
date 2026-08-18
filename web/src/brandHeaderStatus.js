@@ -44,7 +44,8 @@ export function formatDeadlineDate(iso) {
 }
 
 /**
- * Format a timestamp as a local month/day + 24h time, e.g. `Aug 20, 1830`.
+ * Format a timestamp as a local weekday + month/day + 24h time,
+ * e.g. `Thu Aug 20, 1830` or `Fri Aug 21, 1830`.
  *
  * @param {string | number | Date | null | undefined} value
  * @returns {string | null}
@@ -54,13 +55,14 @@ export function formatMilestoneDateTime(value) {
   const d = value instanceof Date ? value : new Date(value)
   if (Number.isNaN(d.getTime())) return null
   try {
+    const weekday = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(d)
     const date = new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
     }).format(d)
     const hh = String(d.getHours()).padStart(2, '0')
     const mm = String(d.getMinutes()).padStart(2, '0')
-    return `${date}, ${hh}${mm}`
+    return `${weekday} ${date}, ${hh}${mm}`
   } catch {
     return null
   }
@@ -70,8 +72,12 @@ function pad2(n) {
   return String(n).padStart(2, '0')
 }
 
+/** Minutes + seconds appear on the countdown only inside this window. */
+export const MILESTONE_SECONDS_WITHIN_MS = 12 * 60 * 60 * 1000
+
 /**
- * Live countdown clock (`2d 16:23:05`, or `16:23:05` inside the final day).
+ * Live countdown. Days and hours while more than 12 hours remain
+ * (`2d 16h` / `16h`); `HH:MM:SS` once it is under 12 hours.
  *
  * @param {string | number | Date | null | undefined} target
  * @param {Date} now
@@ -81,14 +87,21 @@ export function formatMilestoneCountdown(target, now = new Date()) {
   if (target == null) return null
   const d = target instanceof Date ? target : new Date(target)
   if (Number.isNaN(d.getTime()) || Number.isNaN(now.getTime())) return null
-  const totalSeconds = Math.floor((d.getTime() - now.getTime()) / 1000)
-  if (totalSeconds <= 0) return null
-  const days = Math.floor(totalSeconds / 86400)
-  const hours = Math.floor((totalSeconds % 86400) / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-  const clock = `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`
-  return days > 0 ? `${days}d ${clock}` : clock
+  const totalMs = d.getTime() - now.getTime()
+  if (totalMs <= 0) return null
+  if (totalMs < MILESTONE_SECONDS_WITHIN_MS) {
+    const totalSeconds = Math.floor(totalMs / 1000)
+    if (totalSeconds <= 0) return null
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = totalSeconds % 60
+    return `${pad2(hours)}:${pad2(minutes)}:${pad2(seconds)}`
+  }
+  const totalMinutes = Math.ceil(totalMs / 60_000)
+  const days = Math.floor(totalMinutes / (24 * 60))
+  const hours = Math.floor((totalMinutes % (24 * 60)) / 60)
+  if (days > 0) return hours > 0 ? `${days}d ${hours}h` : `${days}d`
+  return `${hours}h`
 }
 
 /**
