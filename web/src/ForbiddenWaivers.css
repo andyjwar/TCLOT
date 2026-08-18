@@ -1,0 +1,62 @@
+/* Forbidden Waivers rule tile (Moves → Waivers). */
+
+.forbidden-waivers__count {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--negative, #f87171);
+  border: 1px solid color-mix(in srgb, var(--negative, #f87171) 40%, transparent);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+
+.forbidden-waivers__empty {
+  font-size: 13px;
+  color: var(--text, #e8ecf4);
+  margin: 6px 0 0;
+}
+
+.forbidden-waivers__list {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+.forbidden-waivers__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  padding: 5px 8px;
+  border: 1px solid var(--line, rgba(139, 147, 167, 0.2));
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--negative, #f87171) 5%, transparent);
+}
+.forbidden-waivers__pos {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(139, 147, 167, 0.3));
+  color: var(--text-dim, #8b93a7);
+  min-width: 34px;
+  text-align: center;
+}
+.forbidden-waivers__name {
+  font-weight: 700;
+  color: var(--text, #e8ecf4);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.forbidden-waivers__team {
+  font-size: 11.5px;
+  color: var(--text-dim, #8b93a7);
+}
+.forbidden-waivers__ban {
+  margin-left: auto;
+  font-size: 13px;
+}

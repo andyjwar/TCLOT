@@ -491,6 +491,7 @@ import {
 import { initialDashboardView, initialMovesTab } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
+import { ForbiddenWaivers } from './ForbiddenWaivers'
 import {
   WeeklyWaivers,
   WaiverTotalsToggle,
@@ -3898,6 +3899,8 @@ function App() {
               <div className="subview-panel">
               {teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
+              <ForbiddenWaivers />
+
               <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
                 <div className="tile-head-row tile-head-row--tight">
                   <h2 id="all-waivers-heading" className="tile-title tile-title--sm">
