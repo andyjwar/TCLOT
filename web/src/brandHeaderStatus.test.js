@@ -25,11 +25,11 @@ test('formatDeadlineDate — ISO → "Aug 15"', () => {
 test('formatMilestoneDateTime — weekday, local month/day, and 24h time', () => {
   const thu = new Date(2026, 7, 20, 18, 30, 0)
   const fri = new Date(2026, 7, 21, 18, 30, 0)
-  assert.equal(formatMilestoneDateTime(thu), 'Thu Aug 20, 1830')
-  assert.equal(formatMilestoneDateTime(fri), 'Fri Aug 21, 1830')
+  assert.equal(formatMilestoneDateTime(thu), 'Thu Aug 20, 18:30')
+  assert.equal(formatMilestoneDateTime(fri), 'Fri Aug 21, 18:30')
   assert.match(
     formatMilestoneDateTime('2026-03-14T13:30:00Z'),
-    /^[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}, \d{4}$/,
+    /^[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}, \d{2}:\d{2}$/,
   )
   assert.equal(formatMilestoneDateTime('not-a-date'), null)
 })
@@ -108,7 +108,7 @@ test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and n
   assert.equal(out.idleMilestone.countdownLabel, '4d 3h')
   assert.match(
     out.idleMilestone.dateTimeLabel,
-    /^[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}, \d{4}$/,
+    /^[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}, \d{2}:\d{2}$/,
   )
   assert.ok(out.idleMilestone.targetIso)
   assert.equal(out.idleMilestone.waiversTime, '2026-03-14T13:30:00Z')

@@ -45,7 +45,7 @@ export function formatDeadlineDate(iso) {
 
 /**
  * Format a timestamp as a local weekday + month/day + 24h time,
- * e.g. `Thu Aug 20, 1830` or `Fri Aug 21, 1830`.
+ * e.g. `Thu Aug 20, 13:30` or `Fri Aug 21, 18:30`.
  *
  * @param {string | number | Date | null | undefined} value
  * @returns {string | null}
@@ -62,7 +62,7 @@ export function formatMilestoneDateTime(value) {
     }).format(d)
     const hh = String(d.getHours()).padStart(2, '0')
     const mm = String(d.getMinutes()).padStart(2, '0')
-    return `${weekday} ${date}, ${hh}${mm}`
+    return `${weekday} ${date}, ${hh}:${mm}`
   } catch {
     return null
   }
