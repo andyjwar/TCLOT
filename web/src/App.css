@@ -14307,8 +14307,10 @@ button.live-xp__player-name:focus-visible {
   min-width: 0;
 }
 .standings-table--variant-c-mobile .team-name--sidebar {
-  font-size: 13px;
-  font-weight: 700;
+  /* Match the Draft round-list name's rendered style (0.9rem / 400) —
+   * 13px / 700 read much heavier than the rest of the app's names. */
+  font-size: 0.9rem;
+  font-weight: 400;
   line-height: 1.25;
   max-width: none;
   /* Full names use leftover column width. Wrap at a space rather

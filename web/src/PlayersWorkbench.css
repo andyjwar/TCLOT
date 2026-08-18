@@ -1869,6 +1869,10 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     align-items: center;
     gap: 8px;
     min-width: 0;
+    /* The name button uses `font-size: inherit` (player-history-name-btn),
+     * which outranks .players-wire-tile__name in the cascade — size the
+     * row so the button inherits the draft-list 0.9rem. */
+    font-size: 0.9rem;
   }
 
   .players-wire-tile__kit {
@@ -1887,11 +1891,11 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   }
 
   .players-wire-tile__name {
-    /* Match the Draft round-list player name (.draft-rlist__name):
-     * 0.9rem / 600 — the old 13px / 700 read heavier than the rest of
-     * the app's player names. */
+    /* Match the Draft round-list name as it actually RENDERS: the
+     * draft name is a .player-history-name-btn button that doesn't
+     * inherit its wrapper's 600, so it paints at 400 / 0.9rem. */
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 400;
     color: var(--text-strong);
     line-height: 1.25;
     word-break: break-word;
