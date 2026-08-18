@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
+import { SeasonPreview } from './SeasonPreview'
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import './SeasonPreview.css'
 import './SeasonPredictions.css'
@@ -46,6 +47,11 @@ function oddsDelta(current, prevSnapshot, entryId) {
  * the rest of the season is re-run with strengths updated by actual scores.
  * Keeps every weekly snapshot, so the odds chart and the model's win-call
  * record are receipts, not revisionism.
+ *
+ * Until GW1 finishes there's nothing to track, so the tab shows the full
+ * draft recap (Season Preview — same engine, identical odds) instead; the
+ * living view takes over from the first banked gameweek, with the
+ * pre-season numbers preserved as the GW0 snapshot.
  */
 export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
   const [data, setData] = useState(null)
@@ -83,10 +89,13 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
     )
   }
 
+  if (data.asOfGw === 0) {
+    return <SeasonPreview teamLogoMap={teamLogoMap} kitIndexByEntry={kitIndexByEntry} />
+  }
+
   const { current, snapshots, modelRecord, asOfGw } = data
   const prevSnapshot =
     snapshots.length >= 2 ? snapshots[snapshots.length - 2] : null
-  const preSeason = asOfGw === 0
   const decided = modelRecord.hits + modelRecord.misses
 
   return (
@@ -100,13 +109,13 @@ export function SeasonPredictions({ teamLogoMap = {}, kitIndexByEntry }) {
             Season predictions
           </h2>
           <span className="season-predictions__asof tabular">
-            {preSeason ? 'Pre-season' : `After GW${asOfGw}`}
+            After GW{asOfGw}
           </span>
         </div>
         <p className="season-preview__strap">
-          {preSeason
-            ? 'The pre-season model, straight off the draft board. It re-runs after every gameweek — results bank, the rest gets re-simulated.'
-            : `Results through GW${asOfGw} are banked; the remaining fixtures are re-simulated with team strength updated by what has actually been scored.`}
+          Results through GW{asOfGw} are banked; the remaining fixtures are
+          re-simulated with team strength updated by what has actually been
+          scored.
         </p>
 
         <div className="season-predictions__record" role="status">
