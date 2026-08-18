@@ -1,4 +1,8 @@
-import { isMsfgTeamName, MSFG_STANDINGS_LABEL } from './teamNameUtils.js'
+import { isMsfgTeamName } from './teamNameUtils.js'
+
+/** Data-level entry name for the MSFG club (desktop shows this as-is;
+ * mobile re-labels it via `standingsMobileTeamName` → `Mordor SFG`). */
+const MSFG_ENTRY_NAME = 'MSFG'
 
 const FIRST_ALIASES = {
   michael: 'mike',
@@ -67,7 +71,7 @@ export function managerMatchKeyFromFull(fullName) {
 export function currentSeasonClubLabel(club) {
   const full = String(club?.name ?? '').trim()
   const short = String(club?.shortName ?? '').trim()
-  if (isMsfgTeamName(full) || isMsfgTeamName(short)) return MSFG_STANDINGS_LABEL
+  if (isMsfgTeamName(full) || isMsfgTeamName(short)) return MSFG_ENTRY_NAME
   return full
 }
 
