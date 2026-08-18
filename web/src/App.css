@@ -14296,8 +14296,10 @@ button.live-xp__player-name:focus-visible {
   width: 28px;
   height: 28px;
 }
+/* 10px matches the desktop team cell — 6px read cramped once the
+ * crests grew to 28px. */
 .standings-table--variant-c-mobile .team-cell {
-  gap: 6px;
+  gap: 10px;
   min-width: 0;
 }
 .standings-table--variant-c-mobile .standings-team-id {
