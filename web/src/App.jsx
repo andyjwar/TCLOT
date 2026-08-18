@@ -491,6 +491,7 @@ import {
 import { initialDashboardView, initialMovesTab } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
+import { ForbiddenWaivers } from './ForbiddenWaivers'
 import {
   WeeklyWaivers,
   WaiverTotalsToggle,
@@ -3948,6 +3949,8 @@ function App() {
                   />
                 </div>
               </section>
+
+              <ForbiddenWaivers />
 
               <section className="tile tile--compact" aria-labelledby="first-waiver-picks-heading">
                 <div className="tile-head-row tile-head-row--tight">
