@@ -38,15 +38,19 @@ const details = read('details.json')
 const SIMS = 5000
 const forecastById = new Map(predictions.players.map((p) => [p.id, p]))
 const carryById = new Map(bootstrap.elements.map((e) => [e.id, e.total_points]))
+const statusById = new Map(bootstrap.elements.map((e) => [e.id, e.status]))
+/** Manual league-confirmed corrections FPL hasn't flagged yet (see the JSON's note). */
+const overrides = read('availability-overrides.json')
+for (const o of overrides?.overrides ?? []) statusById.set(Number(o.id), o.status)
 
 /** 3-sentence pundit verdicts, keyed by leagueEntryId. Written against the
  * simulated numbers — regenerate data freely, edit prose here only. */
 const VERDICTS = {
   18279:
     'João Pedro in round one is the market’s favourite forward outside Haaland, and Cunha, Gibbs-White and Foden behind him make this the deepest midfield in the draft. Roefs in round 14 is the steal of the entire league — a projected weekly starter with the 109th pick. Best blend of floor and ceiling on any board: joint-top of the simulation’s title odds, in a dead heat with the champions.',
-  6849: 'Bruno Fernandes at pick two is the consensus best non-Haaland asset in FPL, and the champions’ defensive stock — Calafiori in round four, Saliba somehow still there in round 14 — gives this squad the strongest back line in the league. The fifteen also carried the second-most 25/26 points of any draft. Edges the simulation’s title odds by the barest of margins: a genuine title side.',
+  6849: 'Bruno Fernandes at pick two is the consensus best non-Haaland asset in FPL, and the champions’ defensive stock — Calafiori in round four, Saliba sliding to round 14 on a back injury — gives this squad the strongest back line in the league once he’s fit. The fifteen also carried the second-most 25/26 points of any draft. Joint-top of the simulation’s title odds, locked in a dead heat with Mordor: a genuine title side.',
   10173:
-    'Nobody drafted more proven scoring: this fifteen returned more 25/26 points than any squad in the league, anchored by Gabriel, Watkins and Bruno Guimarães. Doubling up on keepers with Pickford and Donnarumma by round ten was luxury shopping, but Reijnders in round 14 was a heist. No weakness anywhere — the model’s dark horse with a live title shout.',
+    'Nobody drafted more proven scoring: this fifteen returned more 25/26 points than any squad in the league, anchored by Gabriel, Watkins and Bruno Guimarães. Doubling up on keepers with Pickford and Donnarumma by round ten was luxury shopping, though the round-14 Reijnders heist died on the vine — sold before he kicked a ball, a dead pick the model now counts as nothing. Still barely a weakness anywhere — the model’s dark horse with a live title shout.',
   4898: 'Haaland first overall is the no-brainer of the summer — the projected MVP and the one player in this league who wins weeks on his own. The model’s worry is everything after him: Wirtz and Rice are class, but the forward line behind the big man is Šeško and round-13 Solanke. Top-heavy and hostage to one hamstring; brilliant when it clicks.',
   5220: 'Palmer, Gyökeres, Mateta and Ødegaard inside four rounds is the flashiest start anyone had, and Estêvão in round 14 could be the pick of the summer by May. The catch: all that youth and churn returned the second-fewest 25/26 points of any squad, so the floor is unproven. Highest variance in the league — a top-two ceiling with a bottom-three tail.',
   44904:
@@ -65,8 +69,13 @@ for (const p of picksDoc.picks) {
   teams.get(p.leagueEntryId).picks.push(p)
 }
 
-/** Blended weekly score + sigma for one drafted player. */
+/** Blended weekly score + sigma for one drafted player. Players FPL marks
+ * unavailable ('u' — left the league, e.g. "Has joined X permanently") are
+ * worth nothing going forward: no forecast AND no last-season carry credit. */
 function playerWeekly(pick) {
+  if (statusById.get(pick.element) === 'u') {
+    return { ev: 0, weekly: 0, sd: 0, carry: 0 }
+  }
   const f = forecastById.get(pick.element)
   const ev = f?.forecast?.totalPoints ?? 0
   const p10 = f?.forecast?.percentiles?.p10 ?? 0

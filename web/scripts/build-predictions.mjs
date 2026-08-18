@@ -166,6 +166,24 @@ function main() {
   const classicBoot = readJson('bootstrap_fpl.json');
   const fixtures = readJson('fixtures.json');
   const understat = readJson('understat.json');
+
+  // Manual availability overrides — league-confirmed facts FPL hasn't flagged
+  // yet (e.g. a player sold out of the league). Applied onto the draft
+  // bootstrap before any mapping so doubt scores and forecasts respect them.
+  const availabilityOverrides = readJson('availability-overrides.json');
+  const overrideById = new Map(
+    (availabilityOverrides?.overrides ?? []).map((o) => [Number(o.id), o]),
+  );
+  if (draftBoot?.elements && overrideById.size > 0) {
+    let applied = 0;
+    draftBoot.elements = draftBoot.elements.map((el) => {
+      const o = overrideById.get(Number(el?.id));
+      if (!o) return el;
+      applied += 1;
+      return { ...el, status: o.status, chance_of_playing_next_round: 0 };
+    });
+    log(`availability overrides applied: ${applied}`);
+  }
   const reconciliation = readJson('id-reconciliation.json');
 
   if (!draftBoot?.elements?.length) {
