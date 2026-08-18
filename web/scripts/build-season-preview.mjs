@@ -160,8 +160,16 @@ const sim = simulateSeasonAsOf({
 })
 
 const GRADES = ['A+', 'A', 'A-', 'B+', 'B', 'B-', 'C+', 'C']
+/** Teams whose weekly projections sit within this of the team above share its
+ * grade — a 0.1 pts/week gap is noise, not a tier. */
+const GRADE_TIE_GAP = 0.5
 const byStrength = [...modeled].sort((a, b) => b.strength - a.strength)
-const gradeByEntry = new Map(byStrength.map((t, i) => [t.leagueEntryId, GRADES[i]]))
+const gradeByEntry = new Map()
+let gradeIdx = 0
+byStrength.forEach((t, i) => {
+  if (i > 0 && byStrength[i - 1].strength - t.strength >= GRADE_TIE_GAP) gradeIdx = i
+  gradeByEntry.set(t.leagueEntryId, GRADES[gradeIdx])
+})
 
 const outTeams = modeled.map((t) => {
   const s = sim.get(t.leagueEntryId)
