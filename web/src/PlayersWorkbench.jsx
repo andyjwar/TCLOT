@@ -180,7 +180,7 @@ function PlayerInlineIndicators({ el, owner, rostersHealthy, logoMap, kitIndexBy
  */
 function PositionChip({ pos }) {
   if (!pos) return null
-  return <span className={`position-chip position-chip--${pos}`}>{pos}</span>
+  return <span className="position-chip">{pos}</span>
 }
 
 const PORTRAIT_POSITION_OPTIONS = [
@@ -751,9 +751,7 @@ function PortraitWireTileList({
                   {displayName}
                 </ClickablePlayerName>
                 <span
-                  className={`players-wire-tile__pos-chip${
-                    row.posLabel ? ` players-wire-tile__pos-chip--${row.posLabel}` : ''
-                  }`}
+                  className="players-wire-tile__pos-chip"
                   aria-label={`Position ${posLetter}`}
                   title={`Position ${posLetter}`}
                 >
