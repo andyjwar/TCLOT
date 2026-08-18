@@ -134,6 +134,10 @@ export function TeamDetailView({
   const streakCls = st.res === 'W' ? 'v-pos' : st.res === 'L' ? 'v-neg' : 'is-zero'
   const streakVal = st.n ? st.n : '\u2013'
 
+  /** Pre-season / no finished games: the stat seeds (high -1, GW0, an
+   * all-tied luck rank) are meaningless — render placeholder tiles instead. */
+  const played = s.seq.length > 0
+
   return (
     <div className="tc-card" aria-label={`${s.name} team detail`}>
       <div className="tc-hero">
@@ -193,27 +197,45 @@ export function TeamDetailView({
           <div className="tc-boxes">
             <div className="tc-box">
               <div className="tc-box__k">Luck index</div>
-              <div className="tc-box__v">{ordinal(luckIdx[id])}</div>
-              <div className={`tc-box__sub ${lkPos ? 'v-pos' : 'v-neg'}`}>
-                {lkPos ? '+' : ''}
-                {lk.delta.toFixed(1)} vs avg
-              </div>
+              {played ? (
+                <>
+                  <div className="tc-box__v">{ordinal(luckIdx[id])}</div>
+                  <div className={`tc-box__sub ${lkPos ? 'v-pos' : 'v-neg'}`}>
+                    {lkPos ? '+' : ''}
+                    {lk.delta.toFixed(1)} vs avg
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="tc-box__v">{'\u2013'}</div>
+                  <div className="tc-box__sub">No games yet</div>
+                </>
+              )}
             </div>
             <div className="tc-box">
               <div className="tc-box__k">Highest score</div>
-              <div className="tc-box__v">{s.high}</div>
-              <div className="tc-box__sub tc-box__sub--inline">
-                GW{s.highGw} v
-                <span className="tc-inline-badge">
-                  <TeamAvatar
-                    entryId={s.highOpp}
-                    name={idToName[s.highOpp]}
-                    size="sm"
-                    logoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                  />
-                </span>
-              </div>
+              {played ? (
+                <>
+                  <div className="tc-box__v">{s.high}</div>
+                  <div className="tc-box__sub tc-box__sub--inline">
+                    GW{s.highGw} v
+                    <span className="tc-inline-badge">
+                      <TeamAvatar
+                        entryId={s.highOpp}
+                        name={idToName[s.highOpp]}
+                        size="sm"
+                        logoMap={teamLogoMap}
+                        kitIndexByEntry={kitIndexByEntry}
+                      />
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="tc-box__v">{'\u2013'}</div>
+                  <div className="tc-box__sub">No games yet</div>
+                </>
+              )}
             </div>
             <div className="tc-box">
               <div className="tc-box__k">Biggest win</div>
