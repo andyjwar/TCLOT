@@ -14732,9 +14732,9 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Each row + its (optional) expanded body live inside `.standings-schedule__fixture-item`.
- * The row chrome (1fr · auto · 1fr grid) stays on `.standings-schedule__fixture`, but the
- * per-row border moves up to the wrapper so the expanded panel sits flush underneath without
- * doubling separators. */
+ * The row chrome (crest · name · v · name · crest) stays on `.standings-schedule__fixture`,
+ * but the per-row border moves up to the wrapper so the expanded panel sits flush
+ * underneath without doubling separators. */
 .standings-schedule__fixture-item {
   list-style: none;
   border-top: 1px solid color-mix(in srgb, var(--fm-border) 60%, transparent);
@@ -14747,13 +14747,12 @@ button.live-xp__player-name:focus-visible {
 .standings-schedule__fixture {
   position: relative;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  /* Right padding holds space for the absolute-positioned chevron so the
-   * 1fr · auto · 1fr grid stays symmetric (otherwise the chev steals
-   * width from the away column and team names truncate on mobile). */
-  padding: 8px 28px 8px 12px;
+  column-gap: 6px;
+  /* Upcoming rows are even inset. Finished rows add extra right padding
+   * so the absolute chevron does not overlap the away crest. */
+  padding: 8px 12px;
 }
 
 /* Clickable variant — the row is rendered as a `<button>` for finished
@@ -14769,6 +14768,7 @@ button.live-xp__player-name:focus-visible {
   text-align: left;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
+  padding-right: 28px;
 }
 
 .standings-schedule__fixture--clickable:hover {
@@ -14817,14 +14817,14 @@ button.live-xp__player-name:focus-visible {
   margin: 6px 0;
 }
 
-.standings-schedule__fixture-side {
+.standings-schedule__fixture-avatar {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-width: 0;
+  flex-shrink: 0;
+  line-height: 0;
 }
 
-.standings-schedule__fixture-side--away {
+.standings-schedule__fixture-avatar--away {
   justify-content: flex-end;
 }
 
@@ -14836,6 +14836,16 @@ button.live-xp__player-name:focus-visible {
   text-overflow: ellipsis;
   color: var(--fm-text-strong);
   min-width: 0;
+}
+
+.standings-schedule__fixture-name--home {
+  text-align: right;
+  justify-self: end;
+}
+
+.standings-schedule__fixture-name--away {
+  text-align: left;
+  justify-self: start;
 }
 
 .standings-schedule__fixture-name-full {
@@ -14853,6 +14863,7 @@ button.live-xp__player-name:focus-visible {
 .standings-schedule__fixture-mid {
   display: inline-flex;
   align-items: baseline;
+  justify-content: center;
   gap: 4px;
   font-size: 0.85rem;
   font-weight: 600;
@@ -14863,9 +14874,10 @@ button.live-xp__player-name:focus-visible {
 .standings-schedule__fixture-vs {
   font-weight: 500;
   color: var(--fm-muted);
-  font-size: 0.78rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  line-height: 1;
 }
 
 .standings-schedule__fixture-dash {
@@ -15044,9 +15056,9 @@ button.live-xp__player-name:focus-visible {
 }
 
 .standings-schedule-team__vs {
-  font-size: 0.74rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  font-size: 0.62rem;
+  letter-spacing: 0.01em;
+  text-transform: none;
   font-weight: 500;
 }
 
