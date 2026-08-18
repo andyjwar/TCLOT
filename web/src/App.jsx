@@ -23,6 +23,12 @@ import {
 } from './seasonArchive.js'
 import { getSeasonLabel } from './seasonString.js'
 import { isPreDraftAllowedView, resolveDraftGate } from './draftGate.js'
+import {
+  deriveBrandHeaderStatus,
+  formatMilestoneCountdown,
+  MILESTONE_SECONDS_WITHIN_MS,
+  nextCalendarMilestone,
+} from './brandHeaderStatus.js'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
 const BRAND_HEADER_TOP_N = 8
@@ -56,30 +62,60 @@ function TclotLionIcon({ size = 22 }) {
   )
 }
 
-function BrandHeaderMilestoneTrail({ idleMilestone, nextGw }) {
-  if (idleMilestone?.kind === 'waivers') {
-    return (
-      <>
-        <span>
-          Waivers in <strong>{idleMilestone.countdownLabel}</strong>
-        </span>
-        <span className="brand-header__status-sep">·</span>
-        <span>{idleMilestone.dateTimeLabel}</span>
-      </>
-    )
-  }
-  if (idleMilestone?.kind === 'gameweek') {
-    return (
-      <>
-        <span>
-          GW {nextGw} starts in <strong>{idleMilestone.countdownLabel}</strong>
-        </span>
-        <span className="brand-header__status-sep">·</span>
-        <span>{idleMilestone.dateTimeLabel}</span>
-      </>
-    )
-  }
-  return null
+function BrandHeaderMilestoneTrail({ idleMilestone, nextGw, fallback = null }) {
+  const active = Boolean(
+    idleMilestone?.waiversTime || idleMilestone?.deadlineTime || idleMilestone?.targetIso,
+  )
+  const [now, setNow] = useState(() => new Date())
+  const live =
+    nextCalendarMilestone(
+      {
+        waivers_time: idleMilestone?.waiversTime,
+        deadline_time: idleMilestone?.deadlineTime,
+      },
+      now,
+    ) || idleMilestone
+  const remainingMs = live?.targetIso
+    ? Date.parse(live.targetIso) - now.getTime()
+    : Number.POSITIVE_INFINITY
+  const intervalMs =
+    Number.isFinite(remainingMs) &&
+    remainingMs > 0 &&
+    remainingMs < MILESTONE_SECONDS_WITHIN_MS
+      ? 1000
+      : 60_000
+  useEffect(() => {
+    if (!active || typeof window === 'undefined') return undefined
+    setNow(new Date())
+    const id = window.setInterval(() => setNow(new Date()), intervalMs)
+    return () => window.clearInterval(id)
+  }, [active, intervalMs])
+  const countdownLabel = live?.targetIso
+    ? formatMilestoneCountdown(live.targetIso, now)
+    : live?.countdownLabel
+  if (!live || !countdownLabel) return fallback
+
+  const phrase =
+    live.kind === 'waivers'
+      ? 'Waivers'
+      : live.kind === 'gameweek'
+        ? `GW ${nextGw} starts`
+        : null
+  if (!phrase) return fallback
+
+  return (
+    <>
+      <span className="visually-hidden">
+        {phrase} {live.dateTimeLabel}
+      </span>
+      <span className="brand-header__status-clock" aria-hidden="true">
+        {phrase} in{' '}
+        <strong className="brand-header__status-mono">{countdownLabel}</strong>
+        {' - '}
+        {live.dateTimeLabel}
+      </span>
+    </>
+  )
 }
 
 /** Renders the status strip body inside `.brand-header__status-strip`. Branches per
@@ -162,7 +198,15 @@ function BrandHeaderStatusBody({ liveStatus }) {
         </span>
         <span className="brand-header__status-sep">·</span>
         {idleMilestone ? (
-          <BrandHeaderMilestoneTrail idleMilestone={idleMilestone} nextGw={nextGw} />
+          <BrandHeaderMilestoneTrail
+            idleMilestone={idleMilestone}
+            nextGw={nextGw}
+            fallback={
+              <span>
+                GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
+              </span>
+            }
+          />
         ) : (
           <span>
             GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
@@ -178,7 +222,19 @@ function BrandHeaderStatusBody({ liveStatus }) {
       <span className="brand-header__status-strong">Pre-season</span>
       <span className="brand-header__status-sep">·</span>
       {idleMilestone ? (
-        <BrandHeaderMilestoneTrail idleMilestone={idleMilestone} nextGw={nextGw} />
+        <BrandHeaderMilestoneTrail
+          idleMilestone={idleMilestone}
+          nextGw={nextGw}
+          fallback={
+            kickoffLabel ? (
+              <span>{seasonShort} season kicks off {kickoffLabel}</span>
+            ) : (
+              <span>
+                {seasonShort} season starts {nextDeadlineLabel ?? 'soon'}
+              </span>
+            )
+          }
+        />
       ) : kickoffLabel ? (
         <span>{seasonShort} season kicks off {kickoffLabel}</span>
       ) : (
@@ -411,7 +467,6 @@ import {
 import { TeamAvatar } from './TeamAvatar'
 import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
-import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
