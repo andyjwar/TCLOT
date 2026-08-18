@@ -474,7 +474,6 @@ import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverla
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
-import { SeasonPreview } from './SeasonPreview'
 import { SeasonPredictions } from './SeasonPredictions'
 import { WeeklyRecap } from './WeeklyRecap'
 import { ThemeToggle } from './ThemeToggle'
@@ -2564,7 +2563,7 @@ function App() {
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
   const [teamSelectionTab, setTeamSelectionTab] = useState(
-    /** @type {'waivers' | 'trades' | 'draft' | 'preview'} */ ('draft'),
+    /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
   )
   const [movesTabPrimed, setMovesTabPrimed] = useState(false)
   /* FPL Live sub-tab. `null` = no explicit choice yet — the rendered tab then
@@ -3881,19 +3880,6 @@ function App() {
                   >
                     Draft
                   </button>
-                  <button
-                    type="button"
-                    role="tab"
-                    id="tab-team-selection-preview"
-                    aria-selected={teamSelectionTab === 'preview'}
-                    className={
-                      'subnav__tab' +
-                      (teamSelectionTab === 'preview' ? ' subnav__tab--active' : '')
-                    }
-                    onClick={() => setTeamSelectionTab('preview')}
-                  >
-                    Preview
-                  </button>
                 </div>
               </div>
               <div className="subview-panel">
@@ -4043,14 +4029,6 @@ function App() {
             </div>
               )}
 
-              {teamSelectionTab === 'preview' && (
-            <div className="dashboard-stack">
-              <SeasonPreview
-                teamLogoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-            </div>
-              )}
               </div>
             </>
           )}
