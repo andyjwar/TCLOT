@@ -59,7 +59,7 @@ test('isMsfgTeamName — long form, Mr. MSFG, and MSFG', () => {
   assert.equal(isMsfgTeamName(null), false);
 });
 
-test('standingsMobileTeamName — full names, MSFG stays MSFG', () => {
+test('standingsMobileTeamName — full names, MSFG renders as Mordor SFG', () => {
   assert.equal(standingsMobileTeamName('Atlético Bilbo'), 'Atlético Bilbo');
   assert.equal(standingsMobileTeamName('Toronto Gimli'), 'Toronto Gimli');
   assert.equal(standingsMobileTeamName('Hackney Rohirrim'), 'Hackney Rohirrim');
@@ -68,10 +68,10 @@ test('standingsMobileTeamName — full names, MSFG stays MSFG', () => {
   assert.equal(standingsMobileTeamName('Seoul Shire'), 'Seoul Shire');
   assert.equal(standingsMobileTeamName('Brampton Balrogs'), 'Brampton Balrogs');
   assert.equal(standingsMobileTeamName('Crouch End Oashisu'), 'Crouch End Oashisu');
-  assert.equal(standingsMobileTeamName('Mr Mordorlicious School for Girls'), 'MSFG');
-  assert.equal(standingsMobileTeamName('Mordor S.F.G'), 'MSFG');
-  assert.equal(standingsMobileTeamName('Mr. MSFG'), 'MSFG');
-  assert.equal(standingsMobileTeamName('MSFG'), 'MSFG');
+  assert.equal(standingsMobileTeamName('Mr Mordorlicious School for Girls'), 'Mordor SFG');
+  assert.equal(standingsMobileTeamName('Mordor S.F.G'), 'Mordor SFG');
+  assert.equal(standingsMobileTeamName('Mr. MSFG'), 'Mordor SFG');
+  assert.equal(standingsMobileTeamName('MSFG'), 'Mordor SFG');
   assert.equal(standingsMobileTeamName(null), '');
   assert.equal(standingsMobileTeamName('  '), '');
 });
