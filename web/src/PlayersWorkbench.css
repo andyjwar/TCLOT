@@ -1887,8 +1887,11 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   }
 
   .players-wire-tile__name {
-    font-size: 13px;
-    font-weight: 700;
+    /* Match the Draft round-list player name (.draft-rlist__name):
+     * 0.9rem / 600 — the old 13px / 700 read heavier than the rest of
+     * the app's player names. */
+    font-size: 0.9rem;
+    font-weight: 600;
     color: var(--text-strong);
     line-height: 1.25;
     word-break: break-word;
