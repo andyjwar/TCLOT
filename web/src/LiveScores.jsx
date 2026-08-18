@@ -1110,7 +1110,14 @@ export function LiveScores({
       }
       const liveRank = currentLiveRank;
       const ordinalLive = i + 1;
-      const rankMove = (row.rank ?? 999) - ordinalLive;
+      /** No ↑/↓ until FPL has assigned season ranks (pre-season they are
+       * null — the old `?? 999` fallback flagged every row as a huge
+       * riser) and this GW has actually kicked off. */
+      const seasonRank = Number(row.rank);
+      const rankMove =
+        gwHasStarted && Number.isFinite(seasonRank) && seasonRank > 0
+          ? seasonRank - ordinalLive
+          : 0;
       return { ...row, liveRank, ordinalLive, rankMove };
     });
   }, [
