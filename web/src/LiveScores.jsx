@@ -32,7 +32,7 @@ import {
   managerSurnameFromFullName,
 } from './championOfRecord.js';
 import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
-import { firstWord } from './teamNameUtils.js';
+import { standingsMobileTeamName } from './teamNameUtils.js';
 import { englishOrdinal } from './playerContributionEvents.js';
 import {
   computeManagerForm,
@@ -1407,17 +1407,17 @@ export function LiveScores({
               const homeName = teamNameForEntry(teams, homeId);
               const awayName = teamNameForEntry(teams, awayId);
               /**
-               * Mobile (≤767px) collapses team names to their first word so
-               * the H2H fixture row fits a 390px viewport without
-               * `text-overflow: ellipsis` chewing mid-word; matches the
-               * Standings hero+table treatment via the shared
-               * {@link firstWord} helper.
+               * Mobile (≤767px) tries the full club name (MSFG renders as
+               * `Mordor SFG` via {@link standingsMobileTeamName}) — the
+               * row's `FittedTeamName` measures the slot and falls back to
+               * the curated short label only when the full name would
+               * overflow, so nothing ever gets a mid-word ellipsis.
                */
               const homeDisplayName = mobileNarrowViewport
-                ? firstWord(homeName)
+                ? standingsMobileTeamName(homeName)
                 : homeName;
               const awayDisplayName = mobileNarrowViewport
-                ? firstWord(awayName)
+                ? standingsMobileTeamName(awayName)
                 : awayName;
               const homeSquad = squadByLeagueEntry.get(homeId);
               const awaySquad = squadByLeagueEntry.get(awayId);

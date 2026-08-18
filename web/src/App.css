@@ -12413,8 +12413,11 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   white-space: nowrap;
   max-width: 100%;
 }
+/* Mobile face-off names match the Standings table treatment
+ * (0.9rem / regular weight) — same font as club names elsewhere. */
 .live-banner-row--compact .live-banner-row__name {
-  font-size: 0.92rem;
+  font-size: 0.9rem;
+  font-weight: 400;
 }
 /* Option C winner indication: a soft purple pill behind the winning score
    (see `__score-half--winner`); team names stay equal weight — no name tint,
