@@ -56,6 +56,32 @@ function TclotLionIcon({ size = 22 }) {
   )
 }
 
+function BrandHeaderMilestoneTrail({ idleMilestone, nextGw }) {
+  if (idleMilestone?.kind === 'waivers') {
+    return (
+      <>
+        <span>
+          Waivers in <strong>{idleMilestone.countdownLabel}</strong>
+        </span>
+        <span className="brand-header__status-sep">·</span>
+        <span>{idleMilestone.dateTimeLabel}</span>
+      </>
+    )
+  }
+  if (idleMilestone?.kind === 'gameweek') {
+    return (
+      <>
+        <span>
+          GW {nextGw} starts in <strong>{idleMilestone.countdownLabel}</strong>
+        </span>
+        <span className="brand-header__status-sep">·</span>
+        <span>{idleMilestone.dateTimeLabel}</span>
+      </>
+    )
+  }
+  return null
+}
+
 /** Renders the status strip body inside `.brand-header__status-strip`. Branches per
  * `liveStatus.status` ('live' | 'idle' | 'pre-season'). Returns `null` when state is
  * unknown (bootstrap not loaded yet) so the strip collapses rather than flashing
@@ -135,22 +161,8 @@ function BrandHeaderStatusBody({ liveStatus }) {
           GW {lastFinishedGw} complete
         </span>
         <span className="brand-header__status-sep">·</span>
-        {idleMilestone?.kind === 'waivers' ? (
-          <>
-            <span>
-              Waivers in <strong>{idleMilestone.countdownLabel}</strong>
-            </span>
-            <span className="brand-header__status-sep">·</span>
-            <span>{idleMilestone.dateTimeLabel}</span>
-          </>
-        ) : idleMilestone?.kind === 'gameweek' ? (
-          <>
-            <span>
-              GW {nextGw} starts in <strong>{idleMilestone.countdownLabel}</strong>
-            </span>
-            <span className="brand-header__status-sep">·</span>
-            <span>{idleMilestone.dateTimeLabel}</span>
-          </>
+        {idleMilestone ? (
+          <BrandHeaderMilestoneTrail idleMilestone={idleMilestone} nextGw={nextGw} />
         ) : (
           <span>
             GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
@@ -165,7 +177,9 @@ function BrandHeaderStatusBody({ liveStatus }) {
     <>
       <span className="brand-header__status-strong">Pre-season</span>
       <span className="brand-header__status-sep">·</span>
-      {kickoffLabel ? (
+      {idleMilestone ? (
+        <BrandHeaderMilestoneTrail idleMilestone={idleMilestone} nextGw={nextGw} />
+      ) : kickoffLabel ? (
         <span>{seasonShort} season kicks off {kickoffLabel}</span>
       ) : (
         <span>

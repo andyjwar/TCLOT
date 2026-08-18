@@ -5,6 +5,7 @@ import {
   formatDeadlineDate,
   formatMilestoneCountdown,
   formatMilestoneDateTime,
+  nextCalendarMilestone,
   seasonShortLabel,
 } from './brandHeaderStatus.js'
 
@@ -63,7 +64,11 @@ test('deriveBrandHeaderStatus — live when current event is unfinished and dead
 test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and next deadline future', () => {
   const out = deriveBrandHeaderStatus({
     currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
-    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    nextEvent: {
+      id: 29,
+      waivers_time: '2026-03-14T13:30:00Z',
+      deadline_time: '2026-03-15T13:30:00Z',
+    },
     lastFinishedEvent: { id: 28 },
     season: '2025/26',
     now: new Date('2026-03-10T10:00:00Z'),
@@ -83,7 +88,11 @@ test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and n
 test('deriveBrandHeaderStatus — after waivers, idle milestone advances to GW start', () => {
   const out = deriveBrandHeaderStatus({
     currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
-    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    nextEvent: {
+      id: 29,
+      waivers_time: '2026-03-14T13:30:00Z',
+      deadline_time: '2026-03-15T13:30:00Z',
+    },
     lastFinishedEvent: { id: 28 },
     season: '2025/26',
     now: new Date('2026-03-14T14:00:00Z'),
@@ -105,6 +114,24 @@ test('deriveBrandHeaderStatus — pre-season when no event has finished', () => 
   assert.equal(out.nextGw, 1)
   assert.equal(out.seasonShort, '26/27')
   assert.equal(out.nextDeadlineLabel, 'Aug 14')
+  assert.equal(out.idleMilestone.kind, 'gameweek')
+})
+
+test('deriveBrandHeaderStatus — pre-season uses FPL waivers_time before the first run', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: null,
+    nextEvent: {
+      id: 1,
+      waivers_time: '2026-08-20T17:30:00Z',
+      deadline_time: '2026-08-21T17:30:00Z',
+    },
+    lastFinishedEvent: null,
+    season: '2026/27',
+    now: new Date('2026-08-18T01:00:00Z'),
+  })
+  assert.equal(out.status, 'pre-season')
+  assert.equal(out.idleMilestone.kind, 'waivers')
+  assert.equal(out.idleMilestone.countdownLabel, '2d 16h')
 })
 
 test('deriveBrandHeaderStatus — unknown when bootstrap not loaded yet', () => {
@@ -416,6 +443,34 @@ test('deriveBrandHeaderStatus — kickoffLabel null on post-season idle (no next
   })
   assert.equal(out.status, 'idle')
   assert.equal(out.kickoffLabel, null)
+})
+
+test('nextCalendarMilestone — prefers official waivers_time over GW deadline', () => {
+  const now = new Date('2026-08-18T01:00:00Z')
+  const out = nextCalendarMilestone(
+    {
+      id: 1,
+      waivers_time: '2026-08-20T17:30:00Z',
+      deadline_time: '2026-08-21T17:30:00Z',
+    },
+    now,
+  )
+  assert.equal(out.kind, 'waivers')
+  assert.equal(out.countdownLabel, '2d 16h')
+})
+
+test('nextCalendarMilestone — advances to GW deadline after waivers_time', () => {
+  const now = new Date('2026-08-20T18:00:00Z')
+  const out = nextCalendarMilestone(
+    {
+      id: 1,
+      waivers_time: '2026-08-20T17:30:00Z',
+      deadline_time: '2026-08-21T17:30:00Z',
+    },
+    now,
+  )
+  assert.equal(out.kind, 'gameweek')
+  assert.equal(out.countdownLabel, '23h 30m')
 })
 
 test('deriveBrandHeaderStatus — kickoffLabel null on live state (defensive)', () => {

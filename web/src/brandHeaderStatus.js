@@ -111,6 +111,43 @@ function finitePositiveOrNull(v) {
  * spec for PR #5h (absorb live pill into brand header). */
 const KICKOFF_LABEL_WINDOW_MS = 24 * 60 * 60 * 1000
 
+function validInstant(value) {
+  if (value == null) return null
+  const d = value instanceof Date ? value : new Date(value)
+  return Number.isNaN(d.getTime()) ? null : d
+}
+
+/**
+ * Next calendar beat for the status strip: FPL Draft `waivers_time` while it
+ * is still in the future, then the gameweek `deadline_time`.
+ *
+ * @param {object | null | undefined} nextEvent
+ * @param {Date} now
+ * @returns {{
+ *   kind: 'waivers' | 'gameweek',
+ *   countdownLabel: string,
+ *   dateTimeLabel: string,
+ * } | null}
+ */
+export function nextCalendarMilestone(nextEvent, now = new Date()) {
+  const waivers = validInstant(nextEvent?.waivers_time)
+  const deadline = validInstant(nextEvent?.deadline_time)
+  let kind = null
+  let target = null
+  if (waivers && waivers.getTime() > now.getTime()) {
+    kind = 'waivers'
+    target = waivers
+  } else if (deadline && deadline.getTime() > now.getTime()) {
+    kind = 'gameweek'
+    target = deadline
+  }
+  if (!kind || !target) return null
+  const countdownLabel = formatMilestoneCountdown(target, now)
+  const dateTimeLabel = formatMilestoneDateTime(target)
+  if (!countdownLabel || !dateTimeLabel) return null
+  return { kind, countdownLabel, dateTimeLabel }
+}
+
 /**
  * `Sat 16:30` label when the next deadline is within the next 24h, null
  * otherwise. Past deadlines also return null so the strip never surfaces
@@ -142,13 +179,14 @@ function kickoffLabelWithin24h(deadlineIso, now) {
  *           to `● GW {N} · Live` (pre-kickoff, between fixture windows, or fetch
  *           failure). Optional `finishedFixtureCount` / `totalFixtureCount` drive
  *           the `progressLabel` ("2 of 10 complete") added in PR #5h.
- * - `idle`: `events.current` is finished (between GWs). Before the waiver
- *           cutoff (24h before the next GW deadline), the next milestone is
- *           `Waivers in {countdown} · {dateTime}`. After that cutoff, it
- *           advances to `GW {next} starts in {countdown} · {dateTime}`.
- * - `pre-season`: no event has finished yet. Copy: `Pre-season · {seasonShort}
- *           season starts {date}`. Same 24h kickoff window swap as `idle`
- *           (`{seasonShort} season kicks off {kickoffLabel}`).
+ * - `idle`: `events.current` is finished (between GWs). Until FPL's
+ *           `waivers_time`, the next milestone is `Waivers in {countdown} ·
+ *           {dateTime}`. After that cutoff, it advances to `GW {next} starts
+ *           in {countdown} · {dateTime}`.
+ * - `pre-season`: no event has finished yet. Same waiver/GW milestone as
+ *           `idle`, prefixed with `Pre-season`. If no future `waivers_time`
+ *           / deadline is available, fall back to `{seasonShort} season
+ *           starts {date}` (or the 24h kickoff swap).
  *
  * @param {{
  *   currentEvent?: object | null,
@@ -249,31 +287,6 @@ export function deriveBrandHeaderStatus({
   }
 
   if (lastFinishedEvent) {
-    const nextDeadline = nextEvent?.deadline_time
-      ? new Date(nextEvent.deadline_time)
-      : null
-    const nextDeadlineValid =
-      nextDeadline && !Number.isNaN(nextDeadline.getTime())
-    const waiverDeadline = nextDeadlineValid
-      ? new Date(nextDeadline.getTime() - KICKOFF_LABEL_WINDOW_MS)
-      : null
-    const waiverPending =
-      waiverDeadline && waiverDeadline.getTime() > now.getTime()
-    const milestoneTarget = waiverPending ? waiverDeadline : nextDeadline
-    const countdownLabel = milestoneTarget
-      ? formatMilestoneCountdown(milestoneTarget, now)
-      : null
-    const dateTimeLabel = milestoneTarget
-      ? formatMilestoneDateTime(milestoneTarget)
-      : null
-    const idleMilestone =
-      countdownLabel && dateTimeLabel
-        ? {
-            kind: waiverPending ? 'waivers' : 'gameweek',
-            countdownLabel,
-            dateTimeLabel,
-          }
-        : null
     return {
       status: 'idle',
       liveGw: null,
@@ -285,7 +298,7 @@ export function deriveBrandHeaderStatus({
       minute: null,
       progressLabel: null,
       kickoffLabel: kickoffLabelWithin24h(nextEvent?.deadline_time, now),
-      idleMilestone,
+      idleMilestone: nextCalendarMilestone(nextEvent, now),
     }
   }
 
@@ -300,6 +313,6 @@ export function deriveBrandHeaderStatus({
     minute: null,
     progressLabel: null,
     kickoffLabel: kickoffLabelWithin24h(nextEvent?.deadline_time, now),
-    idleMilestone: null,
+    idleMilestone: nextCalendarMilestone(nextEvent, now),
   }
 }

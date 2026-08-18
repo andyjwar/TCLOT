@@ -24,7 +24,7 @@ const STATES = [
     gw: 1,
     kind: 'pre',
     header: 'Pre-season',
-    headerTail: '26/27 season starts Aug 21',
+    headerTail: 'Waivers in 2d 16h · Aug 20 at 18:30',
     mobileLabel: '26/27',
     progress: '0 / 10',
     liveCount: 0,
