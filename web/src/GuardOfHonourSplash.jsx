@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { sortStartingXIByPosition } from './liveScoresDerivations.js';
 import { REIGNING_CHAMPION_MANAGER_SURNAME } from './championOfRecord.js';
 import './GuardOfHonourSplash.css';
@@ -55,9 +55,19 @@ const SESSION_PLAY_CAP = 3;
  * tableau (blue in formation, red lined up on the left, no streaker).
  *
  * Used in production when GW === 1 of a new season; previewable any
- * time via the `?gohSplash=1` URL flag. The visual is rendered as a
- * single inline SVG so it scales cleanly without a PNG asset and so we
- * can data-drive labels (real surnames + shirt numbers) from squad
+ * time via the `?gohSplash=1` URL flag. The splash stays expanded
+ * through the end of the GW1 deadline day (opening Friday) and is
+ * auto-collapsed to {@link GuardOfHonourCollapsedStrip} from the next
+ * local midnight — see `championSplashAutoCollapsed` in
+ * `championOfRecord.js` and the wiring in `LiveScores.jsx`. The ×
+ * control closes the splash — exiting fullscreen first when active,
+ * then collapsing (rather than fully dismissing) so the strip stays
+ * available to re-expand. A ⤢ control (hidden where the Fullscreen API
+ * is unavailable) toggles the whole container fullscreen, letterboxed
+ * via the `.goh-splash:fullscreen` CSS. The visual is rendered as a
+ * single inline
+ * SVG so it scales cleanly without a PNG asset and so we can
+ * data-drive labels (real surnames + shirt numbers) from squad
  * payloads.
  *
  * @param {{
@@ -66,7 +76,7 @@ const SESSION_PLAY_CAP = 3;
  *   championTeamName?: string,
  *   opponentTeamName?: string,
  *   opponentManagerSurname?: string | null,
- *   onDismiss?: () => void,
+ *   onCollapse?: () => void,
  * }} props
  */
 export function GuardOfHonourSplash({
@@ -75,7 +85,7 @@ export function GuardOfHonourSplash({
   championTeamName,
   opponentTeamName,
   opponentManagerSurname,
-  onDismiss,
+  onCollapse,
 }) {
   /**
    * Both XIs are sorted GK → DEF → MID → FWD so the dot ordering is
@@ -120,6 +130,45 @@ export function GuardOfHonourSplash({
   const handleReplay = () => setPlayId((id) => id + 1);
 
   /**
+   * Fullscreen support — the whole `.goh-splash` container (SVG +
+   * overlay controls) goes fullscreen so the × / ↻ / ⛶ buttons stay
+   * usable while the cinematic fills the screen. `isFullscreen` mirrors
+   * the document state via the `fullscreenchange` event so the toggle
+   * button's icon/label stay honest however the user exits (button,
+   * Esc, browser chrome). The button is omitted entirely where the
+   * Fullscreen API is unavailable (e.g. iPhone Safari only exposes it
+   * for <video>), so no dead control ships.
+   */
+  const containerRef = useRef(null);
+  const fullscreenEnabled =
+    typeof document !== 'undefined' && Boolean(document.fullscreenEnabled);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+    const onChange = () => {
+      setIsFullscreen(document.fullscreenElement === containerRef.current);
+    };
+    document.addEventListener('fullscreenchange', onChange);
+    return () => document.removeEventListener('fullscreenchange', onChange);
+  }, []);
+  const handleFullscreenToggle = () => {
+    if (typeof document === 'undefined') return;
+    if (document.fullscreenElement) {
+      void document.exitFullscreen?.();
+    } else {
+      void containerRef.current?.requestFullscreen?.();
+    }
+  };
+  /** × always fully "closes": leave fullscreen first (when active), then
+   * collapse to the strip — one press does both. */
+  const handleClose = () => {
+    if (typeof document !== 'undefined' && document.fullscreenElement) {
+      void document.exitFullscreen?.();
+    }
+    onCollapse?.();
+  };
+
+  /**
    * If either side has fewer than 11 starters (data not yet loaded, blank
    * GW, etc.) we render nothing rather than show a half-formed tunnel.
    */
@@ -136,6 +185,7 @@ export function GuardOfHonourSplash({
    */
   return (
     <div
+      ref={containerRef}
       className={`goh-splash${isPlaying ? ' goh-splash--playing' : ''}`}
       role="region"
       aria-label={`Guard of honour for ${championTeamName ?? 'the reigning champion'}`}
@@ -143,8 +193,9 @@ export function GuardOfHonourSplash({
       <button
         type="button"
         className="goh-splash__dismiss"
-        onClick={onDismiss}
-        aria-label="Dismiss guard of honour"
+        onClick={handleClose}
+        aria-label="Close guard of honour"
+        title="Close"
       >
         <span className="goh-splash__dismiss-x" aria-hidden="true">×</span>
       </button>
@@ -157,6 +208,24 @@ export function GuardOfHonourSplash({
       >
         <span className="goh-splash__replay-icon" aria-hidden="true">↻</span>
       </button>
+
+      {fullscreenEnabled ? (
+        <button
+          type="button"
+          className="goh-splash__fullscreen"
+          onClick={handleFullscreenToggle}
+          aria-label={
+            isFullscreen
+              ? 'Exit fullscreen'
+              : 'Watch guard of honour fullscreen'
+          }
+          title={isFullscreen ? 'Exit fullscreen' : 'Fullscreen'}
+        >
+          <span className="goh-splash__fullscreen-icon" aria-hidden="true">
+            {isFullscreen ? '⤡' : '⤢'}
+          </span>
+        </button>
+      ) : null}
 
       <svg
         key={playId}
@@ -646,6 +715,52 @@ export function GuardOfHonourSplash({
 
       </svg>
     </div>
+  );
+}
+
+/**
+ * Slim collapsed state of the Guard of Honour section — a single-row
+ * strip in the same slot the full splash occupies (above the live
+ * fixtures). Rendered INSTEAD of the splash from the day after the GW1
+ * deadline day (Saturday / Sunday of the opening gameweek) so the
+ * ceremony gets out of the way once matches are on, and whenever the
+ * user collapses the splash manually via its × control.
+ *
+ * The whole strip is one button: activating it expands back to the
+ * full splash (which remounts, so the entrance cinematic re-runs if
+ * the per-tab session play budget allows — see SESSION_PLAY_CAP).
+ *
+ * Copy: "Guard of Honour for the {titleTeamName}" — the champion is
+ * honoured by the name the title was WON under (Crouch End Oashisu),
+ * not the current-season rebrand; see
+ * `REIGNING_CHAMPION_TITLE_TEAM_NAME` in `championOfRecord.js`.
+ *
+ * @param {{ titleTeamName?: string, onExpand?: () => void }} props
+ */
+export function GuardOfHonourCollapsedStrip({ titleTeamName, onExpand }) {
+  const team = titleTeamName ?? 'the reigning champion';
+  return (
+    <button
+      type="button"
+      className="goh-collapsed-strip"
+      onClick={onExpand}
+      aria-expanded="false"
+      aria-label={`Expand guard of honour for the ${team}`}
+    >
+      <svg
+        className="goh-collapsed-strip__crown"
+        viewBox="-32 -18 64 38"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <CrownSvg cx={0} cy={0} scale={0.62} opacity={1} fill="#ffd166" />
+      </svg>
+      <span className="goh-collapsed-strip__title">Guard of Honour</span>
+      <span className="goh-collapsed-strip__caption">for the {team}</span>
+      <span className="goh-collapsed-strip__chevron" aria-hidden="true">
+        ▾
+      </span>
+    </button>
   );
 }
 
