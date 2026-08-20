@@ -27,17 +27,17 @@ describe('resolveVapidPublicKey', () => {
 
 describe('writePushPrefs', () => {
   it('merges partial updates', () => {
-    const next = writePushPrefs({ liveKickoff: false })
-    assert.equal(next.liveKickoff, false)
-    assert.equal(next.gwDeadline, DEFAULT_PUSH_PREFS.gwDeadline)
+    const next = writePushPrefs({ liveXi: false })
+    assert.equal(next.liveXi, false)
+    assert.equal(next.deadlineReminders, DEFAULT_PUSH_PREFS.deadlineReminders)
   })
 })
 
 describe('urlBase64ToUint8Array', () => {
   it('round-trips a short key', () => {
     const original = new Uint8Array([1, 2, 3, 4])
-    const b64 = Buffer.from(original).toString('base64url')
-    const out = urlBase64ToUint8Array(b64)
+    // base64url of [1,2,3,4] is 'AQIDBA' (no padding, url-safe alphabet)
+    const out = urlBase64ToUint8Array('AQIDBA')
     assert.deepEqual(Array.from(out), Array.from(original))
   })
 })

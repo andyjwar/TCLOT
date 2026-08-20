@@ -9,7 +9,7 @@ import { CompactSelectPill } from './CompactSelectPill.jsx'
  *   capability: { supported: boolean, configured: boolean, apiBase: string },
  *   enabled: boolean,
  *   entryId: number | null,
- *   prefs: { gwDeadline: boolean, waiverResults: boolean, liveKickoff: boolean },
+ *   prefs: { deadlineReminders: boolean, waiverResults: boolean, liveXi: boolean },
  *   status: string,
  *   error: string,
  *   setEnabled: (next: boolean) => Promise<void>,
@@ -80,7 +80,7 @@ export function PushNotificationSettings({
               value={entryId == null ? '' : String(entryId)}
               onChange={(next) => setEntryId(next === '' ? null : next)}
               options={[
-                { value: '', label: 'All league alerts' },
+                { value: '', label: 'League-wide only' },
                 ...teamOptions,
               ]}
             />
@@ -91,10 +91,10 @@ export function PushNotificationSettings({
             <label className="settings-check">
               <input
                 type="checkbox"
-                checked={prefs.gwDeadline}
-                onChange={(e) => setPref('gwDeadline', e.target.checked)}
+                checked={prefs.deadlineReminders}
+                onChange={(e) => setPref('deadlineReminders', e.target.checked)}
               />
-              <span>GW deadline reminders</span>
+              <span>Deadline reminders (waivers &amp; lineup)</span>
             </label>
             <label className="settings-check">
               <input
@@ -107,11 +107,16 @@ export function PushNotificationSettings({
             <label className="settings-check">
               <input
                 type="checkbox"
-                checked={prefs.liveKickoff}
-                onChange={(e) => setPref('liveKickoff', e.target.checked)}
+                checked={prefs.liveXi}
+                onChange={(e) => setPref('liveXi', e.target.checked)}
               />
-              <span>GW live kickoff</span>
+              <span>Your live XI (goals, assists, defcon)</span>
             </label>
+            {prefs.liveXi && entryId == null ? (
+              <p className="settings-row__hint">
+                Pick <strong>My team</strong> above to receive live XI alerts.
+              </p>
+            ) : null}
           </fieldset>
         </>
       ) : null}

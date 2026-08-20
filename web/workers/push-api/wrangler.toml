@@ -12,8 +12,10 @@ binding = "SUBSCRIPTIONS"
 id = "00000000000000000000000000000000"
 preview_id = "00000000000000000000000000000000"
 
+# Every 5 min: deadline/waiver checks are deduped; live XI polls draft live
+# stats during matches. Cloudflare free plan allows down to 1-min crons.
 [triggers]
-crons = ["*/15 * * * *"]
+crons = ["*/5 * * * *"]
 
 # Set via `wrangler secret put`:
 #   VAPID_SUBJECT            — mailto:you@example.com

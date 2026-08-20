@@ -6,12 +6,12 @@ export const PUSH_ENABLED_STORAGE_KEY = 'tclot:push:enabled'
 export const PUSH_ENTRY_ID_STORAGE_KEY = 'tclot:push:entry-id'
 export const PUSH_PREFS_STORAGE_KEY = 'tclot:push:prefs'
 
-/** @typedef {{ gwDeadline: boolean, waiverResults: boolean, liveKickoff: boolean }} PushPrefs */
+/** @typedef {{ deadlineReminders: boolean, waiverResults: boolean, liveXi: boolean }} PushPrefs */
 
 export const DEFAULT_PUSH_PREFS = /** @type {PushPrefs} */ ({
-  gwDeadline: true,
+  deadlineReminders: true,
   waiverResults: true,
-  liveKickoff: true,
+  liveXi: true,
 })
 
 /** @returns {boolean} */
@@ -67,9 +67,12 @@ export function readPushPrefs() {
     if (!raw) return { ...DEFAULT_PUSH_PREFS }
     const parsed = JSON.parse(raw)
     return {
-      gwDeadline: parsed?.gwDeadline !== false,
+      // Accept legacy keys (gwDeadline / liveKickoff) so an early opt-in
+      // doesn't lose its preference when the toggle set changed.
+      deadlineReminders:
+        parsed?.deadlineReminders !== false && parsed?.gwDeadline !== false,
       waiverResults: parsed?.waiverResults !== false,
-      liveKickoff: parsed?.liveKickoff !== false,
+      liveXi: parsed?.liveXi !== false,
     }
   } catch {
     return { ...DEFAULT_PUSH_PREFS }

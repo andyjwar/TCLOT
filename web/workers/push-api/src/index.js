@@ -4,11 +4,12 @@ import {
   saveSubscription,
 } from './subscriptions.js'
 import { runInternalNotification, runScheduledNotifications } from './cron.js'
+import { runLiveXiNotifications } from './liveXi.js'
 
 const DEFAULT_PREFS = {
-  gwDeadline: true,
+  deadlineReminders: true,
   waiverResults: true,
-  liveKickoff: true,
+  liveXi: true,
 }
 
 function corsHeaders(env, request) {
@@ -61,7 +62,7 @@ function normalizeSubscription(body) {
   }
 }
 
-async function handleFetch(request, env, ctx) {
+async function handleFetch(request, env) {
   const ch = corsHeaders(env, request)
   const url = new URL(request.url)
 
@@ -135,8 +136,8 @@ async function handleFetch(request, env, ctx) {
 }
 
 export default {
-  fetch(request, env, ctx) {
-    return handleFetch(request, env, ctx)
+  fetch(request, env) {
+    return handleFetch(request, env)
   },
   async scheduled(event, env, ctx) {
     ctx.waitUntil(
@@ -144,6 +145,7 @@ export default {
         const subs = await listSubscriptions(env.SUBSCRIPTIONS)
         if (!subs.length) return
         await runScheduledNotifications(env, env.SUBSCRIPTIONS, subs)
+        await runLiveXiNotifications(env, env.SUBSCRIPTIONS, subs)
       })(),
     )
   },

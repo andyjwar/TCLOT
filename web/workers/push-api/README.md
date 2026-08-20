@@ -65,13 +65,22 @@ npm run generate-vapid
 
 ## Scheduled alerts
 
-Cron runs every 15 minutes and sends at most once per event:
+Cron runs every 5 minutes. There are three user-facing alert types (matching the Settings toggles):
 
-- **GW deadline** — 24h and 1h before the next/current GW `deadline_time`
-- **GW live** — when the current GW is live (after deadline)
-- **Waiver processed** — within ~30 minutes after `waivers_time`
+- **Deadline reminders** (`deadlineReminders`) — 24h and 1h before both the GW **waiver deadline** (`waivers_time`) and the **lineup deadline** (`deadline_time`). Sent at most once per bucket per GW.
+- **Waiver results** (`waiverResults`) — within ~3h after `waivers_time`, once per GW.
+- **Your live XI** (`liveXi`) — goals, assists, and defensive-contribution (+2) moments for players in the subscriber's **starting XI** (draft picks 1–11) during a live GW.
 
-Users choose alert types in Settings; all subscribers can optionally tag a **My team** `league_entry` id for future targeted alerts.
+### Live XI engine (`src/liveXi.js`)
+
+During a live GW the worker:
+
+1. Reads draft `bootstrap-static` for element metadata (`web_name`, `element_type`).
+2. Fetches each live-XI subscriber's GW picks (`entry/{entryId}/event/{gw}`), keeping starters (`position <= 11`).
+3. Fetches `event/{gw}/live` and diffs `goals_scored`, `assists`, and defcon points against the previous poll (`live:totals:{gw}` in KV).
+4. Sends each new event to the manager(s) who start that player, deduped by `${gw}:${el}:{kind}:tot{n}`.
+
+The first poll of a GW only stores a baseline (no backfill flood). Live XI requires the subscriber to pick **My team** in Settings (stored as the draft `entry_id`).
 
 ## CI waiver ping (optional)
 
@@ -94,4 +103,5 @@ Vite proxies `/__push/*` → your worker when `VITE_PUSH_API_URL` is set (see `w
 
 - Requires HTTPS and a browser that supports Push + service workers (Chrome, Firefox, Edge; Safari 16.4+ on macOS/iOS with installed PWA).
 - Notifications are opt-in from Settings; no auth — managers pick their team from a dropdown.
-- Worker free tier: cron + KV writes are modest for an 8-manager league.
+- Live XI polls the draft API on the cron cadence (every 5 min), so scoring alerts land within a few minutes, not instantly.
+- Worker free tier: cron + KV reads/writes are modest for an 8-manager league.

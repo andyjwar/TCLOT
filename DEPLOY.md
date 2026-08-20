@@ -71,7 +71,7 @@ Optional: in `web/workers/fpl-proxy/wrangler.toml`, set `[vars] ALLOW_ORIGIN = "
 
 ## 1c. Web push notifications (optional)
 
-Managers can opt in from **Settings → Push notifications** once a push worker is deployed.
+Managers can opt in from **Settings → Push notifications** once a push worker is deployed. Alert types: **Deadline reminders** (waivers + lineup, 24h/1h), **Waiver results**, and **Your live XI** (goals/assists/defcon for your starting XI — requires picking **My team**).
 
 1. Deploy the push worker (see **`web/workers/push-api/README.md`**):
    - Create KV namespace, set VAPID + `PUSH_INTERNAL_SECRET` secrets, `npm run deploy`.

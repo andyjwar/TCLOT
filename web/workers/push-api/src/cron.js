@@ -1,5 +1,6 @@
 /**
- * Scheduled + internal notification triggers.
+ * Scheduled notification triggers (deadlines + waiver results).
+ * Live XI scoring alerts live in ./liveXi.js.
  * Pure helpers are exported for unit tests.
  */
 
@@ -9,12 +10,10 @@ const DRAFT_BOOTSTRAP = 'https://draft.premierleague.com/api/bootstrap-static'
 
 /**
  * @param {object[]} eventList bootstrap-static events.data
- * @param {number} nowMs
  * @returns {GwEvent[]}
  */
-export function parseGwEvents(eventList, nowMs) {
+export function parseGwEvents(eventList) {
   if (!Array.isArray(eventList)) return []
-  const now = Number(nowMs)
   return eventList
     .map((e) => {
       const id = Number(e?.id)
@@ -36,68 +35,84 @@ export function parseGwEvents(eventList, nowMs) {
 }
 
 /**
+ * The event whose deadlines are next relevant (next GW, else current unfinished, else first unfinished).
  * @param {GwEvent[]} events
- * @param {number} nowMs
- * @returns {{ type: string, gw: number, title: string, body: string, pref: string, dedupKey: string } | null}
+ * @returns {GwEvent | null}
  */
-export function pickDeadlineReminder(events, nowMs) {
-  const now = Number(nowMs)
-  const target =
+export function upcomingEvent(events) {
+  return (
     events.find((e) => e.isNext && !e.finished) ??
     events.find((e) => e.isCurrent && !e.finished) ??
-    events.find((e) => !e.finished)
+    events.find((e) => !e.finished) ??
+    null
+  )
+}
 
-  if (!target) return null
+const ONE_HOUR_MS = 60 * 60 * 1000
+const ONE_DAY_MS = 24 * ONE_HOUR_MS
 
-  const msUntil = target.deadlineMs - now
-  const oneHour = 60 * 60 * 1000
-  const twentyFourHours = 24 * oneHour
-
-  if (msUntil > 0 && msUntil <= oneHour) {
-    return {
-      type: 'gw_deadline_1h',
-      gw: target.id,
-      pref: 'gwDeadline',
-      dedupKey: `gw_deadline_1h:${target.id}`,
-      title: `GW${target.id} deadline in 1 hour`,
-      body: 'Set your draft lineup before the Premier League deadline.',
-    }
-  }
-
-  if (msUntil > oneHour && msUntil <= twentyFourHours) {
-    return {
-      type: 'gw_deadline_24h',
-      gw: target.id,
-      pref: 'gwDeadline',
-      dedupKey: `gw_deadline_24h:${target.id}`,
-      title: `GW${target.id} deadline tomorrow`,
-      body: 'Lineup lock is within 24 hours — check Moves and Live before the deadline.',
-    }
-  }
-
+/**
+ * @param {number} msUntil
+ * @returns {'1h' | '24h' | null}
+ */
+function reminderBucket(msUntil) {
+  if (msUntil > 0 && msUntil <= ONE_HOUR_MS) return '1h'
+  if (msUntil > ONE_HOUR_MS && msUntil <= ONE_DAY_MS) return '24h'
   return null
 }
 
 /**
+ * Deadline reminders for BOTH the waiver deadline (`waivers_time`) and the
+ * lineup deadline (`deadline_time`) of the upcoming GW, at 24h and 1h out.
  * @param {GwEvent[]} events
  * @param {number} nowMs
+ * @returns {Array<{ type: string, gw: number, title: string, body: string, pref: string, dedupKey: string, url: string }>}
  */
-export function pickGwLiveKickoff(events, nowMs) {
+export function pickDeadlineReminders(events, nowMs) {
+  const target = upcomingEvent(events)
+  if (!target) return []
   const now = Number(nowMs)
-  const live = events.find((e) => e.isLive || (e.isCurrent && !e.finished))
-  if (!live) return null
-  if (now < live.deadlineMs) return null
-  return {
-    type: 'gw_live',
-    gw: live.id,
-    pref: 'liveKickoff',
-    dedupKey: `gw_live:${live.id}`,
-    title: `GW${live.id} is live`,
-    body: 'Premier League fixtures are underway — open Live for scores and projections.',
+  const out = []
+
+  if (target.waiversMs != null) {
+    const bucket = reminderBucket(target.waiversMs - now)
+    if (bucket) {
+      out.push({
+        type: `waiver_deadline_${bucket}`,
+        gw: target.id,
+        pref: 'deadlineReminders',
+        dedupKey: `waiver_deadline_${bucket}:${target.id}`,
+        url: '/#/teamSelection',
+        title:
+          bucket === '1h'
+            ? `GW${target.id} waiver deadline in 1 hour`
+            : `GW${target.id} waiver deadline tomorrow`,
+        body: 'Submit your waiver claims in Moves before the deadline.',
+      })
+    }
   }
+
+  const lineupBucket = reminderBucket(target.deadlineMs - now)
+  if (lineupBucket) {
+    out.push({
+      type: `lineup_deadline_${lineupBucket}`,
+      gw: target.id,
+      pref: 'deadlineReminders',
+      dedupKey: `lineup_deadline_${lineupBucket}:${target.id}`,
+      url: '/#/fplLive',
+      title:
+        lineupBucket === '1h'
+          ? `GW${target.id} lineup deadline in 1 hour`
+          : `GW${target.id} lineup deadline tomorrow`,
+      body: 'Set your starting XI before the Premier League deadline.',
+    })
+  }
+
+  return out
 }
 
 /**
+ * One "waivers processed" alert shortly after `waivers_time`.
  * @param {GwEvent[]} events
  * @param {number} nowMs
  */
@@ -110,7 +125,7 @@ export function pickWaiverWindow(events, nowMs) {
 
   const msUntil = target.waiversMs - now
   const graceStart = -30 * 60 * 1000
-  const graceEnd = 3 * 60 * 60 * 1000
+  const graceEnd = 3 * ONE_HOUR_MS
   if (msUntil < graceStart || msUntil > graceEnd) return null
 
   return {
@@ -118,6 +133,7 @@ export function pickWaiverWindow(events, nowMs) {
     gw: target.id,
     pref: 'waiverResults',
     dedupKey: `waiver_processed:${target.id}`,
+    url: '/#/teamSelection',
     title: `GW${target.id} waivers processed`,
     body: 'Waiver results are in — open Moves to see who changed hands.',
   }
@@ -131,9 +147,7 @@ export function pickWaiverWindow(events, nowMs) {
 export async function runScheduledNotifications(env, kv, subscriptions, deps = {}) {
   const nowMs = deps.nowMs ?? Date.now()
   const fetchBootstrap = deps.fetchBootstrap ?? (async () => {
-    const res = await fetch(DRAFT_BOOTSTRAP, {
-      headers: { Accept: 'application/json' },
-    })
+    const res = await fetch(DRAFT_BOOTSTRAP, { headers: { Accept: 'application/json' } })
     if (!res.ok) throw new Error(`bootstrap-static ${res.status}`)
     return res.json()
   })
@@ -147,25 +161,23 @@ export async function runScheduledNotifications(env, kv, subscriptions, deps = {
   })
 
   const bootstrap = await fetchBootstrap()
-  const events = parseGwEvents(bootstrap?.events?.data, nowMs)
+  const events = parseGwEvents(bootstrap?.events?.data)
   const candidates = [
-    pickDeadlineReminder(events, nowMs),
-    pickGwLiveKickoff(events, nowMs),
+    ...pickDeadlineReminders(events, nowMs),
     pickWaiverWindow(events, nowMs),
   ].filter(Boolean)
 
   const summary = { checked: candidates.length, sent: 0, skipped: 0 }
 
   for (const candidate of candidates) {
-    const shouldSend = await markSentOnce(candidate.dedupKey)
-    if (!shouldSend) {
+    if (!(await markSentOnce(candidate.dedupKey))) {
       summary.skipped += 1
       continue
     }
     const result = await broadcastPush({
       title: candidate.title,
       body: candidate.body,
-      url: candidate.type === 'waiver_processed' ? '/#/teamSelection' : '/#/fplLive',
+      url: candidate.url,
       tag: candidate.type,
       pref: candidate.pref,
     })
@@ -176,10 +188,11 @@ export async function runScheduledNotifications(env, kv, subscriptions, deps = {
 }
 
 /**
+ * Internal (CI / admin) trigger.
  * @param {object} env
  * @param {KVNamespace} kv
  * @param {object[]} subscriptions
- * @param {{ type: string, gw?: number, title?: string, body?: string, entryId?: number }} payload
+ * @param {{ type: string, gw?: number, title?: string, body?: string }} payload
  */
 export async function runInternalNotification(env, kv, subscriptions, payload) {
   const { broadcastPush } = await import('./send.js')
@@ -197,8 +210,7 @@ export async function runInternalNotification(env, kv, subscriptions, payload) {
       tag: 'waiver_processed',
       pref: 'waiverResults',
     }
-    const dedupKey = `waiver_processed:${gw}`
-    if (!(await markSentOnce(dedupKey))) {
+    if (!(await markSentOnce(`waiver_processed:${gw}`))) {
       return { sent: 0, skipped: 1, deduped: true }
     }
   } else if (type === 'test') {
