@@ -9,8 +9,8 @@ compatibility_date = "2024-12-01"
 # Then paste the id below (preview id for local dev is optional).
 [[kv_namespaces]]
 binding = "SUBSCRIPTIONS"
-id = "00000000000000000000000000000000"
-preview_id = "00000000000000000000000000000000"
+id = "47a2cf6223c84316937df4067b3f8bbc"
+preview_id = "47a2cf6223c84316937df4067b3f8bbc"
 
 # Every 5 min: deadline/waiver checks are deduped; live XI polls draft live
 # stats during matches. Cloudflare free plan allows down to 1-min crons.
