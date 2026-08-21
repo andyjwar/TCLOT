@@ -1,0 +1,58 @@
+/* Pull-to-refresh indicator (standalone PWA only — see usePullToRefresh.js).
+ * A small circular badge that rides down from under the status bar as the
+ * user pulls, arms past the threshold, and spins while the page reloads. */
+
+.ptr {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 4px);
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  /* Above every overlay in the app (player/team detail sit at 10050). */
+  z-index: 10100;
+  pointer-events: none;
+}
+
+.ptr__badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  /* Parked above the viewport; translateY(distance) pulls it into view. */
+  margin-top: -46px;
+  border-radius: 50%;
+  background: var(--bg, #121212);
+  border: 1px solid var(--border, #2f2f2f);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+  color: var(--text, rgba(255, 255, 255, 0.87));
+  will-change: transform, opacity;
+}
+
+/* Snap-back after an aborted pull; no transition while the finger drags. */
+.ptr__badge--settle {
+  transition:
+    transform 0.18s ease,
+    opacity 0.18s ease;
+}
+
+.ptr__badge--armed {
+  color: var(--tclot-header-solid, #795bfb);
+  border-color: var(--tclot-header-solid, #795bfb);
+}
+
+.ptr__icon {
+  width: 20px;
+  height: 20px;
+}
+
+.ptr__badge--spinning .ptr__icon {
+  animation: ptr-spin 0.8s linear infinite;
+}
+
+@keyframes ptr-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

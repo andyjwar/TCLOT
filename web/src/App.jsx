@@ -451,6 +451,7 @@ import {
 import { parsePlayersHash, stripPlayersHash } from './playerRoutes.js'
 import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
+import PullToRefresh from './PullToRefresh.jsx'
 import './App.css'
 
 /**
@@ -3053,6 +3054,7 @@ function App() {
   if (loading) {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
+        <PullToRefresh />
         <div className="load-screen">
           <div className="load-screen__toolbar">
             <ThemeToggle value={themePref} onChange={setThemePref} />
@@ -3066,6 +3068,7 @@ function App() {
   if (error || !data) {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
+        <PullToRefresh />
         <header className="page-header">
           <BrandHeader
             liveStatus={brandHeaderStatus}
@@ -3176,6 +3179,7 @@ function App() {
       data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
       data-dashboard-view={dashboardView}
     >
+      <PullToRefresh />
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
           <header className="page-header">
