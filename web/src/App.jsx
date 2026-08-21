@@ -2447,7 +2447,7 @@ function resolveSystemTheme() {
 }
 
 function App() {
-  const { data, error, loading } = useLeagueData()
+  const { data, error, loading, refresh } = useLeagueData()
   /** Minute-resolution clock for between-GW waiver / deadline countdowns. */
   const [statusNow, setStatusNow] = useState(() => new Date())
   useEffect(() => {
@@ -3054,7 +3054,7 @@ function App() {
   if (loading) {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
-        <PullToRefresh />
+        <PullToRefresh onRefresh={refresh} />
         <div className="load-screen">
           <div className="load-screen__toolbar">
             <ThemeToggle value={themePref} onChange={setThemePref} />
@@ -3068,7 +3068,7 @@ function App() {
   if (error || !data) {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
-        <PullToRefresh />
+        <PullToRefresh onRefresh={refresh} />
         <header className="page-header">
           <BrandHeader
             liveStatus={brandHeaderStatus}
@@ -3179,7 +3179,7 @@ function App() {
       data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
       data-dashboard-view={dashboardView}
     >
-      <PullToRefresh />
+      <PullToRefresh onRefresh={refresh} />
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
           <header className="page-header">

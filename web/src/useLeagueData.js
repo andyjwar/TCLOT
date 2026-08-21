@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { fplElementWebName } from './fplElementNames.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
@@ -288,6 +288,14 @@ export function useLeagueData() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
+  /** Bumped by refresh() to re-run the load effect (pull-to-refresh). */
+  const [reloadToken, setReloadToken] = useState(0);
+  /** Whether a successful load has ever completed — a failed *refresh* must
+   * not replace a working dashboard with the error screen. */
+  const hasDataRef = useRef(false);
+  /** Promises handed out by refresh(), resolved when the reload finishes so
+   * the pull-to-refresh spinner knows when to retract. */
+  const refreshResolversRef = useRef([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -349,7 +357,8 @@ export function useLeagueData() {
         } catch {
           /* optional file — keep FPL entry_name */
         }
-        if (!cancelled)
+        if (!cancelled) {
+          hasDataRef.current = true;
           setData({
             ...processLeagueData(details, {
               transactions,
@@ -362,19 +371,36 @@ export function useLeagueData() {
             teamLogoMap,
             fetchFailedDemo,
           });
+          setError(null);
+        }
       } catch (e) {
-        if (!cancelled) setError(e.message);
+        // A failed refresh keeps the last good data on screen; only the
+        // initial load (no data yet) surfaces the error screen.
+        if (!cancelled && !hasDataRef.current) setError(e.message);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          refreshResolversRef.current.splice(0).forEach((resolve) => resolve());
+        }
       }
     }
     load();
     return () => {
       cancelled = true;
     };
+  }, [reloadToken]);
+
+  /** Re-fetch all league data in place (no page reload). Resolves when the
+   * reload settles (success or failure) — used by pull-to-refresh. */
+  const refresh = useCallback(() => {
+    const done = new Promise((resolve) => {
+      refreshResolversRef.current.push(resolve);
+    });
+    setReloadToken((t) => t + 1);
+    return done;
   }, []);
 
-  return { data, error, loading };
+  return { data, error, loading, refresh };
 }
 
 function opponentId(m, entryId) {

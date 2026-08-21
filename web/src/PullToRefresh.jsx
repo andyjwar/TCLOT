@@ -1,41 +1,52 @@
 import { usePullToRefresh } from './usePullToRefresh'
 import './PullToRefresh.css'
 
-/** Where the badge parks while the reload is in flight (px). */
-const TRAVEL_WHILE_REFRESHING = 70
+/* Floating pull-to-refresh indicator for the installed (standalone PWA) app;
+ * `?ptr=1` force-enables it in any browser for testing. A progress ring
+ * draws around the disc as you pull, pops when the refresh arms, then spins
+ * while `onRefresh` re-fetches league data in place — see usePullToRefresh. */
 
-/* Floating pull-to-refresh indicator for the installed (standalone PWA) app.
- * Renders nothing in regular browser tabs — see usePullToRefresh. Pull down
- * from the top of the page; releasing past the threshold reloads the app,
- * which refetches league data and picks up new deploys. */
-export default function PullToRefresh() {
-  const { enabled, distance, refreshing, armed, progress } = usePullToRefresh()
+const RING_R = 13
+const RING_C = 2 * Math.PI * RING_R
+
+export default function PullToRefresh({ onRefresh }) {
+  const { enabled, distance, pulling, refreshing, armed, progress } =
+    usePullToRefresh({ onRefresh })
   if (!enabled) return null
-  const active = refreshing || distance > 0
+  const state = refreshing
+    ? 'refreshing'
+    : armed
+      ? 'armed'
+      : distance > 0
+        ? 'pulling'
+        : 'idle'
   return (
-    <div className="ptr" aria-hidden="true">
+    <div
+      className="ptr"
+      aria-hidden="true"
+      data-pulling={pulling ? 'true' : undefined}
+    >
       <div
-        className={[
-          'ptr__badge',
-          armed ? 'ptr__badge--armed' : '',
-          refreshing ? 'ptr__badge--spinning' : '',
-          active ? '' : 'ptr__badge--settle',
-        ]
-          .filter(Boolean)
-          .join(' ')}
+        className="ptr__disc"
+        data-state={state}
         style={{
-          transform: `translateY(${refreshing ? TRAVEL_WHILE_REFRESHING : distance}px)`,
-          opacity: refreshing ? 1 : Math.min(1, progress * 1.4),
+          transform: `translateY(${distance}px) scale(${
+            refreshing ? 1 : 0.7 + 0.3 * progress
+          })`,
+          opacity: refreshing ? 1 : Math.min(1, progress * 1.5),
         }}
       >
-        <svg
-          className="ptr__icon"
-          viewBox="0 0 24 24"
-          style={refreshing ? undefined : { transform: `rotate(${progress * 270}deg)` }}
-        >
-          <path
-            fill="currentColor"
-            d="M17.65 6.35A7.96 7.96 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.15.69 4.22 1.78L13 11h7V4l-2.35 2.35Z"
+        <svg className="ptr__ring" viewBox="0 0 32 32">
+          <circle className="ptr__ring-track" cx="16" cy="16" r={RING_R} />
+          <circle
+            className="ptr__ring-arc"
+            cx="16"
+            cy="16"
+            r={RING_R}
+            strokeDasharray={RING_C}
+            strokeDashoffset={
+              refreshing ? RING_C * 0.3 : RING_C * (1 - progress)
+            }
           />
         </svg>
       </div>
