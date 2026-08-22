@@ -208,6 +208,94 @@
   background: var(--tclot-header-solid, #795bfb);
 }
 
+/* ---- players-remaining centre gauge (scorecard mockup Option C) ----
+   One shared strip split by a centre notch: grey track = starters still to
+   play, each half filling with the theme accent from its OUTER edge inward
+   as players finish (fully filled = FT). Counts sit at the outer ends in
+   the meta strip's ghost mono treatment, flipping to an accented "FT". */
+.lo-gauge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 9px 1px 1px;
+}
+.lo-gauge__label {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  color: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 78%, transparent);
+  font-variant-numeric: tabular-nums;
+  min-width: 15px;
+  text-align: center;
+  flex: none;
+}
+.lo-gauge__label--ft {
+  color: var(--tclot-header-solid, #795bfb);
+}
+.lo-gauge__track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+}
+.lo-gauge__side {
+  flex: 1;
+  display: flex;
+  height: 5px;
+  background: color-mix(in srgb, var(--fm-muted) 18%, transparent);
+  overflow: hidden;
+}
+.lo-gauge__side--home {
+  border-radius: 3px 0 0 3px;
+  justify-content: flex-start;
+}
+.lo-gauge__side--away {
+  border-radius: 0 3px 3px 0;
+  justify-content: flex-end;
+}
+.lo-gauge__fill {
+  height: 100%;
+  background: color-mix(in srgb, var(--tclot-header-solid, #795bfb) 55%, transparent);
+}
+.lo-gauge__fill--ft {
+  background: var(--tclot-header-solid, #795bfb);
+}
+.lo-gauge__notch {
+  flex: none;
+  width: 2px;
+  height: 9px;
+  border-radius: 1px;
+  margin: 0 2px;
+  background: color-mix(in srgb, var(--fm-muted) 40%, transparent);
+}
+
+/* ---- Live Scores list navigation cards ----
+   The composed MatchupScorecard renders the whole card as one tap target
+   that opens the fixture's game card. Hero/villain narrative tints ported
+   from the old fixtures-list rows (.live-banner-group__item--*). */
+.lo-matchup--nav:hover,
+.lo-matchup--nav:focus-within {
+  border-color: color-mix(in srgb, var(--fm-text) 16%, var(--fm-border));
+}
+.lo-matchup--villain-victory {
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, var(--tclot-logo-purple) 6%, transparent),
+    transparent 40%,
+    transparent
+  );
+}
+.lo-matchup--hero-defeat {
+  background-image: linear-gradient(
+    to right,
+    color-mix(in srgb, #ef4444 5%, transparent),
+    transparent 40%,
+    transparent
+  );
+}
+
 /* ---- expanded body ---- */
 .lo-matchup__body {
   border-top: 1px solid var(--fm-border);

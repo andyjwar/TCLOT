@@ -19,8 +19,7 @@ import { heroDefeatEntryIds, villainVictoryEntryIds } from './gwRawPointsRankSea
 import { fplApiBase, FPL_DIRECT } from './fplDraftUrl.js';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
-import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
-import { readLiveScoreLayout } from './featureFlags.js';
+import { MatchupScorecard } from './MatchupScorecard.jsx';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureCardDeck } from './LiveFixtureCardDeck.jsx';
@@ -36,10 +35,9 @@ import {
   findChampionFixture,
   managerSurnameFromFullName,
 } from './championOfRecord.js';
-import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
+import { useMobileNarrowViewport } from './usePortraitMobile.js';
 import { standingsMobileTeamName } from './teamNameUtils.js';
 import { NavIcon } from './NavIcon.jsx';
-import { englishOrdinal } from './playerContributionEvents.js';
 import { usePredictions } from './usePredictions.js';
 import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
@@ -49,15 +47,6 @@ import {
   liveGwOutcomeDot,
   projectedH2HPoints,
 } from './liveScoresDerivations.js';
-
-/**
- * Active live-scores face-off layout, resolved once at module load.
- * Defaults to the shipped `shirts` cluster; flip to `bars` (mockup
- * "Variation 3" baseline rail) for launch day via `VITE_LIVE_SCORE_LAYOUT=bars`
- * or, to preview live, `localStorage['tclot:flags:live-score-layout'] = 'bars'`
- * (reload to apply). See `featureFlags.js`.
- */
-const LIVE_SCORE_LAYOUT = readLiveScoreLayout();
 
 /**
  * Live H2H win probabilities for one fixture from the forecast blend — the
@@ -617,19 +606,11 @@ export function LiveScores({
     });
 
   /**
-   * Below-desktop breakpoint (≤880px) — drives both the slim face-off row
-   * treatment (manager+rank line hidden, smaller avatars and score) and the
-   * `LiveExpandedFixture` tab-selector layout across the full phone+tablet
-   * range, replacing the prior 601–880px stacked two-column grid.
-   */
-  const narrowViewport = useNarrowViewport();
-  /**
-   * Phone-width breakpoint (≤767px) — at this width the H2H fixture rows
-   * collapse team names to their first word (mockup `Toronto 44 (3) – 53 (5)
-   * Hanson` instead of the truncated full-name-with-ellipsis treatment that
-   * read as `Tor… 44 (3) – 53 (5) Hanson o…` on a 390px viewport). Tracked
-   * separately from {@link narrowViewport} so 768–880px tablets keep full
-   * names.
+   * Phone-width breakpoint (≤767px) — at this width the H2H fixture
+   * scorecards prefer the curated short team names (mockup `Mordor SFG`
+   * via {@link standingsMobileTeamName}) as the fitted name's first
+   * candidate, and tapping a card opens the swipeable card deck instead of
+   * the desktop fixture page.
    */
   const mobileNarrowViewport = useMobileNarrowViewport();
 
@@ -1331,30 +1312,19 @@ export function LiveScores({
 
               const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
 
-              // Hero defeat / villain victory narrative status is passed
-              // through to LiveFaceOffRow as `homeStatus`/`awayStatus`. The
-              // tinted ring marks which manager avatar carries the status,
-              // while the narrative caption pill renders beneath the central
-              // score column (not under the crest).
+              // Hero defeat / villain victory narrative status adds the
+              // tinted avatar ring on whichever crest carries the status,
+              // plus a faint edge tint on the card itself.
               const homeStatus = homeVillain ? 'villain' : homeHero ? 'hero' : null;
               const awayStatus = awayVillain ? 'villain' : awayHero ? 'hero' : null;
 
               /**
-               * Per-fixture meta strip (locked live-odds mockup Option R) —
-               * a quiet tinted band opening the fixture: the seeding label
-               * ("1st vs 8th", each team's live competition rank from
-               * {@link liveRankByEntry}) as faded ghost text on the left,
-               * and the live favourite with their win probability ("Mordor
-               * SFG 74%") in the SAME ghost treatment on the right. Either
-               * side renders independently — a missing rank (off-season
-               * standings) or missing forecast never blanks the whole strip.
+               * Meta strip right side — the live favourite with their win
+               * probability ("Mordor SFG 74%", locked live-odds mockup
+               * Option R). When the odds are suppressed (finished GW,
+               * predictions targeting another GW) MatchupMeta falls back to
+               * the to-play counts on that side instead.
                */
-              const homeLiveRank = Number(liveRankByEntry[homeId]);
-              const awayLiveRank = Number(liveRankByEntry[awayId]);
-              const seedLabel =
-                Number.isFinite(homeLiveRank) && Number.isFinite(awayLiveRank)
-                  ? `${englishOrdinal(homeLiveRank)} vs ${englishOrdinal(awayLiveRank)}`
-                  : null;
               const favLabel = showFixtureOdds
                 ? favouriteMetaLabel(
                     fixtureWinProbs(homeSquad, awaySquad, oddsById),
@@ -1364,61 +1334,34 @@ export function LiveScores({
                 : null;
 
               return (
-                <div
+                <MatchupScorecard
                   key={fixtureKey}
-                  className={
-                    'live-banner-group__item' +
-                    (homeVillain || awayVillain ? ' live-banner-group__item--villain-victory' : '') +
-                    (homeHero || awayHero ? ' live-banner-group__item--hero-defeat' : '')
-                  }
-                >
-                  {seedLabel || favLabel ? (
-                    <div
-                      className={
-                        'live-banner-group__meta' +
-                        (narrowViewport ? ' live-banner-group__meta--compact' : '')
-                      }
-                    >
-                      <span className="live-banner-group__meta-text">
-                        {seedLabel}
-                      </span>
-                      {favLabel ? (
-                        <span className="live-banner-group__meta-text">
-                          {favLabel}
-                        </span>
-                      ) : null}
-                    </div>
-                  ) : null}
-                  <LiveFaceOffRow
-                    homeId={homeId}
-                    awayId={awayId}
-                    homeName={homeName}
-                    awayName={awayName}
-                    homeDisplayName={homeDisplayName}
-                    awayDisplayName={awayDisplayName}
-                    homeLive={homeLive}
-                    awayLive={awayLive}
-                    homeRemaining={homeRemaining}
-                    awayRemaining={awayRemaining}
-                    layout={LIVE_SCORE_LAYOUT}
-                    teamLogoMap={teamLogoMap}
-                    kitIndexByEntry={kitIndexByEntry}
-                    compact={narrowViewport}
-                    homeStatus={homeStatus}
-                    awayStatus={awayStatus}
-                    onToggle={() => openFixtureCard(fixtureIndex)}
-                    chevronEnd={
-                      // On phones the row opens the card-deck sheet (no
-                      // chevron — it reads as expand-below). On desktop it
-                      // navigates to the fixture page, so hint with '›'.
-                      mobileNarrowViewport ? null : (
-                        <span className="live-banner-row__chev" aria-hidden="true">
-                          ›
-                        </span>
-                      )
-                    }
-                  />
-                </div>
+                  fixture={{
+                    homeId,
+                    awayId,
+                    homeName,
+                    awayName,
+                    homeLive,
+                    awayLive,
+                    homeRemaining,
+                    awayRemaining,
+                  }}
+                  metaRight={favLabel}
+                  liveRankByEntry={liveRankByEntry}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                  homeDisplayName={homeDisplayName}
+                  awayDisplayName={awayDisplayName}
+                  homeStatus={homeStatus}
+                  awayStatus={awayStatus}
+                  onClick={() => openFixtureCard(fixtureIndex)}
+                  className={[
+                    homeVillain || awayVillain ? 'lo-matchup--villain-victory' : null,
+                    homeHero || awayHero ? 'lo-matchup--hero-defeat' : null,
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                />
               );
             })}
           </div>

@@ -7,28 +7,29 @@ import './LiveOddsSection.css';
 
 /**
  * Shared H2H matchup "scorecard" presentation (the `.lo-*` card look locked
- * on the Live Odds tile): tinted meta strip (seed label + to-play counts),
- * edge-aligned crest/name/score header with the winner glass pill, and the
- * win-probability text + hairline strip. Used by BOTH:
+ * on the Live Odds tile): tinted meta strip (seed label + to-play counts or
+ * the favourite's odds), edge-aligned crest/name/score header with the
+ * winner glass pill, and the players-remaining centre gauge. Used by BOTH:
  *
  *  - the Scores tab's Live Scores fixture list (via {@link MatchupScorecard},
  *    where tapping a card opens that fixture's game card — mobile swipe deck
  *    or desktop fixture page); and
- *  - the Live Odds tile (which composes {@link MatchupMeta},
- *    {@link MatchupHeader} and {@link WinPcts} directly inside its own
- *    expand/collapse toggle).
+ *  - the Live Odds tile (which composes {@link MatchupMeta} and
+ *    {@link MatchupHeader} directly inside its own expand/collapse toggle).
  */
 
 /**
  * Tinted banner strip opening each matchup card (combined-cards mockup "C"):
  * the seeding label ("1st vs 5th", each team's live competition rank) as
- * faded ghost text on the left, and the to-play counts ("10 v 11 to play",
- * flipping to "FT" once both sides are done) in the SAME ghost treatment on
- * the right. Either side renders independently — a missing rank (off-season
- * standings) or missing squad payload never blanks the whole strip. Renders
- * nothing when neither label is available.
+ * faded ghost text on the left, and — in the SAME ghost treatment on the
+ * right — either the caller's `rightText` (the Live Scores scorecard passes
+ * the favourite's odds, e.g. `Mordor SFG 92%`) or the default to-play counts
+ * ("10 v 11 to play", flipping to "FT" once both sides are done). Either
+ * side renders independently — a missing rank (off-season standings) or
+ * missing squad payload never blanks the whole strip. Renders nothing when
+ * neither label is available.
  */
-export function MatchupMeta({ fixture: f, liveRankByEntry }) {
+export function MatchupMeta({ fixture: f, liveRankByEntry, rightText }) {
   const homeRank = Number(liveRankByEntry?.[f.homeId]);
   const awayRank = Number(liveRankByEntry?.[f.awayId]);
   const seedLabel =
@@ -45,11 +46,81 @@ export function MatchupMeta({ fixture: f, liveRankByEntry }) {
       ? 'FT'
       : `${f.homeRemaining} v ${f.awayRemaining} to play`
     : null;
-  if (!seedLabel && !toPlayLabel) return null;
+  const right = rightText ?? toPlayLabel;
+  if (!seedLabel && !right) return null;
   return (
     <div className="lo-meta">
       <span className="lo-meta__text">{seedLabel}</span>
-      {toPlayLabel ? <span className="lo-meta__text">{toPlayLabel}</span> : null}
+      {right ? <span className="lo-meta__text">{right}</span> : null}
+    </div>
+  );
+}
+
+/**
+ * Players-remaining centre gauge (scorecard mockup Option C, locked): one
+ * shared strip split by a centre notch, grey when all 11 starters are still
+ * to play, each half filling green from its OUTER edge toward the middle as
+ * players finish — a fully green strip reads as full time. The count of
+ * players left sits at each outer end, flipping to a green `FT` at 0.
+ * Renders nothing when neither side has a usable count (missing squad
+ * payloads); a one-sided gap keeps its half's track empty rather than
+ * blanking the whole row.
+ */
+export function RemainingGauge({ homeRemaining, awayRemaining }) {
+  const XI = 11;
+  const norm = (n) =>
+    n != null && Number.isFinite(Number(n))
+      ? Math.max(0, Math.min(XI, Math.floor(Number(n))))
+      : null;
+  const home = norm(homeRemaining);
+  const away = norm(awayRemaining);
+  if (home == null && away == null) return null;
+  const playedPct = (r) => ((XI - r) / XI) * 100;
+  const sideAria = (r, side) =>
+    r == null
+      ? undefined
+      : r === 0
+        ? `${side} team — all 11 starters have finished their fixtures`
+        : `${side} team — ${r} starter${r === 1 ? '' : 's'} still to play`;
+  const label = (r) => (
+    <span
+      className={'lo-gauge__label' + (r === 0 ? ' lo-gauge__label--ft' : '')}
+    >
+      {r == null ? '' : r === 0 ? 'FT' : r}
+    </span>
+  );
+  return (
+    <div
+      className="lo-gauge"
+      aria-label={[sideAria(home, 'Home'), sideAria(away, 'Away')]
+        .filter(Boolean)
+        .join('; ')}
+    >
+      {label(home)}
+      <span className="lo-gauge__track" aria-hidden="true">
+        <span className="lo-gauge__side lo-gauge__side--home">
+          {home != null ? (
+            <span
+              className={
+                'lo-gauge__fill' + (home === 0 ? ' lo-gauge__fill--ft' : '')
+              }
+              style={{ width: `${playedPct(home)}%` }}
+            />
+          ) : null}
+        </span>
+        <span className="lo-gauge__notch" />
+        <span className="lo-gauge__side lo-gauge__side--away">
+          {away != null ? (
+            <span
+              className={
+                'lo-gauge__fill' + (away === 0 ? ' lo-gauge__fill--ft' : '')
+              }
+              style={{ width: `${playedPct(away)}%` }}
+            />
+          ) : null}
+        </span>
+      </span>
+      {label(away)}
     </div>
   );
 }
@@ -167,62 +238,17 @@ export function MatchupHeader({
 }
 
 /**
- * Win probability, mockup "C2" treatment: the percentages live as TEXT at
- * the two ends of a quiet 7px three-segment strip (home / draw / away),
- * favourite (highest probability, ties share it) coloured to MATCH the
- * strip's favourite segment. The draw share keeps its segment in the strip
- * but gets no text label (combined-cards mockup "C"); it stays in the
- * aria-label for screen readers.
- */
-export function WinPcts({ probs, homeName, awayName }) {
-  const h = Number(probs.homeWinPct) || 0;
-  const d = Number(probs.drawPct) || 0;
-  const a = Number(probs.awayWinPct) || 0;
-  const max = Math.max(h, d, a);
-  const fav = (pct) => max > 0 && pct === max;
-  return (
-    <>
-      <div
-        className="lo-pcts"
-        aria-label={`Win probability — ${homeName} ${Math.round(h)}%, draw ${Math.round(d)}%, ${awayName} ${Math.round(a)}%`}
-      >
-        <span className={'lo-pcts__side' + (fav(h) ? ' lo-pcts__side--fav' : '')}>
-          {Math.round(h)}%<span className="lo-pcts__w">win</span>
-        </span>
-        <span className={'lo-pcts__side' + (fav(a) ? ' lo-pcts__side--fav' : '')}>
-          <span className="lo-pcts__w">win</span>
-          {Math.round(a)}%
-        </span>
-      </div>
-      <div className="lo-strip" aria-hidden="true">
-        <span
-          className={'lo-strip__seg' + (fav(h) ? ' lo-strip__seg--fav' : '')}
-          style={{ width: `${h}%` }}
-        />
-        <span
-          className={'lo-strip__seg' + (fav(d) ? ' lo-strip__seg--fav' : '')}
-          style={{ width: `${d}%` }}
-        />
-        <span
-          className={'lo-strip__seg' + (fav(a) ? ' lo-strip__seg--fav' : '')}
-          style={{ width: `${a}%` }}
-        />
-      </div>
-    </>
-  );
-}
-
-/**
- * Composed scorecard — one full `.lo-matchup` card (meta strip + header +
- * optional win-probability block). With `onClick` the whole card becomes a
- * single navigation button (`.lo-matchup--nav`): the Live Scores list uses
- * this to open the tapped fixture's game card (mobile swipe deck / desktop
- * fixture page). `probs` is optional — finished gameweeks and missing
- * forecast payloads simply omit the win-probability block.
+ * Composed scorecard — one full `.lo-matchup` card in the locked Live Scores
+ * treatment: tinted meta strip (seed label left, favourite's odds right via
+ * `metaRight`, falling back to the to-play counts), the crest/name/score
+ * header, and the players-remaining centre gauge ({@link RemainingGauge}).
+ * With `onClick` the whole card becomes a single navigation button
+ * (`.lo-matchup--nav`): the Live Scores list uses this to open the tapped
+ * fixture's game card (mobile swipe deck / desktop fixture page).
  *
  * @param {{
  *   fixture: object,            // cardFixtures row from LiveScores
- *   probs?: object | null,      // h2hWinProbs() result, or null to omit
+ *   metaRight?: string | null,  // favourite odds label; null → to-play text
  *   liveRankByEntry?: object,   // entry id → live competition rank
  *   teamLogoMap: object,
  *   kitIndexByEntry?: object,
@@ -236,7 +262,7 @@ export function WinPcts({ probs, homeName, awayName }) {
  */
 export function MatchupScorecard({
   fixture,
-  probs = null,
+  metaRight = null,
   liveRankByEntry,
   teamLogoMap,
   kitIndexByEntry,
@@ -260,7 +286,11 @@ export function MatchupScorecard({
         className="lo-matchup__head"
         {...(onClick ? { type: 'button', onClick } : {})}
       >
-        <MatchupMeta fixture={fixture} liveRankByEntry={liveRankByEntry} />
+        <MatchupMeta
+          fixture={fixture}
+          liveRankByEntry={liveRankByEntry}
+          rightText={metaRight}
+        />
         <MatchupHeader
           fixture={fixture}
           teamLogoMap={teamLogoMap}
@@ -270,13 +300,10 @@ export function MatchupScorecard({
           homeStatus={homeStatus}
           awayStatus={awayStatus}
         />
-        {probs ? (
-          <WinPcts
-            probs={probs}
-            homeName={fixture.homeName}
-            awayName={fixture.awayName}
-          />
-        ) : null}
+        <RemainingGauge
+          homeRemaining={fixture.homeRemaining}
+          awayRemaining={fixture.awayRemaining}
+        />
       </Head>
     </div>
   );

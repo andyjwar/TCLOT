@@ -11762,83 +11762,20 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
    former `.live-banner-group__header / __chip* / __meta / __progress`
    rules used to sit here. */
 
-/* Vertical list of fully-chromed fixture tiles. User feedback on the
-   prior 2×2 grid treatment: it read as a fused container instead of 4
-   distinct fixtures. Each item now owns its own standard tile chrome
-   (matches `.tile` — surface bg, border, radius, shadow) and the list
-   sits in a flex column with generous breathing room between tiles.
-   Gap chosen at 16px (`--space-4`) over 12px for breathability with
-   only 4 fixtures stacked. */
+/* Vertical list of matchup scorecards (shared `.lo-matchup` treatment
+   from MatchupScorecard.jsx — same card the Live Odds tile locked). Each
+   card owns its own border/background/radius on EVERY viewport (the
+   approved stacked-scorecards mockup was phone-width, rounded, separated),
+   so the former ≤720px full-bleed band treatment is gone. The card's own
+   `margin-bottom: 8px` (a Live Odds tile rule) is neutralised here in
+   favour of the list gap. */
 .live-banner-group__list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
-.live-banner-group__item {
-  background: var(--fm-card);
-  border: 1px solid var(--fm-border);
-  border-radius: 12px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
-  overflow: hidden;
-  min-width: 0;
-}
-/* Open state — the LiveExpandedFixture renders directly below the
-   face-off row inside the same tile. Subtle inner border tint signals
-   which tile is open without competing with the tile chrome. The flex
-   column naturally grows; no grid-column override is needed (unlike
-   the prior 2×2 grid). */
-.live-banner-group__item--open {
-  border-color: color-mix(in srgb, var(--fm-text) 18%, var(--fm-border));
-}
-@media (max-width: 720px) {
-  /* Full-bleed Scores band: the per-fixture cards collapse into a single
-     continuous list. Adjacent items share the --fm-card background to form
-     one band; a top hairline divides them (skipped on the first row). The
-     row's own 12px/14px padding keeps the content inset from the glass. */
-  .live-banner-group__list {
-    gap: 0;
-  }
-  .live-banner-group__item {
-    border-left: 0;
-    border-right: 0;
-    border-top: 0;
-    border-bottom: 0;
-    border-radius: 0;
-    box-shadow: none;
-  }
-  .live-banner-group__item + .live-banner-group__item {
-    border-top: 1px solid var(--fm-border);
-  }
-  /* Sit the fixtures band flush against the gameweek-nav divider above and the
-     following section below. The .dashboard-stack/.live-scores-root flex `gap`
-     (12px) otherwise leaves a gap above the first fixture and below the last,
-     so the band's outer hairlines sit ~12px further from their rows than the
-     evenly-spaced inter-row dividers — reading as uneven top/bottom gaps.
-     Negative margins cancel exactly that one gap on each side so every divider
-     (nav line → row → row → row → next-section line) is uniformly spaced. */
-  .live-scores-root .live-banner-group-tile {
-    margin-top: -12px;
-    margin-bottom: -12px;
-  }
-}
-/* Villain / hero tints layer on top of the base `var(--fm-card)` tile
-   background — use `background-image` so the surface beneath shows
-   through the transparent portions of the gradient. */
-.live-banner-group__item--villain-victory {
-  background-image: linear-gradient(
-    to right,
-    color-mix(in srgb, var(--tclot-logo-purple) 6%, transparent),
-    transparent 40%,
-    transparent
-  );
-}
-.live-banner-group__item--hero-defeat {
-  background-image: linear-gradient(
-    to right,
-    color-mix(in srgb, #ef4444 5%, transparent),
-    transparent 40%,
-    transparent
-  );
+.live-banner-group__list .lo-matchup {
+  margin-bottom: 0;
 }
 
 /* ============================================================ */
@@ -11875,37 +11812,8 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   }
 }
 
-/* Per-fixture meta strip (live-odds mockup Option R) — a quiet tinted band
-   opening each fixture tile: seed label ("1st vs 8th") left, live favourite
-   ("Mordor SFG 74%") right, BOTH in the same faded uppercase ghost mono so
-   neither dominates. Replaces the former bordered seed pill, which read too
-   heavy against the row. The band's wash sits between --fm-surface-2 and the
-   card so it delineates the fixture it opens without becoming a header bar. */
-.live-banner-group__meta {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 6px 14px 7px;
-  background: color-mix(in srgb, var(--fm-surface-2) 62%, var(--fm-card));
-  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  line-height: 1;
-}
-.live-banner-group__meta--compact {
-  padding: 5px 12px 6px;
-  font-size: 9px;
-}
-.live-banner-group__meta-text {
-  color: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 78%, transparent);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-}
+/* The per-fixture meta strip (`.live-banner-group__meta*`, mockup Option R)
+   moved into the shared scorecard: see `.lo-meta` in LiveOddsSection.css. */
 
 .live-banner-row {
   display: grid;
