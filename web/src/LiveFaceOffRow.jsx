@@ -31,7 +31,7 @@ import { lastWordTeamName } from './teamNameUtils.js';
  * on desktop (where the fit check decides). The DOM text is written
  * imperatively so React never fights the measurement.
  */
-function FittedTeamName({ fullName, displayName, className, title }) {
+export function FittedTeamName({ fullName, displayName, className, title }) {
   const candidate = displayName ?? fullName;
   const short = lastWordTeamName(fullName);
   /** Last-resort single token — covers a candidate whose fallback is

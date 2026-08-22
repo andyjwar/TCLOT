@@ -1,0 +1,196 @@
+/* "Live Odds" tile on the Scores tab — every H2H matchup's live win
+   probability in one place, expandable to the full odds (see
+   LiveOddsSection.jsx). Header layout is mockup "C2": crest + fitted name
+   pinned to the OUTER edges, score alone in the centre with the winner
+   glass pill, win % as text flanking a quiet 7px strip. The expanded body
+   (compare rows, returns) reuses the lfc-* Odds-tab styles. */
+
+.lo-head-row {
+  align-items: baseline;
+}
+.lo-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.lo-live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #e0566a;
+  box-shadow: 0 0 0 3px rgba(224, 86, 106, 0.18);
+}
+.lo-gwcap {
+  margin-left: auto;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--fm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  white-space: nowrap;
+}
+.lo-sub {
+  font-size: 11px;
+  margin: 0 0 10px;
+}
+
+/* ---- matchup card ---- */
+.lo-matchup {
+  border: 1px solid var(--fm-border);
+  border-radius: 14px;
+  background: var(--fm-bg);
+  margin-bottom: 8px;
+  overflow: hidden;
+}
+.lo-matchup:last-child {
+  margin-bottom: 0;
+}
+
+/* Whole header (face-off row + pcts + strip) is one toggle button. */
+.lo-matchup__head {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  padding: 10px 11px 11px;
+  cursor: pointer;
+}
+
+/* ---- C2 edge-aligned face-off header ---- */
+.lo-hdr {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.lo-hdr__side {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.lo-hdr__side--away {
+  justify-content: flex-end;
+}
+.lo-hdr__crest {
+  flex: none;
+  display: inline-flex;
+}
+.lo-hdr__name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--fm-text);
+  letter-spacing: -0.005em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lo-hdr__score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 3.4em;
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--fm-text-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+/* Winner "glass" pill — same paint as the Scores banner
+   (.live-banner-row__score-half--winner): spread box-shadow so the pill
+   never nudges the digits out of line. */
+.lo-hdr__half {
+  display: inline-block;
+  font-weight: 700;
+  border-radius: 0.3em;
+  justify-self: center;
+  padding: 0 0.08em;
+}
+.lo-hdr__half--winner {
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.15em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+}
+.lo-hdr__sep {
+  color: var(--fm-muted);
+  font-weight: 500;
+  padding: 0 0.3em;
+  font-size: 0.9em;
+}
+.lo-hdr__pending {
+  grid-column: 1 / -1;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ---- C2 win % text + hairline strip ---- */
+.lo-pcts {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 8px 2px 4px;
+}
+.lo-pcts__side {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--fm-muted);
+  font-variant-numeric: tabular-nums;
+}
+.lo-pcts__side--fav {
+  color: var(--tclot-logo-purple, #795bfb);
+}
+.lo-pcts__w {
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin: 0 3px;
+  color: var(--fm-muted);
+}
+.lo-pcts__draw {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--fm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.lo-pcts__draw--fav {
+  color: var(--tclot-logo-purple, #795bfb);
+}
+.lo-strip {
+  display: flex;
+  height: 7px;
+  border-radius: 4px;
+  overflow: hidden;
+  gap: 2px;
+}
+.lo-strip__seg {
+  background: color-mix(in srgb, var(--fm-muted) 22%, transparent);
+}
+.lo-strip__seg--fav {
+  background: var(--tclot-header-solid, #795bfb);
+}
+
+/* ---- expanded body ---- */
+.lo-matchup__body {
+  border-top: 1px solid var(--fm-border);
+  background: var(--fm-card);
+  padding: 11px 12px 12px;
+}
+.lo-matchup__body .lfc-cmp {
+  margin-bottom: 10px;
+}
+.lo-matchup__body .lfc-cmp:last-of-type {
+  margin-bottom: 1px;
+}
+.lo-matchup__ret-h {
+  margin-top: 13px;
+}
+.lo-matchup__body .lfc-seg__hint {
+  margin: 2px 0 8px;
+}

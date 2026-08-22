@@ -9,6 +9,7 @@ import {
 import { TeamAvatar } from './TeamAvatar';
 import { PointsCell } from './PointsCell.jsx';
 import { PlayerContributions } from './PlayerContributions';
+import { LiveOddsSection } from './LiveOddsSection.jsx';
 import { useLiveScores } from './useLiveScores';
 import { eventNameToGameWeekLabel } from './gwLabel.js';
 import { GameWeekNavigator } from './GameWeekNavigator.jsx';
@@ -1498,6 +1499,14 @@ export function LiveScores({
           kitIndexByEntry={kitIndexByEntry}
         />
       </section>
+
+      <LiveOddsSection
+        fixtures={cardFixtures}
+        gameweek={gameweek}
+        gwFinished={Boolean(selectedGwOption?.finished)}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
 
       {useFixtureLayout && orphanSquads.length > 0
         ? orphanSquads.map((squad) => {
