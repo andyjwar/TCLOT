@@ -18511,6 +18511,25 @@ button.live-xp__player-name:focus-visible {
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   min-width: 0;
 }
+/* Packed-centre row (mobile lineup body only): crest | name → | POS | badge + owner.
+   The name right-aligns toward the middle, positions form a centred spine, and
+   the owner badge + fantasy team name grow outward from the centre — no dead
+   gap mid-row. Paired desktop cells keep the flex layout above. */
+.prem-mlu-list .prem-mlu-row {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr) 44px minmax(0, 1fr);
+  gap: 8px;
+}
+.prem-mlu-list .prem-mlu-name {
+  text-align: right;
+}
+.prem-mlu-list .prem-mlu-pos {
+  min-width: 0;
+  text-align: center;
+}
+.prem-mlu-list .prem-owner-tag {
+  justify-content: flex-start;
+}
 .prem-mlu-list:first-of-type .prem-mlu-row:first-child { border-top: none; }
 .prem-mlu-row.is-owned {
   background: color-mix(in srgb, var(--brand) 7%, transparent);

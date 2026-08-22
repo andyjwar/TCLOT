@@ -205,21 +205,25 @@ function fantasyTeamFirstWord(fullName) {
   return t.split(/\s+/)[0] || t;
 }
 
-function OwnerTag({ owner, teamLogoMap, kitIndexByEntry }) {
+function OwnerTag({ owner, teamLogoMap, kitIndexByEntry, badgeFirst = false }) {
   if (!owner) return null;
   const label = fantasyTeamFirstWord(owner.teamName) || owner.teamName;
+  const name = <span className="prem-owner-tag__name">{label}</span>;
+  const avatar = (
+    <span className="prem-owner-tag__avatar">
+      <TeamAvatar
+        entryId={owner.leagueEntryId}
+        name={owner.teamName}
+        size="sm"
+        logoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+    </span>
+  );
   return (
     <span className="prem-owner-tag" title={owner.teamName}>
-      <span className="prem-owner-tag__name">{label}</span>
-      <span className="prem-owner-tag__avatar">
-        <TeamAvatar
-          entryId={owner.leagueEntryId}
-          name={owner.teamName}
-          size="sm"
-          logoMap={teamLogoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-      </span>
+      {badgeFirst ? avatar : name}
+      {badgeFirst ? name : avatar}
     </span>
   );
 }
@@ -297,7 +301,7 @@ function EventRow({
 
 /**
  * Home + away XI side-by-side, with each player row using the compact
- * `MobileLineupRow` design (crest · name · owner tag · position pill).
+ * `MobileLineupRow` design (crest · name · position · owner badge + name).
  *
  * No sub-bar header — the fixture row that toggles this body already
  * shows team names + score + state chip, so a second band with the
@@ -624,15 +628,16 @@ function MobileLineupRow({
           {displayName}
         </ClickablePlayerName>
       </span>
+      {/* Always render the pos cell (even empty) so the packed-centre grid
+          keeps its columns aligned when a position is unknown. */}
+      <span className="prem-mlu-pos">{posLabel || ''}</span>
       {owner ? (
         <OwnerTag
           owner={owner}
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
+          badgeFirst
         />
-      ) : null}
-      {posLabel ? (
-        <span className="prem-mlu-pos">{posLabel}</span>
       ) : null}
     </div>
   );
