@@ -46,18 +46,24 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
     !live &&
     (ctx.gwFinished === true || (homeRemaining === 0 && awayRemaining === 0));
 
+  /**
+   * One hero side: crest nearest the score, with the name stacked over the
+   * "N to play" note. Home mirrors away so both groups hug the centre.
+   */
   const heroSide = (which) => {
     const isHome = which === 'home';
     const remaining = isHome ? homeRemaining : awayRemaining;
-    return (
-      <div className={`lfxp-hero__side lfxp-hero__side--${which}`}>
-        <TeamAvatar
-          entryId={isHome ? homeId : awayId}
-          name={isHome ? homeName : awayName}
-          size="md"
-          logoMap={ctx.teamLogoMap}
-          kitIndexByEntry={ctx.kitIndexByEntry}
-        />
+    const crest = (
+      <TeamAvatar
+        entryId={isHome ? homeId : awayId}
+        name={isHome ? homeName : awayName}
+        size="md"
+        logoMap={ctx.teamLogoMap}
+        kitIndexByEntry={ctx.kitIndexByEntry}
+      />
+    );
+    const text = (
+      <span className="lfxp-hero__teamtext">
         <span className="lfxp-hero__name">{isHome ? homeName : awayName}</span>
         <span
           className={
@@ -66,6 +72,21 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
         >
           {remaining != null && remaining > 0 ? `${remaining} to play` : '\u00a0'}
         </span>
+      </span>
+    );
+    return (
+      <div className={`lfxp-hero__side lfxp-hero__side--${which}`}>
+        {isHome ? (
+          <>
+            {text}
+            {crest}
+          </>
+        ) : (
+          <>
+            {crest}
+            {text}
+          </>
+        )}
       </div>
     );
   };
