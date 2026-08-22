@@ -77,15 +77,19 @@ const numOrNull = (v) => {
   return Number.isFinite(n) ? n : null;
 };
 
-/** Target GW: env override → classic is_next → is_current → first unfinished fixture → null. */
+/** Target GW: env override → classic is_current (unfinished) → is_next → first unfinished fixture → null. */
 function resolveTargetGameweek(classicBoot, fixtures) {
   const env = Number(process.env.PREDICTIONS_TARGET_GW);
   if (Number.isFinite(env) && env >= 1 && env <= 38) return env;
   const events = classicBoot?.events ?? [];
-  const next = events.find((e) => e.is_next);
-  if (next) return Number(next.id);
+  // Prefer the in-progress gameweek: FPL flips is_next to GW+1 at the deadline,
+  // so preferring is_next would overwrite the current GW's forecast mid-gameweek
+  // and break the live Odds blend (which requires a GW match). Only roll forward
+  // to is_next once the current gameweek has finished.
   const cur = events.find((e) => e.is_current && !e.finished);
   if (cur) return Number(cur.id);
+  const next = events.find((e) => e.is_next);
+  if (next) return Number(next.id);
   const unfinished = (Array.isArray(fixtures) ? fixtures : [])
     .filter((f) => f?.finished !== true && Number.isFinite(Number(f.event)))
     .map((f) => Number(f.event))
