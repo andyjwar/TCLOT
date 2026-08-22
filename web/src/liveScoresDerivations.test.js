@@ -46,13 +46,59 @@ test('dcThresholdReached — GK/DEF 10+, MID/FWD 12+, unknown false', () => {
   assert.equal(dcThresholdReached('FWD', null), false)
 })
 
-test('playerXiPillKind — maps ESPN matchday role; defaults to xi', () => {
+test('playerXiPillKind — neutral until lineups announced, then role + live state', () => {
+  // Unknown role (lineups not announced) → neutral pill.
+  assert.equal(playerXiPillKind({ espnMatchdayRole: null }), 'tbd')
+  assert.equal(playerXiPillKind({}), 'tbd')
+  assert.equal(playerXiPillKind(null), 'tbd')
+
+  // Starting XI → green regardless of live state.
   assert.equal(playerXiPillKind({ espnMatchdayRole: 'xi' }), 'xi')
-  assert.equal(playerXiPillKind({ espnMatchdayRole: 'bench' }), 'bench')
+
+  // Not in the matchday squad → red.
   assert.equal(playerXiPillKind({ espnMatchdayRole: 'absent' }), 'absent')
-  assert.equal(playerXiPillKind({ espnMatchdayRole: null }), 'xi')
-  assert.equal(playerXiPillKind({}), 'xi')
-  assert.equal(playerXiPillKind(null), 'xi')
+
+  // Bench + saw minutes (live or FT) → yellow.
+  assert.equal(
+    playerXiPillKind({
+      espnMatchdayRole: 'bench',
+      minutes: 12,
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+    }),
+    'bench',
+  )
+  assert.equal(
+    playerXiPillKind({
+      espnMatchdayRole: 'bench',
+      minutes: 25,
+      clubGwFixturesFinished: true,
+      hasGwFixture: true,
+    }),
+    'bench',
+  )
+
+  // Bench + game not finished, 0 minutes (could still come on) → yellow.
+  assert.equal(
+    playerXiPillKind({
+      espnMatchdayRole: 'bench',
+      minutes: 0,
+      clubGwFixturesFinished: false,
+      hasGwFixture: true,
+    }),
+    'bench',
+  )
+
+  // Bench + club fixtures finished with 0 minutes → red (never came on).
+  assert.equal(
+    playerXiPillKind({
+      espnMatchdayRole: 'bench',
+      minutes: 0,
+      clubGwFixturesFinished: true,
+      hasGwFixture: true,
+    }),
+    'absent',
+  )
 })
 
 test('playerLiveState — on pitch shows red minute counter', () => {

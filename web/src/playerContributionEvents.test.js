@@ -337,7 +337,7 @@ test('liveElementRowForFeedValidation — full row wins; else stats map', () => 
   assert.equal(fplTotalFeedEventContradictsLive(ev, merged, 2), true);
 });
 
-test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc vs zero; cards need delta tick', () => {
+test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc/cards backfill vs zero when minutes are real', () => {
   const next = {
     12: {
       stats: {
@@ -369,11 +369,61 @@ test('diffContributionEvents — bootstrap (no prev): goals/assists/saves/dc vs 
   const kinds = new Set(out.map((e) => e.kind));
   assert.ok(kinds.has('goal'));
   assert.ok(kinds.has('assist'));
-  assert.ok(!kinds.has('yellow_card'));
+  assert.ok(
+    kinds.has('yellow_card'),
+    'a card already on the books must survive a mid-match refresh (bootstrap backfill)'
+  );
   assert.ok(kinds.has('save_points'));
   const saveEv = out.find((e) => e.kind === 'save_points');
   assert.equal(saveEv?.elementId, 99);
   assert.equal(saveEv?.delta, 2);
+});
+
+test('diffContributionEvents — bootstrap with 0′ minutes never backfills cards (placeholder totals)', () => {
+  const out = diffContributionEvents({
+    prevLiveByElementId: null,
+    nextLiveByElementId: {
+      7: { stats: { yellow_cards: 1, red_cards: 1, minutes: 0 }, explain: [] },
+    },
+    elementById: { 7: { element_type: 3 } },
+    trackedElementIds: new Set([7]),
+    gameweek: 5,
+    nowIso: '2026-01-01T12:00:00.000Z',
+  });
+  assert.equal(out.length, 0);
+});
+
+test('diffContributionEvents — minuteLabel frozen at emit time from explain fixture minutes', () => {
+  const gwFixtures = [
+    { id: 100, team_h: 1, team_a: 2, kickoff_time: '2026-04-12T14:00:00Z' },
+  ];
+  const prev = {
+    5: {
+      stats: { goals_scored: 0, minutes: 14 },
+      explain: [[[{ stat: 'minutes', value: 14 }], 100]],
+    },
+  };
+  const next = {
+    5: {
+      stats: { goals_scored: 1, minutes: 15 },
+      explain: [[[{ stat: 'minutes', value: 15 }], 100]],
+    },
+  };
+  const out = diffContributionEvents({
+    prevLiveByElementId: prev,
+    nextLiveByElementId: next,
+    elementById: { 5: { id: 5, team: 1, element_type: 3 } },
+    trackedElementIds: new Set([5]),
+    gameweek: 3,
+    nowIso: '2026-01-01T12:00:00.000Z',
+    gwFixtures,
+  });
+  const goal = out.find((e) => e.kind === 'goal');
+  assert.equal(
+    goal?.minuteLabel,
+    "15'",
+    'event carries the clock at emit time so the feed label never drifts to 90′'
+  );
 });
 
 test('diffContributionEvents — yellow and red card deltas', () => {

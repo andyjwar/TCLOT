@@ -474,6 +474,21 @@ export function PlayerContributions({
     [tracked]
   );
 
+  /**
+   * While any GW fixture is in play, re-run the ESPN timeline fetch on every live poll
+   * (`lastUpdated` tick) so real event minutes and cards keep replacing the FPL
+   * approximations. Outside live windows this stays constant and the effect only
+   * fires on fixture-set / roster changes, as before.
+   */
+  const anyGwFixtureLive = useMemo(() => {
+    const fx = contributionLiveContext?.gwFixtures || [];
+    return fx.some((f) => f?.started === true && f?.finished !== true);
+  }, [contributionLiveContext?.gwFixtures]);
+  const espnLiveRefetchTick = anyGwFixtureLive ? (lastUpdated ?? 'live') : 'idle';
+
+  /** Last `espnFetchKey` that produced timeline rows — guards against a transient empty/failed refetch wiping good rows. */
+  const espnLastGoodKeyRef = useRef('');
+
   useEffect(() => {
     const ctx = contribCtxRef.current;
     if (!ctx?.gwFixtures?.length || !ctx?.elementById || !ctx?.teamById) return;
@@ -492,6 +507,7 @@ export function PlayerContributions({
         if (cancelled) return;
         const timelineEvents = (ev || []).filter((e) => ESPN_KINDS.has(e.kind));
         if (timelineEvents.length) {
+          espnLastGoodKeyRef.current = espnFetchKey;
           const filteredEv = timelineEvents.filter((e) =>
             contributionEventShownForLeague(e, ownerByEl)
           );
@@ -528,12 +544,14 @@ export function PlayerContributions({
             filteredEv,
             2000
           );
-        } else {
+        } else if (espnLastGoodKeyRef.current !== espnFetchKey) {
+          /* Empty and never had data for this fixture set — clear. A transient empty
+             response after a good fetch keeps the existing rows/coverage instead. */
           setTimelineCoverage(new Set());
           setDisplayed((prev) => stripStaleTimelineRows(prev));
         }
       } catch {
-        if (!cancelled) {
+        if (!cancelled && espnLastGoodKeyRef.current !== espnFetchKey) {
           setTimelineCoverage(new Set());
           setDisplayed((prev) => stripStaleTimelineRows(prev));
         }
@@ -542,7 +560,14 @@ export function PlayerContributions({
     return () => {
       cancelled = true;
     };
-  }, [espnFetchKey, gameweek, storageKey, trackedKey, ownerByEl]);
+  }, [
+    espnFetchKey,
+    espnLiveRefetchTick,
+    gameweek,
+    storageKey,
+    trackedKey,
+    ownerByEl,
+  ]);
 
   /**
    * ESPN/FotMob coverage keys → FPL diff skips only matching (player, kind, fixture) slots.
@@ -592,7 +617,9 @@ export function PlayerContributions({
         gwFixtures: ctx.gwFixtures || [],
       });
       const sortedIncoming = [...newEventsFiltered].sort(sortFn);
-      return mergeContributionLists([sortedIncoming, prev]);
+      /* prev first: an already-displayed row (earlier emit → truer frozen minute) wins
+         over a bootstrap re-emit of the same stableId stamped with the current clock. */
+      return mergeContributionLists([prev, sortedIncoming]);
     });
 
     const bucket = readPlayerContributionBucket(storageKey);

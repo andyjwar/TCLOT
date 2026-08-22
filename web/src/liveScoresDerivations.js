@@ -46,20 +46,38 @@ export function dcThresholdReached(pos, dc) {
 }
 
 /**
- * Map an FPL pick row's `espnMatchdayRole` (`xi` / `bench` / `absent`) to
- * the status pill kind used in the redesigned expanded view. When the role
- * is unknown (no published lineups, DGW edge cases) we fall back to `'xi'`
- * — production already styles unknown rows as the default starter colour
- * via `live-picks-row` selectors.
+ * Status pill kind for a player row in the expanded Lineups view. Mirrors
+ * the Match-tab minutes-dot semantics: pills stay neutral until the
+ * real-life matchday squad is announced, then:
  *
- * @param {{ espnMatchdayRole?: string | null } | null | undefined} row
- * @returns {'xi' | 'bench' | 'absent'}
+ *   - `'xi'`     (green)   — named in the starting XI.
+ *   - `'bench'`  (yellow)  — on the bench and either saw minutes or the
+ *                            game hasn't finished (could still come on).
+ *   - `'absent'` (red)     — not in the matchday squad, OR benched and the
+ *                            club's GW fixtures finished with 0 minutes.
+ *   - `'tbd'`    (neutral) — lineups not announced yet (no published
+ *                            lineups, DGW, or low name-match coverage).
+ *
+ * @param {{
+ *   espnMatchdayRole?: string | null,
+ *   minutes?: number | null,
+ *   clubGwFixturesFinished?: boolean | null,
+ *   hasGwFixture?: boolean | null,
+ * } | null | undefined} row
+ * @returns {'xi' | 'bench' | 'absent' | 'tbd'}
  */
 export function playerXiPillKind(row) {
   const r = row?.espnMatchdayRole;
-  if (r === 'bench') return 'bench';
+  if (r === 'xi') return 'xi';
   if (r === 'absent') return 'absent';
-  return 'xi';
+  if (r === 'bench') {
+    const { kind } = playerLiveState(row);
+    // Club fixtures done without them taking the pitch (or no GW fixture
+    // at all) — same red as "not in squad": no points coming.
+    if (kind === 'dnp' || kind === 'none') return 'absent';
+    return 'bench';
+  }
+  return 'tbd';
 }
 
 /**

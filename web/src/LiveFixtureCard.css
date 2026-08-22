@@ -1089,3 +1089,89 @@
   border-radius: 3px;
   background: var(--fm-text-strong);
 }
+
+/* ==== DESKTOP MOCKUPS (flag: localStorage 'tclot:mock:live-desktop') ====
+   Three presentations of the same LiveFixtureCard on ≥768px viewports:
+   'modal' / 'drawer' restyle the existing full-screen deck sheet;
+   'split' docks a standalone card beside the fixtures list. */
+@media (min-width: 768px) {
+  /* -- Option B · centered floating card -- */
+  .lfc-root[data-desktop='modal'] .lfc-sheet {
+    left: 50%;
+    right: auto;
+    top: 3.5vh;
+    bottom: 3.5vh;
+    height: auto;
+    width: min(480px, 94vw);
+    border-radius: 22px;
+    border: 1px solid var(--fm-border);
+    box-shadow: 0 32px 80px rgba(0, 0, 0, 0.42);
+    transform: translateX(-50%) translateY(16px);
+    opacity: 0;
+    transition:
+      transform 0.34s cubic-bezier(0.32, 0.72, 0, 1),
+      opacity 0.26s ease;
+  }
+  .lfc-root[data-desktop='modal'].is-open .lfc-sheet {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  .lfc-root[data-desktop='modal'] .lfc-scrim {
+    background: rgba(0, 0, 0, 0);
+  }
+  .lfc-root[data-desktop='modal'].is-open .lfc-scrim {
+    background: rgba(0, 0, 0, 0.45);
+  }
+
+  /* -- Option C · right slide-over drawer (keeps the mobile push-from-right) -- */
+  .lfc-root[data-desktop='drawer'] .lfc-sheet {
+    left: auto;
+    width: min(440px, 92vw);
+    border-left: 1px solid var(--fm-border);
+    box-shadow: -22px 0 56px rgba(0, 0, 0, 0.35);
+  }
+
+  /* The thumb-reach bottom back chevron is a phone affordance; desktop
+     presentations already have the header back + scrim click + Esc. */
+  .lfc-root[data-desktop] .lfc-back-bottom {
+    display: none;
+  }
+}
+
+/* -- Option A · split view: docked fixture panel beside the list -- */
+@media (min-width: 1100px) {
+  .live-scores-root--card-split {
+    /* Reserve the right column for the fixed panel. */
+    padding-right: 452px;
+  }
+  .lfx-split-panel {
+    position: fixed;
+    /* Clear the site header + primary nav row. */
+    top: 200px;
+    bottom: 16px;
+    width: 432px;
+    /* Hug the app column's right edge (.app.fotmob is max-width 1320px,
+       centered, with 16px side padding). */
+    right: max(16px, calc((100vw - 1320px) / 2 + 16px));
+    display: flex;
+    flex-direction: column;
+    background: var(--fm-bg);
+    border: 1px solid var(--fm-border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+    z-index: 900;
+    --lfc-header: var(
+      --tclot-header-grad,
+      linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%)
+    );
+  }
+  /* No pagination dots in the panel — trim the bottom inset the lineup pane
+     reserves for them on mobile. */
+  .lfx-split-panel .lfc-card__scroll--fit {
+    padding-bottom: 12px;
+  }
+  .lfx-split-panel .lfc-split {
+    margin-bottom: 12px;
+  }
+}

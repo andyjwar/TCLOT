@@ -14,19 +14,35 @@ function teamNameForEntry(teams, leagueEntryId) {
 }
 
 /**
- * Row tint for the Live Table. Mirrors the production Standings
- * variant-c row treatment: rank-1 row tint (`row-highlight`) and the
- * rank-8 8th-place band. When every team shares rank 1 (pre-season /
- * all tied on 0 pts) the leader tint would band the whole table, so
- * it's suppressed until there's an actual leader.
+ * Row treatment for the Live Table. Unlike the production Standings
+ * table there's no rank-1 leader tint here — the Titans/Minnows
+ * section labels carry the grouping instead (and a tint would band
+ * multiple rows whenever teams are tied at the top). Only the rank-8
+ * 8th-place band is kept.
  */
-function liveStandingsRowClass(row, allTiedAtTop) {
-  return [
-    row.liveRank === 1 && !allTiedAtTop ? 'row-highlight' : '',
-    row.liveRank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
-  ]
-    .filter(Boolean)
-    .join(' ');
+function liveStandingsRowClass(row) {
+  return row.liveRank === 8
+    ? 'standings-row--divider-above standings-row--8th'
+    : '';
+}
+
+/**
+ * Section label rows. "Titans" heads the table; "Minnows" splits it
+ * after the 4th row. Keyed by row position (not `liveRank`) so the
+ * split survives ties — pre-season every team shares rank 1/5 and a
+ * rank-keyed divider would never render.
+ */
+function SectionLabelRow({ label, colSpan, top }) {
+  return (
+    <tr
+      className={`standings-divider standings-divider--minnows${top ? ' standings-divider--top' : ''}`}
+      aria-hidden="true"
+    >
+      <td colSpan={colSpan}>
+        <span className="standings-divider__label">{label}</span>
+      </td>
+    </tr>
+  );
 }
 
 /**
@@ -154,9 +170,6 @@ export function LiveStandingsTable({
   const lastTitle = gwStandingsFrozen
     ? 'This GW’s H2H result: green win, amber draw, red loss'
     : 'Live H2H result vs opponent: green winning, amber drawing, red losing, muted pre-kickoff';
-  const allTiedAtTop =
-    liveStandingsRows.length > 1 &&
-    liveStandingsRows.every((r) => r.liveRank === 1);
 
   if (mobile) {
     return (
@@ -178,8 +191,9 @@ export function LiveStandingsTable({
             </tr>
           </thead>
           <tbody>
-            {liveStandingsRows.map((row) => {
-              const rowClass = liveStandingsRowClass(row, allTiedAtTop);
+            <SectionLabelRow label="Titans" colSpan={5} top />
+            {liveStandingsRows.map((row, idx) => {
+              const rowClass = liveStandingsRowClass(row);
               return (
                 <Fragment key={row.league_entry}>
                   <tr className={rowClass || undefined}>
@@ -218,15 +232,8 @@ export function LiveStandingsTable({
                       />
                     </td>
                   </tr>
-                  {row.liveRank === 4 ? (
-                    <tr
-                      className="standings-divider standings-divider--minnows"
-                      aria-hidden="true"
-                    >
-                      <td colSpan={5}>
-                        <span className="standings-divider__label">Minnows</span>
-                      </td>
-                    </tr>
+                  {idx === 3 ? (
+                    <SectionLabelRow label="Minnows" colSpan={5} />
                   ) : null}
                 </Fragment>
               );
@@ -309,8 +316,9 @@ export function LiveStandingsTable({
           </tr>
         </thead>
         <tbody>
-          {liveStandingsRows.map((row) => {
-            const rowClass = liveStandingsRowClass(row, allTiedAtTop);
+          <SectionLabelRow label="Titans" colSpan={11} top />
+          {liveStandingsRows.map((row, idx) => {
+            const rowClass = liveStandingsRowClass(row);
             return (
               <Fragment key={row.league_entry}>
                 <tr className={rowClass || undefined}>
@@ -366,15 +374,8 @@ export function LiveStandingsTable({
                     />
                   </td>
                 </tr>
-                {row.liveRank === 4 ? (
-                  <tr
-                    className="standings-divider standings-divider--minnows"
-                    aria-hidden="true"
-                  >
-                    <td colSpan={11}>
-                      <span className="standings-divider__label">Minnows</span>
-                    </td>
-                  </tr>
+                {idx === 3 ? (
+                  <SectionLabelRow label="Minnows" colSpan={11} />
                 ) : null}
               </Fragment>
             );

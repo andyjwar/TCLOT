@@ -10791,10 +10791,6 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .standings-table--variant-c.standings-table--live-mobile tbody tr:hover td {
   background: inherit;
 }
-.standings-table--variant-c.standings-table--live-desktop tbody tr.row-highlight:hover td,
-.standings-table--variant-c.standings-table--live-mobile tbody tr.row-highlight:hover td {
-  background: var(--fm-table-head, #f2f5fb);
-}
 .standings-table--variant-c.standings-table--live-desktop tbody tr.standings-row--8th:hover td,
 .standings-table--variant-c.standings-table--live-mobile tbody tr.standings-row--8th:hover td {
   background: var(--fm-standings-8th-bg);
@@ -12918,6 +12914,8 @@ button.live-xp__player-name:focus-visible {
   white-space: nowrap;
   min-width: 0;
 }
+/* `--tbd` (matchday squad not announced yet) intentionally has no tint —
+   the pill stays the plain base style until real lineups are published. */
 .live-xp__player-name--xi {
   background: color-mix(in srgb, var(--fm-win) 18%, transparent);
   color: var(--fm-text-strong);
@@ -14069,6 +14067,13 @@ button.live-xp__player-name:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.14em;
   color: color-mix(in srgb, var(--brand) 60%, var(--text-muted));
+}
+
+/* "Titans" section label at the very top of the Live Table — sits
+ * directly under the thead, so no dashed rule above it. */
+.standings-table--variant-c tbody tr.standings-divider--top td {
+  border-top: none;
+  padding-top: 6px;
 }
 
 /* ----- Mobile (≤767px): static 6-col table ------------------------ */

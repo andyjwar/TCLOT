@@ -52,9 +52,13 @@ function subscribeTheme(onChange) {
  * player detail overlay (z-index 10050) so tapping a player still slides
  * their stats up over the top.
  *
- * @param {{ fixtures: object[], openIndex: number|null, onClose: () => void, ctx: object }} props
+ * Desktop mockup presentations (`desktopMode`): 'modal' centers the sheet as
+ * a floating card, 'drawer' docks it as a right-hand slide-over. Styled via
+ * `[data-desktop]` rules in LiveFixtureCard.css; mobile behavior unchanged.
+ *
+ * @param {{ fixtures: object[], openIndex: number|null, onClose: () => void, ctx: object, desktopMode?: string|null }} props
  */
-export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
+export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx, desktopMode = null }) {
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState(false);
   const [index, setIndex] = useState(0);
@@ -310,7 +314,11 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
   if (!mounted) return null;
 
   return createPortal(
-    <div className={'fotmob lfc-root' + (shown ? ' is-open' : '')} data-theme={theme}>
+    <div
+      className={'fotmob lfc-root' + (shown ? ' is-open' : '')}
+      data-theme={theme}
+      data-desktop={desktopMode || undefined}
+    >
       <div
         ref={scrimRef}
         className="lfc-scrim"

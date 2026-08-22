@@ -166,6 +166,18 @@ function minutesOnFixtureForTimeline(nextRow, fixtureId) {
 }
 
 /**
+ * Frozen display minute for an FPL-delta event, captured once at emit time.
+ * Without this the feed would re-derive the label from the player's growing
+ * `stats.minutes` on every poll, so a 15' goal drifts to 90' by full time.
+ * @returns {string | null} e.g. `"15'"`, or null when minutes are unknown/zero.
+ */
+function fplEmitMinuteLabel(nextRow, fixtureId) {
+  const m = minutesOnFixtureForTimeline(nextRow, fixtureId);
+  if (!Number.isFinite(m) || m <= 0) return null;
+  return `${Math.min(120, Math.floor(m))}'`;
+}
+
+/**
  * Draft `explain`: `[ [ stats[], fixtureId ], … ]`; classic: `[ { fixture, stats }, … ]`.
  * @param {object | null | undefined} raw — full live element row
  * @returns {number[]}
@@ -672,8 +684,9 @@ export function contributionEventMatchesGameweek(ev, gameweek) {
 /**
  * Compare two live snapshots; emit positive deltas only. Goals, assists, DC fantasy points, and
  * save fantasy points require {@link hasMeaningfulMinutesOnPitch} on `nextRow` on every tick, so
- * 0-minute placeholder or inconsistent API state never creates rows. Yellow/red still require
- * `!bootstrap` to avoid double-counting with match-feed sources.
+ * 0-minute placeholder or inconsistent API state never creates rows. Yellow/red emit on bootstrap
+ * too (backfill after a mid-match refresh) but then require meaningful minutes; `stableId` dedupe
+ * plus the ESPN coverage omit prevent double-counting with match-feed sources.
  *
  * @param {{
  *   prevLiveByElementId: Record<number, object> | null,
@@ -745,6 +758,9 @@ export function diffContributionEvents({
     const ps = statsOf(prevRow);
     const ns = statsOf(nextRow);
 
+    /** Frozen at emit time — see {@link fplEmitMinuteLabel}. */
+    const minuteLabel = fplEmitMinuteLabel(nextRow, fplFixtureId);
+
     const g0 = Number(ps.goals_scored) || 0;
     const g1 = Number(ns.goals_scored) || 0;
     const canEmitGoalAssistDcSaves = hasMeaningfulMinutesOnPitch(nextRow);
@@ -771,6 +787,7 @@ export function diffContributionEvents({
         ),
         source: 'fpl',
         fplFixtureId,
+        minuteLabel,
       });
     }
 
@@ -798,6 +815,7 @@ export function diffContributionEvents({
         ),
         source: 'fpl',
         fplFixtureId,
+        minuteLabel,
       });
     }
 
@@ -821,6 +839,7 @@ export function diffContributionEvents({
         ),
         source: 'fpl',
         fplFixtureId,
+        minuteLabel,
       });
     }
 
@@ -844,12 +863,16 @@ export function diffContributionEvents({
         ),
         source: 'fpl',
         fplFixtureId,
+        minuteLabel,
       });
     }
 
     const y0 = Number(ps.yellow_cards) || 0;
     const y1 = Number(ns.yellow_cards) || 0;
-    if (!bootstrap && !isOmitted(elid, 'yellow_card', fplFixtureId) && y1 > y0) {
+    // Cards emit on bootstrap too (backfill after a mid-match refresh), but only for
+    // players with real minutes so 0' placeholder totals never become rows.
+    const canEmitCards = !bootstrap || hasMeaningfulMinutesOnPitch(nextRow);
+    if (canEmitCards && !isOmitted(elid, 'yellow_card', fplFixtureId) && y1 > y0) {
       out.push({
         stableId: `${gw}:${elid}:yellow_card:tot${y1}`,
         kind: 'yellow_card',
@@ -867,12 +890,13 @@ export function diffContributionEvents({
         ),
         source: 'fpl',
         fplFixtureId,
+        minuteLabel,
       });
     }
 
     const rc0 = Number(ps.red_cards) || 0;
     const rc1 = Number(ns.red_cards) || 0;
-    if (!bootstrap && !isOmitted(elid, 'red_card', fplFixtureId) && rc1 > rc0) {
+    if (canEmitCards && !isOmitted(elid, 'red_card', fplFixtureId) && rc1 > rc0) {
       out.push({
         stableId: `${gw}:${elid}:red_card:tot${rc1}`,
         kind: 'red_card',
@@ -890,6 +914,7 @@ export function diffContributionEvents({
         ),
         source: 'fpl',
         fplFixtureId,
+        minuteLabel,
       });
     }
   }
