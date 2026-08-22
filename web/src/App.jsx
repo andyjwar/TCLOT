@@ -2761,9 +2761,15 @@ function App() {
    * Waivers after the waiver deadline (stays on Moves). Skipped when a deep
    * link (players hash / archive), the pre-draft nav lock, or an earlier
    * user navigation already picked a view. Only applied once so later
-   * clicks stick. */
+   * clicks stick.
+   *
+   * Waits for league data too: `draftGate.navLocked` is true while
+   * `details.json` is still in flight (league == null reads as draft "not
+   * complete"), so latching before it resolves would skip the landing
+   * whenever the FPL calendar fetch wins the race. */
   useEffect(() => {
     if (movesTabPrimed) return
+    if (loading) return
     const list = draftBootstrapEvents.events
     if (!list) return
     setTeamSelectionTab(initialMovesTab(list, statusNow))
@@ -2791,6 +2797,7 @@ function App() {
     draftBootstrapEvents.nextEvent,
     draftBootstrapEvents.lastFinishedEvent,
     movesTabPrimed,
+    loading,
     statusNow,
     draftGate.navLocked,
     dashboardView,
