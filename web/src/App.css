@@ -18503,32 +18503,16 @@ button.live-xp__player-name:focus-visible {
 }
 
 .prem-mlu-list { display: flex; flex-direction: column; }
+/* Row backgrounds (owned tint, borders) bleed edge-to-edge on mobile, so the
+   content inset lives on the row itself: left inset keeps the club crest off
+   the screen edge, right inset keeps the position label from being clipped. */
 .prem-mlu-row {
   display: flex;
   align-items: center;
   gap: 9px;
-  padding: 5px 0;
+  padding: 5px 12px 5px 10px;
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   min-width: 0;
-}
-/* Packed-centre row (mobile lineup body only): crest | name → | POS | badge + owner.
-   The name right-aligns toward the middle, positions form a centred spine, and
-   the owner badge + fantasy team name grow outward from the centre — no dead
-   gap mid-row. Paired desktop cells keep the flex layout above. */
-.prem-mlu-list .prem-mlu-row {
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr) 44px minmax(0, 1fr);
-  gap: 8px;
-}
-.prem-mlu-list .prem-mlu-name {
-  text-align: right;
-}
-.prem-mlu-list .prem-mlu-pos {
-  min-width: 0;
-  text-align: center;
-}
-.prem-mlu-list .prem-owner-tag {
-  justify-content: flex-start;
 }
 .prem-mlu-list:first-of-type .prem-mlu-row:first-child { border-top: none; }
 .prem-mlu-row.is-owned {
@@ -18553,10 +18537,13 @@ button.live-xp__player-name:focus-visible {
 }
 /* Plain-text position label: quiet metadata to the right of each player
    name. No background, no border — just small uppercase muted text in a
-   fixed column slot so rows stay vertically aligned. */
+   fixed column slot so rows stay vertically aligned. The extra left margin
+   separates it from the owner badge so the two right-side columns read as
+   distinct rather than one crowded cluster. */
 .prem-mlu-pos {
   display: inline-block;
-  min-width: 34px;
+  min-width: 32px;
+  margin-left: 4px;
   text-align: right;
   font-size: 11px;
   font-weight: 600;
@@ -18578,7 +18565,8 @@ button.live-xp__player-name:focus-visible {
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 8px 0 4px;
+  /* Horizontal insets match .prem-mlu-row so the crest column lines up. */
+  padding: 8px 12px 4px 10px;
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
   min-width: 0;
 }
@@ -18624,7 +18612,7 @@ button.live-xp__player-name:focus-visible {
   text-transform: uppercase;
   letter-spacing: 0.07em;
   color: var(--text-muted);
-  padding: 8px 0 5px;
+  padding: 8px 12px 5px 10px;
   border-top: 1px solid var(--border);
   margin-top: 4px;
 }
@@ -18645,6 +18633,11 @@ button.live-xp__player-name:focus-visible {
   gap: 6px;
   padding: 10px 0 4px;
   border-top: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+}
+/* Mobile variant: match the .prem-mlu-row horizontal insets (desktop paired
+   cells get theirs from .prem-nis-pair__cell instead). */
+.prem-nis--mobile {
+  padding: 10px 12px 4px 10px;
   margin-top: 8px;
   min-width: 0;
 }
