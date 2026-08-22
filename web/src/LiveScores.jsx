@@ -1,6 +1,7 @@
 import {
   Fragment,
   useMemo,
+  useRef,
   useState,
   useCallback,
   useSyncExternalStore,
@@ -20,11 +21,10 @@ import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { readLiveScoreLayout } from './featureFlags.js';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
-import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { effectiveStarters } from './liveSquadEffective.js';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureCardDeck } from './LiveFixtureCardDeck.jsx';
-import { LiveFixtureCard } from './LiveFixtureCard.jsx';
+import { LiveFixtureDesktopPage } from './LiveFixtureDesktopPage.jsx';
 import {
   GuardOfHonourSplash,
   GuardOfHonourCollapsedStrip,
@@ -394,177 +394,6 @@ function teamNameForEntry(teams, leagueEntryId) {
   return teams?.find((t) => t.id === leagueEntryId)?.teamName ?? `Team ${leagueEntryId}`;
 }
 
-/**
- * All `matches` rows between two `league_entry` ids this season (tile home/away = banner sides).
- * Winner-first score in each chip (e.g. 34–21). For draws, home tile score first (same order as FPL row).
- * Uses live GW XI totals when this row is the active gameweek pairing.
- */
-function seasonH2hBetween(
-  matches,
-  homeId,
-  awayId,
-  gameweek,
-  liveHomePts,
-  liveAwayPts,
-  /** When false and this row uses live subs, a 0–0 score is omitted (unsettled GW, not a real draw). */
-  selectedGwFinished,
-) {
-  const h = Number(homeId);
-  const a = Number(awayId);
-  const gwNum = Number(gameweek);
-  const homeWins = [];
-  const awayWins = [];
-  const draws = [];
-  for (const m of matches || []) {
-    const e1 = Number(m.league_entry_1);
-    const e2 = Number(m.league_entry_2);
-    if (!Number.isFinite(e1) || !Number.isFinite(e2)) continue;
-    if ((e1 !== h || e2 !== a) && (e1 !== a || e2 !== h)) continue;
-
-    const ev = Number(m.event);
-    let hp;
-    let ap;
-    if (Number.isFinite(ev) && ev === gwNum && liveHomePts != null && liveAwayPts != null) {
-      hp = liveHomePts;
-      ap = liveAwayPts;
-      if (hp === 0 && ap === 0 && !selectedGwFinished) {
-        continue;
-      }
-    } else {
-      const p1 = Number(m.league_entry_1_points);
-      const p2 = Number(m.league_entry_2_points);
-      if (!Number.isFinite(p1) || !Number.isFinite(p2)) continue;
-      hp = e1 === h ? p1 : p2;
-      ap = e1 === h ? p2 : p1;
-    }
-
-    if (hp > ap) {
-      homeWins.push({ gw: ev, label: `${hp}-${ap}` });
-    } else if (ap > hp) {
-      awayWins.push({ gw: ev, label: `${ap}-${hp}` });
-    } else {
-      draws.push({ gw: ev, label: `${hp}-${ap}` });
-    }
-  }
-  const byGw = (x, y) => x.gw - y.gw;
-  homeWins.sort(byGw);
-  awayWins.sort(byGw);
-  draws.sort(byGw);
-  return { homeWins, awayWins, draws };
-}
-
-/**
- * @param {{ homeId: number, awayId: number, homeName: string, awayName: string, matches: object[], gameweek: number, liveHomePts: number | null | undefined, liveAwayPts: number | null | undefined, selectedGwFinished: boolean, teamLogoMap: object, kitIndexByEntry?: object }} props
- */
-function LiveFixtureSeasonH2h({
-  homeId,
-  awayId,
-  homeName,
-  awayName,
-  matches,
-  gameweek,
-  liveHomePts,
-  liveAwayPts,
-  selectedGwFinished,
-  teamLogoMap,
-  kitIndexByEntry,
-}) {
-  const { homeWins, awayWins, draws } = useMemo(
-    () =>
-      seasonH2hBetween(
-        matches,
-        homeId,
-        awayId,
-        gameweek,
-        liveHomePts,
-        liveAwayPts,
-        selectedGwFinished,
-      ),
-    [
-      matches,
-      homeId,
-      awayId,
-      gameweek,
-      liveHomePts,
-      liveAwayPts,
-      selectedGwFinished,
-    ],
-  );
-  const hasAny = homeWins.length + awayWins.length + draws.length > 0;
-
-  return (
-    <div className="live-fixture-season-h2h" aria-label="Season head-to-head">
-      <h4 className="live-fixture-season-h2h__heading">Season H2H</h4>
-      {!hasAny ? (
-        <p className="muted muted--tight live-fixture-season-h2h__empty">
-          No scored head-to-heads in league data for this pair yet.
-        </p>
-      ) : (
-        <>
-          <div className="live-fixture-season-h2h__row">
-            <div className="live-fixture-season-h2h__side">
-              <TeamAvatar
-                entryId={homeId}
-                name={homeName}
-                size="sm"
-                logoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-              <div className="live-fixture-season-h2h__chips">
-                {homeWins.map((x) => (
-                  <span
-                    key={`h2h-h-${homeId}-${awayId}-${x.gw}`}
-                    className="live-h2h-chip live-h2h-chip--win tabular"
-                    title={`GW ${x.gw}: ${homeName} ${x.label}`}
-                  >
-                    {x.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-            <div className="live-fixture-season-h2h__side live-fixture-season-h2h__side--away">
-              <TeamAvatar
-                entryId={awayId}
-                name={awayName}
-                size="sm"
-                logoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-              <div className="live-fixture-season-h2h__chips">
-                {awayWins.map((x) => (
-                  <span
-                    key={`h2h-a-${homeId}-${awayId}-${x.gw}`}
-                    className="live-h2h-chip live-h2h-chip--win tabular"
-                    title={`GW ${x.gw}: ${awayName} ${x.label}`}
-                  >
-                    {x.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-          {draws.length > 0 ? (
-            <div className="live-fixture-season-h2h__draws">
-              <span className="live-fixture-season-h2h__draws-label">Draws</span>
-              <div className="live-fixture-season-h2h__chips">
-                {draws.map((x) => (
-                  <span
-                    key={`h2h-d-${homeId}-${awayId}-${x.gw}`}
-                    className="live-h2h-chip live-h2h-chip--draw tabular"
-                    title={`GW ${x.gw}: draw ${x.label}`}
-                  >
-                    {x.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </>
-      )}
-    </div>
-  );
-}
-
 function squadsToGwPointsMap(squads) {
   const pointsByEntryId = new Map();
   for (const s of squads || []) {
@@ -779,17 +608,6 @@ export function LiveScores({
    * names.
    */
   const mobileNarrowViewport = useMobileNarrowViewport();
-
-  /** Fixture keys in the set are expanded; default empty = all collapsed. */
-  const [expandedFixtures, setExpandedFixtures] = useState(() => new Set());
-  const toggleFixtureExpanded = useCallback((key) => {
-    setExpandedFixtures((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
-      return next;
-    });
-  }, []);
 
   /** Single “players remaining” panel for all H2H fixtures — open by default. */
   const [ltpPanelExpanded, setLtpPanelExpanded] = useState(true);
@@ -1240,32 +1058,39 @@ export function LiveScores({
   const liveSectionLabel = projectionsOnly ? 'Projections' : 'Live gameweek';
 
   /**
-   * Mobile-only swipeable fixture card deck. On phones, tapping an H2H
-   * fixture row opens this full-screen deck (paged across all GW fixtures)
-   * instead of expanding the inline accordion; desktop keeps the inline
-   * side-by-side expand. `null` = closed; a number = open at that fixture.
+   * Selected fixture for the card surfaces. On phones (≤767px) tapping an
+   * H2H row opens the full-screen swipeable card deck at this index; on
+   * wider viewports it opens the full-width fixture page takeover
+   * ({@link LiveFixtureDesktopPage}). `null` = both closed.
    */
   const [cardDeckIndex, setCardDeckIndex] = useState(null);
 
+  /** A fixture is open as the desktop full-width takeover page. */
+  const pageOpen = !mobileNarrowViewport && cardDeckIndex != null;
+
   /**
-   * DESKTOP MOCKUP FLAG — `localStorage['tclot:mock:live-desktop']`:
-   *   'split'  → fixtures list + docked fixture-card panel (master–detail)
-   *   'modal'  → row click opens the card deck as a centered floating card
-   *   'drawer' → row click opens the card deck as a right slide-over
-   * Unset = current production behavior (inline accordion on desktop).
+   * List scroll position captured when the fixture page opens, so Back
+   * returns the manager to the row they clicked instead of the page top.
    */
-  const desktopCardMock = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const v = window.localStorage.getItem('tclot:mock:live-desktop');
-      return v === 'split' || v === 'modal' || v === 'drawer' ? v : null;
-    } catch {
-      return null;
+  const listScrollRef = useRef(0);
+  const openFixtureCard = useCallback(
+    (fixtureIndex) => {
+      if (!mobileNarrowViewport) {
+        listScrollRef.current = window.scrollY;
+        window.scrollTo(0, 0);
+      }
+      setCardDeckIndex(fixtureIndex);
+    },
+    [mobileNarrowViewport],
+  );
+  const closeFixtureCard = useCallback(() => {
+    const wasPage = !mobileNarrowViewport;
+    setCardDeckIndex(null);
+    if (wasPage) {
+      // After React swaps the takeover back for the list.
+      requestAnimationFrame(() => window.scrollTo(0, listScrollRef.current));
     }
-  }, []);
-  const splitPanelActive = desktopCardMock === 'split' && !mobileNarrowViewport;
-  /** Rows open the fixture card (deck or panel) instead of the accordion. */
-  const rowOpensCard = mobileNarrowViewport || desktopCardMock != null;
+  }, [mobileNarrowViewport]);
 
   const cardFixtures = useMemo(() => {
     return gwMatches.map((m) => {
@@ -1329,8 +1154,7 @@ export function LiveScores({
     <div
       className={
         'dashboard-stack live-scores-root' +
-        (compactMobileChrome ? ' live-scores-root--compact-chrome' : '') +
-        (splitPanelActive ? ' live-scores-root--card-split' : '')
+        (compactMobileChrome ? ' live-scores-root--compact-chrome' : '')
       }
     >
       <section
@@ -1424,6 +1248,26 @@ export function LiveScores({
         />
       ) : (
         <>
+      {pageOpen && cardFixtures.length > 0 ? (
+        /* Desktop: the tapped fixture takes over the Scores stack as a wide
+           two-column page (Match split | Stats + H2H + Odds) with a back
+           button — natural document scroll, no overlays. */
+        <LiveFixtureDesktopPage
+          fixture={
+            cardFixtures[Math.min(cardDeckIndex, cardFixtures.length - 1)]
+          }
+          ctx={cardDeckCtx}
+          onBack={closeFixtureCard}
+        />
+      ) : null}
+      {/* `display: contents` wrapper — invisible to layout. While the fixture
+          page is open it hides the scores stack but keeps it MOUNTED, so live
+          polling state survives and Back is instant. */}
+      <div
+        className={
+          'lfx-main-col' + (pageOpen ? ' lfx-main-col--hidden' : '')
+        }
+      >
       {championFixtureBundle ? (
         gohCollapsed ? (
           <GuardOfHonourCollapsedStrip
@@ -1494,8 +1338,6 @@ export function LiveScores({
               const awayHero = heroDefeatEntryIds.has(awayId);
 
               const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
-              const lineupOpen = expandedFixtures.has(fixtureKey);
-              const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
 
               // Hero defeat / villain victory narrative status is passed
               // through to LiveFaceOffRow as `homeStatus`/`awayStatus`. The
@@ -1525,7 +1367,6 @@ export function LiveScores({
                   key={fixtureKey}
                   className={
                     'live-banner-group__item' +
-                    (lineupOpen ? ' live-banner-group__item--open' : '') +
                     (homeVillain || awayVillain ? ' live-banner-group__item--villain-victory' : '') +
                     (homeHero || awayHero ? ' live-banner-group__item--hero-defeat' : '')
                   }
@@ -1555,53 +1396,20 @@ export function LiveScores({
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
                     compact={narrowViewport}
-                    expanded={lineupOpen}
                     homeStatus={homeStatus}
                     awayStatus={awayStatus}
-                    onToggle={() =>
-                      rowOpensCard
-                        ? setCardDeckIndex(fixtureIndex)
-                        : toggleFixtureExpanded(fixtureKey)
-                    }
-                    ariaControls={fixtureBodyId}
+                    onToggle={() => openFixtureCard(fixtureIndex)}
                     chevronEnd={
-                      // On mobile the row pops open as a card-deck sheet rather
-                      // than expanding inline below, so the expand/collapse
-                      // chevron is misleading — drop it there. Desktop keeps it
-                      // since the fixture still expands below in place.
-                      rowOpensCard ? null : (
+                      // On phones the row opens the card-deck sheet (no
+                      // chevron — it reads as expand-below). On desktop it
+                      // navigates to the fixture page, so hint with '›'.
+                      mobileNarrowViewport ? null : (
                         <span className="live-banner-row__chev" aria-hidden="true">
-                          {lineupOpen ? '▾' : '▸'}
+                          ›
                         </span>
                       )
                     }
                   />
-
-                  {lineupOpen && !rowOpensCard ? (
-                    <div className="live-banner-group__expanded" id={fixtureBodyId}>
-                      <LiveFixtureSeasonH2h
-                        homeId={homeId}
-                        awayId={awayId}
-                        homeName={homeName}
-                        awayName={awayName}
-                        matches={matches}
-                        gameweek={gameweek}
-                        liveHomePts={homeLive}
-                        liveAwayPts={awayLive}
-                        selectedGwFinished={Boolean(selectedGwOption?.finished)}
-                        teamLogoMap={teamLogoMap}
-                        kitIndexByEntry={kitIndexByEntry}
-                      />
-                      <LiveExpandedFixture
-                        homeSquad={homeSquad}
-                        awaySquad={awaySquad}
-                        homeName={homeName}
-                        awayName={awayName}
-                        viewport={narrowViewport ? 'mobile' : 'desktop'}
-                        onOpenPlayer={openPlayerFromFixture}
-                      />
-                    </div>
-                  ) : null}
                 </div>
               );
             })}
@@ -1667,33 +1475,13 @@ export function LiveScores({
         })
       )}
 
-      {useFixtureLayout && !splitPanelActive ? (
+      {useFixtureLayout && mobileNarrowViewport ? (
         <LiveFixtureCardDeck
           fixtures={cardFixtures}
           openIndex={cardDeckIndex}
           onClose={() => setCardDeckIndex(null)}
           ctx={cardDeckCtx}
-          desktopMode={
-            desktopCardMock === 'modal' || desktopCardMock === 'drawer'
-              ? desktopCardMock
-              : null
-          }
         />
-      ) : null}
-      {splitPanelActive && cardFixtures.length > 0 ? (
-        /* Desktop mockup 'split': fixtures list stays put; the tapped fixture's
-           full card (Match / Lineups / Stats / Odds / Table) lives in a docked
-           right-hand panel instead of a full-screen sheet. */
-        <aside className="lfx-split-panel" aria-label="Fixture detail">
-          <LiveFixtureCard
-            fixture={
-              cardFixtures[
-                Math.min(cardDeckIndex ?? 0, cardFixtures.length - 1)
-              ]
-            }
-            ctx={cardDeckCtx}
-          />
-        </aside>
       ) : null}
 
       <section
@@ -1889,6 +1677,7 @@ export function LiveScores({
         </section>
       ) : null}
 
+      </div>
         </>
       )}
     </div>
