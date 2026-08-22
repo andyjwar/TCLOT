@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { gameWeekSpokenLabel } from './gwLabel.js'
 import './GameweekStatesMockup.css'
 
 const STATES = [
@@ -23,7 +24,7 @@ const STATES = [
     gw: 1,
     kind: 'pre',
     header: 'Pre-season',
-    headerTail: '26/27 season starts Aug 21',
+    headerTail: 'Waivers in 2d 16h - Thu Aug 20, 18:30',
     mobileLabel: '26/27',
     progress: '0 / 10',
     liveCount: 0,
@@ -37,7 +38,7 @@ const STATES = [
     gw: 29,
     kind: 'over',
     header: 'GW 28 complete',
-    headerTail: 'Waivers in 5d 3h · Mar 14 at 13:30',
+    headerTail: 'Waivers in 5d 3h - Sat Mar 14, 13:30',
     mobileLabel: 'Scores',
     progress: '0 / 10',
     liveCount: 0,
@@ -121,7 +122,7 @@ const STATES = [
     gw: 29,
     kind: 'over',
     header: 'GW 29 complete',
-    headerTail: 'Waivers in 5d 2h · Mar 21 at 13:30',
+    headerTail: 'Waivers in 5d 2h - Sat Mar 21, 13:30',
     mobileLabel: 'Scores',
     progress: '10 / 10',
     liveCount: 0,
@@ -262,7 +263,7 @@ function StandingsPage({ state, mobile }) {
       </section>
       {showNext ? (
         <section className="gwsm-next">
-          <div><span>NEXT GAMEWEEK</span><strong>GW {state.nextGw}</strong></div>
+          <div><span>Next</span><strong>{gameWeekSpokenLabel(state.nextGw)}</strong></div>
           <div className="gwsm-nextmatch"><MiniCrest text="HY" /><span>Hanson</span><b>v</b><span>Toronto</span><MiniCrest text="TO" /></div>
           <div className="gwsm-nextmatch"><MiniCrest text="HM" /><span>Hackney</span><b>v</b><span>Crouch</span><MiniCrest text="CE" /></div>
         </section>

@@ -2,7 +2,8 @@
  * Derivations for the Standings → Schedule sub-tab (Phase 2 redesign).
  *
  * Two surfaces:
- *  1. All-teams view: per-GW grouped fixture list (latest GW first).
+ *  1. All-teams view: per-GW grouped fixture list (season order 1–38;
+ *     Results filter is latest finished GW first).
  *  2. Team-filtered view: header summary (W-L-T, streak, avg pts) + compact GW rows.
  *
  * Pure functions — kept separate from `useLeagueData` because the schedule sub-tab
@@ -11,7 +12,7 @@
  */
 
 /**
- * Group all matches into per-GW buckets, sorted by GW number descending (latest first).
+ * Group all matches into per-GW buckets, sorted by GW number ascending (1–38).
  *
  * @param {object[]} matches Raw `details.matches` array.
  * @param {Record<number, string>} idToName league_entry id → team name lookup.
@@ -51,13 +52,41 @@ export function groupScheduleByGw(matches, idToName) {
     });
   }
   const out = [];
-  const sortedGws = [...buckets.keys()].sort((a, b) => b - a);
+  const sortedGws = [...buckets.keys()].sort((a, b) => a - b);
   for (const ev of sortedGws) {
     const fixtures = buckets.get(ev);
     const finished = fixtures.length > 0 && fixtures.every((f) => f.finished);
     out.push({ event: ev, finished, fixtures });
   }
   return out;
+}
+
+/**
+ * All / Fixtures: season order (GW 1 → 38). Results: latest finished GW first.
+ *
+ * @param {ReturnType<typeof groupScheduleByGw>} groups
+ * @param {'all' | 'results' | 'fixtures'} resultsFilter
+ */
+export function orderScheduleGwGroups(groups, resultsFilter) {
+  const copy = [...(groups || [])];
+  copy.sort((a, b) =>
+    resultsFilter === 'results' ? b.event - a.event : a.event - b.event,
+  );
+  return copy;
+}
+
+/**
+ * Per-team compact rows follow the same GW order as the all-teams list.
+ *
+ * @param {ReturnType<typeof buildTeamScheduleRows>} rows
+ * @param {'all' | 'results' | 'fixtures'} resultsFilter
+ */
+export function orderScheduleTeamRows(rows, resultsFilter) {
+  const copy = [...(rows || [])];
+  copy.sort((a, b) =>
+    resultsFilter === 'results' ? b.event - a.event : a.event - b.event,
+  );
+  return copy;
 }
 
 /**

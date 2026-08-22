@@ -24,6 +24,7 @@ import {
   buildOwnerByElementFromElementStatus,
   compareWireElements,
   defaultSortDirForKey,
+  elementStatsAreCarryOver,
   elementSummaryStatsFromPayload,
   fetchElementSummariesBatched,
   formatWireStatValue,
@@ -180,7 +181,7 @@ function PlayerInlineIndicators({ el, owner, rostersHealthy, logoMap, kitIndexBy
  */
 function PositionChip({ pos }) {
   if (!pos) return null
-  return <span className={`position-chip position-chip--${pos}`}>{pos}</span>
+  return <span className="position-chip">{pos}</span>
 }
 
 const PORTRAIT_POSITION_OPTIONS = [
@@ -576,20 +577,7 @@ function NextFixtureBadges({ fixtures, nextOnly = false }) {
           title={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
           aria-label={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
         >
-          {fx.badgeUrl ? (
-            <img
-              src={fx.badgeUrl}
-              alt=""
-              className="players-fixture-badge__crest"
-              width={28}
-              height={28}
-              loading="lazy"
-            />
-          ) : (
-            <span className="players-fixture-badge__crest players-fixture-badge__crest--fallback">
-              {fx.shortName?.slice(0, 3) ?? '?'}
-            </span>
-          )}
+          {(fx.shortName ?? '?').slice(0, 3).toUpperCase()}
         </span>
       ))}
     </span>
@@ -623,6 +611,7 @@ function PortraitWireTileList({
   onColumnSort,
   playerDetailOverlay,
   openPlayerDetail,
+  blankCarryOver = false,
 }) {
   // Pts + selected stats (player + next3 are rendered in the tile's left
   // column, not the right). 'pos' is already excluded from `visibleCols`
@@ -751,9 +740,7 @@ function PortraitWireTileList({
                   {displayName}
                 </ClickablePlayerName>
                 <span
-                  className={`players-wire-tile__pos-chip${
-                    row.posLabel ? ` players-wire-tile__pos-chip--${row.posLabel}` : ''
-                  }`}
+                  className="players-wire-tile__pos-chip"
                   aria-label={`Position ${posLetter}`}
                   title={`Position ${posLetter}`}
                 >
@@ -798,9 +785,10 @@ function PortraitWireTileList({
               {rightCols.map((col) => {
                 const isActive = col.id === activeSortColId
                 if (col.id === 'pts') {
-                  const pts = Number.isFinite(Number(el.total_points))
-                    ? el.total_points
-                    : '—'
+                  const pts =
+                    !blankCarryOver && Number.isFinite(Number(el.total_points))
+                      ? el.total_points
+                      : '—'
                   return (
                     <span
                       key={col.id}
@@ -820,6 +808,7 @@ function PortraitWireTileList({
                     el,
                     summary,
                     summaryLoading,
+                    { blankCarryOver },
                   )
                   const tone = wireStatToneClass(value)
                   return (
@@ -961,6 +950,11 @@ export function PlayersWorkbench({
     if (!bootstrap) return new Map()
     return buildNextFixturesByTeam(bootstrap, teamById, 3)
   }, [bootstrap, teamById])
+
+  /** Pre-season: blank the stat columns instead of showing FPL's
+   * last-season carry-over totals. Sorting still uses the underlying
+   * numbers so the default Pts order stays a useful draft-value ranking. */
+  const blankCarryOver = useMemo(() => elementStatsAreCarryOver(bootstrap), [bootstrap])
 
   /**
    * Effective position filter — drives column visibility + Stats picker.
@@ -1408,6 +1402,7 @@ export function PlayersWorkbench({
         {portrait ? (
           <PortraitWireTileList
             outfieldList={bootstrap ? outfieldList : []}
+            blankCarryOver={blankCarryOver}
             visibleCols={visibleCols}
             teamById={teamById}
             ownerByElementId={ownerByElementId}
@@ -1591,7 +1586,10 @@ export function PlayersWorkbench({
                         )
                       }
                       if (col.id === 'pts') {
-                        const pts = Number.isFinite(Number(el.total_points)) ? el.total_points : '—'
+                        const pts =
+                          !blankCarryOver && Number.isFinite(Number(el.total_points))
+                            ? el.total_points
+                            : '—'
                         return (
                           <span
                             key={col.id}
@@ -1609,7 +1607,9 @@ export function PlayersWorkbench({
                       }
                       if (WIRE_STAT_CATALOG[col.id]) {
                         const statDef = WIRE_STAT_CATALOG[col.id]
-                        const value = formatWireStatValue(col.id, el, summary, summaryLoading)
+                        const value = formatWireStatValue(col.id, el, summary, summaryLoading, {
+                          blankCarryOver,
+                        })
                         const tone = wireStatToneClass(value)
                         return (
                           <span

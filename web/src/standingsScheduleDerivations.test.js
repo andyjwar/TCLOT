@@ -2,6 +2,8 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   groupScheduleByGw,
+  orderScheduleGwGroups,
+  orderScheduleTeamRows,
   buildTeamScheduleRows,
   summarizeTeamSchedule,
 } from './standingsScheduleDerivations.js'
@@ -55,19 +57,47 @@ const matches = [
   },
 ]
 
-test('groupScheduleByGw — sorts GWs descending and tags finished', () => {
+test('groupScheduleByGw — sorts GWs ascending and tags finished', () => {
   const groups = groupScheduleByGw(matches, idToName)
   assert.deepEqual(
     groups.map((g) => g.event),
+    [1, 2, 3],
+  )
+  assert.equal(groups[0].finished, true)
+  assert.equal(groups[1].finished, true)
+  assert.equal(groups[2].finished, false)
+  assert.equal(groups[0].fixtures.length, 2)
+  assert.equal(groups[0].fixtures[0].homeName, 'Alpha')
+  assert.equal(groups[0].fixtures[0].homePts, 50)
+  assert.equal(groups[2].fixtures[0].homePts, null)
+})
+
+test('orderScheduleGwGroups — All/Fixtures keep 1–38; Results is latest first', () => {
+  const groups = groupScheduleByGw(matches, idToName)
+  assert.deepEqual(
+    orderScheduleGwGroups(groups, 'all').map((g) => g.event),
+    [1, 2, 3],
+  )
+  assert.deepEqual(
+    orderScheduleGwGroups(groups, 'fixtures').map((g) => g.event),
+    [1, 2, 3],
+  )
+  assert.deepEqual(
+    orderScheduleGwGroups(groups, 'results').map((g) => g.event),
     [3, 2, 1],
   )
-  assert.equal(groups[0].finished, false)
-  assert.equal(groups[1].finished, true)
-  assert.equal(groups[2].finished, true)
-  assert.equal(groups[2].fixtures.length, 2)
-  assert.equal(groups[2].fixtures[0].homeName, 'Alpha')
-  assert.equal(groups[2].fixtures[0].homePts, 50)
-  assert.equal(groups[0].fixtures[0].homePts, null)
+})
+
+test('orderScheduleTeamRows — Results is latest GW first', () => {
+  const rows = buildTeamScheduleRows(1, matches, idToName)
+  assert.deepEqual(
+    orderScheduleTeamRows(rows, 'all').map((r) => r.event),
+    [1, 2, 3],
+  )
+  assert.deepEqual(
+    orderScheduleTeamRows(rows, 'results').map((r) => r.event),
+    [3, 2, 1],
+  )
 })
 
 test('buildTeamScheduleRows — chronological with H/A and W/L/D', () => {

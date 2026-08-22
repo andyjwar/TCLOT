@@ -24,15 +24,20 @@ import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { effectiveStarters } from './liveSquadEffective.js';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureCardDeck } from './LiveFixtureCardDeck.jsx';
-import { GuardOfHonourSplash } from './GuardOfHonourSplash.jsx';
+import {
+  GuardOfHonourSplash,
+  GuardOfHonourCollapsedStrip,
+} from './GuardOfHonourSplash.jsx';
 import {
   REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
   REIGNING_CHAMPION_TEAM_NAME,
+  REIGNING_CHAMPION_TITLE_TEAM_NAME,
+  championSplashAutoCollapsed,
   findChampionFixture,
   managerSurnameFromFullName,
 } from './championOfRecord.js';
 import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
-import { firstWord } from './teamNameUtils.js';
+import { standingsMobileTeamName } from './teamNameUtils.js';
 import { englishOrdinal } from './playerContributionEvents.js';
 import {
   computeManagerForm,
@@ -871,9 +876,17 @@ export function LiveScores({
    * reigning champion's first fixture of a new season. Production trigger
    * (`gameweek === 1`) is OR'd with a manual `?gohSplash=1` URL flag so the
    * splash can be previewed against current (mid-season) data before the
-   * new season opener. Dismiss state is local to the component instance —
-   * resets on page reload, which matches how the FplLiveTripleThreatBanner
-   * promo behaves.
+   * new season opener.
+   *
+   * Collapse behaviour: the section renders fully expanded through the end
+   * of GW1's DEADLINE DAY (opening Friday, viewer-local) and auto-collapses
+   * to {@link GuardOfHonourCollapsedStrip} from the next local midnight
+   * (Saturday / Sunday of the gameweek) so the cinematic gets out of the
+   * way once matches are on. The user can override either way — the splash
+   * × collapses it early, tapping the strip expands it back — and the
+   * override is local to the component instance (resets on reload, which
+   * matches how the FplLiveTripleThreatBanner promo behaved). The
+   * `?gohSplash=1` preview flag always starts expanded.
    */
   const gohForceFlag = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -883,9 +896,14 @@ export function LiveScores({
       return false;
     }
   }, []);
-  const [gohDismissed, setGohDismissed] = useState(false);
+  /** null = follow the deadline-day default; true/false = user override. */
+  const [gohCollapsedOverride, setGohCollapsedOverride] = useState(null);
+  const gohCollapsed =
+    gohCollapsedOverride ??
+    (gohForceFlag
+      ? false
+      : championSplashAutoCollapsed(eventSnapshot?.deadline_time));
   const championFixtureBundle = useMemo(() => {
-    if (gohDismissed) return null;
     const shouldRender = gohForceFlag || Number(gameweek) === 1;
     if (!shouldRender) return null;
     const fx = findChampionFixture(gwMatches, REIGNING_CHAMPION_LEAGUE_ENTRY_ID);
@@ -910,7 +928,6 @@ export function LiveScores({
       opponentManagerSurname: managerSurnameFromFullName(opponentTeam?.manager),
     };
   }, [
-    gohDismissed,
     gohForceFlag,
     gameweek,
     gwMatches,
@@ -1110,7 +1127,14 @@ export function LiveScores({
       }
       const liveRank = currentLiveRank;
       const ordinalLive = i + 1;
-      const rankMove = (row.rank ?? 999) - ordinalLive;
+      /** No ↑/↓ until FPL has assigned season ranks (pre-season they are
+       * null — the old `?? 999` fallback flagged every row as a huge
+       * riser) and this GW has actually kicked off. */
+      const seasonRank = Number(row.rank);
+      const rankMove =
+        gwHasStarted && Number.isFinite(seasonRank) && seasonRank > 0
+          ? seasonRank - ordinalLive
+          : 0;
       return { ...row, liveRank, ordinalLive, rankMove };
     });
   }, [
@@ -1379,14 +1403,21 @@ export function LiveScores({
       ) : (
         <>
       {championFixtureBundle ? (
-        <GuardOfHonourSplash
-          championStarters={championFixtureBundle.championStarters}
-          opponentStarters={championFixtureBundle.opponentStarters}
-          championTeamName={championFixtureBundle.championTeamName}
-          opponentTeamName={championFixtureBundle.opponentTeamName}
-          opponentManagerSurname={championFixtureBundle.opponentManagerSurname}
-          onDismiss={() => setGohDismissed(true)}
-        />
+        gohCollapsed ? (
+          <GuardOfHonourCollapsedStrip
+            titleTeamName={REIGNING_CHAMPION_TITLE_TEAM_NAME}
+            onExpand={() => setGohCollapsedOverride(false)}
+          />
+        ) : (
+          <GuardOfHonourSplash
+            championStarters={championFixtureBundle.championStarters}
+            opponentStarters={championFixtureBundle.opponentStarters}
+            championTeamName={championFixtureBundle.championTeamName}
+            opponentTeamName={championFixtureBundle.opponentTeamName}
+            opponentManagerSurname={championFixtureBundle.opponentManagerSurname}
+            onCollapse={() => setGohCollapsedOverride(true)}
+          />
+        )
       ) : null}
       {useFixtureLayout ? (
         <section
@@ -1400,17 +1431,17 @@ export function LiveScores({
               const homeName = teamNameForEntry(teams, homeId);
               const awayName = teamNameForEntry(teams, awayId);
               /**
-               * Mobile (≤767px) collapses team names to their first word so
-               * the H2H fixture row fits a 390px viewport without
-               * `text-overflow: ellipsis` chewing mid-word; matches the
-               * Standings hero+table treatment via the shared
-               * {@link firstWord} helper.
+               * Mobile (≤767px) tries the full club name (MSFG renders as
+               * `Mordor SFG` via {@link standingsMobileTeamName}) — the
+               * row's `FittedTeamName` measures the slot and falls back to
+               * the curated short label only when the full name would
+               * overflow, so nothing ever gets a mid-word ellipsis.
                */
               const homeDisplayName = mobileNarrowViewport
-                ? firstWord(homeName)
+                ? standingsMobileTeamName(homeName)
                 : homeName;
               const awayDisplayName = mobileNarrowViewport
-                ? firstWord(awayName)
+                ? standingsMobileTeamName(awayName)
                 : awayName;
               const homeSquad = squadByLeagueEntry.get(homeId);
               const awaySquad = squadByLeagueEntry.get(awayId);

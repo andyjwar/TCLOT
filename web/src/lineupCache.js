@@ -20,7 +20,7 @@
  * # What gets cached
  *
  * Only rows whose `score.finished === true`, no `fetchError`, and that carry
- * a finite numeric `fplFixture.pulse_id`. Live or pre-match rows are NOT
+ * a real numeric `fplFixture.pulse_id` (id > 0). Live or pre-match rows are NOT
  * cached because their lineups (pre-match) and events/scores (live) still
  * change. `fplFixture` is intentionally stripped from cached payloads —
  * callers re-attach the live FPL fixture when reading, so a `pulse_id` move
@@ -50,6 +50,8 @@
  * are simply ignored — they sit in `sessionStorage` until the user closes the
  * tab, but they're never read.
  */
+
+import { isValidPulseId } from './fplPulseId.js';
 
 const CACHE_VERSION = 1;
 const STORAGE_KEY = `prem-lineups-cache:v${CACHE_VERSION}`;
@@ -136,8 +138,8 @@ function isRowFullTime(row) {
  * @returns {CachedLineupRow | null}
  */
 export function getCachedLineup(pulseId) {
+  if (!isValidPulseId(pulseId)) return null;
   const pid = Number(pulseId);
-  if (!Number.isFinite(pid)) return null;
   const cache = loadCache();
   const entry = cache[String(pid)];
   return entry || null;
@@ -153,8 +155,8 @@ export function getCachedLineup(pulseId) {
  * @returns {boolean} true if the row was cached
  */
 export function setCachedLineup(pulseId, row) {
+  if (!isValidPulseId(pulseId)) return false;
   const pid = Number(pulseId);
-  if (!Number.isFinite(pid)) return false;
   if (!row || row.fetchError) return false;
   if (!isRowFullTime(row)) return false;
   /** Don't cache empty rows — would mask retries when upstream recovers. */
@@ -187,8 +189,8 @@ export function setCachedLineup(pulseId, row) {
  * the user asks for a forced refetch of a specific fixture.
  */
 export function clearCachedLineup(pulseId) {
+  if (!isValidPulseId(pulseId)) return;
   const pid = Number(pulseId);
-  if (!Number.isFinite(pid)) return;
   const cache = loadCache();
   if (!(String(pid) in cache)) return;
   const next = { ...cache };

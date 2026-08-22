@@ -52,6 +52,27 @@ test('injuryDoubtScoreFromClassicElement — injured status caps path', () => {
   assert.equal(injuryDoubtScoreFromClassicElement({ status: 'i', chance_of_playing_this_round: 100 }), 3);
 });
 
+test('injuryDoubtScoreFromClassicElement — unavailable (left league) and suspended are out', () => {
+  // e.g. news: "Has joined Paris Saint-Germain permanently"
+  assert.equal(injuryDoubtScoreFromClassicElement({ status: 'u', chance_of_playing_next_round: 0 }), 3);
+  assert.equal(injuryDoubtScoreFromClassicElement({ status: 'u' }), 3);
+  assert.equal(injuryDoubtScoreFromClassicElement({ status: 's' }), 3);
+});
+
+test('injuryDoubtScoreFromClassicElement — falls back to next_round when this_round absent (draft bootstrap)', () => {
+  const d75 = injuryDoubtScoreFromClassicElement({ status: 'd', chance_of_playing_next_round: 75 });
+  assert.ok(d75 > 0 && d75 <= 100 / 28);
+  // this_round wins when both exist
+  assert.equal(
+    injuryDoubtScoreFromClassicElement({
+      status: 'd',
+      chance_of_playing_this_round: 100,
+      chance_of_playing_next_round: 25,
+    }),
+    0,
+  );
+});
+
 test('bootstrapElementToPlayer passes through fixed doubt score on null chance_of_playing', () => {
   const p = bootstrapElementToPlayer(
     stubElement({ chance_of_playing_this_round: null }),

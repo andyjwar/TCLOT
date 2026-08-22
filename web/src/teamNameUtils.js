@@ -8,8 +8,8 @@
  *
  * Mobile Standings dropped that first-word collapse: without the
  * manager subtitle there is room for the full club name. The one
- * exception is MSFG, which stays `MSFG` even when the FPL entry is
- * the long Mordorlicious / Mordor S.F.G form.
+ * exception is MSFG, which renders as `Mordor SFG` even when the FPL
+ * entry is the long Mordorlicious / Mordor S.F.G form.
  */
 
 /** Curated mobile labels for the 2026-27 squads, keyed by full `entry_name`. */
@@ -20,6 +20,7 @@ const MOBILE_SHORT_NAMES = new Map([
   ['Rokesly Regorasu', 'Regorasu'],
   ['Hackney Rohirrim', 'Rohirrim'],
   ['Mordor S.F.G', 'MSFG'],
+  ['Mordor SFG', 'MSFG'],
   ['Seoul Shire', 'Seoul Shire'],
   ['Brampton Balrogs', 'Balrogs'],
 ]);
@@ -41,7 +42,7 @@ export function firstWord(name) {
 }
 
 /** Mobile Standings label for Mr Mordorlicious School for Girls. */
-export const MSFG_STANDINGS_LABEL = 'MSFG'
+export const MSFG_STANDINGS_LABEL = 'Mordor SFG'
 
 /**
  * Whether a team name is the MSFG club (long form, "Mr. MSFG", or "MSFG").
@@ -59,7 +60,8 @@ export function isMsfgTeamName(name) {
 
 /**
  * Team name shown on mobile Standings (hero + table, and Live Table).
- * Full name for every club except MSFG, which always renders as `MSFG`.
+ * Full name for every club except MSFG, which always renders as
+ * `Mordor SFG`.
  *
  * @param {string | null | undefined} name
  * @returns {string}

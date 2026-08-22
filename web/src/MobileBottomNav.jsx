@@ -11,18 +11,19 @@
  * phase, derived from the shared brand-header status (`deriveBrandHeaderStatus`,
  * passed in as `liveStatus`):
  *
- *   - PRESEASON (status 'pre-season' / 'unknown'): FPL Live so fixtures and
- *     squads are ready before GW1. Same routing as Live/Scores.
+ *   - PRESEASON (status 'pre-season' / 'unknown'): label "Preview" with a
+ *     muted mono "GW{next}" chip. Routes to FPL Live landing on the Season
+ *     Predictions sub-tab.
  *   - LIVE GW (status 'live' — deadline passed, GW not finished): a solid
  *     green Geist Mono "LIVE" chip with a subtly blinking tick (option D of
  *     the scorestab mockup sheet); label "Live" (accent). Routes to FPL Live
- *     (`dashboardView 'fplLive'`).
+ *     landing on Scores.
  *   - GW OVER (status 'idle' — current GW finalized, between GWs): a muted
  *     mono "FT GW{n}" chip (option E of the sheet), where {n} is
  *     `liveStatus.lastFinishedGw` — the same field the brand header's
  *     "GW {n} complete" strip uses. Falls back to a bare "FT" when the GW
- *     number is unavailable. No pulse; label "Scores" (muted). Routes to FPL
- *     Live (`dashboardView 'fplLive'`).
+ *     number is unavailable. No pulse; label "Preview" (muted). Routes to
+ *     FPL Live landing on the weekly Recap.
  *
  * Heritage ('hall') and Settings ('settings') live behind More (the existing
  * `'more'` dashboardView page / DashboardMorePanel).
@@ -55,22 +56,31 @@ const TABS = [
   { id: /** @type {const} */ ('players'),       label: 'Players', icon: /** @type {const} */ ('shuffle') },
 ]
 
-/** Per-phase copy + routing for the contextual centre slot. */
+/** Per-phase copy + routing for the contextual centre slot. `tab` is the
+ * FPL Live sub-tab the button lands on: Scores mid-GW, the weekly Recap
+ * between GWs, and Season Predictions before the campaign starts. */
 const CENTER_BY_STATE = {
-  pre:  { label: 'Live',   view: /** @type {const} */ ('fplLive'), aria: 'FPL Live fixtures and scores' },
-  live: { label: 'Live',   view: /** @type {const} */ ('fplLive'), aria: 'FPL Live' },
-  over: { label: 'Scores', view: /** @type {const} */ ('fplLive'), aria: 'FPL Live scores' },
+  pre:  { label: 'Preview', view: /** @type {const} */ ('fplLive'), tab: 'predictions', aria: 'Season predictions' },
+  live: { label: 'Live',    view: /** @type {const} */ ('fplLive'), tab: 'live',        aria: 'FPL Live scores' },
+  over: { label: 'Preview', view: /** @type {const} */ ('fplLive'), tab: 'recap',       aria: 'Weekly recap and season predictions' },
 }
 
 /**
  * @param {{
  *   dashboardView: string,
  *   onSelect: (id: string) => void,
+ *   onCenterSelect?: (view: string, tab: string) => void,
  *   liveStatus?: { status?: 'live' | 'idle' | 'pre-season' | 'unknown' } | null,
  *   navLocked?: boolean,
  * }} props
  */
-export function MobileBottomNav({ dashboardView, onSelect, liveStatus, navLocked = false }) {
+export function MobileBottomNav({
+  dashboardView,
+  onSelect,
+  onCenterSelect,
+  liveStatus,
+  navLocked = false,
+}) {
   const gwState = gwStateFromStatus(liveStatus?.status)
   const center = CENTER_BY_STATE[gwState]
   const centerActive = dashboardView === center.view
@@ -100,16 +110,16 @@ export function MobileBottomNav({ dashboardView, onSelect, liveStatus, navLocked
           <button
             type="button"
             className={
-              'mobile-tab-bar__btn' + (dashboardView === 'preseason' ? ' is-active' : '')
+              'mobile-tab-bar__btn' + (dashboardView === 'teamSelection' ? ' is-active' : '')
             }
-            onClick={() => onSelect('preseason')}
-            aria-current={dashboardView === 'preseason' ? 'page' : undefined}
-            aria-label="26/27 season hub"
+            onClick={() => onSelect('teamSelection')}
+            aria-current={dashboardView === 'teamSelection' ? 'page' : undefined}
+            aria-label="Draft board"
           >
             <span className="mobile-tab-bar__ico" aria-hidden>
-              <NavIcon name="film" size={22} />
+              <NavIcon name="users" size={22} />
             </span>
-            <span className="mobile-tab-bar__label">26/27</span>
+            <span className="mobile-tab-bar__label">Draft</span>
           </button>
           <button
             type="button"
@@ -148,13 +158,23 @@ export function MobileBottomNav({ dashboardView, onSelect, liveStatus, navLocked
             className={
               'mobile-tab-bar__fab' + (centerActive ? ' is-active' : '')
             }
-            onClick={() => onSelect(center.view)}
+            onClick={() =>
+              onCenterSelect
+                ? onCenterSelect(center.view, center.tab)
+                : onSelect(center.view)
+            }
             aria-current={centerActive ? 'page' : undefined}
             aria-label={center.aria}
           >
             {gwState === 'pre' ? (
-              <span className="mobile-tab-bar__preicon" aria-hidden>
-                <NavIcon name="pulsing-dot" size={20} />
+              <span
+                className="mobile-tab-bar__chip mobile-tab-bar__chip--ft"
+                aria-hidden
+              >
+                {Number.isFinite(Number(liveStatus?.nextGw)) &&
+                Number(liveStatus.nextGw) >= 1
+                  ? `GW${Number(liveStatus.nextGw)}`
+                  : '26/27'}
               </span>
             ) : gwState === 'live' ? (
               <span

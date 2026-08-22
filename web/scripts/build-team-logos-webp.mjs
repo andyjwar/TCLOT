@@ -41,11 +41,52 @@ function resolveNamedSource(filename) {
   return null
 }
 
-async function writeCoverPng(inPath, outPath, size = 192) {
+/** Mean luminance (Rec. 709) over non-transparent pixels, 0–255. */
+function meanLuminance(img) {
+  const { data, width, height } = img.bitmap
+  let sum = 0
+  let n = 0
+  for (let i = 0; i < width * height * 4; i += 4) {
+    if (data[i + 3] > 128) {
+      sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]
+      n += 1
+    }
+  }
+  return n ? sum / n : 255
+}
+
+/**
+ * Lift dark badge art toward a target mean luminance via gamma. The LOTR
+ * crests average ~85–140/255 and turn into dark blobs at 20–36px; a gamma
+ * lift keeps highlights while opening the shadows. `maxGamma` caps the lift
+ * so near-black art (Brampton ~19/255) stays moody instead of washing gray.
+ * Already-bright badges are left untouched.
+ */
+function brightenAdaptive(img, target = 135, maxGamma = 0.45) {
+  const lum = meanLuminance(img)
+  if (lum >= target) return
+  const gamma = Math.max(
+    Math.log(target / 255) / Math.log(Math.max(lum, 1) / 255),
+    maxGamma,
+  )
+  const lut = new Uint8Array(256)
+  for (let i = 0; i < 256; i++) {
+    lut[i] = Math.round(255 * (i / 255) ** gamma)
+  }
+  const { data, width, height } = img.bitmap
+  for (let i = 0; i < width * height * 4; i += 4) {
+    data[i] = lut[data[i]]
+    data[i + 1] = lut[data[i + 1]]
+    data[i + 2] = lut[data[i + 2]]
+  }
+}
+
+async function writeCoverPng(inPath, outPath, size = 192, { brighten = false } = {}) {
   const st = statSync(inPath)
   if (existsSync(outPath) && statSync(outPath).mtimeMs >= st.mtimeMs) return false
   const img = await Jimp.read(inPath)
   await img.cover({ w: size, h: size })
+  if (brighten) brightenAdaptive(img)
   await img.write(outPath)
   return true
 }
@@ -60,7 +101,7 @@ async function main() {
     const inPath = join(SRC, f)
     const outPath = join(OUT, `${id}.png`)
     try {
-      if (await writeCoverPng(inPath, outPath)) {
+      if (await writeCoverPng(inPath, outPath, 192, { brighten: true })) {
         console.log('team-logos-web:', `${id}.png`)
       }
     } catch (e) {
@@ -80,7 +121,7 @@ async function main() {
     }
     const outPath = join(OUT, `${id}.png`)
     try {
-      if (await writeCoverPng(inPath, outPath)) {
+      if (await writeCoverPng(inPath, outPath, 192, { brighten: true })) {
         console.log('team-logos-web:', `${id}.png`, '←', filename)
       }
     } catch (e) {

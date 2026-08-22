@@ -1,6 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { firstWaiversTimeMs, initialMovesTab } from './seasonOpenLanding.js'
+import {
+  firstWaiversTimeMs,
+  initialDashboardView,
+  initialMovesTab,
+} from './seasonOpenLanding.js'
 
 const events = [
   { id: 1, waivers_time: '2026-08-20T17:30:00Z', deadline_time: '2026-08-21T17:30:00Z' },
@@ -25,4 +29,14 @@ test('Moves lands on Waivers once the first waivers_time has passed', () => {
 test('no calendar yet → Draft (post-draft squads live there)', () => {
   assert.equal(initialMovesTab(null), 'draft')
   assert.equal(initialMovesTab([]), 'draft')
+})
+
+test('cold load lands on Moves (Draft) except hash/archive', () => {
+  assert.equal(initialDashboardView(), 'teamSelection')
+  assert.equal(initialDashboardView({ hasPlayersHash: true }), 'players')
+  assert.equal(initialDashboardView({ archiveView: true }), 'standings')
+  assert.equal(
+    initialDashboardView({ hasPlayersHash: true, archiveView: true }),
+    'players',
+  )
 })

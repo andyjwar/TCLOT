@@ -5,6 +5,7 @@ import {
   formatDeadlineDate,
   formatMilestoneCountdown,
   formatMilestoneDateTime,
+  nextCalendarMilestone,
   seasonShortLabel,
 } from './brandHeaderStatus.js'
 
@@ -21,13 +22,19 @@ test('formatDeadlineDate — ISO → "Aug 15"', () => {
   assert.equal(formatDeadlineDate('not-a-date'), null)
 })
 
-test('formatMilestoneDateTime — includes both local date and time', () => {
-  const out = formatMilestoneDateTime('2026-03-14T13:30:00Z')
-  assert.match(out, /^[A-Z][a-z]{2} \d{1,2} at \d{2}:\d{2}$/)
+test('formatMilestoneDateTime — weekday, local month/day, and 24h time', () => {
+  const thu = new Date(2026, 7, 20, 18, 30, 0)
+  const fri = new Date(2026, 7, 21, 18, 30, 0)
+  assert.equal(formatMilestoneDateTime(thu), 'Thu Aug 20, 18:30')
+  assert.equal(formatMilestoneDateTime(fri), 'Fri Aug 21, 18:30')
+  assert.match(
+    formatMilestoneDateTime('2026-03-14T13:30:00Z'),
+    /^[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}, \d{2}:\d{2}$/,
+  )
   assert.equal(formatMilestoneDateTime('not-a-date'), null)
 })
 
-test('formatMilestoneCountdown — favors days/hours, then hours/minutes', () => {
+test('formatMilestoneCountdown — days/hours until 12h, then MM:SS clock', () => {
   const now = new Date('2026-03-10T10:00:00Z')
   assert.equal(
     formatMilestoneCountdown('2026-03-14T13:30:00Z', now),
@@ -35,11 +42,32 @@ test('formatMilestoneCountdown — favors days/hours, then hours/minutes', () =>
   )
   assert.equal(
     formatMilestoneCountdown('2026-03-10T14:30:00Z', now),
-    '4h 30m',
+    '04:30:00',
   )
   assert.equal(
     formatMilestoneCountdown('2026-03-10T10:42:00Z', now),
-    '42m',
+    '00:42:00',
+  )
+  const target = new Date('2026-08-20T17:30:00Z')
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-18T01:00:00Z')),
+    '2d 16h',
+  )
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-18T01:00:01Z')),
+    '2d 16h',
+  )
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-20T05:30:00Z')),
+    '12h',
+  )
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-20T05:30:01Z')),
+    '11:59:59',
+  )
+  assert.equal(
+    formatMilestoneCountdown(target, new Date('2026-08-20T17:29:05Z')),
+    '00:00:55',
   )
 })
 
@@ -63,7 +91,11 @@ test('deriveBrandHeaderStatus — live when current event is unfinished and dead
 test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and next deadline future', () => {
   const out = deriveBrandHeaderStatus({
     currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
-    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    nextEvent: {
+      id: 29,
+      waivers_time: '2026-03-14T13:30:00Z',
+      deadline_time: '2026-03-15T13:30:00Z',
+    },
     lastFinishedEvent: { id: 28 },
     season: '2025/26',
     now: new Date('2026-03-10T10:00:00Z'),
@@ -76,21 +108,27 @@ test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and n
   assert.equal(out.idleMilestone.countdownLabel, '4d 3h')
   assert.match(
     out.idleMilestone.dateTimeLabel,
-    /^[A-Z][a-z]{2} \d{1,2} at \d{2}:\d{2}$/,
+    /^[A-Z][a-z]{2} [A-Z][a-z]{2} \d{1,2}, \d{2}:\d{2}$/,
   )
+  assert.ok(out.idleMilestone.targetIso)
+  assert.equal(out.idleMilestone.waiversTime, '2026-03-14T13:30:00Z')
 })
 
 test('deriveBrandHeaderStatus — after waivers, idle milestone advances to GW start', () => {
   const out = deriveBrandHeaderStatus({
     currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
-    nextEvent: { id: 29, deadline_time: '2026-03-15T13:30:00Z' },
+    nextEvent: {
+      id: 29,
+      waivers_time: '2026-03-14T13:30:00Z',
+      deadline_time: '2026-03-15T13:30:00Z',
+    },
     lastFinishedEvent: { id: 28 },
     season: '2025/26',
     now: new Date('2026-03-14T14:00:00Z'),
   })
   assert.equal(out.status, 'idle')
   assert.equal(out.idleMilestone.kind, 'gameweek')
-  assert.equal(out.idleMilestone.countdownLabel, '23h 30m')
+  assert.equal(out.idleMilestone.countdownLabel, '23h')
 })
 
 test('deriveBrandHeaderStatus — pre-season when no event has finished', () => {
@@ -105,6 +143,24 @@ test('deriveBrandHeaderStatus — pre-season when no event has finished', () => 
   assert.equal(out.nextGw, 1)
   assert.equal(out.seasonShort, '26/27')
   assert.equal(out.nextDeadlineLabel, 'Aug 14')
+  assert.equal(out.idleMilestone.kind, 'gameweek')
+})
+
+test('deriveBrandHeaderStatus — pre-season uses FPL waivers_time before the first run', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: null,
+    nextEvent: {
+      id: 1,
+      waivers_time: '2026-08-20T17:30:00Z',
+      deadline_time: '2026-08-21T17:30:00Z',
+    },
+    lastFinishedEvent: null,
+    season: '2026/27',
+    now: new Date('2026-08-18T01:00:00Z'),
+  })
+  assert.equal(out.status, 'pre-season')
+  assert.equal(out.idleMilestone.kind, 'waivers')
+  assert.equal(out.idleMilestone.countdownLabel, '2d 16h')
 })
 
 test('deriveBrandHeaderStatus — unknown when bootstrap not loaded yet', () => {
@@ -416,6 +472,34 @@ test('deriveBrandHeaderStatus — kickoffLabel null on post-season idle (no next
   })
   assert.equal(out.status, 'idle')
   assert.equal(out.kickoffLabel, null)
+})
+
+test('nextCalendarMilestone — prefers official waivers_time over GW deadline', () => {
+  const now = new Date('2026-08-18T01:00:00Z')
+  const out = nextCalendarMilestone(
+    {
+      id: 1,
+      waivers_time: '2026-08-20T17:30:00Z',
+      deadline_time: '2026-08-21T17:30:00Z',
+    },
+    now,
+  )
+  assert.equal(out.kind, 'waivers')
+  assert.equal(out.countdownLabel, '2d 16h')
+})
+
+test('nextCalendarMilestone — advances to GW deadline after waivers_time', () => {
+  const now = new Date('2026-08-20T18:00:00Z')
+  const out = nextCalendarMilestone(
+    {
+      id: 1,
+      waivers_time: '2026-08-20T17:30:00Z',
+      deadline_time: '2026-08-21T17:30:00Z',
+    },
+    now,
+  )
+  assert.equal(out.kind, 'gameweek')
+  assert.equal(out.countdownLabel, '23h')
 })
 
 test('deriveBrandHeaderStatus — kickoffLabel null on live state (defensive)', () => {

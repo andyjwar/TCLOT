@@ -7,12 +7,18 @@ on:
     branches: [main, master]
   workflow_dispatch:
   # Schedules (UTC):
-  # - 30 5 * * * — once daily: full data refresh (gate always allows via daily window in script)
-  # - 0 * * * *  — every hour: post-waivers window, post-deadline ingest window, or 05:26–05:45 UTC daily
+  # - 30 5/13/21 * * * — three times daily: full data refresh (gate always allows via daily windows in script)
+  # - 0 * * * *  — every hour: post-waivers window, post-deadline ingest window, pre-waivers 3-hourly
+  #   window (24h before waivers_time), or the daily catch-all windows
   #   (see web/scripts/waiver-refresh-gate.mjs). Push / workflow_dispatch always deploy.
+  # - */15 * * * * — burst cron: gate deploys ONLY inside ~90 min after each waivers_time
+  #   (waivers land within minutes); skips immediately at all other times.
   schedule:
     - cron: '30 5 * * *'
+    - cron: '30 13 * * *'
+    - cron: '30 21 * * *'
     - cron: '0 * * * *'
+    - cron: '*/15 * * * *'
 
 permissions:
   contents: read
@@ -42,9 +48,12 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
 
-      # Pushes and manual runs always deploy. Scheduled: hourly is gated to post-waiver windows + daily slot.
+      # Pushes and manual runs always deploy. Scheduled: hourly is gated to post-waiver windows + daily slot;
+      # the */15 burst cron (SCHEDULE_CRON) is gated to the ~90 min burst window after each waivers_time.
       - name: Waiver / daily schedule gate
         id: gate
+        env:
+          SCHEDULE_CRON: ${{ github.event.schedule }}
         run: |
           if [ "$GITHUB_EVENT_NAME" != "schedule" ]; then
             echo "proceed=1" >> "$GITHUB_OUTPUT"
@@ -72,7 +81,24 @@ jobs:
             echo "::error::VITE_FPL_PROXY_URL is not set — GitHub Pages cannot call FPL from the browser (CORS). Add the Cloudflare Worker base URL under Settings → Secrets and variables → Actions (or github-pages Environment) as repository secret **VITE_FPL_PROXY_URL** (no trailing slash). See DEPLOY.md § Live tab proxy. Forks/demo only: create repository Variable **FPL_PROXY_OPTIONAL** = true."
             exit 1
           fi
-          echo "VITE_FPL_PROXY_URL configured — baked into this build for FPL Live + draft picks in browser."
+          # A set-but-malformed value bakes a broken URL into the bundle: the browser's
+          # fetch() then throws (Safari: "URL is not valid or contains user credentials.")
+          # and the Live tab dies at runtime while CI stays green. Fail here instead.
+          if ! node -e "
+            const raw = (process.env.VITE_FPL_PROXY_URL ?? '').trim();
+            let u;
+            try { u = new URL(raw); } catch {
+              console.error('not parseable as a URL');
+              process.exit(1);
+            }
+            if (u.protocol !== 'https:') { console.error('protocol is ' + u.protocol + ' — must be https:'); process.exit(1); }
+            if (u.username || u.password) { console.error('contains user credentials — browsers refuse to fetch such URLs'); process.exit(1); }
+            if (/\s/.test(raw)) { console.error('contains whitespace'); process.exit(1); }
+          "; then
+            echo "::error::VITE_FPL_PROXY_URL is set but is not a valid https URL. The value must be the bare Worker base URL, e.g. https://your-worker.workers.dev — no quotes, no NAME= prefix, no embedded credentials, no stray whitespace/newline. Check BOTH Settings → Secrets and variables → Actions AND Settings → Environments → github-pages (environment secrets silently override repository secrets)."
+            exit 1
+          fi
+          echo "VITE_FPL_PROXY_URL configured and valid — baked into this build for FPL Live + draft picks in browser."
 
       # League id: committed `league-id` file is source of truth. The github-pages
       # Environment secret FPL_LEAGUE_ID silently overrides the repository secret

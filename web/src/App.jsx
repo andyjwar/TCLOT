@@ -8,7 +8,11 @@ import {
   useRef,
   useSyncExternalStore,
 } from 'react'
-import { gameWeekSelectLabel, gameWeekShortLabel } from './gwLabel.js'
+import {
+  gameWeekSelectLabel,
+  gameWeekShortLabel,
+  gameWeekSpokenLabel,
+} from './gwLabel.js'
 import { NavIcon } from './NavIcon.jsx'
 import {
   archivedSeasonLabel,
@@ -19,6 +23,12 @@ import {
 } from './seasonArchive.js'
 import { getSeasonLabel } from './seasonString.js'
 import { isPreDraftAllowedView, resolveDraftGate } from './draftGate.js'
+import {
+  deriveBrandHeaderStatus,
+  formatMilestoneCountdown,
+  MILESTONE_SECONDS_WITHIN_MS,
+  nextCalendarMilestone,
+} from './brandHeaderStatus.js'
 
 const LEAGUE_TITLE_ABBR = 'TCLOT'
 const BRAND_HEADER_TOP_N = 8
@@ -49,6 +59,62 @@ function TclotLionIcon({ size = 22 }) {
         <path d={TCLOT_LION_PATH} />
       </g>
     </svg>
+  )
+}
+
+function BrandHeaderMilestoneTrail({ idleMilestone, nextGw, fallback = null }) {
+  const active = Boolean(
+    idleMilestone?.waiversTime || idleMilestone?.deadlineTime || idleMilestone?.targetIso,
+  )
+  const [now, setNow] = useState(() => new Date())
+  const live =
+    nextCalendarMilestone(
+      {
+        waivers_time: idleMilestone?.waiversTime,
+        deadline_time: idleMilestone?.deadlineTime,
+      },
+      now,
+    ) || idleMilestone
+  const remainingMs = live?.targetIso
+    ? Date.parse(live.targetIso) - now.getTime()
+    : Number.POSITIVE_INFINITY
+  const intervalMs =
+    Number.isFinite(remainingMs) &&
+    remainingMs > 0 &&
+    remainingMs < MILESTONE_SECONDS_WITHIN_MS
+      ? 1000
+      : 60_000
+  useEffect(() => {
+    if (!active || typeof window === 'undefined') return undefined
+    setNow(new Date())
+    const id = window.setInterval(() => setNow(new Date()), intervalMs)
+    return () => window.clearInterval(id)
+  }, [active, intervalMs])
+  const countdownLabel = live?.targetIso
+    ? formatMilestoneCountdown(live.targetIso, now)
+    : live?.countdownLabel
+  if (!live || !countdownLabel) return fallback
+
+  const phrase =
+    live.kind === 'waivers'
+      ? 'Waivers'
+      : live.kind === 'gameweek'
+        ? `GW ${nextGw} starts`
+        : null
+  if (!phrase) return fallback
+
+  return (
+    <>
+      <span className="visually-hidden">
+        {phrase} {live.dateTimeLabel}
+      </span>
+      <span className="brand-header__status-clock" aria-hidden="true">
+        {phrase} in{' '}
+        <strong className="brand-header__status-mono">{countdownLabel}</strong>
+        {' - '}
+        {live.dateTimeLabel}
+      </span>
+    </>
   )
 }
 
@@ -131,22 +197,16 @@ function BrandHeaderStatusBody({ liveStatus }) {
           GW {lastFinishedGw} complete
         </span>
         <span className="brand-header__status-sep">·</span>
-        {idleMilestone?.kind === 'waivers' ? (
-          <>
-            <span>
-              Waivers in <strong>{idleMilestone.countdownLabel}</strong>
-            </span>
-            <span className="brand-header__status-sep">·</span>
-            <span>{idleMilestone.dateTimeLabel}</span>
-          </>
-        ) : idleMilestone?.kind === 'gameweek' ? (
-          <>
-            <span>
-              GW {nextGw} starts in <strong>{idleMilestone.countdownLabel}</strong>
-            </span>
-            <span className="brand-header__status-sep">·</span>
-            <span>{idleMilestone.dateTimeLabel}</span>
-          </>
+        {idleMilestone ? (
+          <BrandHeaderMilestoneTrail
+            idleMilestone={idleMilestone}
+            nextGw={nextGw}
+            fallback={
+              <span>
+                GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
+              </span>
+            }
+          />
         ) : (
           <span>
             GW {nextGw} of {seasonShort} starts {nextDeadlineLabel ?? 'soon'}
@@ -161,7 +221,21 @@ function BrandHeaderStatusBody({ liveStatus }) {
     <>
       <span className="brand-header__status-strong">Pre-season</span>
       <span className="brand-header__status-sep">·</span>
-      {kickoffLabel ? (
+      {idleMilestone ? (
+        <BrandHeaderMilestoneTrail
+          idleMilestone={idleMilestone}
+          nextGw={nextGw}
+          fallback={
+            kickoffLabel ? (
+              <span>{seasonShort} season kicks off {kickoffLabel}</span>
+            ) : (
+              <span>
+                {seasonShort} season starts {nextDeadlineLabel ?? 'soon'}
+              </span>
+            )
+          }
+        />
+      ) : kickoffLabel ? (
         <span>{seasonShort} season kicks off {kickoffLabel}</span>
       ) : (
         <span>
@@ -393,7 +467,6 @@ import {
 import { TeamAvatar } from './TeamAvatar'
 import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
-import { deriveBrandHeaderStatus } from './brandHeaderStatus.js'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
 import { LiveScores } from './LiveScores'
 import { PlayerDetailOverlayProvider } from './PlayerDetailOverlay.jsx'
@@ -401,6 +474,8 @@ import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverla
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
+import { SeasonPredictions } from './SeasonPredictions'
+import { WeeklyRecap } from './WeeklyRecap'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
@@ -412,15 +487,18 @@ import {
   DEFAULT_TAB_STORAGE_KEY,
   readStoredDefaultTab,
 } from './settingsStorage'
-import { initialMovesTab } from './seasonOpenLanding.js'
+import { initialDashboardView, initialMovesTab } from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
+import { ForbiddenWaivers } from './ForbiddenWaivers'
 import {
   WeeklyWaivers,
   WaiverTotalsToggle,
   FirstWaiverPicks,
   WaiverPickupsToggle,
+  WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
+import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
 import {
   sortGroupsByFirstWaiverOrder,
   sortMovesWaiverThenFa,
@@ -455,27 +533,17 @@ import PullToRefresh from './PullToRefresh.jsx'
 import './App.css'
 
 /**
- * Complete / future GW tiles: full team name on desktop, curated short label
- * ({@link firstWord}) on narrow viewports (under 560px — see App.css
- * `gw-fixture-name-text--mobile-first-token` rules).
+ * Complete / future GW tiles: full club name at every width — matching the
+ * Schedule tab — with the one standing exception that MSFG stays `MSFG`.
  */
 function GwFixtureTightTeamName({ name }) {
-  const full = typeof name === 'string' ? name.trim() : ''
-  const short = firstWord(name)
-  if (!full || short === full) {
-    return (
-      <span className="gw-fixture-name-text team-name team-name--sidebar" title={full || undefined}>
-        {short || '—'}
-      </span>
-    )
-  }
+  const label = standingsMobileTeamName(name)
   return (
     <span
-      className="gw-fixture-name-text team-name team-name--sidebar gw-fixture-name-text--mobile-first-token"
-      title={full}
+      className="gw-fixture-name-text team-name team-name--sidebar"
+      title={label || undefined}
     >
-      <span className="gw-fixture-name-text__first">{short}</span>
-      <span className="gw-fixture-name-text__rest">{full}</span>
+      {label || '—'}
     </span>
   )
 }
@@ -509,7 +577,7 @@ const HALL_OF_CHAMPIONS = [
   },
   {
     season: '2024-25',
-    team: 'Soul Ze Moles',
+    team: 'Seoul Ze Moles',
     bannerImage: 'hall-champions/soul-ze-moles.png',
     bg: '#e71b74',
     ink: '#f0c441',
@@ -2332,16 +2400,15 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
   )
 }
 
-/** Resolve initial dashboard view: players hash > stored default-tab pref > Moves.
+/** Resolve initial dashboard view: players hash > archive > Moves/Draft.
  * Season-open default is Moves (Draft until the first Thursday waivers).
- * Stored `'preseason'` prefs are remapped in `readStoredDefaultTab`. */
+ * Stored Settings prefs do not override that landing. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'teamSelection'
-  if (parsePlayersHash()) return /** @type {const} */ ('players')
-  /** Archive view (?season=): land on the finished season's table — the
-   * preseason hub and stored default describe the *live* season. */
-  if (isArchiveView()) return /** @type {const} */ ('standings')
-  return readStoredDefaultTab()
+  return initialDashboardView({
+    hasPlayersHash: Boolean(parsePlayersHash()),
+    archiveView: isArchiveView(),
+  })
 }
 
 const STANDINGS_SORT_KEYS = /** @type {const} */ (['gf', 'ga', 'gd', 'total'])
@@ -2495,6 +2562,7 @@ function App() {
     gwRankExtremesMeta = { maxGw: 0, teamCount: 0 },
     gwWeeksAtFirst = [],
     gwWeeksAtLast = [],
+    leagueDataBuiltAt = null,
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
@@ -2502,16 +2570,15 @@ function App() {
     /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
   )
   const [movesTabPrimed, setMovesTabPrimed] = useState(false)
-  /* FPL Live sub-tab. Legacy values are coerced to `'live'` so a persisted
-   * pref or stale deep link cannot leave the Live tab blank: `'vibes'`
-   * (cinematics, moved to the Preseason hub) and `'forecast'` (player
-   * forecast leaderboard, hidden — the forecast data still powers the
-   * fixture Odds tab). */
+  /* FPL Live sub-tab. `null` = no explicit choice yet — the rendered tab then
+   * follows the season phase (see `fplLiveTab` below, derived after the brand
+   * header status). Legacy values are coerced to `'live'` so a persisted pref
+   * or stale deep link cannot leave the Live tab blank: `'vibes'` (cinematics,
+   * moved to the Preseason hub) and `'forecast'` (player forecast leaderboard,
+   * hidden — the forecast data still powers the fixture Odds tab). */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {'squads' | 'live'} */ ('live'),
+    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions'} */ (null),
   )
-  const fplLiveTab =
-    fplLiveTabRaw === 'vibes' || fplLiveTabRaw === 'forecast' ? 'live' : fplLiveTabRaw
   const setFplLiveTab = useCallback((next) => {
     setFplLiveTabRaw(next === 'vibes' || next === 'forecast' ? 'live' : next)
   }, [])
@@ -2585,7 +2652,7 @@ function App() {
 
   const selectDashboardView = useCallback((view) => {
     if (draftGate.navLocked && !isPreDraftAllowedView(view)) {
-      setDashboardView('preseason')
+      setDashboardView('teamSelection')
     } else {
       setDashboardView(view)
     }
@@ -2598,10 +2665,20 @@ function App() {
     }
   }, [draftGate.navLocked])
 
+  /** Contextual centre button: routes to FPL Live AND lands on the sub-tab
+   * matching the season phase (Scores when live, Recap/Predictions otherwise). */
+  const selectLiveHub = useCallback(
+    (view, tab) => {
+      if (tab) setFplLiveTab(tab)
+      selectDashboardView(view)
+    },
+    [selectDashboardView, setFplLiveTab],
+  )
+
   useEffect(() => {
     if (!draftGate.navLocked) return
     if (!isPreDraftAllowedView(dashboardView)) {
-      setDashboardView('preseason')
+      setDashboardView('teamSelection')
     }
   }, [draftGate.navLocked, dashboardView])
 
@@ -2730,6 +2807,18 @@ function App() {
       brandTotalFixtureCount,
     ],
   )
+
+  /* Effective FPL Live sub-tab. Until the user picks one, the default follows
+   * the season phase: live GW → Scores; between GWs → Recap; pre-season (and
+   * unknown) → Predictions before GW1 else Scores. Any explicit choice —
+   * sub-tab tap or the contextual centre button — wins from then on. */
+  const fplLiveTab =
+    fplLiveTabRaw ??
+    (brandHeaderStatus?.status === 'idle'
+      ? 'recap'
+      : brandHeaderStatus?.status === 'pre-season'
+        ? 'predictions'
+        : 'live')
 
   const rankByEntryId = useMemo(() => {
     const m = new Map()
@@ -3040,6 +3129,26 @@ function App() {
     const groups = sortGroupsByFirstWaiverOrder([...byEntry.values()])
     return { gw, groups }
   }, [waiverOutGwRows, teamsForFormSelect, waiverGwEffective])
+
+  const waiverFreshnessNotice = useMemo(
+    () =>
+      deriveWaiverFreshnessNotice({
+        draftEvents: draftBootstrapEvents.events,
+        leagueDataBuiltAt,
+        selectedGw: waiverGwEffective,
+        hasMovesForSelectedGw: (waiversForSelectedGw.groups?.length ?? 0) > 0,
+        isGwInProcessedList: processedWaiverGws.includes(waiverGwEffective),
+        now: statusNow,
+      }),
+    [
+      draftBootstrapEvents.events,
+      leagueDataBuiltAt,
+      waiverGwEffective,
+      waiversForSelectedGw.groups,
+      processedWaiverGws,
+      statusNow,
+    ],
+  )
 
   /** H2H rivals (Stats sub-tab) defaults to rank-1 team once data loads —
    * matches the spec's "Default to the rank-1 team" guidance. Once the user
@@ -3679,13 +3788,13 @@ function App() {
                           className="tile-title tile-title--sm tile--standings-next-gw__title"
                         >
                           <span className="tile--standings-next-gw__eyebrow">
-                            Next gameweek
+                            Next
                           </span>
                           <span className="tile--standings-next-gw__sep" aria-hidden="true">
                             ·
                           </span>
-                          <span className="tile--standings-next-gw__gw tabular">
-                            GW {nextGwForFixtureTile}
+                          <span className="tile--standings-next-gw__gw">
+                            {gameWeekSpokenLabel(nextGwForFixtureTile)}
                           </span>
                         </h2>
                       </div>
@@ -3803,6 +3912,10 @@ function App() {
               <div className="subview-panel">
               {teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
+              <ForbiddenWaivers />
+
+              <WaiverFreshnessBanner notice={waiverFreshnessNotice} />
+
               <section className="tile tile--compact" aria-labelledby="all-waivers-heading">
                 <div className="tile-head-row tile-head-row--tight">
                   <h2 id="all-waivers-heading" className="tile-title tile-title--sm">
@@ -3944,6 +4057,7 @@ function App() {
               />
             </div>
               )}
+
               </div>
             </>
           )}
@@ -4007,6 +4121,32 @@ function App() {
                 >
                   Lineups
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-recap"
+                  aria-selected={fplLiveTab === 'recap'}
+                  className={
+                    'subnav__tab' +
+                    (fplLiveTab === 'recap' ? ' subnav__tab--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('recap')}
+                >
+                  Recap
+                </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-predictions"
+                  aria-selected={fplLiveTab === 'predictions'}
+                  className={
+                    'subnav__tab' +
+                    (fplLiveTab === 'predictions' ? ' subnav__tab--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('predictions')}
+                >
+                  Predictions
+                </button>
               </div>
               </div>
               <div className="section-body">
@@ -4037,6 +4177,22 @@ function App() {
                   compactMobileChrome
                 />
               ) : null}
+              {fplLiveTab === 'recap' ? (
+                <div className="dashboard-stack">
+                  <WeeklyRecap
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </div>
+              ) : null}
+              {fplLiveTab === 'predictions' ? (
+                <div className="dashboard-stack">
+                  <SeasonPredictions
+                    teamLogoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </div>
+              ) : null}
               </div>
             </section>
           )}
@@ -4046,6 +4202,7 @@ function App() {
       <MobileBottomNav
         dashboardView={dashboardView}
         onSelect={selectDashboardView}
+        onCenterSelect={selectLiveHub}
         liveStatus={brandHeaderStatus}
         navLocked={draftGate.navLocked}
       />

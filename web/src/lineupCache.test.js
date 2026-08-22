@@ -85,6 +85,12 @@ function resetCache() {
   clearAllCachedLineups();
 }
 
+test('placeholder pulse_id 0 is never a cache key', () => {
+  resetCache();
+  assert.equal(setCachedLineup(0, finishedRow()), false);
+  assert.equal(getCachedLineup(0), null);
+});
+
 test('setCachedLineup + getCachedLineup roundtrip a FullTime row', () => {
   resetCache();
   const row = finishedRow();

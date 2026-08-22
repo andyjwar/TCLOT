@@ -724,8 +724,9 @@
   flex-shrink: 0;
 }
 
-/* Per-position tints live in App.css (`.position-chip--GKP` etc.) so
- * Wire, Draft, Waivers, and player-detail share the same muted pastels. */
+/* Players list chips stay the cream letter box — position is the letter
+ * (G / D / M / F), not a per-position colour. Draft / Waivers / player
+ * detail still use the pastel washes in App.css. */
 
 /* =====================================================
    Player-cell trailing indicator cluster
@@ -1088,46 +1089,42 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   gap: 0.38rem;
 }
 
+/* Home / away opponent chips: the FPL three-letter code on a soft
+ * tinted pill — green wash = home, red wash = away. Text-based so it
+ * sits quietly next to the regular-weight player names. */
 .players-fixture-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.85rem;
-  height: 1.85rem;
-  padding: 0.1rem;
+  padding: 2px 7px;
   flex-shrink: 0;
   box-sizing: border-box;
-  background: transparent;
+  border-radius: 999px;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  line-height: 1.3;
 }
 
-/* Home / away: club crest in a green square (home) or red circle (away).
- * Outline only — no tinted fill. */
 .players-fixture-badge--home {
-  border: 2px solid #439446;
-  border-radius: 5px;
-  background: transparent;
+  background: color-mix(in srgb, #439446 16%, transparent);
+  color: #2c6b30;
 }
 
 .players-fixture-badge--away {
-  border: 2px solid #b92c28;
-  border-radius: 50%;
-  background: transparent;
+  background: color-mix(in srgb, #b92c28 13%, transparent);
+  color: #99312d;
 }
 
-.players-fixture-badge__crest {
-  width: 1.38rem;
-  height: 1.38rem;
-  object-fit: contain;
-  display: block;
-  flex-shrink: 0;
+body[data-tclot-theme='dark'] .players-fixture-badge--home {
+  background: color-mix(in srgb, #439446 26%, transparent);
+  color: #9fd8a2;
 }
 
-.players-fixture-badge__crest--fallback {
-  font-size: 0.62rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  line-height: 1.85rem;
-  text-align: center;
+body[data-tclot-theme='dark'] .players-fixture-badge--away {
+  background: color-mix(in srgb, #b92c28 26%, transparent);
+  color: #eba3a0;
 }
 
 .players-fixtures-empty {
@@ -1702,30 +1699,14 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     cursor: pointer;
   }
 
-  /* Compact portrait fixture badge */
+  /* Compact portrait fixture pill */
   .players-fixtures-badges--next-only {
     justify-content: center;
   }
 
   .players-fixtures-badges--next-only .players-fixture-badge {
-    width: 1.28rem;
-    height: 1.28rem;
-    padding: 0.02rem;
-    border-width: 1.25px;
-  }
-
-  .players-fixtures-badges--next-only .players-fixture-badge--home {
-    border-radius: 4px;
-  }
-
-  .players-fixtures-badges--next-only .players-fixture-badge__crest {
-    width: 0.9rem;
-    height: 0.9rem;
-  }
-
-  .players-fixtures-badges--next-only .players-fixture-badge__crest--fallback {
-    font-size: 0.46rem;
-    line-height: 1.28rem;
+    padding: 1px 5px;
+    font-size: 9px;
   }
 
   /* =====================================================
@@ -1868,6 +1849,10 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     align-items: center;
     gap: 8px;
     min-width: 0;
+    /* The name button uses `font-size: inherit` (player-history-name-btn),
+     * which outranks .players-wire-tile__name in the cascade — size the
+     * row so the button inherits the draft-list 0.9rem. */
+    font-size: 0.9rem;
   }
 
   .players-wire-tile__kit {
@@ -1886,8 +1871,11 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   }
 
   .players-wire-tile__name {
-    font-size: 13px;
-    font-weight: 700;
+    /* Match the Draft round-list name as it actually RENDERS: the
+     * draft name is a .player-history-name-btn button that doesn't
+     * inherit its wrapper's 600, so it paints at 400 / 0.9rem. */
+    font-size: 0.9rem;
+    font-weight: 400;
     color: var(--text-strong);
     line-height: 1.25;
     word-break: break-word;
@@ -1961,26 +1949,10 @@ body[data-tclot-theme='dark'] .players-table__head-row {
     gap: 4px;
   }
 
-  /* Slim crest chips: green square home, red circle away. */
+  /* Slim opponent pills inside the tile */
   .players-wire-tile__fixtures .players-fixture-badge {
-    width: 1.4rem;
-    height: 1.4rem;
-    padding: 0.04rem;
-    border-width: 1.25px;
-  }
-
-  .players-wire-tile__fixtures .players-fixture-badge--home {
-    border-radius: 4px;
-  }
-
-  .players-wire-tile__fixtures .players-fixture-badge__crest {
-    width: 1rem;
-    height: 1rem;
-  }
-
-  .players-wire-tile__fixtures .players-fixture-badge__crest--fallback {
-    font-size: 0.5rem;
-    line-height: 1.4rem;
+    padding: 1.5px 6px;
+    font-size: 9.5px;
   }
 
   .players-wire-tile__right {

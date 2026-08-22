@@ -3,6 +3,8 @@ import { TeamAvatar } from './TeamAvatar'
 import {
   buildTeamScheduleRows,
   groupScheduleByGw,
+  orderScheduleGwGroups,
+  orderScheduleTeamRows,
   summarizeTeamSchedule,
 } from './standingsScheduleDerivations'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
@@ -10,6 +12,7 @@ import { LiveExpandedFixture } from './LiveExpandedFixture.jsx'
 import { useHistoricGwFixtureSquads } from './useHistoricGwFixtureSquads.js'
 import { useNarrowViewport } from './usePortraitMobile.js'
 import { firstWord } from './teamNameUtils.js'
+import { ClickableTeamName } from './TeamDetailOverlay.jsx'
 
 function pad2(n) {
   const num = Number(n)
@@ -18,7 +21,7 @@ function pad2(n) {
 }
 
 /**
- * Schedule sub-tab — all-teams chronological list (latest GW first) plus a team-filtered
+ * Schedule sub-tab — all-teams chronological list (GW 1–38; Results latest-first) plus a team-filtered
  * compact mode with W-L-T / Streak / Avg pts header card. See StandingsSubnav for
  * filter state ownership; this component receives state as props.
  *
@@ -87,17 +90,23 @@ export function StandingsScheduleSubview({
   )
 
   const filteredAllGroups = useMemo(() => {
-    if (resultsFilter === 'all') return allGwGroups
-    return allGwGroups.filter((g) =>
-      resultsFilter === 'results' ? g.finished : !g.finished,
-    )
+    const filtered =
+      resultsFilter === 'all'
+        ? allGwGroups
+        : allGwGroups.filter((g) =>
+            resultsFilter === 'results' ? g.finished : !g.finished,
+          )
+    return orderScheduleGwGroups(filtered, resultsFilter)
   }, [allGwGroups, resultsFilter])
 
   const filteredTeamRows = useMemo(() => {
-    if (resultsFilter === 'all') return teamRows
-    return teamRows.filter((r) =>
-      resultsFilter === 'results' ? r.finished : !r.finished,
-    )
+    const filtered =
+      resultsFilter === 'all'
+        ? teamRows
+        : teamRows.filter((r) =>
+            resultsFilter === 'results' ? r.finished : !r.finished,
+          )
+    return orderScheduleTeamRows(filtered, resultsFilter)
   }, [teamRows, resultsFilter])
 
   const filteredTeam = teamsForFormSelect.find(
@@ -261,8 +270,8 @@ function AllTeamsScheduleList({
  * accordion (click to reveal the player-by-player FPL breakdown via
  * {@link LiveExpandedFixture}). Upcoming fixtures stay inert.
  *
- * Row layout (1fr · auto · 1fr grid):
- *   home: avatar · name        score / vs         away: name · avatar
+ * Row layout (auto · 1fr · auto · 1fr · auto):
+ *   home crest · home name · score / v · away name · away crest
  *
  * The chevron (when the row is expandable) is rendered as a row-level
  * absolutely-positioned sibling rather than living inside the away side
@@ -289,7 +298,7 @@ function ScheduleFixtureItem({
 
   const rowChildren = (
     <>
-      <span className="standings-schedule__fixture-side standings-schedule__fixture-side--home">
+      <span className="standings-schedule__fixture-avatar standings-schedule__fixture-avatar--home">
         <TeamAvatar
           entryId={fx.homeId}
           name={fx.homeName}
@@ -297,17 +306,17 @@ function ScheduleFixtureItem({
           logoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
         />
-        <span
-          className={
-            'standings-schedule__fixture-name' +
-            (homeWin ? ' standings-schedule__fixture-name--winner' : '') +
-            (awayWin ? ' standings-schedule__fixture-name--loser' : '')
-          }
-          title={fx.homeName}
-        >
-          <span className="standings-schedule__fixture-name-full">
-            {fx.homeName}
-          </span>
+      </span>
+      <span
+        className={
+          'standings-schedule__fixture-name standings-schedule__fixture-name--home' +
+          (homeWin ? ' standings-schedule__fixture-name--winner' : '') +
+          (awayWin ? ' standings-schedule__fixture-name--loser' : '')
+        }
+        title={fx.homeName}
+      >
+        <span className="standings-schedule__fixture-name-full">
+          {fx.homeName}
         </span>
       </span>
       {fx.finished && fx.homePts != null && fx.awayPts != null ? (
@@ -334,22 +343,22 @@ function ScheduleFixtureItem({
         </span>
       ) : (
         <span className="standings-schedule__fixture-mid standings-schedule__fixture-vs">
-          vs
+          v
         </span>
       )}
-      <span className="standings-schedule__fixture-side standings-schedule__fixture-side--away">
-        <span
-          className={
-            'standings-schedule__fixture-name' +
-            (awayWin ? ' standings-schedule__fixture-name--winner' : '') +
-            (homeWin ? ' standings-schedule__fixture-name--loser' : '')
-          }
-          title={fx.awayName}
-        >
-          <span className="standings-schedule__fixture-name-full">
-            {fx.awayName}
-          </span>
+      <span
+        className={
+          'standings-schedule__fixture-name standings-schedule__fixture-name--away' +
+          (awayWin ? ' standings-schedule__fixture-name--winner' : '') +
+          (homeWin ? ' standings-schedule__fixture-name--loser' : '')
+        }
+        title={fx.awayName}
+      >
+        <span className="standings-schedule__fixture-name-full">
+          {fx.awayName}
         </span>
+      </span>
+      <span className="standings-schedule__fixture-avatar standings-schedule__fixture-avatar--away">
         <TeamAvatar
           entryId={fx.awayId}
           name={fx.awayName}
@@ -525,7 +534,10 @@ function TeamScheduleCompact({
                 >
                   {r.location}
                 </span>
-                <span
+                {/* Whole opponent cell (crest + name) opens the team detail
+                    card — the row itself is inert, so nesting is valid. */}
+                <ClickableTeamName
+                  leagueEntryId={r.opponentId}
                   className="standings-schedule-team__opp"
                   title={r.opponentName}
                 >
@@ -544,7 +556,7 @@ function TeamScheduleCompact({
                       {r.opponentName}
                     </span>
                   </span>
-                </span>
+                </ClickableTeamName>
                 <span className="standings-schedule-team__score tabular">
                   {showScore ? (
                     <>
@@ -575,7 +587,7 @@ function TeamScheduleCompact({
                       </span>
                     </>
                   ) : (
-                    <span className="standings-schedule-team__vs muted">vs</span>
+                    <span className="standings-schedule-team__vs muted">v</span>
                   )}
                 </span>
                 <span className="standings-schedule-team__result">
