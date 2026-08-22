@@ -252,11 +252,18 @@ function CurrentGwOdds({ homeSquad, awaySquad, homeId, awayId, homeName, awayNam
     const gw = predictions.gameweek ?? null;
     const gwMismatch = gw != null && ctx?.gameweek != null && Number(gw) !== Number(ctx.gameweek);
     const live = !gwMismatch && anyFixtureLive(homeRows, awayRows);
+    // "Most likely to return" always shows the pre-match forecast — a chip
+    // flipping to 100% once the return has actually happened tells the user
+    // nothing, so the original prediction stays put in Live mode too.
+    const returns = {
+      home: teamReturns(homeRows, byId, 'prematch', 'home', 3),
+      away: teamReturns(awayRows, byId, 'prematch', 'away', 3),
+    };
     const build = (mode) => ({
       home: teamProjection(homeRows, byId, mode),
       away: teamProjection(awayRows, byId, mode),
-      homeReturns: teamReturns(homeRows, byId, mode, 'home', 3),
-      awayReturns: teamReturns(awayRows, byId, mode, 'away', 3),
+      homeReturns: returns.home,
+      awayReturns: returns.away,
     });
     const pre = build('prematch');
     if (pre.home.matched === 0 && pre.away.matched === 0) return null;
