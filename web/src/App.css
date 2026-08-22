@@ -11924,7 +11924,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* Tighten every inter-element gap on the compact (phone) row so the name slot
    keeps as much width as possible for the first-word team name. */
 .live-banner-row--compact .live-banner-row__side {
-  gap: 5px;
+  gap: 4px;
 }
 .live-banner-row__side--home {
   justify-content: flex-start;
@@ -11951,7 +11951,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   flex-direction: row;
 }
 .live-banner-row--compact .live-banner-row__teamblock {
-  gap: 5px;
+  gap: 4px;
 }
 /* Per-team "players still to play" countdown pill at the far end of each side
    (home far-left, away far-right). Grey, quiet — matches the `FT` tag styling
@@ -12166,13 +12166,14 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-/* Compact score narrows 4.1em→3.7em: sized for the everyday 1–2 digit GW
-   totals so the reclaimed width goes to the team-name slots. A rare 100+
-   haul still renders — digits align toward the separator, so the third
-   digit bleeds harmlessly into the side gap instead of shifting the "–". */
+/* Compact score narrows 4.1em→3.6em: sized for the everyday 1–2 digit GW
+   totals so the reclaimed width goes to the team-name slots ("Toronto
+   Gimli" fits a 390px phone). A rare 100+ haul still renders — digits
+   align toward the separator, so the third digit bleeds harmlessly into
+   the side gap instead of shifting the "–". */
 .live-banner-row--compact .live-banner-row__score {
   font-size: 1.08rem;
-  width: 3.7em;
+  width: 3.6em;
 }
 .live-banner-row__score-cell--home {
   text-align: right;
