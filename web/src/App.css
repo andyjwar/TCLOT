@@ -11992,15 +11992,6 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-group__item--open {
   border-color: color-mix(in srgb, var(--fm-text) 18%, var(--fm-border));
 }
-/* Split view (≥1100px): mark which fixture the docked panel is showing —
-   brand-purple left bar + strengthened border, same vocabulary as the
-   villain/hero edge tints. */
-.live-scores-root--card-split .live-banner-group__item--selected {
-  border-color: color-mix(in srgb, var(--tclot-logo-purple) 45%, var(--fm-border));
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.35),
-    inset 3px 0 0 var(--tclot-logo-purple);
-}
 @media (max-width: 720px) {
   /* Full-bleed Scores band: the per-fixture cards collapse into a single
      continuous list. Adjacent items share the --fm-card background to form

@@ -25,15 +25,6 @@ export const NARROW_VIEWPORT_MQ = '(max-width: 880px)'
 /** Bottom-nav mobile shell — portrait + landscape phone/tablet narrow */
 export const MOBILE_LAYOUT_MQ = '(max-width: 1080px)'
 
-/**
- * Wide-desktop threshold for the Scores split view: fixtures list on the
- * left with the docked fixture-card panel on the right. Below this the
- * panel doesn't fit (432px panel + a comfortable list column), so 768–1099px
- * keeps the inline accordion and ≤767px keeps the full-screen card deck.
- * Must match the `@media (min-width: 1100px)` block in LiveFixtureCard.css.
- */
-export const SPLIT_FIXTURE_MQ = '(min-width: 1100px)'
-
 /** Synchronous viewport check for non-hook code paths (overlay open helpers). */
 export function matchesMobileLayoutViewport() {
   if (typeof window === 'undefined') return false
@@ -107,28 +98,6 @@ export function useMobileNarrowViewport() {
   }, [])
 
   return narrow
-}
-
-/**
- * @returns {boolean} true when the viewport is wide enough for the Scores
- * split view ({@link SPLIT_FIXTURE_MQ}, ≥1100px).
- */
-export function useSplitFixtureViewport() {
-  const [split, setSplit] = useState(() => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia(SPLIT_FIXTURE_MQ).matches
-  })
-
-  useEffect(() => {
-    if (typeof window === 'undefined') return undefined
-    const mq = window.matchMedia(SPLIT_FIXTURE_MQ)
-    const onChange = () => setSplit(mq.matches)
-    onChange()
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-
-  return split
 }
 
 /**
