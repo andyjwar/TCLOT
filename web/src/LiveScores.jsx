@@ -21,7 +21,6 @@ import { LiveProjectionsPanel } from './LiveProjectionsPanel.jsx';
 import { LiveFaceOffRow } from './LiveFaceOffRow.jsx';
 import { readLiveScoreLayout } from './featureFlags.js';
 import { HeroVillainAvatarFrame } from './HeroVillainAvatarFrame.jsx';
-import { effectiveStarters } from './liveSquadEffective.js';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { LiveFixtureCardDeck } from './LiveFixtureCardDeck.jsx';
 import { LiveFixtureDesktopPage } from './LiveFixtureDesktopPage.jsx';
@@ -39,6 +38,10 @@ import {
 import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
 import { standingsMobileTeamName } from './teamNameUtils.js';
 import { englishOrdinal } from './playerContributionEvents.js';
+import { usePredictions } from './usePredictions.js';
+import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
+import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
+import { teamProjection, anyFixtureLive } from './liveBlend.js';
 import {
   computeManagerForm,
   liveGwOutcomeDot,
@@ -53,6 +56,41 @@ import {
  * (reload to apply). See `featureFlags.js`.
  */
 const LIVE_SCORE_LAYOUT = readLiveScoreLayout();
+
+/**
+ * Live H2H win probabilities for one fixture from the forecast blend — the
+ * same model as the fixture card's Odds tab (per-player live blend once any
+ * XI player has kicked off, frozen pre-match forecast before). Returns null
+ * when the forecast covers neither XI (missing/stale predictions artifact,
+ * orphan squads) so the meta strip can skip the odds cleanly.
+ */
+function fixtureWinProbs(homeSquad, awaySquad, byId) {
+  const homeRows = effectiveStartersForCard(homeSquad);
+  const awayRows = effectiveStartersForCard(awaySquad);
+  const mode = anyFixtureLive(homeRows, awayRows) ? 'live' : 'prematch';
+  const home = teamProjection(homeRows, byId, mode);
+  const away = teamProjection(awayRows, byId, mode);
+  if (home.matched === 0 && away.matched === 0) return null;
+  return h2hWinProbs(home, away);
+}
+
+/**
+ * Favourite label for the fixtures meta strip — locked mockup Option R:
+ * ONLY the favourite, in the same ghost text as the seed label (the CSS
+ * uppercases it): `Mordor SFG 74%`. Draw-favourite and dead-even fixtures
+ * fall back to `Draw N%` / `Even N%` so the strip never picks a side that
+ * isn't actually ahead.
+ */
+function favouriteMetaLabel(probs, homeDisplayName, awayDisplayName) {
+  if (!probs) return null;
+  const h = Number(probs.homeWinPct) || 0;
+  const a = Number(probs.awayWinPct) || 0;
+  const d = Number(probs.drawPct) || 0;
+  if (d > h && d > a) return `Draw ${Math.round(d)}%`;
+  if (h === a) return `Even ${Math.round(h)}%`;
+  const name = h > a ? homeDisplayName : awayDisplayName;
+  return `${name} ${Math.round(Math.max(h, a))}%`;
+}
 
 /**
  * Mins cell: green ≥60; red 0 after club’s GW fixture(s) finished; yellow 2–59.
@@ -414,21 +452,6 @@ function heroDefeatLeagueEntryIds(squads, gwMatches) {
   return heroDefeatEntryIds(squadsToGwPointsMap(squads), gwMatches);
 }
 
-/** Effective XI rows (post-autosub when available) — shared rule. */
-const startersForEffectiveXi = effectiveStarters;
-
-/** Element ids on this squad’s submitted picks (starters ∪ bench) — guards against stale/mixed rows. */
-function pickElementIdSet(squad) {
-  const s = new Set();
-  for (const r of squad?.starters ?? []) {
-    if (r?.element != null) s.add(r.element);
-  }
-  for (const r of squad?.bench ?? []) {
-    if (r?.element != null) s.add(r.element);
-  }
-  return s;
-}
-
 const LEFT_TO_PLAY_TITLE =
   'Total fixtures left for the effective starting XI: each starter adds their own remaining club fixtures they can still score from (double gameweeks: up to two per player).';
 
@@ -608,9 +631,6 @@ export function LiveScores({
    */
   const mobileNarrowViewport = useMobileNarrowViewport();
 
-  /** Single “players remaining” panel for all H2H fixtures — open by default. */
-  const [ltpPanelExpanded, setLtpPanelExpanded] = useState(true);
-
   /** FPL element id + labels — opens slide-over season history from `element-summary`. */
   const { openPlayerHistory } = usePlayerHistory();
   const detailOverlayCtx = usePlayerDetailOverlayOptional();
@@ -688,6 +708,23 @@ export function LiveScores({
     }
     return m;
   }, [squads]);
+
+  /**
+   * Live odds for the fixtures meta strip (see {@link fixtureWinProbs}).
+   * Suppressed when the predictions artifact targets a different gameweek
+   * than the one on screen, or once the selected GW is finished — a settled
+   * result doesn't need a win probability next to it.
+   */
+  const { predictions } = usePredictions();
+  const oddsById = useMemo(
+    () => (predictions?.players?.length ? predictionsById(predictions) : null),
+    [predictions],
+  );
+  const predictionsGwMismatch =
+    predictions?.gameweek != null &&
+    Number(predictions.gameweek) !== Number(gameweek);
+  const showFixtureOdds =
+    Boolean(oddsById) && !predictionsGwMismatch && !selectedGwOption?.finished;
 
   /**
    * Guard of Honour splash — top-down 2D match-engine cinematic for the
@@ -978,57 +1015,6 @@ export function LiveScores({
   const heroDefeatEntryIds = useMemo(
     () => heroDefeatLeagueEntryIds(squads, gwMatches),
     [squads, gwMatches]
-  );
-
-  /** One object per H2H fixture with both sides’ fixture totals and player lines. */
-  const leftToPlayByFixture = useMemo(() => {
-    if (!gwMatches.length) return [];
-    const buildSide = (leagueEntryId) => {
-      const squad = squadByLeagueEntry.get(leagueEntryId);
-      const name =
-        squad?.teamName ?? teamNameForEntry(teams, leagueEntryId);
-      const live = liveGwDisplayTotal(squad);
-      const xi = startersForEffectiveXi(squad);
-      const allowed = pickElementIdSet(squad);
-      const ltpRows = xi
-        .filter((r) => allowed.has(r.element))
-        .filter((r) => Number(r.playerGamesLeftToPlay) > 0);
-      // PR #5i: structured chips replace the old preformatted
-      // "Name (OPP)" strings so the redesigned tile can style player
-      // name (Inter) and opponent code (Geist Mono) separately.
-      const chips = ltpRows.map((r) => ({
-        name: String(r.web_name ?? r.displayName ?? '').trim() || '?',
-        opp: r.opponentShortLabel ?? '—',
-      }));
-      const ltpGamesCount = ltpRows.reduce((sum, r) => {
-        const n = Number(r.playerGamesLeftToPlay);
-        return sum + (Number.isFinite(n) && n > 0 ? n : 0);
-      }, 0);
-      return { leagueEntryId, name, live, chips, ltpGamesCount };
-    };
-    return gwMatches.map((m) => {
-      const homeId = Number(m.league_entry_1);
-      const awayId = Number(m.league_entry_2);
-      return {
-        key: `${homeId}-${awayId}-${Number(gameweek)}`,
-        home: buildSide(homeId),
-        away: buildSide(awayId),
-      };
-    });
-  }, [gwMatches, teams, squadByLeagueEntry, gameweek]);
-
-  // Sum of remaining player-fixtures across both sides of every H2H
-  // matchup. Used only to gate the empty-state — when this is 0 the
-  // tile is hidden entirely (GW done ⇒ the brand-header status strip
-  // already says "GW {N} complete · …" page-wide).
-  const totalRemainingFixtures = useMemo(
-    () =>
-      leftToPlayByFixture.reduce(
-        (sum, fx) =>
-          sum + (fx.home?.ltpGamesCount ?? 0) + (fx.away?.ltpGamesCount ?? 0),
-        0
-      ),
-    [leftToPlayByFixture]
   );
 
   const pairedLeagueEntryIds = useMemo(() => {
@@ -1340,12 +1326,14 @@ export function LiveScores({
               const awayStatus = awayVillain ? 'villain' : awayHero ? 'hero' : null;
 
               /**
-               * Per-fixture seeding pill ("1st vs 8th") — each team's live
-               * competition rank from {@link liveRankByEntry}, formatted with
-               * English ordinals and rendered in the FotMob GROUP-pill
-               * treatment above the row. Skipped when either rank is missing
-               * (e.g. off-season / not-yet-ingested standings) so the pill
-               * never shows a half-empty "1st vs ".
+               * Per-fixture meta strip (locked live-odds mockup Option R) —
+               * a quiet tinted band opening the fixture: the seeding label
+               * ("1st vs 8th", each team's live competition rank from
+               * {@link liveRankByEntry}) as faded ghost text on the left,
+               * and the live favourite with their win probability ("Mordor
+               * SFG 74%") in the SAME ghost treatment on the right. Either
+               * side renders independently — a missing rank (off-season
+               * standings) or missing forecast never blanks the whole strip.
                */
               const homeLiveRank = Number(liveRankByEntry[homeId]);
               const awayLiveRank = Number(liveRankByEntry[awayId]);
@@ -1353,6 +1341,13 @@ export function LiveScores({
                 Number.isFinite(homeLiveRank) && Number.isFinite(awayLiveRank)
                   ? `${englishOrdinal(homeLiveRank)} vs ${englishOrdinal(awayLiveRank)}`
                   : null;
+              const favLabel = showFixtureOdds
+                ? favouriteMetaLabel(
+                    fixtureWinProbs(homeSquad, awaySquad, oddsById),
+                    homeDisplayName,
+                    awayDisplayName,
+                  )
+                : null;
 
               return (
                 <div
@@ -1363,15 +1358,22 @@ export function LiveScores({
                     (homeHero || awayHero ? ' live-banner-group__item--hero-defeat' : '')
                   }
                 >
-                  {seedLabel ? (
-                    <span
+                  {seedLabel || favLabel ? (
+                    <div
                       className={
-                        'live-banner-row__seed' +
-                        (narrowViewport ? ' live-banner-row__seed--compact' : '')
+                        'live-banner-group__meta' +
+                        (narrowViewport ? ' live-banner-group__meta--compact' : '')
                       }
                     >
-                      {seedLabel}
-                    </span>
+                      <span className="live-banner-group__meta-text">
+                        {seedLabel}
+                      </span>
+                      {favLabel ? (
+                        <span className="live-banner-group__meta-text">
+                          {favLabel}
+                        </span>
+                      ) : null}
+                    </div>
                   ) : null}
                   <LiveFaceOffRow
                     homeId={homeId}

@@ -6765,208 +6765,6 @@ body[data-tclot-theme='dark'] .player-contrib-kind-btn--all[aria-pressed='true']
   font-size: 0.78rem;
 }
 
-/* ============================================================ */
-/* Fixtures left to play tile (PR #5i)                          */
-/* ============================================================ */
-/*
- * Replaces the old `.live-ltp-*` flat list (visually a holdover
- * from the pre-redesign Live page — heavy horizontal rules between
- * matchup pairs, score · avatar · name · count · "Name (OPP), ..."
- * comma string per side).
- *
- * Aesthetic choices:
- *  - Each matchup pair sits in its own polished tile (`__card`):
- *    surface bg (--fm-surface-2 with brand-tinted border), rounded
- *    --r-md corners, breathable --space-3/--space-4 padding. The
- *    heavy horizontal rules between pairs are gone — card spacing
- *    carries the separation.
- *  - Inside each card the two sides stack vertically separated by a
- *    single hairline (color-mixed --fm-border, much lighter than the
- *    old `--fm-border-strong` rule).
- *  - Per-side head: avatar + team name + small mono "N left" pill +
- *    right-aligned live score (mono, bold). The pill is hidden when
- *    a side has 0 fixtures left so it doesn't visually claim that
- *    side still has chips below.
- *  - Player chips reuse the small pill treatment from the
- *    contributions feed (Inter for name, Geist Mono for opponent
- *    code), wrapping naturally as a flex list. The empty state for
- *    a finished side reads simply "All players done" in muted text.
- *  - Section header: bold inline title + a small "(N fixtures left)"
- *    count chip + chevron, in line with the tile-head treatment used
- *    on the Live Table tile. The whole tile hides when totalRemaining
- *    = 0 (LiveScores.jsx gate) — the FINAL · GW N · Gameweek complete
- *    strip above already conveys "all done".
- */
-.live-remaining-fixtures {
-  margin-top: 0;
-  padding: var(--space-3) var(--space-4) var(--space-4);
-  border-radius: var(--r-lg, 14px);
-}
-
-.live-remaining-fixtures__toggle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  width: 100%;
-  padding: 0;
-  margin: 0;
-  font: inherit;
-  color: inherit;
-  text-align: left;
-  background: transparent;
-  border: 0;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-}
-
-.live-remaining-fixtures__toggle:focus-visible {
-  outline: 2px solid var(--brand, #795bfb);
-  outline-offset: 4px;
-  border-radius: var(--r-sm, 6px);
-}
-
-.live-remaining-fixtures__title {
-  flex: 1 1 auto;
-  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
-  font-size: 1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: var(--fm-text-strong, #111);
-}
-
-.live-remaining-fixtures__chevron {
-  flex: 0 0 auto;
-  width: 1rem;
-  font-size: 0.7rem;
-  line-height: 1;
-  opacity: 0.55;
-  color: var(--fm-muted);
-}
-
-.live-remaining-fixtures__body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  margin-top: var(--space-3);
-}
-
-.live-remaining-fixtures__card {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-3);
-  padding: var(--space-3) var(--space-3);
-  background: color-mix(in srgb, var(--fm-surface-2, #f4f4f5) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--fm-border) 80%, transparent);
-  border-radius: var(--r-md, 10px);
-}
-
-.live-remaining-fixtures__side {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding-bottom: var(--space-3);
-  border-bottom: 1px solid
-    color-mix(in srgb, var(--fm-border) 55%, transparent);
-}
-
-.live-remaining-fixtures__side:last-child {
-  padding-bottom: 0;
-  border-bottom: 0;
-}
-
-.live-remaining-fixtures__side-head {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-width: 0;
-}
-
-.live-remaining-fixtures__name {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
-  font-size: var(--text-sm, 13px);
-  font-weight: 700;
-  color: var(--fm-text-strong, #111);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.live-remaining-fixtures__pill {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: center;
-  height: 18px;
-  padding: 0 6px;
-  border-radius: var(--r-sm, 6px);
-  font-family: 'Geist Mono', monospace;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-  line-height: 1;
-  color: var(--brand, #795bfb);
-  background: color-mix(in srgb, var(--brand, #795bfb) 14%, transparent);
-}
-
-.live-remaining-fixtures__score {
-  flex: 0 0 auto;
-  min-width: 2.25rem;
-  font-family: 'Geist Mono', monospace;
-  font-variant-numeric: tabular-nums;
-  font-size: var(--text-md, 14px);
-  font-weight: 700;
-  color: var(--fm-text-strong, #111);
-  text-align: right;
-}
-
-.live-remaining-fixtures__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-1) var(--space-2);
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.live-remaining-fixtures__chip {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-  padding: 3px 8px;
-  border-radius: var(--r-sm, 6px);
-  background: color-mix(in srgb, var(--fm-text-strong, #111) 5%, transparent);
-  border: 1px solid color-mix(in srgb, var(--fm-border) 65%, transparent);
-  font-size: 0.78rem;
-  line-height: 1.2;
-}
-
-.live-remaining-fixtures__chip-name {
-  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
-  font-weight: 600;
-  color: var(--fm-text-strong, #111);
-}
-
-.live-remaining-fixtures__chip-opp {
-  font-family: 'Geist Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: 500;
-  color: var(--fm-muted);
-  font-variant-numeric: tabular-nums;
-}
-
-.live-remaining-fixtures__done {
-  margin: 0;
-  font-family: var(--tclot-font-ui, 'Inter'), system-ui, -apple-system, sans-serif;
-  font-size: 0.78rem;
-  color: var(--fm-muted);
-  font-style: italic;
-}
-
 /* H2H fixtures: full-width cards in a vertical stack (mobile + desktop) */
 .live-fixtures-scroller__track {
   display: flex;
@@ -12047,34 +11845,36 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* Single face-off row (desktop + mobile compressed)            */
 /* ============================================================ */
 
-/* Per-fixture seeding pill ("1st vs 8th"), left-aligned above the face-off
-   row. Locked to Scorebook "quiet pill" (seed mockup Option B / `?seed=1`):
-   shorter mono chip, hairline border, muted weight — no longer the taller
-   FotMob GROUP pill. Each team's live rank is threaded in from
-   `liveStandingsRows` (see LiveScores). */
-.live-banner-row__seed {
+/* Per-fixture meta strip (live-odds mockup Option R) — a quiet tinted band
+   opening each fixture tile: seed label ("1st vs 8th") left, live favourite
+   ("Mordor SFG 74%") right, BOTH in the same faded uppercase ghost mono so
+   neither dominates. Replaces the former bordered seed pill, which read too
+   heavy against the row. The band's wash sits between --fm-surface-2 and the
+   card so it delineates the fixture it opens without becoming a header bar. */
+.live-banner-group__meta {
   display: flex;
-  width: fit-content;
-  align-items: center;
-  height: 16px;
-  margin: 10px 0 0 14px;
-  padding: 0 8px;
-  border-radius: 999px;
-  background: var(--surface-2, var(--fm-surface-2));
-  border: 1px solid var(--border, var(--fm-border));
-  color: var(--text-muted, var(--fm-muted));
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 14px 7px;
+  background: color-mix(in srgb, var(--fm-surface-2) 62%, var(--fm-card));
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
+  font-size: 9.5px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
   line-height: 1;
 }
-.live-banner-row__seed--compact {
-  height: 15px;
-  margin: 8px 0 0 12px;
-  padding: 0 7px;
+.live-banner-group__meta--compact {
+  padding: 5px 12px 6px;
   font-size: 9px;
+}
+.live-banner-group__meta-text {
+  color: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 78%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .live-banner-row {
@@ -12107,9 +11907,13 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row--toggle:hover:not(:focus-visible) {
   background: color-mix(in srgb, var(--fm-surface-2) 38%, transparent);
 }
+/* Compact paddings/gaps trimmed (10→8px sides, 5→4px grid gap) so the name
+   slot can render full club names ("Toronto Gimli") on a 390px phone; the
+   FittedTeamName fallback to the curated short label still guards the
+   longest names ("Hackney Rohirrim"). */
 .live-banner-row--compact {
-  padding: 10px 10px 14px;
-  gap: 5px;
+  padding: 10px 8px 14px;
+  gap: 4px;
 }
 .live-banner-row__side {
   display: flex;
@@ -12120,7 +11924,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* Tighten every inter-element gap on the compact (phone) row so the name slot
    keeps as much width as possible for the first-word team name. */
 .live-banner-row--compact .live-banner-row__side {
-  gap: 6px;
+  gap: 5px;
 }
 .live-banner-row__side--home {
   justify-content: flex-start;
@@ -12147,7 +11951,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   flex-direction: row;
 }
 .live-banner-row--compact .live-banner-row__teamblock {
-  gap: 6px;
+  gap: 5px;
 }
 /* Per-team "players still to play" countdown pill at the far end of each side
    (home far-left, away far-right). Grey, quiet — matches the `FT` tag styling
@@ -12170,9 +11974,9 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   line-height: 1;
 }
 .live-banner-row--compact .live-banner-row__countdown {
-  min-width: 22px;
+  min-width: 20px;
   height: 18px;
-  padding: 0 5px;
+  padding: 0 4px;
   font-size: 9px;
 }
 /* Crest column simply wraps the avatar (+ its hero/villain ring). The
@@ -12362,9 +12166,13 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+/* Compact score narrows 4.1em→3.7em: sized for the everyday 1–2 digit GW
+   totals so the reclaimed width goes to the team-name slots. A rare 100+
+   haul still renders — digits align toward the separator, so the third
+   digit bleeds harmlessly into the side gap instead of shifting the "–". */
 .live-banner-row--compact .live-banner-row__score {
   font-size: 1.08rem;
-  width: 4.1em;
+  width: 3.7em;
 }
 .live-banner-row__score-cell--home {
   text-align: right;
