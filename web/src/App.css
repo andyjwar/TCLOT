@@ -11949,23 +11949,6 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row--compact .live-banner-row__teamblock {
   gap: 5px;
 }
-/* Compact rows anchor the team NAME beside its to-play pill (block stretched,
-   space-between) instead of letting the whole name+crest block hug the centre
-   score. Variable-length names made the centre-hugging layout read ragged —
-   every name now starts at the same x on every row, the crests keep a fixed
-   x beside the score, and the leftover air sits mid-row instead of pooling
-   unevenly behind the pills. Desktop keeps the FotMob centre-hugging block. */
-.live-banner-row--compact .live-banner-row__teamblock--home,
-.live-banner-row--compact .live-banner-row__teamblock--away {
-  flex: 1 1 auto;
-  justify-content: space-between;
-}
-.live-banner-row--compact .live-banner-row__teamblock--home {
-  margin-left: 0;
-}
-.live-banner-row--compact .live-banner-row__teamblock--away {
-  margin-right: 0;
-}
 /* Per-team "players still to play" countdown pill at the far end of each side
    (home far-left, away far-right). Grey, quiet — matches the `FT` tag styling
    — showing the remaining starters, or `FT` once that team is done. */
