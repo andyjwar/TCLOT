@@ -238,11 +238,11 @@ export function LiveOddsSection({
           {anyLive ? ' · updates live' : ''}
         </span>
       </div>
-      <p className="lo-sub muted">
-        {computed.gwMismatch
-          ? `Projections shown are the pre-match forecast for GW${computed.forecastGw}.`
-          : `Fair odds from the ${anyLive ? 'live' : 'pre-match'} projection model. Tap a matchup for the full odds.`}
-      </p>
+      {computed.gwMismatch ? (
+        <p className="lo-sub muted">
+          {`Projections shown are the pre-match forecast for GW${computed.forecastGw}.`}
+        </p>
+      ) : null}
 
       {fixtures.map((f) => {
         const model = computed.models.get(f.key);

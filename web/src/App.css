@@ -11751,7 +11751,10 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   padding: 0 !important;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  /* Header-to-cards gap matches the Live Odds tile's tightened 8px (the
+     head's own --tight margin is zeroed below so this flex gap is the
+     single source of spacing). */
+  gap: 8px;
 }
 
 /* The per-tile pill (chip + meta + progress) that previously sat above
@@ -11783,11 +11786,14 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* ============================================================ */
 
 /* "Live Scores" header opening the fixtures tile — same title hierarchy as
-   the Live Odds tile's header, prefixed with the green pulsing NavIcon dot
-   (same 12px treatment as the brand-header status dot). No sub-caption: the
-   fixtures list follows immediately. */
+   the Live Odds tile's header. The dot is the SAME treatment as the Live
+   Odds title dot (.lo-live-dot: 7px circle + soft glow ring) but in the
+   live-green instead of red. No sub-caption: the fixtures list follows
+   immediately, spaced by the tile's 8px flex gap (head margin zeroed so
+   the --tight 14px doesn't stack on top of it). */
 .live-banner-group__head {
   align-items: center;
+  margin-bottom: 0 !important;
 }
 .live-banner-group__title {
   display: inline-flex;
@@ -11795,21 +11801,12 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   gap: 7px;
 }
 .live-banner-group__live-dot {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 12px;
-  height: 12px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #16a34a;
+  box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.18);
   flex: 0 0 auto;
-}
-.live-banner-group__live-dot-svg .nav-icon__pulse-target {
-  transform-origin: 12px 12px;
-  animation: dashboard-nav-icon-pulse 2.2s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  .live-banner-group__live-dot-svg .nav-icon__pulse-target {
-    animation: none;
-  }
 }
 
 /* The per-fixture meta strip (`.live-banner-group__meta*`, mockup Option R)

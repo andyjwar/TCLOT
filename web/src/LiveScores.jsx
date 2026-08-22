@@ -37,7 +37,6 @@ import {
 } from './championOfRecord.js';
 import { useMobileNarrowViewport } from './usePortraitMobile.js';
 import { standingsMobileTeamName } from './teamNameUtils.js';
-import { NavIcon } from './NavIcon.jsx';
 import { usePredictions } from './usePredictions.js';
 import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
@@ -1253,13 +1252,7 @@ export function LiveScores({
         >
           <div className="tile-head-row tile-head-row--tight live-banner-group__head">
             <h2 className="tile-title tile-title--sm live-banner-group__title">
-              <span className="live-banner-group__live-dot" aria-hidden="true">
-                <NavIcon
-                  name="pulsing-dot"
-                  className="live-banner-group__live-dot-svg"
-                  size={12}
-                />
-              </span>
+              <span className="live-banner-group__live-dot" aria-hidden="true" />
               Live Scores
             </h2>
           </div>

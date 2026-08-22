@@ -9,6 +9,10 @@
 
 .lo-head-row {
   align-items: baseline;
+  /* No sub-caption below the title anymore (the "fair odds" line was
+     retired) — pull the first card up close under the header. Overrides
+     .tile-head-row--tight's 14px !important. */
+  margin-bottom: 8px !important;
 }
 .lo-title {
   display: inline-flex;
