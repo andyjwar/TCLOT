@@ -703,7 +703,7 @@ export function PlayerContributions({
       if (!ownerLine) {
         ownerLine = drop
           ? `Last dropped, GW${drop.gameweek}, ${drop.teamName}.`
-          : 'Waivers / free agents';
+          : 'Free Agent';
       }
       const ap = contributionActionParts(
         ev.kind,
@@ -1217,7 +1217,7 @@ export function PlayerContributions({
                         ? isWaiverSameGw
                           ? `this GW · ${r.waiverDrop.dropperFirstWord}: utter twat.`
                           : `GW${r.waiverDrop.gw} · dropped by ${r.waiverDrop.dropperFirstWord}`
-                        : 'Waivers / free agents'}
+                        : 'Free Agent'}
                   </span>
                 </div>
                 <div className="live-contrib-row__meta-bottom">

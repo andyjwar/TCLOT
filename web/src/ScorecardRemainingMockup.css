@@ -1,0 +1,494 @@
+/* Local-only gallery (`?scorecard=1`) — players-remaining visuals for the
+   Live Odds-sized scorecard. Self-contained Scorebook palette so the gallery
+   previews match the cream/racing-green paper regardless of app theme. */
+
+.scm {
+  --scm-paper: #efe8d6;
+  --scm-card: #fdfaf0;
+  --scm-band: #f3edda;
+  --scm-border: #e0d8bf;
+  --scm-ink: #26251f;
+  --scm-ink-strong: #17402f;
+  --scm-green: #1d5c40;
+  --scm-green-soft: rgba(23, 64, 47, 0.14);
+  --scm-muted: #8f8a75;
+  --scm-ghost: rgba(105, 100, 82, 0.62);
+  min-height: 100vh;
+  background: var(--scm-paper);
+  color: var(--scm-ink);
+  font-family: 'Geist', system-ui, sans-serif;
+  padding: 28px 20px 48px;
+}
+
+.scm-top {
+  max-width: 920px;
+  margin: 0 auto 26px;
+}
+.scm-kicker {
+  display: block;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--scm-muted);
+  margin-bottom: 6px;
+}
+.scm-top h1 {
+  margin: 0 0 8px;
+  font-size: 24px;
+  letter-spacing: -0.01em;
+  color: var(--scm-ink-strong);
+}
+.scm-top p {
+  margin: 0 0 8px;
+  max-width: 640px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #55523f;
+}
+.scm-top a {
+  font-size: 12.5px;
+  color: var(--scm-green);
+}
+
+.scm-grid {
+  max-width: 920px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 18px;
+}
+@media (max-width: 480px) {
+  .scm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.scm-option {
+  background: rgba(255, 253, 244, 0.55);
+  border: 1px solid var(--scm-border);
+  border-radius: 16px;
+  padding: 16px 16px 18px;
+}
+.scm-option__head {
+  margin-bottom: 12px;
+}
+.scm-option__id {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--scm-green);
+  margin-right: 8px;
+}
+.scm-option__title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--scm-ink-strong);
+}
+.scm-option__desc {
+  margin: 6px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #6a6650;
+}
+.scm-option__preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.scm-note {
+  max-width: 920px;
+  margin: 26px auto 0;
+  font-size: 12px;
+  color: var(--scm-muted);
+}
+.scm-note code {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+}
+
+/* ---- the locked card shell (Live Odds size) ---- */
+
+.scm-card {
+  border: 1px solid var(--scm-border);
+  border-radius: 14px;
+  background: var(--scm-card);
+  padding: 10px 11px 11px;
+  overflow: hidden;
+}
+
+/* Banner strip: seed left, favourite's odds right — full-bleed. */
+.scm-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -10px -11px 10px;
+  padding: 6px 12px 7px;
+  background: var(--scm-band);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.scm-meta__text {
+  color: var(--scm-ghost);
+  white-space: nowrap;
+}
+
+/* Header: crest + name pinned to the edges, score centred. */
+.scm-hdr {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 8px;
+}
+.scm-hdr__side {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+}
+.scm-hdr__side--away {
+  justify-content: flex-end;
+}
+.scm-crest {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  color: #f3edda;
+  background: #6b4f2a;
+}
+.scm-crest--alt {
+  background: #33513f;
+}
+.scm-hdr__name {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--scm-ink-strong);
+  letter-spacing: -0.005em;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.scm-hdr__score {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  width: 3.4em;
+  font-size: 1.08rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--scm-ink-strong);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+.scm-hdr__half {
+  display: inline-block;
+  font-weight: 700;
+  border-radius: 0.3em;
+  justify-self: center;
+  padding: 0 0.08em;
+}
+.scm-hdr__half--winner {
+  background: var(--scm-green-soft);
+  box-shadow: 0 0 0 0.15em var(--scm-green-soft);
+}
+.scm-hdr__sep {
+  color: var(--scm-muted);
+  font-weight: 500;
+  padding: 0 0.3em;
+  font-size: 0.9em;
+}
+
+/* ================================================================ */
+/* Option A — twin rails, filling inward                             */
+/* ================================================================ */
+
+.scm-rail {
+  display: flex;
+  gap: 14px;
+  margin-top: 9px;
+  align-items: center;
+}
+.scm-rail__half {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.scm-rail__half--away {
+  flex-direction: row-reverse;
+}
+.scm-rail__label {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--scm-ghost);
+  min-width: 14px;
+  text-align: center;
+}
+.scm-rail__label--ft {
+  color: var(--scm-green);
+}
+.scm-rail__track {
+  flex: 1;
+  height: 4px;
+  border-radius: 3px;
+  background: rgba(105, 100, 82, 0.16);
+  overflow: hidden;
+  display: flex;
+}
+.scm-rail__half--away .scm-rail__track {
+  justify-content: flex-end;
+}
+.scm-rail__fill {
+  height: 100%;
+  border-radius: 3px;
+  background: rgba(29, 92, 64, 0.5);
+}
+.scm-rail__fill--ft {
+  background: var(--scm-green);
+}
+
+/* ================================================================ */
+/* Option B — eleven pips per side                                   */
+/* ================================================================ */
+
+.scm-pips {
+  display: flex;
+  gap: 18px;
+  margin-top: 10px;
+}
+.scm-pips__side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.scm-pips__side--away {
+  justify-content: flex-end;
+}
+.scm-pips__row {
+  flex: 1;
+  display: flex;
+  gap: 3px;
+}
+.scm-pip {
+  flex: 1;
+  height: 3px;
+  border-radius: 2px;
+  background: rgba(105, 100, 82, 0.18);
+}
+.scm-pip--on {
+  background: var(--scm-green);
+  opacity: 0.75;
+}
+.scm-pips__count {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--scm-ghost);
+  min-width: 14px;
+  text-align: center;
+}
+.scm-pips__count--ft {
+  color: var(--scm-green);
+}
+
+/* ================================================================ */
+/* Option C — centre gauge                                           */
+/* ================================================================ */
+
+.scm-gauge {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 10px;
+}
+.scm-gauge__label {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--scm-ghost);
+  min-width: 14px;
+  text-align: center;
+}
+.scm-gauge__label--ft {
+  color: var(--scm-green);
+}
+.scm-gauge__track {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  height: 5px;
+}
+.scm-gauge__side {
+  flex: 1;
+  height: 100%;
+  background: rgba(105, 100, 82, 0.14);
+  overflow: hidden;
+  display: flex;
+}
+.scm-gauge__side--home {
+  border-radius: 3px 0 0 3px;
+  justify-content: flex-start;
+}
+.scm-gauge__side--away {
+  border-radius: 0 3px 3px 0;
+  justify-content: flex-end;
+}
+.scm-gauge__fill {
+  height: 100%;
+  background: rgba(29, 92, 64, 0.55);
+}
+.scm-gauge__side--home .scm-gauge__fill {
+  border-radius: 3px 0 0 3px;
+}
+.scm-gauge__side--away .scm-gauge__fill {
+  border-radius: 0 3px 3px 0;
+}
+.scm-gauge__notch {
+  width: 2px;
+  height: 9px;
+  border-radius: 1px;
+  background: rgba(105, 100, 82, 0.4);
+  margin: 0 2px;
+  flex: none;
+}
+
+/* ================================================================ */
+/* Option D — ghost text only                                        */
+/* ================================================================ */
+
+.scm-ghost {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 9px;
+  padding: 0 2px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.scm-ghost__side {
+  color: var(--scm-ghost);
+}
+
+/* ================================================================ */
+/* Option E — countdown rings                                        */
+/* ================================================================ */
+
+.scm-rings {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+.scm-ring {
+  position: relative;
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.scm-ring__svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.scm-ring__bg {
+  fill: none;
+  stroke: rgba(105, 100, 82, 0.18);
+  stroke-width: 2.5;
+}
+.scm-ring__arc {
+  fill: none;
+  stroke: var(--scm-green);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+.scm-ring__n {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--scm-ink-strong);
+}
+.scm-ring--ft .scm-ring__arc {
+  stroke: rgba(29, 92, 64, 0.35);
+}
+.scm-ring--ft .scm-ring__n {
+  color: var(--scm-green);
+}
+.scm-rings__caption {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--scm-ghost);
+}
+
+/* ================================================================ */
+/* Option F — micro-dots under names                                 */
+/* ================================================================ */
+
+.scm-hdr--dots {
+  align-items: start;
+}
+.scm-hdr--dots .scm-hdr__score {
+  margin-top: 2px;
+}
+.scm-namewrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.scm-namewrap--away {
+  align-items: flex-end;
+}
+.scm-dots {
+  display: flex;
+  align-items: center;
+  gap: 2.5px;
+}
+.scm-dot {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: rgba(105, 100, 82, 0.22);
+}
+.scm-dot--on {
+  background: var(--scm-green);
+  opacity: 0.7;
+}
+.scm-dots__ft {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--scm-green);
+  margin: 0 3px;
+}
