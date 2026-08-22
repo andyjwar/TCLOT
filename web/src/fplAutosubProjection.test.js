@@ -359,7 +359,7 @@ test('DGW: two club fixtures — 0-min starter does not use live-single-fixture 
   assert.ok(displayStarters.some((x) => x.element === 11));
 });
 
-test('classic DNP: bench with 0 min and game still to come does not sub in (must have played)', () => {
+test('classic DNP: bench with 0 min and game still to come subs in (keeps left-to-play honest)', () => {
   const xi = [
     r(1, 'GKP', 1, 0, { clubGwFixturesFinished: true, hasGwFixture: true }),
     r(2, 'DEF', 2, 90, { hasGwFixture: true }),
@@ -378,8 +378,43 @@ test('classic DNP: bench with 0 min and game still to come does not sub in (must
   ];
   const { displayStarters, projectedAutoSubs } = projectAutosubFromLive(xi, bench);
   const ids = displayStarters.map((x) => x.element);
-  assert.ok(ids.includes(5), 'DNP mid stays until bench has actually played');
-  assert.equal(projectedAutoSubs.length, 0);
+  assert.ok(!ids.includes(5), 'confirmed-DNP mid projects out for yet-to-play bench DEF');
+  assert.ok(ids.includes(12));
+  assert.equal(projectedAutoSubs.length, 1);
+  assert.equal(projectedAutoSubs[0].element_out, 5);
+  assert.equal(projectedAutoSubs[0].element_in, 12);
+  assert.ok(ids.includes(1), 'DNP GKP stays when no reserve keeper on bench');
+});
+
+test('classic DNP: bench pick already DNP (club finished, 0 min) does not sub in', () => {
+  const xi = [
+    r(1, 'GKP', 1, 90, { hasGwFixture: true }),
+    r(2, 'DEF', 2, 90, { hasGwFixture: true }),
+    r(3, 'DEF', 3, 90, { hasGwFixture: true }),
+    r(4, 'DEF', 4, 90, { hasGwFixture: true }),
+    r(5, 'MID', 5, 0, { clubGwFixturesFinished: true, hasGwFixture: true }),
+    r(6, 'MID', 6, 90, { hasGwFixture: true }),
+    r(7, 'MID', 7, 90, { hasGwFixture: true }),
+    r(8, 'MID', 8, 90, { hasGwFixture: true }),
+    r(9, 'FWD', 9, 90, { hasGwFixture: true }),
+    r(10, 'FWD', 10, 90, { hasGwFixture: true }),
+    r(11, 'FWD', 11, 90, { hasGwFixture: true }),
+  ];
+  const bench = [
+    r(12, 'DEF', 12, 0, {
+      hasGwFixture: true,
+      clubGwFixturesFinished: true,
+      stillYetToPlayPl: false,
+    }),
+    r(13, 'MID', 13, 0, { hasGwFixture: true, stillYetToPlayPl: true }),
+  ];
+  const { displayStarters, projectedAutoSubs } = projectAutosubFromLive(xi, bench);
+  const ids = displayStarters.map((x) => x.element);
+  assert.ok(!ids.includes(5));
+  assert.ok(!ids.includes(12), 'bench DEF confirmed DNP is skipped');
+  assert.ok(ids.includes(13), 'next bench pick with a fixture left comes in');
+  assert.equal(projectedAutoSubs.length, 1);
+  assert.equal(projectedAutoSubs[0].element_in, 13);
 });
 
 test('no GW fixture GKP: reserve GKP with upcoming fixture can replace first-team GKP', () => {

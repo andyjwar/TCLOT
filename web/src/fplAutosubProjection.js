@@ -1,7 +1,8 @@
 /**
  * FPL-style automatic substitution for live scores.
  * When `automatic_subs` is empty (GW still live), project swaps from minutes + bench order.
- * Covers: (1) 0 min + club’s GW finished (DNP) — bench must have played; (2) 0 min + no PL
+ * Covers: (1) 0 min + club’s GW finished (DNP) — first eligible bench pick who has played
+ *    or still has a PL fixture to play (keeps "left to play" counts honest); (2) 0 min + no PL
  * fixture for the player’s club this GW — first eligible bench in order (GK for GK) who
  * has a fixture and is playing or not yet started, keeping a valid formation (≥3 DEF, etc.);
  * (3) **ESPN confirmed lineups** (single club fixture this GW): `absent` from matchday 20 →
@@ -187,6 +188,8 @@ export function projectAutosubFromLive(starters, bench) {
     const ordered = pool.slice().sort((a, b) => a.pickPosition - b.pickPosition);
     const outAllowsUnplayedBench =
       isNoFixtureInXi(out) ||
+      /** Confirmed DNP (club GW done, 0 min): bench pick with a fixture still to play may come in now. */
+      isDnpAfterFinished(out) ||
       (out.espnMatchdayRole === 'absent' && (Number(out.minutes) || 0) === 0) ||
       (out.espnMatchdayRole == null && isSameDayDnpWhileSingleFixtureLive(out));
 
