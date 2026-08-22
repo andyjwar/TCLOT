@@ -11748,7 +11748,11 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   border: 0 !important;
   border-radius: 0 !important;
   box-shadow: none !important;
-  padding: 0 !important;
+  /* Keep the tile--compact 16px horizontal inset so the header + cards
+     line up with the Live Odds tile's content (on ≤720px every .tile
+     bleeds edge-to-edge via margin-inline:-16px and relies on this inner
+     padding — with 0 the dot sat clipped against the screen edge). */
+  padding: 0 16px !important;
   display: flex;
   flex-direction: column;
   /* Header-to-cards gap matches the Live Odds tile's tightened 8px (the
