@@ -37,7 +37,11 @@ import {
   findChampionFixture,
   managerSurnameFromFullName,
 } from './championOfRecord.js';
-import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
+import {
+  useMobileNarrowViewport,
+  useNarrowViewport,
+  useSplitFixtureViewport,
+} from './usePortraitMobile.js';
 import { standingsMobileTeamName } from './teamNameUtils.js';
 import { englishOrdinal } from './playerContributionEvents.js';
 import {
@@ -1240,32 +1244,22 @@ export function LiveScores({
   const liveSectionLabel = projectionsOnly ? 'Projections' : 'Live gameweek';
 
   /**
-   * Mobile-only swipeable fixture card deck. On phones, tapping an H2H
-   * fixture row opens this full-screen deck (paged across all GW fixtures)
-   * instead of expanding the inline accordion; desktop keeps the inline
-   * side-by-side expand. `null` = closed; a number = open at that fixture.
+   * Selected fixture for the card surfaces. On phones (≤767px) tapping an
+   * H2H row opens the full-screen swipeable card deck at this index
+   * (`null` = deck closed). On wide desktop (≥1100px) it selects which
+   * fixture the docked split panel shows (`null` = first fixture).
    */
   const [cardDeckIndex, setCardDeckIndex] = useState(null);
 
   /**
-   * DESKTOP MOCKUP FLAG — `localStorage['tclot:mock:live-desktop']`:
-   *   'split'  → fixtures list + docked fixture-card panel (master–detail)
-   *   'modal'  → row click opens the card deck as a centered floating card
-   *   'drawer' → row click opens the card deck as a right slide-over
-   * Unset = current production behavior (inline accordion on desktop).
+   * Wide desktop (≥1100px): the fixtures list keeps a docked fixture-card
+   * panel beside it (split view) — `cardDeckIndex` doubles as the panel's
+   * selected fixture (null = default to the first fixture). Between 768 and
+   * 1099px there's no room for the panel, so rows keep the inline accordion.
    */
-  const desktopCardMock = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    try {
-      const v = window.localStorage.getItem('tclot:mock:live-desktop');
-      return v === 'split' || v === 'modal' || v === 'drawer' ? v : null;
-    } catch {
-      return null;
-    }
-  }, []);
-  const splitPanelActive = desktopCardMock === 'split' && !mobileNarrowViewport;
-  /** Rows open the fixture card (deck or panel) instead of the accordion. */
-  const rowOpensCard = mobileNarrowViewport || desktopCardMock != null;
+  const splitPanelActive = useSplitFixtureViewport();
+  /** Rows open the fixture card (mobile deck / split panel) vs. accordion. */
+  const rowOpensCard = mobileNarrowViewport || splitPanelActive;
 
   const cardFixtures = useMemo(() => {
     return gwMatches.map((m) => {
@@ -1330,7 +1324,9 @@ export function LiveScores({
       className={
         'dashboard-stack live-scores-root' +
         (compactMobileChrome ? ' live-scores-root--compact-chrome' : '') +
-        (splitPanelActive ? ' live-scores-root--card-split' : '')
+        (splitPanelActive && useFixtureLayout && !projectionsOnly
+          ? ' live-scores-root--card-split'
+          : '')
       }
     >
       <section
@@ -1496,6 +1492,8 @@ export function LiveScores({
               const fixtureKey = `${homeId}-${awayId}-${gameweek}`;
               const lineupOpen = expandedFixtures.has(fixtureKey);
               const fixtureBodyId = `live-fixture-lineups-${fixtureKey}`;
+              const panelSelected =
+                splitPanelActive && (cardDeckIndex ?? 0) === fixtureIndex;
 
               // Hero defeat / villain victory narrative status is passed
               // through to LiveFaceOffRow as `homeStatus`/`awayStatus`. The
@@ -1526,6 +1524,7 @@ export function LiveScores({
                   className={
                     'live-banner-group__item' +
                     (lineupOpen ? ' live-banner-group__item--open' : '') +
+                    (panelSelected ? ' live-banner-group__item--selected' : '') +
                     (homeVillain || awayVillain ? ' live-banner-group__item--villain-victory' : '') +
                     (homeHero || awayHero ? ' live-banner-group__item--hero-defeat' : '')
                   }
@@ -1565,10 +1564,10 @@ export function LiveScores({
                     }
                     ariaControls={fixtureBodyId}
                     chevronEnd={
-                      // On mobile the row pops open as a card-deck sheet rather
-                      // than expanding inline below, so the expand/collapse
-                      // chevron is misleading — drop it there. Desktop keeps it
-                      // since the fixture still expands below in place.
+                      // The expand/collapse chevron only makes sense where the
+                      // fixture expands inline below (768–1099px accordion).
+                      // On phones the row opens the card-deck sheet; on wide
+                      // desktop it selects into the docked split panel.
                       rowOpensCard ? null : (
                         <span className="live-banner-row__chev" aria-hidden="true">
                           {lineupOpen ? '▾' : '▸'}
@@ -1673,17 +1672,12 @@ export function LiveScores({
           openIndex={cardDeckIndex}
           onClose={() => setCardDeckIndex(null)}
           ctx={cardDeckCtx}
-          desktopMode={
-            desktopCardMock === 'modal' || desktopCardMock === 'drawer'
-              ? desktopCardMock
-              : null
-          }
         />
       ) : null}
-      {splitPanelActive && cardFixtures.length > 0 ? (
-        /* Desktop mockup 'split': fixtures list stays put; the tapped fixture's
-           full card (Match / Lineups / Stats / Odds / Table) lives in a docked
-           right-hand panel instead of a full-screen sheet. */
+      {splitPanelActive && !projectionsOnly && cardFixtures.length > 0 ? (
+        /* Wide-desktop split view: the fixtures list stays put and the
+           selected fixture's full card (Match / Lineups / Stats / Odds /
+           Table) lives in a docked right-hand panel. */
         <aside className="lfx-split-panel" aria-label="Fixture detail">
           <LiveFixtureCard
             fixture={

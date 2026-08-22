@@ -89,7 +89,14 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
 
   const toPlay = (Number(homeRemaining) || 0) + (Number(awayRemaining) || 0);
   const live = toPlay > 0;
-  const settled = !live && homeLive != null && awayLive != null && homeLive !== awayLive;
+  /* 'FT' only when the fixture is actually over — the GW is finished or both
+     sides have 0 players left (remaining is null while squad data is still
+     loading / before kick-off, which used to mislabel those states as FT).
+     Anything else that isn't live shows a neutral em dash. */
+  const finished =
+    !live && (ctx.gwFinished === true || (homeRemaining === 0 && awayRemaining === 0));
+  const midMain = live ? '● LIVE' : finished ? 'FT' : '—';
+  const settled = finished && homeLive != null && awayLive != null && homeLive !== awayLive;
   const homeSub = teamSubText(homeRemaining, homeLive > awayLive, settled);
   const awaySub = teamSubText(awayRemaining, awayLive > homeLive, settled);
 
@@ -171,7 +178,7 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
           {teamButton('home')}
           <div className="lfc-mid">
             <span className={'lfc-mid__main' + (live ? ' lfc-mid__main--live' : '')}>
-              {live ? '● LIVE' : 'FT'}
+              {midMain}
             </span>
             {comp ? <span className="lfc-mid__sub">{comp}</span> : null}
           </div>
