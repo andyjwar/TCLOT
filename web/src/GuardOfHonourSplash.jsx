@@ -55,11 +55,10 @@ const SESSION_PLAY_CAP = 3;
  * tableau (blue in formation, red lined up on the left, no streaker).
  *
  * Used in production when GW === 1 of a new season; previewable any
- * time via the `?gohSplash=1` URL flag. The splash stays expanded
- * through the end of the GW1 deadline day (opening Friday) and is
- * auto-collapsed to {@link GuardOfHonourCollapsedStrip} from the next
- * local midnight — see `championSplashAutoCollapsed` in
- * `championOfRecord.js` and the wiring in `LiveScores.jsx`. The ×
+ * time via the `?gohSplash=1` URL flag. The section renders collapsed
+ * to {@link GuardOfHonourCollapsedStrip} by default — the strip
+ * expands to this full splash on tap; see the wiring in
+ * `LiveScores.jsx`. The `?gohSplash=1` flag starts expanded. The ×
  * control closes the splash — exiting fullscreen first when active,
  * then collapsing (rather than fully dismissing) so the strip stays
  * available to re-expand. A ⤢ control (hidden where the Fullscreen API

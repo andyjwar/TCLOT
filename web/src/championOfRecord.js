@@ -58,36 +58,6 @@ export function managerSurnameFromFullName(fullName) {
 }
 
 /**
- * Should the Guard of Honour splash render COLLAPSED by default?
- *
- * The splash stays fully expanded (auto-playing the cinematic) through the
- * end of the gameweek's DEADLINE DAY in the viewer's local time — for GW1
- * 2026/27 that's opening Friday — and auto-collapses to the slim strip from
- * the next local midnight onward (Saturday / Sunday of the gameweek), so the
- * ceremony gets out of the way once matches are actually being played.
- *
- * Returns false (stay expanded) when the deadline is missing/unparseable so
- * a data hiccup degrades to the celebratory state, not a hidden one.
- *
- * @param {string | null | undefined} deadlineTimeIso — the GW's
- *   `deadline_time` from the draft bootstrap (e.g. `2026-08-21T17:30:00Z`).
- * @param {number} [nowMs] — injection point for tests; defaults to now.
- * @returns {boolean}
- */
-export function championSplashAutoCollapsed(deadlineTimeIso, nowMs = Date.now()) {
-  const t = Date.parse(String(deadlineTimeIso ?? ''));
-  if (!Number.isFinite(t)) return false;
-  const d = new Date(t);
-  // Local midnight AFTER the deadline day.
-  const endOfDeadlineDay = new Date(
-    d.getFullYear(),
-    d.getMonth(),
-    d.getDate() + 1,
-  ).getTime();
-  return nowMs >= endOfDeadlineDay;
-}
-
-/**
  * Locate the champion's fixture inside a list of GW H2H matches and return
  * both league_entry ids so the caller can resolve the home / away squads.
  *

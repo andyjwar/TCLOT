@@ -33,7 +33,6 @@ import {
   REIGNING_CHAMPION_LEAGUE_ENTRY_ID,
   REIGNING_CHAMPION_TEAM_NAME,
   REIGNING_CHAMPION_TITLE_TEAM_NAME,
-  championSplashAutoCollapsed,
   findChampionFixture,
   managerSurnameFromFullName,
 } from './championOfRecord.js';
@@ -697,15 +696,12 @@ export function LiveScores({
    * splash can be previewed against current (mid-season) data before the
    * new season opener.
    *
-   * Collapse behaviour: the section renders fully expanded through the end
-   * of GW1's DEADLINE DAY (opening Friday, viewer-local) and auto-collapses
-   * to {@link GuardOfHonourCollapsedStrip} from the next local midnight
-   * (Saturday / Sunday of the gameweek) so the cinematic gets out of the
-   * way once matches are on. The user can override either way — the splash
-   * × collapses it early, tapping the strip expands it back — and the
-   * override is local to the component instance (resets on reload, which
-   * matches how the FplLiveTripleThreatBanner promo behaved). The
-   * `?gohSplash=1` preview flag always starts expanded.
+   * Collapse behaviour: the section renders collapsed by default as the
+   * slim {@link GuardOfHonourCollapsedStrip} so the cinematic stays out of
+   * the way. Tapping the strip expands the full splash, and its × control
+   * collapses it back — the override is local to the component instance
+   * (resets on reload, which matches how the FplLiveTripleThreatBanner
+   * promo behaved). The `?gohSplash=1` preview flag always starts expanded.
    */
   const gohForceFlag = useMemo(() => {
     if (typeof window === 'undefined') return false;
@@ -715,13 +711,9 @@ export function LiveScores({
       return false;
     }
   }, []);
-  /** null = follow the deadline-day default; true/false = user override. */
+  /** null = follow the collapsed default; true/false = user override. */
   const [gohCollapsedOverride, setGohCollapsedOverride] = useState(null);
-  const gohCollapsed =
-    gohCollapsedOverride ??
-    (gohForceFlag
-      ? false
-      : championSplashAutoCollapsed(eventSnapshot?.deadline_time));
+  const gohCollapsed = gohCollapsedOverride ?? !gohForceFlag;
   const championFixtureBundle = useMemo(() => {
     const shouldRender = gohForceFlag || Number(gameweek) === 1;
     if (!shouldRender) return null;
@@ -1588,94 +1580,6 @@ export function LiveScores({
           />
         )}
       </section>
-
-      {leftToPlayByFixture.length > 0 && totalRemainingFixtures > 0 ? (
-        <section
-          className="tile tile--compact live-remaining-fixtures"
-          aria-label="Players remaining in H2H matchups"
-        >
-          <button
-            type="button"
-            className="live-remaining-fixtures__toggle"
-            onClick={() => setLtpPanelExpanded((v) => !v)}
-            aria-expanded={ltpPanelExpanded}
-            aria-controls="live-remaining-fixtures-body"
-          >
-            <span className="live-remaining-fixtures__title">
-              Players remaining
-            </span>
-            <span
-              className="live-fixture-chevron live-remaining-fixtures__chevron"
-              aria-hidden
-            >
-              {ltpPanelExpanded ? '▼' : '▶'}
-            </span>
-          </button>
-
-          {ltpPanelExpanded ? (
-            <div
-              className="live-remaining-fixtures__body"
-              id="live-remaining-fixtures-body"
-            >
-              {leftToPlayByFixture.map((fx) => (
-                <div key={fx.key} className="live-remaining-fixtures__card">
-                  {[fx.home, fx.away].map((side) => (
-                    <div
-                      key={side.leagueEntryId}
-                      className="live-remaining-fixtures__side"
-                    >
-                      <div className="live-remaining-fixtures__side-head">
-                        <TeamAvatar
-                          entryId={side.leagueEntryId}
-                          name={side.name}
-                          size="sm"
-                          logoMap={teamLogoMap}
-                          kitIndexByEntry={kitIndexByEntry}
-                        />
-                        <span className="live-remaining-fixtures__name">
-                          {side.name}
-                        </span>
-                        {side.ltpGamesCount > 0 ? (
-                          <span
-                            className="live-remaining-fixtures__pill"
-                            title="Player-fixtures left for the effective XI (double GWs can add >1 per player)"
-                          >
-                            {side.ltpGamesCount} left
-                          </span>
-                        ) : null}
-                        <span className="live-remaining-fixtures__score tabular">
-                          {side.live != null ? side.live : '—'}
-                        </span>
-                      </div>
-                      {side.chips.length ? (
-                        <ul className="live-remaining-fixtures__chips">
-                          {side.chips.map((p, idx) => (
-                            <li
-                              key={`${side.leagueEntryId}-${p.name}-${idx}`}
-                              className="live-remaining-fixtures__chip"
-                            >
-                              <span className="live-remaining-fixtures__chip-name">
-                                {p.name}
-                              </span>
-                              <span className="live-remaining-fixtures__chip-opp tabular">
-                                {p.opp}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <p className="live-remaining-fixtures__done">
-                          All players done
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </section>
-      ) : null}
 
       </div>
         </>
