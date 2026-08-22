@@ -200,8 +200,11 @@ function EventKindIcon({ kind }) {
  * within their own half when a side gets busy; categories with no events
  * on either side are dropped, and the whole band hides when there are
  * none at all.
+ *
+ * Exported for the desktop fixture page, which shows it standalone above
+ * the detailed lineup tables.
  */
-function MatchEventsBlock({ homeSquad, awaySquad }) {
+export function MatchEventsBlock({ homeSquad, awaySquad }) {
   const [open, setOpen] = useState(true);
   const home = useMemo(() => squadEvents(homeSquad), [homeSquad]);
   const away = useMemo(() => squadEvents(awaySquad), [awaySquad]);

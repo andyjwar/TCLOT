@@ -1206,8 +1206,10 @@
     opacity: 1;
   }
   .lfxp-cols {
+    /* Main column holds the two detailed lineup tables side by side — give
+       it the lion's share; the stat-card rail is happy at ~380px. */
     display: grid;
-    grid-template-columns: minmax(0, 1.3fr) minmax(320px, 1fr);
+    grid-template-columns: minmax(0, 1.8fr) minmax(300px, 1fr);
     gap: 0;
     align-items: start;
   }
@@ -1218,8 +1220,13 @@
   .lfxp-col--side {
     border-left: 1px solid var(--fm-border);
   }
-  .lfx-page .lfc-split {
-    margin-bottom: 0;
+  /* The match events band was designed to sit flush inside the card's split
+     grid — boxed as a standalone card above the lineup tables here. */
+  .lfxp-col--main .lfc-events {
+    border: 1px solid var(--fm-border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
   }
   /* The Season H2H strip was designed for the accordion's tinted panel —
      box it to match the lfc-block cards around it in the rail. */

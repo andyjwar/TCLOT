@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { TeamAvatar } from './TeamAvatar';
-import { LiveFixtureMatchSplit } from './LiveFixtureMatchSplit.jsx';
+import { MatchEventsBlock } from './LiveFixtureMatchSplit.jsx';
+import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { LiveFixtureKeyStats } from './LiveFixtureKeyStats.jsx';
 import { LiveFixtureH2hBars } from './LiveFixtureH2hBars.jsx';
 import { LiveFixtureOdds } from './LiveFixtureOdds.jsx';
@@ -10,9 +11,10 @@ import { LiveFixtureSeasonH2h } from './LiveFixtureSeasonH2h.jsx';
  * Desktop fixture page — a full-width takeover that replaces the Scores
  * stack when a fixture row is clicked (FotMob-desktop style). Instead of
  * transplanting the phone card's tab strip, it lays the panes out for width:
- * a hero score strip, then Match split on the left with Key Stats / season
- * H2H / Odds in a right rail. Scrolls as a normal document; Back (button or
- * Esc) returns to the fixtures list. Phones keep the swipeable card deck.
+ * a hero score strip, then the match events band above the detailed
+ * two-team lineup tables on the left, with Key Stats / season H2H / Odds
+ * in a right rail. Scrolls as a normal document; Back (button or Esc)
+ * returns to the fixtures list. Phones keep the swipeable card deck.
  */
 export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
   // Esc backs out, matching the card deck's dismissal affordance.
@@ -94,9 +96,13 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
       </div>
       <div className="lfxp-cols">
         <div className="lfxp-col lfxp-col--main">
-          <LiveFixtureMatchSplit
-            fixture={fixture}
-            ctx={ctx}
+          <MatchEventsBlock homeSquad={homeSquad} awaySquad={awaySquad} />
+          <LiveExpandedFixture
+            homeSquad={homeSquad}
+            awaySquad={awaySquad}
+            homeName={homeName}
+            awayName={awayName}
+            viewport="desktop"
             onOpenPlayer={ctx.onOpenPlayer}
           />
         </div>
