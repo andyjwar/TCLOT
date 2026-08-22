@@ -487,7 +487,11 @@ import {
   DEFAULT_TAB_STORAGE_KEY,
   readStoredDefaultTab,
 } from './settingsStorage'
-import { initialDashboardView, initialMovesTab } from './seasonOpenLanding.js'
+import {
+  initialDashboardView,
+  initialMovesTab,
+  seasonPhaseLanding,
+} from './seasonOpenLanding.js'
 import { useAutoHideBottomNav } from './useAutoHideBottomNav'
 import { WaiverSummaryShare } from './WaiverSummaryShare'
 import { ForbiddenWaivers } from './ForbiddenWaivers'
@@ -2401,8 +2405,10 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
 }
 
 /** Resolve initial dashboard view: players hash > archive > Moves/Draft.
- * Season-open default is Moves (Draft until the first Thursday waivers).
- * Stored Settings prefs do not override that landing. */
+ * Once the FPL calendar loads, the one-shot landing prime (see the
+ * `movesTabPrimed` effect) refines this by season phase: Scores while a
+ * GW is live, Recap after a GW completes, Waivers after the waiver
+ * deadline. Stored Settings prefs do not override that landing. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'teamSelection'
   return initialDashboardView({
@@ -2749,14 +2755,46 @@ function App() {
   /** FPL draft calendar — fetched on mount so Waivers tab does not depend on opening Live first. */
   const draftBootstrapEvents = useDraftBootstrapEvents()
 
-  /** Draft until GW1 waivers_time, then Waivers. Only applied once so later tab clicks stick. */
+  /** One-shot landing prime once the FPL calendar loads. Moves sub-tab:
+   * Draft until GW1 waivers_time, then Waivers. Dashboard view follows the
+   * gameweek cycle — Scores while a GW is live, Recap after a GW completes,
+   * Waivers after the waiver deadline (stays on Moves). Skipped when a deep
+   * link (players hash / archive), the pre-draft nav lock, or an earlier
+   * user navigation already picked a view. Only applied once so later
+   * clicks stick. */
   useEffect(() => {
     if (movesTabPrimed) return
     const list = draftBootstrapEvents.events
     if (!list) return
     setTeamSelectionTab(initialMovesTab(list, statusNow))
     setMovesTabPrimed(true)
-  }, [draftBootstrapEvents.events, movesTabPrimed, statusNow])
+    if (draftGate.navLocked) return
+    if (dashboardView !== 'teamSelection') return
+    if (typeof window !== 'undefined' && (parsePlayersHash() || isArchiveView())) return
+    const landing = seasonPhaseLanding(
+      {
+        currentEvent: draftBootstrapEvents.currentEvent,
+        nextEvent: draftBootstrapEvents.nextEvent,
+        lastFinishedEvent: draftBootstrapEvents.lastFinishedEvent,
+      },
+      statusNow,
+    )
+    /* 'scores' / 'recap' land on FPL Live; the sub-tab is left unset so the
+     * phase-derived default (`fplLiveTab` below) picks Scores when live and
+     * Recap when idle. 'waivers' and null stay on Moves. */
+    if (landing === 'scores' || landing === 'recap') {
+      setDashboardView('fplLive')
+    }
+  }, [
+    draftBootstrapEvents.events,
+    draftBootstrapEvents.currentEvent,
+    draftBootstrapEvents.nextEvent,
+    draftBootstrapEvents.lastFinishedEvent,
+    movesTabPrimed,
+    statusNow,
+    draftGate.navLocked,
+    dashboardView,
+  ])
 
   /**
    * Page-global fixture summary for the brand-header status strip. PR #4 chose

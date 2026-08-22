@@ -1,6 +1,10 @@
 /**
  * Season-open landing: the site opens on Moves → Draft until the first GW
  * waivers run, then Waivers. Independent of the retired preseason hub.
+ *
+ * Once the FPL calendar loads, `seasonPhaseLanding` refines the landing to
+ * follow the gameweek cycle: Scores while a GW is live, Recap after a GW
+ * completes, Waivers once the next GW's waiver deadline has passed.
  */
 
 /** Cold-load dashboard view. Players hash and archive views still win. */
@@ -39,4 +43,34 @@ export function initialMovesTab(events, now = new Date()) {
   const first = firstWaiversTimeMs(events)
   if (first == null) return 'draft'
   return now.getTime() < first ? 'draft' : 'waivers'
+}
+
+/**
+ * Where a cold load should land based on the gameweek cycle:
+ *
+ * - `'scores'`  — a GW is live (deadline passed, not finished)
+ * - `'waivers'` — the upcoming GW's waiver deadline has passed, GW not live yet
+ * - `'recap'`   — a GW has completed, upcoming waiver deadline not reached
+ *                 (also season complete: nothing upcoming)
+ * - `null`      — pre-season / no calendar yet (keep the Moves landing)
+ *
+ * @param {{ currentEvent?: object | null, nextEvent?: object | null, lastFinishedEvent?: object | null }} events
+ * @param {Date} [now]
+ * @returns {'scores' | 'waivers' | 'recap' | null}
+ */
+export function seasonPhaseLanding(
+  { currentEvent = null, nextEvent = null, lastFinishedEvent = null } = {},
+  now = new Date(),
+) {
+  const nowMs = now.getTime()
+  const currentUnfinished = currentEvent && currentEvent.finished !== true
+  if (currentUnfinished) {
+    const deadlineMs = Date.parse(currentEvent.deadline_time)
+    if (Number.isFinite(deadlineMs) && deadlineMs <= nowMs) return 'scores'
+  }
+  if (!lastFinishedEvent) return null
+  const upcoming = currentUnfinished ? currentEvent : nextEvent
+  const waiversMs = Date.parse(upcoming?.waivers_time)
+  if (Number.isFinite(waiversMs) && waiversMs <= nowMs) return 'waivers'
+  return 'recap'
 }

@@ -4,6 +4,7 @@ import {
   firstWaiversTimeMs,
   initialDashboardView,
   initialMovesTab,
+  seasonPhaseLanding,
 } from './seasonOpenLanding.js'
 
 const events = [
@@ -29,6 +30,75 @@ test('Moves lands on Waivers once the first waivers_time has passed', () => {
 test('no calendar yet → Draft (post-draft squads live there)', () => {
   assert.equal(initialMovesTab(null), 'draft')
   assert.equal(initialMovesTab([]), 'draft')
+})
+
+const gw2 = {
+  id: 2,
+  finished: false,
+  waivers_time: '2026-08-27T17:30:00Z',
+  deadline_time: '2026-08-28T17:30:00Z',
+}
+const gw1Finished = { id: 1, finished: true }
+
+test('GW live (deadline passed, not finished) → Scores', () => {
+  assert.equal(
+    seasonPhaseLanding(
+      { currentEvent: gw2, lastFinishedEvent: gw1Finished },
+      new Date('2026-08-28T18:00:00Z'),
+    ),
+    'scores',
+  )
+})
+
+test('GW complete, before next waiver deadline → Recap', () => {
+  // current still points at the finished GW, next is upcoming
+  assert.equal(
+    seasonPhaseLanding(
+      { currentEvent: gw1Finished, nextEvent: gw2, lastFinishedEvent: gw1Finished },
+      new Date('2026-08-25T12:00:00Z'),
+    ),
+    'recap',
+  )
+})
+
+test('after waiver deadline, before GW live → Waivers', () => {
+  // upcoming GW as `nextEvent`
+  assert.equal(
+    seasonPhaseLanding(
+      { currentEvent: gw1Finished, nextEvent: gw2, lastFinishedEvent: gw1Finished },
+      new Date('2026-08-27T17:30:00Z'),
+    ),
+    'waivers',
+  )
+  // upcoming GW already rolled into `currentEvent` (deadline still future)
+  assert.equal(
+    seasonPhaseLanding(
+      { currentEvent: gw2, lastFinishedEvent: gw1Finished },
+      new Date('2026-08-28T12:00:00Z'),
+    ),
+    'waivers',
+  )
+})
+
+test('pre-season / no calendar → null (keep Moves landing)', () => {
+  assert.equal(
+    seasonPhaseLanding(
+      { currentEvent: gw2, nextEvent: gw2 },
+      new Date('2026-08-20T12:00:00Z'),
+    ),
+    null,
+  )
+  assert.equal(seasonPhaseLanding({}, new Date('2026-08-20T12:00:00Z')), null)
+})
+
+test('season complete (nothing upcoming) → Recap', () => {
+  assert.equal(
+    seasonPhaseLanding(
+      { currentEvent: { id: 38, finished: true }, lastFinishedEvent: { id: 38, finished: true } },
+      new Date('2027-06-01T12:00:00Z'),
+    ),
+    'recap',
+  )
 })
 
 test('cold load lands on Moves (Draft) except hash/archive', () => {
