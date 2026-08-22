@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Live Odds cards — combined content options</title>
+<style>
+  /* Scorebook light tokens (PaintPreview.css) */
+  :root{
+    --bg:#f6f1e2; --card:#fdfaf0; --border:#ddd5b8; --hairline:#e7e0c8;
+    --ink:#1a231a; --body:#2a332a; --muted:#77775f;
+    --surface-2:#ece5cf; --row-hi:#f1ebd9;
+    --green:#1f4a38; --win:#12844e; --loss:#b04f26; --gold:#a87b24;
+    --win-wash:#dfe8d9;
+    --odds-dim:#d8d2ba;
+    --live:#c73e2e;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:#eee9d9;color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:34px 26px 80px}
+  h1{font-size:23px;margin:0 0 6px;font-weight:800;letter-spacing:-.01em;color:#17211a}
+  .lede{color:#5d6152;font-size:13px;max-width:900px;margin:0 0 28px;line-height:1.6}
+  .lede b{color:#243024}
+
+  .board{display:grid;grid-template-columns:repeat(auto-fill,minmax(430px,1fr));gap:34px;align-items:start}
+  .option__t{font-size:14.5px;font-weight:800;color:#182218}
+  .option__t span{color:var(--win)}
+  .option__d{font-size:12px;color:#6d7160;line-height:1.55;margin:4px 0 12px;max-width:420px}
+
+  /* section frame, like the Live Odds section */
+  .sect{width:100%;max-width:430px;background:var(--bg);border:1px solid var(--border);
+    border-radius:18px;padding:16px 14px 14px;box-shadow:0 12px 34px rgba(45,50,35,.12)}
+  .sect__hd{display:flex;align-items:baseline;justify-content:space-between;margin:0 2px 12px}
+  .sect__t{display:inline-flex;align-items:center;gap:7px;font-size:17px;font-weight:800;
+    letter-spacing:-.01em;color:#17211a}
+  .sect__t .dot{width:9px;height:9px;border-radius:50%;background:var(--live);
+    box-shadow:0 0 0 3px color-mix(in srgb,var(--live) 22%,transparent)}
+  .sect__gw{font:700 10px/1 ui-monospace,'SF Mono',Menlo,monospace;letter-spacing:.08em;
+    text-transform:uppercase;color:var(--muted)}
+
+  /* individual card */
+  .mcard{background:var(--card);border:1px solid var(--border);border-radius:16px;
+    overflow:hidden;box-shadow:0 2px 6px rgba(45,50,35,.06)}
+  .mcard + .mcard{margin-top:12px}
+  .mcard__pad{padding:13px 14px 14px}
+
+  /* tinted banner strip inside the card */
+  .band{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    background:color-mix(in srgb,var(--surface-2) 62%,var(--card));
+    border-bottom:1px solid color-mix(in srgb,var(--hairline) 70%,transparent);
+    padding:6px 14px 7px;
+    font:600 9px/1 ui-monospace,'SF Mono',Menlo,monospace;
+    letter-spacing:.07em;text-transform:uppercase;
+    color:color-mix(in srgb,var(--muted) 80%,transparent)}
+
+  /* ghost meta line (no tint) */
+  .meta{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    padding:0 1px 9px;
+    font:600 9px/1 ui-monospace,'SF Mono',Menlo,monospace;
+    letter-spacing:.07em;text-transform:uppercase;
+    color:color-mix(in srgb,var(--muted) 72%,transparent)}
+
+  /* centred whisper */
+  .whisper{display:block;text-align:center;margin:0 0 7px;
+    font:600 9px/1 ui-monospace,'SF Mono',Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;
+    color:color-mix(in srgb,var(--muted) 66%,transparent)}
+
+  /* face-off row: crests OUTER, names inner, score centre (the liked layout) */
+  .row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+  .side{display:flex;align-items:center;gap:9px;min-width:0}
+  .side--a{justify-content:flex-end}
+  .crest{width:36px;height:36px;border-radius:50%;flex:0 0 auto;object-fit:cover;
+    border:1px solid var(--border);background:#fff}
+  .crestcol{display:flex;flex-direction:column;align-items:center;gap:4px;flex:0 0 auto}
+  .left{font:600 9px/1 ui-monospace,'SF Mono',Menlo,monospace;color:var(--muted);
+    background:var(--surface-2);border:1px solid color-mix(in srgb,var(--border) 70%,transparent);
+    border-radius:999px;padding:3px 6px}
+  .nm{font-weight:700;color:var(--ink);font-size:16px;letter-spacing:-.01em;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;min-width:0}
+  .sc{display:inline-flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums;
+    font-weight:800;font-size:22px;letter-spacing:-.01em;line-height:1}
+  .sc .sep{color:#b9b39a;font-weight:500;font-size:17px}
+  .sc .n{color:var(--ink);padding:2px 6px;border-radius:8px;min-width:29px;text-align:center}
+  .sc .n.win{background:var(--win-wash)}
+
+  /* odds labels row (the liked layout) */
+  .lbl{display:flex;justify-content:space-between;align-items:baseline;
+    font:600 10px/1 ui-monospace,'SF Mono',Menlo,monospace;color:var(--muted);
+    letter-spacing:.05em;text-transform:uppercase;
+    margin:13px 1px 7px}
+  .lbl b{font-weight:800;color:var(--ink);font-size:12px;letter-spacing:0}
+  .lbl .fav b{color:var(--win)}
+  .lbl .sub{margin-left:6px;color:color-mix(in srgb,var(--muted) 70%,transparent);
+    font-size:9px;letter-spacing:.06em}
+  .lbl .sub--l{margin-left:0;margin-right:6px}
+
+  /* segmented probability bar (the liked layout) */
+  .bar{display:flex;height:8px;border-radius:99px;overflow:hidden;gap:2px}
+  .bar i{display:block;height:100%;background:var(--odds-dim);border-radius:99px}
+  .bar i.fav{background:var(--green)}
+  .bar--slim{height:5px}
+
+  /* tinted footer strip inside the card */
+  .foot{display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    background:color-mix(in srgb,var(--surface-2) 62%,var(--card));
+    border-top:1px solid color-mix(in srgb,var(--hairline) 70%,transparent);
+    padding:6px 14px 7px;margin:12px -14px -14px;
+    font:600 9px/1 ui-monospace,'SF Mono',Menlo,monospace;
+    letter-spacing:.07em;text-transform:uppercase;
+    color:color-mix(in srgb,var(--muted) 80%,transparent)}
+</style>
+</head>
+<body>
+  <h1>Live Odds cards — <span style="color:#12844e">with the list view's content folded in</span></h1>
+  <p class="lede">Base layout is the card you liked: crests at the outer edges, names inside, score centred,
+  "<b>83% WIN · DRAW 2% · WIN 15%</b>" labels over the segmented bar, each matchup its own rounded card.
+  Each option adds the list view's remaining content — <b>seed matchup</b> (1st vs 5th),
+  <b>favourite callout</b>, and <b>to-play counts</b> — in a different spot.</p>
+  <div class="board" id="board"></div>
+
+<script>
+const FX=[
+ {h:{n:'Mordor SFG', id:18279, ab:'MOR'}, a:{n:'Atlético Bilbo', id:4259, ab:'BIL'},
+  hs:6,  as:0,  hl:10, al:11, seed:'1st vs 5th', o:[83,2,15]},
+ {h:{n:'Seoul Shire', id:30728, ab:'SEO'}, a:{n:'Rohirrim', id:10173, ab:'ROH'},
+  hs:15, as:5,  hl:9,  al:10, seed:'1st vs 5th', o:[57,4,39]},
+ {h:{n:'Balrogs', id:44904, ab:'BAL'}, a:{n:'Regorasu', id:6849, ab:'REG'},
+  hs:0,  as:15, hl:11, al:9,  seed:'5th vs 1st', o:[18,2,80]},
+ {h:{n:'Toronto Gimli', id:4898, ab:'GIM'}, a:{n:'Sméagol', id:5220, ab:'SMÉ'},
+  hs:14, as:17, hl:9,  al:9,  seed:'5th vs 1st', o:[28,3,69]},
+];
+
+const crest=t=>`<img class="crest" src="team-logos-web/${t.id}.png" alt="">`;
+const favIdx=f=>f.o.indexOf(Math.max(...f.o));
+const favLabel=f=>{
+  const fav=favIdx(f);
+  if(fav===1) return `DRAW ${f.o[1]}%`;
+  const t=fav===0?f.h:f.a;
+  return `${t.n.toUpperCase()} ${f.o[fav]}%`;
+};
+
+/* face-off row; opts.pills puts the to-play count under each crest */
+function row(f,opts={}){
+  const hw=f.hs>f.as?' win':'', aw=f.as>f.hs?' win':'';
+  const crestH=opts.pills
+    ?`<span class="crestcol">${crest(f.h)}<span class="left">${f.hl}</span></span>`:crest(f.h);
+  const crestA=opts.pills
+    ?`<span class="crestcol">${crest(f.a)}<span class="left">${f.al}</span></span>`:crest(f.a);
+  return `<div class="row">
+    <div class="side">${crestH}<span class="nm">${f.h.n}</span></div>
+    <span class="sc"><span class="n${hw}">${f.hs}</span><span class="sep">–</span><span class="n${aw}">${f.as}</span></span>
+    <div class="side side--a"><span class="nm">${f.a.n}</span>${crestA}</div>
+  </div>`;
+}
+
+/* odds labels; opts.toPlay appends faded "· 10 LEFT" to each side */
+function lbl(f,opts={}){
+  const fav=favIdx(f);
+  const subH=opts.toPlay?`<span class="sub">· ${f.hl} LEFT</span>`:'';
+  const subA=opts.toPlay?`<span class="sub sub--l">${f.al} LEFT ·</span>`:'';
+  return `<div class="lbl">
+    <span class="${fav===0?'fav':''}"><b>${f.o[0]}%</b> WIN${subH}</span>
+    <span>DRAW ${f.o[1]}%</span>
+    <span class="${fav===2?'fav':''}">${subA}WIN <b>${f.o[2]}%</b></span>
+  </div>`;
+}
+
+function bar(f,slim=false){
+  const fav=favIdx(f);
+  return `<div class="bar${slim?' bar--slim':''}">
+    <i class="${fav===0?'fav':''}" style="width:${f.o[0]}%"></i>
+    <i class="${fav===1?'fav':''}" style="width:${f.o[1]}%"></i>
+    <i class="${fav===2?'fav':''}" style="width:${f.o[2]}%"></i>
+  </div>`;
+}
+
+const band=(f,right)=>`<div class="band"><span>${f.seed}</span><span>${right}</span></div>`;
+const meta=(f,right)=>`<div class="meta"><span>${f.seed}</span><span>${right}</span></div>`;
+const foot=(f,right)=>`<div class="foot"><span>${f.seed}</span><span>${right}</span></div>`;
+
+/* ── option builders: each returns inner HTML of one .mcard ── */
+const BUILD={
+  a: f=>band(f,favLabel(f))
+      +`<div class="mcard__pad">${row(f,{pills:true})}${lbl(f)}${bar(f)}</div>`,
+  b: f=>`<div class="mcard__pad">${meta(f,favLabel(f))}${row(f,{pills:true})}${lbl(f)}${bar(f)}</div>`,
+  c: f=>band(f,`${f.hl} V ${f.al} TO PLAY`)
+      +`<div class="mcard__pad">${row(f)}${lbl(f)}${bar(f)}</div>`,
+  d: f=>`<div class="mcard__pad"><span class="whisper">${f.seed}</span>${row(f,{pills:true})}${lbl(f)}${bar(f)}</div>`,
+  e: f=>`<div class="mcard__pad">${row(f,{pills:true})}${lbl(f)}${bar(f,true)}${foot(f,favLabel(f))}</div>`,
+};
+
+const OPTIONS=[
+ ['A · Banner ribbon on each card','a',
+  'The list view\u2019s tinted banner becomes each card\u2019s header strip: seed left, favourite callout right, in the same ghost mono text. To-play counts tuck under each crest as tiny pills. The card body below is exactly the layout you liked.'],
+ ['B · Ghost meta line, no tint','b',
+  'Same content as A but quieter: seed and favourite share a bare ghost-text line inside the card\u2019s padding — no tinted strip, so the card stays one clean surface. To-play pills under the crests.'],
+ ['C · Banner carries seed + to-play','c',
+  'The banner holds the seed AND the to-play counts ("10 V 11 TO PLAY"), so the body stays completely untouched — no pills under crests. The favourite callout is dropped as text because the green bar + bold % already say who\u2019s on top.'],
+ ['D · Centred whisper seed','d',
+  'Smallest possible addition: the seed whispers centred at the top of the card, to-play pills under the crests, and nothing else changes. No favourite text — the bar carries it.'],
+ ['E · Tinted footer closes the card','e',
+  'Mirror of A: the body you liked comes first (with a slimmer bar), and a tinted footer strip closes each card with seed left, favourite right. Reads like a caption under the chart.'],
+];
+
+document.getElementById('board').innerHTML=OPTIONS.map(([title,key,desc])=>`<div class="option" data-shot="${key}">
+  <div class="option__t">${title}</div>
+  <div class="option__d">${desc}</div>
+  <div class="sect">
+    <div class="sect__hd">
+      <span class="sect__t"><span class="dot"></span>Live Odds</span>
+      <span class="sect__gw">GW1 · Updates live</span>
+    </div>
+    ${FX.map(f=>`<div class="mcard">${BUILD[key](f)}</div>`).join('')}
+  </div>
+</div>`).join('');
+</script>
+</body>
+</html>

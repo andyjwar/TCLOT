@@ -11845,6 +11845,36 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* Single face-off row (desktop + mobile compressed)            */
 /* ============================================================ */
 
+/* "Live Scores" header opening the fixtures tile — same title hierarchy as
+   the Live Odds tile's header, prefixed with the green pulsing NavIcon dot
+   (same 12px treatment as the brand-header status dot). No sub-caption: the
+   fixtures list follows immediately. */
+.live-banner-group__head {
+  align-items: center;
+}
+.live-banner-group__title {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.live-banner-group__live-dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 auto;
+}
+.live-banner-group__live-dot-svg .nav-icon__pulse-target {
+  transform-origin: 12px 12px;
+  animation: dashboard-nav-icon-pulse 2.2s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .live-banner-group__live-dot-svg .nav-icon__pulse-target {
+    animation: none;
+  }
+}
+
 /* Per-fixture meta strip (live-odds mockup Option R) — a quiet tinted band
    opening each fixture tile: seed label ("1st vs 8th") left, live favourite
    ("Mordor SFG 74%") right, BOTH in the same faded uppercase ghost mono so

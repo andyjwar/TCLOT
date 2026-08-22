@@ -38,6 +38,7 @@ import {
 } from './championOfRecord.js';
 import { useMobileNarrowViewport, useNarrowViewport } from './usePortraitMobile.js';
 import { standingsMobileTeamName } from './teamNameUtils.js';
+import { NavIcon } from './NavIcon.jsx';
 import { englishOrdinal } from './playerContributionEvents.js';
 import { usePredictions } from './usePredictions.js';
 import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
@@ -1269,6 +1270,18 @@ export function LiveScores({
           className="tile tile--compact live-banner-group-tile"
           aria-label={`Gameweek ${gameweek} head-to-head fixtures`}
         >
+          <div className="tile-head-row tile-head-row--tight live-banner-group__head">
+            <h2 className="tile-title tile-title--sm live-banner-group__title">
+              <span className="live-banner-group__live-dot" aria-hidden="true">
+                <NavIcon
+                  name="pulsing-dot"
+                  className="live-banner-group__live-dot-svg"
+                  size={12}
+                />
+              </span>
+              Live Scores
+            </h2>
+          </div>
           <div className="live-banner-group__list">
             {gwMatches.map((m, fixtureIndex) => {
               const homeId = Number(m.league_entry_1);
@@ -1506,6 +1519,7 @@ export function LiveScores({
         gwFinished={Boolean(selectedGwOption?.finished)}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
+        liveRankByEntry={liveRankByEntry}
       />
 
       {useFixtureLayout && orphanSquads.length > 0

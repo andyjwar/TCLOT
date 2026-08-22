@@ -1,9 +1,11 @@
 /* "Live Odds" tile on the Scores tab — every H2H matchup's live win
    probability in one place, expandable to the full odds (see
-   LiveOddsSection.jsx). Header layout is mockup "C2": crest + fitted name
-   pinned to the OUTER edges, score alone in the centre with the winner
-   glass pill, win % as text flanking a quiet 7px strip. The expanded body
-   (compare rows, returns) reuses the lfc-* Odds-tab styles. */
+   LiveOddsSection.jsx). Each card opens with a tinted meta strip (seed label
+   + to-play counts, combined-cards mockup "C"), then the mockup-"C2" header:
+   crest + fitted name pinned to the OUTER edges, score alone in the centre
+   with the winner glass pill, win % as text (no draw label) flanking a quiet
+   7px strip. The expanded body (compare rows, returns) reuses the lfc-*
+   Odds-tab styles. */
 
 .lo-head-row {
   align-items: baseline;
@@ -46,7 +48,8 @@
   margin-bottom: 0;
 }
 
-/* Whole header (face-off row + pcts + strip) is one toggle button. */
+/* Whole header (meta strip + face-off row + pcts + strip) is one toggle
+   button. */
 .lo-matchup__head {
   display: block;
   width: 100%;
@@ -57,6 +60,33 @@
   text-align: inherit;
   padding: 10px 11px 11px;
   cursor: pointer;
+}
+
+/* ---- tinted meta strip opening each card (combined-cards mockup "C") ----
+   Seed label left, to-play counts right — same ghost mono treatment as the
+   fixtures list's .live-banner-group__meta. Full-bleed across the card via
+   negative margins against the head button's padding. */
+.lo-meta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: -10px -11px 10px;
+  padding: 6px 12px 7px;
+  background: color-mix(in srgb, var(--fm-surface-2) 62%, var(--fm-card));
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.lo-meta__text {
+  color: color-mix(in srgb, var(--text-muted, var(--fm-muted)) 78%, transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 /* ---- C2 edge-aligned face-off header ---- */
@@ -141,8 +171,9 @@
   color: var(--fm-muted);
   font-variant-numeric: tabular-nums;
 }
+/* Favourite % text matches the strip's favourite segment paint exactly. */
 .lo-pcts__side--fav {
-  color: var(--tclot-logo-purple, #795bfb);
+  color: var(--tclot-header-solid, #795bfb);
 }
 .lo-pcts__w {
   font-size: 9px;
@@ -151,16 +182,6 @@
   letter-spacing: 0.3px;
   margin: 0 3px;
   color: var(--fm-muted);
-}
-.lo-pcts__draw {
-  font-size: 9.5px;
-  font-weight: 700;
-  color: var(--fm-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-.lo-pcts__draw--fav {
-  color: var(--tclot-logo-purple, #795bfb);
 }
 .lo-strip {
   display: flex;

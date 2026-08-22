@@ -7,6 +7,7 @@ import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
 import { teamProjection, teamReturns, anyFixtureLive } from './liveBlend.js';
 import { liveFixtureLead } from './liveScoresDerivations.js';
+import { englishOrdinal } from './playerContributionEvents.js';
 import './LiveFixtureCard.css';
 import './LiveOddsSection.css';
 
@@ -16,6 +17,41 @@ const ROUTE = {
   assist: { text: 'A', cls: 'lfc-rt--assist' },
   cs: { text: 'CS', cls: 'lfc-rt--cs' },
 };
+
+/**
+ * Tinted banner strip opening each matchup card (combined-cards mockup "C"):
+ * the seeding label ("1st vs 5th", each team's live competition rank) as
+ * faded ghost text on the left, and the to-play counts ("10 v 11 to play",
+ * flipping to "FT" once both sides are done) in the SAME ghost treatment on
+ * the right. Either side renders independently — a missing rank (off-season
+ * standings) or missing squad payload never blanks the whole strip. Renders
+ * nothing when neither label is available.
+ */
+function MatchupMeta({ fixture: f, liveRankByEntry }) {
+  const homeRank = Number(liveRankByEntry?.[f.homeId]);
+  const awayRank = Number(liveRankByEntry?.[f.awayId]);
+  const seedLabel =
+    Number.isFinite(homeRank) && Number.isFinite(awayRank)
+      ? `${englishOrdinal(homeRank)} vs ${englishOrdinal(awayRank)}`
+      : null;
+  const hasRemaining =
+    f.homeRemaining != null &&
+    Number.isFinite(Number(f.homeRemaining)) &&
+    f.awayRemaining != null &&
+    Number.isFinite(Number(f.awayRemaining));
+  const toPlayLabel = hasRemaining
+    ? Number(f.homeRemaining) === 0 && Number(f.awayRemaining) === 0
+      ? 'FT'
+      : `${f.homeRemaining} v ${f.awayRemaining} to play`
+    : null;
+  if (!seedLabel && !toPlayLabel) return null;
+  return (
+    <div className="lo-meta">
+      <span className="lo-meta__text">{seedLabel}</span>
+      {toPlayLabel ? <span className="lo-meta__text">{toPlayLabel}</span> : null}
+    </div>
+  );
+}
 
 /**
  * Edge-aligned matchup header (mockup "C2"): crest pinned to the outer edge,
@@ -92,9 +128,10 @@ function MatchupHeader({ fixture: f, teamLogoMap, kitIndexByEntry }) {
 /**
  * Win probability, mockup "C2" treatment: the percentages live as TEXT at
  * the two ends of a quiet 7px three-segment strip (home / draw / away),
- * favourite (highest probability, ties share it) coloured in the brand
- * accent, draw as a small caption in the middle. Same segment colour
- * language as the Odds-tab bar, minus the heavy 26px block.
+ * favourite (highest probability, ties share it) coloured to MATCH the
+ * strip's favourite segment. The draw share keeps its segment in the strip
+ * but gets no text label (combined-cards mockup "C"); it stays in the
+ * aria-label for screen readers.
  */
 function WinPcts({ probs, homeName, awayName }) {
   const h = Number(probs.homeWinPct) || 0;
@@ -110,9 +147,6 @@ function WinPcts({ probs, homeName, awayName }) {
       >
         <span className={'lo-pcts__side' + (fav(h) ? ' lo-pcts__side--fav' : '')}>
           {Math.round(h)}%<span className="lo-pcts__w">win</span>
-        </span>
-        <span className={'lo-pcts__draw' + (fav(d) ? ' lo-pcts__draw--fav' : '')}>
-          draw {Math.round(d)}%
         </span>
         <span className={'lo-pcts__side' + (fav(a) ? ' lo-pcts__side--fav' : '')}>
           <span className="lo-pcts__w">win</span>
@@ -196,6 +230,7 @@ function ReturnsColumn({ entryId, name, picks, teamLogoMap, kitIndexByEntry }) {
  *   gwFinished: boolean,
  *   teamLogoMap: object,
  *   kitIndexByEntry?: object,
+ *   liveRankByEntry?: object,  // entry id → live competition rank
  * }} props
  */
 export function LiveOddsSection({
@@ -204,6 +239,7 @@ export function LiveOddsSection({
   gwFinished,
   teamLogoMap,
   kitIndexByEntry,
+  liveRankByEntry,
 }) {
   const { predictions, loading } = usePredictions();
   const [openKeys, setOpenKeys] = useState(() => new Set());
@@ -298,6 +334,7 @@ export function LiveOddsSection({
               aria-expanded={isOpen}
               aria-controls={bodyId}
             >
+              <MatchupMeta fixture={f} liveRankByEntry={liveRankByEntry} />
               <MatchupHeader
                 fixture={f}
                 teamLogoMap={teamLogoMap}
