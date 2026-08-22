@@ -408,9 +408,65 @@ export function useLiveScores({
 
     try {
       const bootUrl = draftResourceUrl('bootstrap-static');
-      const boot = await fetchFplJsonCached(bootUrl, {
-        label: 'draft bootstrap-static',
-      });
+      const liveUrl = draftResourceUrl(`event/${gw}/live`);
+      // Trailing slash matters: `fixtures?event=N` returns HTTP 301 to the
+      // same URL with `/` before the query, and the dev proxy passes the
+      // relative `Location` header back to the browser unresolved — the
+      // browser then re-fetches `/api/fixtures/?event=N` against the dev
+      // origin (Vite SPA) instead of upstream FPL, and HTML lands here as
+      // "Unexpected token '<', '<!doctype '..." Adding the slash up-front
+      // skips the redirect and reaches FPL's JSON directly.
+      const fxUrl = classicResourceUrl(`fixtures/?event=${gw}`);
+
+      /**
+       * Everything here needs only the GW number (live, fixtures, picks) or nothing
+       * at all (bootstrap, known names), so all fetches start at once instead of
+       * paying one round trip after another. `allSettled` preserves the per-source
+       * error semantics: a bootstrap or live failure aborts the whole load (rethrown
+       * into the outer catch), while a fixtures failure only degrades
+       * fixture-dependent details via {@link fixturesDegradedNotice}. Per-team picks
+       * failures are captured as per-squad error rows below.
+       */
+      const picksPromise = Promise.all(
+        teamList.map(async (t) => {
+          if (t.fplEntryId == null) {
+            return {
+              team: t,
+              picksPayload: null,
+              error:
+                'Missing FPL entry id in league data (need real details.json with entry_id).',
+            };
+          }
+          try {
+            const picksPayload = await fetchFplJsonCached(
+              draftEntryEventUrl(t.fplEntryId, gw),
+              { label: 'draft picks' },
+            );
+            return { team: t, picksPayload, error: null };
+          } catch (pickErr) {
+            const pickMsg = pickErr?.message || String(pickErr);
+            const statusMatch = pickMsg.match(/HTTP (\d+)/);
+            return {
+              team: t,
+              picksPayload: null,
+              error: statusMatch
+                ? `Draft picks HTTP ${statusMatch[1]}`
+                : pickMsg,
+            };
+          }
+        })
+      );
+
+      const [bootRes, knownMapRes, liveRes, fixturesRes] =
+        await Promise.allSettled([
+          fetchFplJsonCached(bootUrl, { label: 'draft bootstrap-static' }),
+          fetchKnownNameMap(),
+          fetchFplJsonCached(liveUrl, { label: 'draft event/live' }),
+          fetchFplJsonCached(fxUrl, { label: 'classic fixtures' }),
+        ]);
+
+      if (bootRes.status === 'rejected') throw bootRes.reason;
+      const boot = bootRes.value;
       const evRoot = boot.events;
       const evList = bootstrapEventList(boot);
       const currentGw = evRoot?.current;
@@ -430,7 +486,9 @@ export function useLiveScores({
       const ev = evs.find((e) => e.id === gw);
       setEventSnapshot(ev ?? { id: gw, name: gameWeekSelectLabel(gw) });
 
-      const knownMap = await fetchKnownNameMap();
+      /** `fetchKnownNameMap` never rejects (returns an empty Map on failure), but stay defensive. */
+      const knownMap =
+        knownMapRes.status === 'fulfilled' ? knownMapRes.value : new Map();
       const elements = (boot.elements || []).map((e) =>
         enrichElementWithKnownName(e, knownMap),
       );
@@ -445,10 +503,8 @@ export function useLiveScores({
         (boot.element_types || []).map((t) => [Number(t.id), t])
       );
 
-      const liveUrl = draftResourceUrl(`event/${gw}/live`);
-      const liveJson = await fetchFplJsonCached(liveUrl, {
-        label: 'draft event/live',
-      });
+      if (liveRes.status === 'rejected') throw liveRes.reason;
+      const liveJson = liveRes.value;
       const liveByElementId = liveStatsByElementId(liveJson);
       const liveFull = liveFullByElementId(liveJson);
       const liveFullNumeric = {};
@@ -457,25 +513,15 @@ export function useLiveScores({
         if (Number.isFinite(id)) liveFullNumeric[id] = v;
       }
 
-      // Trailing slash matters: `fixtures?event=N` returns HTTP 301 to the
-      // same URL with `/` before the query, and the dev proxy passes the
-      // relative `Location` header back to the browser unresolved — the
-      // browser then re-fetches `/api/fixtures/?event=N` against the dev
-      // origin (Vite SPA) instead of upstream FPL, and HTML lands here as
-      // "Unexpected token '<', '<!doctype '..." Adding the slash up-front
-      // skips the redirect and reaches FPL's JSON directly.
-      const fxUrl = classicResourceUrl(`fixtures/?event=${gw}`);
       let gwFixtures = [];
-      try {
-        const fixturesPayload = await fetchFplJsonCached(fxUrl, {
-          label: 'classic fixtures',
-        });
+      if (fixturesRes.status === 'fulfilled') {
+        const fixturesPayload = fixturesRes.value;
         gwFixtures = Array.isArray(fixturesPayload)
           ? fixturesPayload.filter((f) => Number(f.event) === gw)
           : [];
-      } catch (fixtureErr) {
+      } else {
+        const fixtureErr = fixturesRes.reason;
         const msg = fixtureErr?.message || String(fixtureErr);
-        gwFixtures = [];
         const is503 = /\b503\b/.test(msg);
         if (loadGen === loadGenerationRef.current) {
           setFixturesDegradedNotice(
@@ -525,42 +571,16 @@ export function useLiveScores({
       }
       if (loadGen !== loadGenerationRef.current) return;
 
-      const squadList = await Promise.all(
-        teamList.map(async (t) => {
-          if (t.fplEntryId == null) {
+      /** Picks were fetched concurrently with bootstrap/live/fixtures above; this only assembles rows. */
+      const picksResults = await picksPromise;
+      const squadList = picksResults.map(
+        ({ team: t, picksPayload, error }) => {
+          if (error != null || !picksPayload) {
             return {
               leagueEntryId: t.id,
               teamName: t.teamName,
-              fplEntryId: null,
-              error:
-                'Missing FPL entry id in league data (need real details.json with entry_id).',
-              starters: [],
-              bench: [],
-              displayStarters: [],
-              displayBench: [],
-              gwPoints: null,
-              autoSubs: [],
-              autosubSource: 'none',
-              projectedAutoSubs: [],
-              leftToPlayCount: null,
-              xiPlayersRemaining: null,
-            };
-          }
-
-          const url = draftEntryEventUrl(t.fplEntryId, gw);
-          let picksPayload;
-          try {
-            picksPayload = await fetchFplJsonCached(url, { label: 'draft picks' });
-          } catch (pickErr) {
-            const pickMsg = pickErr?.message || String(pickErr);
-            const statusMatch = pickMsg.match(/HTTP (\d+)/);
-            return {
-              leagueEntryId: t.id,
-              teamName: t.teamName,
-              fplEntryId: t.fplEntryId,
-              error: statusMatch
-                ? `Draft picks HTTP ${statusMatch[1]}`
-                : pickMsg,
+              fplEntryId: t.fplEntryId ?? null,
+              error: error ?? 'Draft picks payload missing.',
               starters: [],
               bench: [],
               displayStarters: [],
@@ -647,7 +667,7 @@ export function useLiveScores({
             leftToPlayCount,
             xiPlayersRemaining,
           };
-        })
+        }
       );
 
       if (loadGen !== loadGenerationRef.current) return;

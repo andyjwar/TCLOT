@@ -289,16 +289,22 @@ export async function fetchEspnPremWindow({
   /** @type {Array<{ id: number, abbreviation: string, displayName: string }>} */
   const espnTeamRoster = [];
   const seenTeam = new Set();
-  for (const d of dates) {
-    if (signal?.aborted) break;
-    try {
-      const sb = await fetchEspnJson(`scoreboard?dates=${d}`);
-      byDate.set(d, collectDayMatches(sb));
-      harvestTeams(sb, espnTeamRoster, seenTeam);
-    } catch {
-      byDate.set(d, []);
-    }
-  }
+  /** Scoreboard days fetch concurrently; `harvestTeams` dedupes via `seenTeam` so arrival order doesn't matter. */
+  await Promise.all(
+    [...dates].map(async (d) => {
+      if (signal?.aborted) {
+        byDate.set(d, []);
+        return;
+      }
+      try {
+        const sb = await fetchEspnJson(`scoreboard?dates=${d}`);
+        byDate.set(d, collectDayMatches(sb));
+        harvestTeams(sb, espnTeamRoster, seenTeam);
+      } catch {
+        byDate.set(d, []);
+      }
+    }),
+  );
 
   const espnToFpl = mapEspnTeamsToFpl(teamById, espnTeamRoster);
   if (!espnToFpl.size) {
@@ -315,61 +321,63 @@ export async function fetchEspnPremWindow({
     }));
   }
 
-  const out = [];
-  for (const fx of fxList) {
-    if (signal?.aborted) break;
-    const d = yyyymmddUtc(fx.kickoff_time);
-    const dayRows = d ? (byDate.get(d) || []) : [];
-    const match = d ? findEspnMatchForFixture(fx, espnToFpl, dayRows) : null;
-    if (!match) {
-      out.push({
+  /** Per-fixture summary fetches run concurrently (~10 per GW) instead of one round trip after another. */
+  return Promise.all(
+    fxList.map(async (fx) => {
+      const d = yyyymmddUtc(fx.kickoff_time);
+      const dayRows = d ? (byDate.get(d) || []) : [];
+      const match =
+        d && !signal?.aborted
+          ? findEspnMatchForFixture(fx, espnToFpl, dayRows)
+          : null;
+      if (!match) {
+        return {
+          fplFixture: fx,
+          matchId: null,
+          homeEspnTeamId: null,
+          awayEspnTeamId: null,
+          score: null,
+          events: [],
+          lineups: null,
+          fetchError: null,
+          detailsBlockedReason: null,
+        };
+      }
+
+      const eventId = match.eventId;
+      let score = null;
+      let events = [];
+      let lineups = null;
+      let fetchError = null;
+      let summary;
+      try {
+        summary = await fetchEspnJson(`summary?event=${eventId}`);
+      } catch (e) {
+        fetchError = e?.message || String(e);
+      }
+      if (summary) {
+        score = parseEspnScoreForFplFixture(summary, fx, espnToFpl);
+        events = parseEspnKeyEventsForPrem(summary, fx, espnToFpl);
+        lineups = parseEspnLineups(summary, fx, espnToFpl);
+      }
+
+      const enriched = enrichWithFplElements({
         fplFixture: fx,
-        matchId: null,
-        homeEspnTeamId: null,
-        awayEspnTeamId: null,
-        score: null,
-        events: [],
-        lineups: null,
-        fetchError: null,
-        detailsBlockedReason: null,
+        events,
+        lineups,
+        elementById,
       });
-      continue;
-    }
-
-    const eventId = match.eventId;
-    let score = null;
-    let events = [];
-    let lineups = null;
-    let fetchError = null;
-    let summary;
-    try {
-      summary = await fetchEspnJson(`summary?event=${eventId}`);
-    } catch (e) {
-      fetchError = e?.message || String(e);
-    }
-    if (summary) {
-      score = parseEspnScoreForFplFixture(summary, fx, espnToFpl);
-      events = parseEspnKeyEventsForPrem(summary, fx, espnToFpl);
-      lineups = parseEspnLineups(summary, fx, espnToFpl);
-    }
-
-    const enriched = enrichWithFplElements({
-      fplFixture: fx,
-      events,
-      lineups,
-      elementById,
-    });
-    out.push({
-      fplFixture: fx,
-      matchId: eventId,
-      homeEspnTeamId: match.homeId,
-      awayEspnTeamId: match.awayId,
-      score: score || null,
-      events: enriched.events,
-      lineups: enriched.lineups,
-      fetchError,
-      detailsBlockedReason: null,
-    });
-  }
-  return out;
+      return {
+        fplFixture: fx,
+        matchId: eventId,
+        homeEspnTeamId: match.homeId,
+        awayEspnTeamId: match.awayId,
+        score: score || null,
+        events: enriched.events,
+        lineups: enriched.lineups,
+        fetchError,
+        detailsBlockedReason: null,
+      };
+    }),
+  );
 }

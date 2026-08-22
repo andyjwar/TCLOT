@@ -541,54 +541,57 @@ export async function fetchPulselivePremWindow({
     }));
   }
 
-  const out = [];
-  for (const fx of fxList) {
-    if (signal?.aborted) break;
-    const match = findPulseliveMatchForFixture(fx, pulseToFpl, pulseFixtures);
-    if (!match) {
-      out.push({
+  /**
+   * Per-fixture detail fetches run concurrently — a GW has ~10 fixtures, and awaiting
+   * them one at a time paid ~10 proxy round trips back to back. Fixtures without a
+   * Pulselive match (or after abort) resolve to a bare row without fetching.
+   */
+  return Promise.all(
+    fxList.map(async (fx) => {
+      const match = findPulseliveMatchForFixture(fx, pulseToFpl, pulseFixtures);
+      if (!match || signal?.aborted) {
+        return {
+          fplFixture: fx,
+          matchId: null,
+          score: null,
+          events: [],
+          lineups: null,
+          fetchError: null,
+          detailsBlockedReason: null,
+        };
+      }
+
+      let fixtureJson;
+      let fetchError = null;
+      try {
+        fixtureJson = await fetchPulseliveJson(`fixtures/${match.fixtureId}`);
+      } catch (e) {
+        fetchError = e?.message || String(e);
+      }
+      let score = null;
+      let events = [];
+      let lineups = null;
+      if (fixtureJson) {
+        score = parsePulseliveScore(fixtureJson, fx, pulseToFpl);
+        events = parsePulseliveEvents(fixtureJson, fx, pulseToFpl);
+        lineups = parsePulseliveLineups(fixtureJson, fx, pulseToFpl);
+      }
+
+      const enriched = enrichWithFplElements({
         fplFixture: fx,
-        matchId: null,
-        score: null,
-        events: [],
-        lineups: null,
-        fetchError: null,
-        detailsBlockedReason: null,
+        events,
+        lineups,
+        elementById,
       });
-      continue;
-    }
-
-    let fixtureJson;
-    let fetchError = null;
-    try {
-      fixtureJson = await fetchPulseliveJson(`fixtures/${match.fixtureId}`);
-    } catch (e) {
-      fetchError = e?.message || String(e);
-    }
-    let score = null;
-    let events = [];
-    let lineups = null;
-    if (fixtureJson) {
-      score = parsePulseliveScore(fixtureJson, fx, pulseToFpl);
-      events = parsePulseliveEvents(fixtureJson, fx, pulseToFpl);
-      lineups = parsePulseliveLineups(fixtureJson, fx, pulseToFpl);
-    }
-
-    const enriched = enrichWithFplElements({
-      fplFixture: fx,
-      events,
-      lineups,
-      elementById,
-    });
-    out.push({
-      fplFixture: fx,
-      matchId: match.fixtureId,
-      score: score || null,
-      events: enriched.events,
-      lineups: enriched.lineups,
-      fetchError,
-      detailsBlockedReason: null,
-    });
-  }
-  return out;
+      return {
+        fplFixture: fx,
+        matchId: match.fixtureId,
+        score: score || null,
+        events: enriched.events,
+        lineups: enriched.lineups,
+        fetchError,
+        detailsBlockedReason: null,
+      };
+    }),
+  );
 }
