@@ -6,13 +6,14 @@ import {
   HERO_VILLAIN_SHORT,
 } from './HeroVillainAvatarFrame';
 import { liveFixtureLead } from './liveScoresDerivations.js';
-import { firstWord } from './teamNameUtils.js';
+import { lastWordTeamName } from './teamNameUtils.js';
 
 /**
  * Team name that shows the full name when it fits its slot and falls back to
- * the team's FIRST WORD ONLY (never a mid-word ellipsis) when the full name
- * would overflow — matching the Standings hero/table treatment via the shared
- * {@link firstWord} helper.
+ * the team's LAST WORD ONLY (never a mid-word ellipsis) when the full name
+ * would overflow — `Hackney Rohirrim` → `Rohirrim`, `Toronto Gimli` →
+ * `Gimli`, with MSFG special-cased to `Mordor` via the shared
+ * {@link lastWordTeamName} helper.
  *
  * Fit detection is imperative rather than pure-CSS: the slot is flex-shrunk to
  * the available width by the row grid (the side cell is a fixed `1fr`), so when
@@ -32,10 +33,10 @@ import { firstWord } from './teamNameUtils.js';
  */
 function FittedTeamName({ fullName, displayName, className, title }) {
   const candidate = displayName ?? fullName;
-  const short = firstWord(fullName);
-  /** Last-resort single token — covers curated labels that are already
-   * multi-word (e.g. `Seoul Shire`, `Atleti Bilbo`): without it, a slot
-   * too narrow for the curated label would ellipsize mid-word. */
+  const short = lastWordTeamName(fullName);
+  /** Last-resort single token — covers a candidate whose fallback is
+   * still multi-word or empty: without it, a slot too narrow for the
+   * fallback would ellipsize mid-word. */
   const tiniest = String(short || candidate || '')
     .trim()
     .split(/\s+/)[0] ?? '';

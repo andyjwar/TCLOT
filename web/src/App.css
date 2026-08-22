@@ -11907,13 +11907,9 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-banner-row--toggle:hover:not(:focus-visible) {
   background: color-mix(in srgb, var(--fm-surface-2) 38%, transparent);
 }
-/* Compact paddings/gaps trimmed (10→8px sides, 5→4px grid gap) so the name
-   slot can render full club names ("Toronto Gimli") on a 390px phone; the
-   FittedTeamName fallback to the curated short label still guards the
-   longest names ("Hackney Rohirrim"). */
 .live-banner-row--compact {
-  padding: 10px 8px 14px;
-  gap: 4px;
+  padding: 10px 10px 14px;
+  gap: 5px;
 }
 .live-banner-row__side {
   display: flex;
@@ -11924,7 +11920,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 /* Tighten every inter-element gap on the compact (phone) row so the name slot
    keeps as much width as possible for the first-word team name. */
 .live-banner-row--compact .live-banner-row__side {
-  gap: 4px;
+  gap: 5px;
 }
 .live-banner-row__side--home {
   justify-content: flex-start;
@@ -11951,7 +11947,24 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   flex-direction: row;
 }
 .live-banner-row--compact .live-banner-row__teamblock {
-  gap: 4px;
+  gap: 5px;
+}
+/* Compact rows anchor the team NAME beside its to-play pill (block stretched,
+   space-between) instead of letting the whole name+crest block hug the centre
+   score. Variable-length names made the centre-hugging layout read ragged —
+   every name now starts at the same x on every row, the crests keep a fixed
+   x beside the score, and the leftover air sits mid-row instead of pooling
+   unevenly behind the pills. Desktop keeps the FotMob centre-hugging block. */
+.live-banner-row--compact .live-banner-row__teamblock--home,
+.live-banner-row--compact .live-banner-row__teamblock--away {
+  flex: 1 1 auto;
+  justify-content: space-between;
+}
+.live-banner-row--compact .live-banner-row__teamblock--home {
+  margin-left: 0;
+}
+.live-banner-row--compact .live-banner-row__teamblock--away {
+  margin-right: 0;
 }
 /* Per-team "players still to play" countdown pill at the far end of each side
    (home far-left, away far-right). Grey, quiet — matches the `FT` tag styling
@@ -11973,10 +11986,13 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   letter-spacing: 0.04em;
   line-height: 1;
 }
+/* min-width is CONTENT width here (content-box): 12px content + 10px padding
+   renders a ~22px pill. The old 22px min-width painted a 32px pill that read
+   chunky at the row edges and starved the name slot on 390px phones. */
 .live-banner-row--compact .live-banner-row__countdown {
-  min-width: 20px;
+  min-width: 12px;
   height: 18px;
-  padding: 0 4px;
+  padding: 0 5px;
   font-size: 9px;
 }
 /* Crest column simply wraps the avatar (+ its hero/villain ring). The
@@ -12166,14 +12182,14 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
-/* Compact score narrows 4.1em→3.6em: sized for the everyday 1–2 digit GW
-   totals so the reclaimed width goes to the team-name slots ("Toronto
-   Gimli" fits a 390px phone). A rare 100+ haul still renders — digits
-   align toward the separator, so the third digit bleeds harmlessly into
-   the side gap instead of shifting the "–". */
+/* Compact score at 3.8em (was 4.1em): sized for the everyday 1–2 digit GW
+   totals so full club names ("Toronto Gimli") fit a 390px phone while the
+   digits keep clear air from the crests. A rare 100+ haul still renders —
+   digits align toward the separator, so the third digit bleeds harmlessly
+   into the side gap instead of shifting the "–". */
 .live-banner-row--compact .live-banner-row__score {
   font-size: 1.08rem;
-  width: 3.6em;
+  width: 3.8em;
 }
 .live-banner-row__score-cell--home {
   text-align: right;

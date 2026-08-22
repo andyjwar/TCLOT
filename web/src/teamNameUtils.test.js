@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   firstWord,
   isMsfgTeamName,
+  lastWordTeamName,
   standingsMobileTeamName,
 } from './teamNameUtils.js';
 
@@ -58,6 +59,23 @@ test('isMsfgTeamName — long form, Mr. MSFG, and MSFG', () => {
   assert.equal(isMsfgTeamName('Hackney Rohirrim'), false);
   assert.equal(isMsfgTeamName(''), false);
   assert.equal(isMsfgTeamName(null), false);
+});
+
+test('lastWordTeamName — last word of the club name, MSFG reads Mordor', () => {
+  assert.equal(lastWordTeamName('Toronto Gimli'), 'Gimli');
+  assert.equal(lastWordTeamName('Atlético Bilbo'), 'Bilbo');
+  assert.equal(lastWordTeamName('Hackney Rohirrim'), 'Rohirrim');
+  assert.equal(lastWordTeamName('Suffolk Sméagol'), 'Sméagol');
+  assert.equal(lastWordTeamName('Rokesly Regorasu'), 'Regorasu');
+  assert.equal(lastWordTeamName('Brampton Balrogs'), 'Balrogs');
+  assert.equal(lastWordTeamName('Seoul Shire'), 'Shire');
+  assert.equal(lastWordTeamName('Crouch End Oashisu'), 'Oashisu');
+  assert.equal(lastWordTeamName('Shire'), 'Shire');
+  assert.equal(lastWordTeamName('Mordor SFG'), 'Mordor');
+  assert.equal(lastWordTeamName('Mordor S.F.G'), 'Mordor');
+  assert.equal(lastWordTeamName('Mr Mordorlicious School for Girls'), 'Mordor');
+  assert.equal(lastWordTeamName(null), '');
+  assert.equal(lastWordTeamName('  '), '');
 });
 
 test('standingsMobileTeamName — full names, MSFG renders as Mordor SFG', () => {

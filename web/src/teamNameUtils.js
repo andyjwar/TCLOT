@@ -45,6 +45,24 @@ export function firstWord(name) {
 export const MSFG_STANDINGS_LABEL = 'Mordor SFG'
 
 /**
+ * Face-off row fallback label when the full club name doesn't fit its slot:
+ * the LAST word of the name (`'Toronto Gimli'` → `'Gimli'`,
+ * `'Hackney Rohirrim'` → `'Rohirrim'`), except MSFG which reads best as
+ * `'Mordor'`. Pure helper — no DOM access; safe in tests.
+ *
+ * @param {string | null | undefined} name
+ * @returns {string}
+ */
+export function lastWordTeamName(name) {
+  if (name == null) return ''
+  const trimmed = String(name).trim()
+  if (!trimmed) return ''
+  if (isMsfgTeamName(trimmed)) return 'Mordor'
+  const words = trimmed.split(/\s+/)
+  return words[words.length - 1] ?? ''
+}
+
+/**
  * Whether a team name is the MSFG club (long form, "Mr. MSFG", or "MSFG").
  *
  * @param {string | null | undefined} name
