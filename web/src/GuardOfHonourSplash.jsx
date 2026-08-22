@@ -729,7 +729,7 @@ export function GuardOfHonourSplash({
  * full splash (which remounts, so the entrance cinematic re-runs if
  * the per-tab session play budget allows — see SESSION_PLAY_CAP).
  *
- * Copy: "Guard of Honour for the {titleTeamName}" — the champion is
+ * Copy: "Guard of Honour for {titleTeamName}" — the champion is
  * honoured by the name the title was WON under (Crouch End Oashisu),
  * not the current-season rebrand; see
  * `REIGNING_CHAMPION_TITLE_TEAM_NAME` in `championOfRecord.js`.
@@ -744,7 +744,7 @@ export function GuardOfHonourCollapsedStrip({ titleTeamName, onExpand }) {
       className="goh-collapsed-strip"
       onClick={onExpand}
       aria-expanded="false"
-      aria-label={`Expand guard of honour for the ${team}`}
+      aria-label={`Expand guard of honour for ${team}`}
     >
       <svg
         className="goh-collapsed-strip__crown"
@@ -755,7 +755,7 @@ export function GuardOfHonourCollapsedStrip({ titleTeamName, onExpand }) {
         <CrownSvg cx={0} cy={0} scale={0.62} opacity={1} fill="#ffd166" />
       </svg>
       <span className="goh-collapsed-strip__title">Guard of Honour</span>
-      <span className="goh-collapsed-strip__caption">for the {team}</span>
+      <span className="goh-collapsed-strip__caption">for {team}</span>
       <span className="goh-collapsed-strip__chevron" aria-hidden="true">
         ▾
       </span>

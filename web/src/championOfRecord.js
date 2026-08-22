@@ -26,7 +26,7 @@ export const REIGNING_CHAMPION_TEAM_NAME = 'Rokesly Regorasu';
 
 /** Team name the title was actually WON under (pre-rebrand). The
  * collapsed Guard of Honour strip honours the champion by this name —
- * "Guard of Honour for the Crouch End Oashisu" — since that's the club
+ * "Guard of Honour for Crouch End Oashisu" — since that's the club
  * on the 2025/26 trophy engraving. */
 export const REIGNING_CHAMPION_TITLE_TEAM_NAME = 'Crouch End Oashisu';
 
