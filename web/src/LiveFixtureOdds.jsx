@@ -6,6 +6,7 @@ import { useGwProjectionsHistory } from './useGwProjectionsHistory.js';
 import { predictionsById, h2hWinProbs, finishedMatchupOdds } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
 import { teamProjection, teamReturns, anyFixtureLive } from './liveBlend.js';
+import { probToFractionalOdds } from './oddsFormat.js';
 
 /** Route chip glyph + colour class for a player's likeliest return. */
 const ROUTE = {
@@ -23,14 +24,30 @@ const ROUTE = {
  * "good vs bad" and clashed with the app-wide W/D/L dot colours. When
  * outcomes tie for the top probability they are all highlighted (reads
  * as "even match").
+ *
+ * With `odds` (default) the Win / Draw / Win legend also carries each
+ * outcome's fair fractional price (probability → 100/pct, snapped to the
+ * traditional ladder — see `oddsFormat.js`), favourite in the brand
+ * accent. Pass `odds={false}` where prices make no sense (e.g. a settled
+ * final result where the probabilities have collapsed to 100/0/0).
  */
-function WinBar({ probs, homeName, awayName, live }) {
+function WinBar({ probs, homeName, awayName, live, odds = true }) {
   const segs = [
     { key: 'h', pct: probs.homeWinPct },
     { key: 'd', pct: probs.drawPct },
     { key: 'a', pct: probs.awayWinPct },
   ];
   const maxPct = Math.max(...segs.map((s) => Number(s.pct) || 0));
+  const isFav = (pct) => maxPct > 0 && (Number(pct) || 0) === maxPct;
+  const legend = (label, pct) => {
+    const frac = odds ? probToFractionalOdds(pct) : null;
+    return (
+      <span className={'lfc-win__lg' + (isFav(pct) ? ' lfc-win__lg--fav' : '')}>
+        {label}
+        {frac ? <b>{frac}</b> : null}
+      </span>
+    );
+  };
   return (
     <>
       <div className="lfc-win__teams">
@@ -45,12 +62,7 @@ function WinBar({ probs, homeName, awayName, live }) {
         {segs.map((s) => (
           <span
             key={s.key}
-            className={
-              'lfc-win__seg' +
-              (maxPct > 0 && (Number(s.pct) || 0) === maxPct
-                ? ' lfc-win__seg--fav'
-                : '')
-            }
+            className={'lfc-win__seg' + (isFav(s.pct) ? ' lfc-win__seg--fav' : '')}
             style={{ width: `${s.pct}%` }}
           >
             {s.pct >= 8 ? `${Math.round(s.pct)}%` : ''}
@@ -58,9 +70,9 @@ function WinBar({ probs, homeName, awayName, live }) {
         ))}
       </div>
       <div className="lfc-win__legend">
-        <span>Win</span>
-        <span>Draw</span>
-        <span>Win</span>
+        {legend('Win', probs.homeWinPct)}
+        {legend('Draw', probs.drawPct)}
+        {legend('Win', probs.awayWinPct)}
       </div>
     </>
   );
@@ -158,7 +170,13 @@ function FinishedGwOdds({ gw, homeId, awayId, homeName, awayName }) {
       </p>
 
       <div className="lfc-block">
-        <WinBar probs={d.probs} homeName={homeName} awayName={awayName} live={false} />
+        <WinBar
+          probs={d.probs}
+          homeName={homeName}
+          awayName={awayName}
+          live={false}
+          odds={!isFinal}
+        />
       </div>
 
       <div className="lfc-block">

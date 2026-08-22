@@ -183,6 +183,17 @@
   margin: 0 3px;
   color: var(--fm-muted);
 }
+.lo-pcts__draw {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--fm-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+/* "Win chance" percentages inside the expanded body (odds live on the card). */
+.lo-pcts--body {
+  margin: 0 2px 12px;
+}
 .lo-strip {
   display: flex;
   height: 7px;

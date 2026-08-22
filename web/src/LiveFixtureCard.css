@@ -888,6 +888,23 @@
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
+/* Legend entry with its fair fractional price (odds-format mockup "G1"). */
+.lfc-win__lg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.lfc-win__lg b {
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--fm-text-strong);
+  text-transform: none;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+.lfc-win__lg--fav b {
+  color: var(--tclot-logo-purple, #795bfb);
+}
 
 /* ---- Live / Pre-Match switcher ---- */
 .lfc-seg {

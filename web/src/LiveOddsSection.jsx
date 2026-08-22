@@ -1,13 +1,12 @@
 import { useMemo, useState } from 'react';
-import { FittedTeamName } from './LiveFaceOffRow.jsx';
 import { LiveFixtureCompareRow } from './LiveFixtureKeyStats.jsx';
 import { TeamAvatar } from './TeamAvatar';
+import { MatchupMeta, MatchupHeader } from './MatchupScorecard.jsx';
 import { usePredictions } from './usePredictions.js';
 import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
 import { teamProjection, teamReturns, anyFixtureLive } from './liveBlend.js';
-import { liveFixtureLead } from './liveScoresDerivations.js';
-import { englishOrdinal } from './playerContributionEvents.js';
+import { probToFractionalOdds } from './oddsFormat.js';
 import './LiveFixtureCard.css';
 import './LiveOddsSection.css';
 
@@ -18,139 +17,43 @@ const ROUTE = {
   cs: { text: 'CS', cls: 'lfc-rt--cs' },
 };
 
-/**
- * Tinted banner strip opening each matchup card (combined-cards mockup "C"):
- * the seeding label ("1st vs 5th", each team's live competition rank) as
- * faded ghost text on the left, and the to-play counts ("10 v 11 to play",
- * flipping to "FT" once both sides are done) in the SAME ghost treatment on
- * the right. Either side renders independently — a missing rank (off-season
- * standings) or missing squad payload never blanks the whole strip. Renders
- * nothing when neither label is available.
- */
-function MatchupMeta({ fixture: f, liveRankByEntry }) {
-  const homeRank = Number(liveRankByEntry?.[f.homeId]);
-  const awayRank = Number(liveRankByEntry?.[f.awayId]);
-  const seedLabel =
-    Number.isFinite(homeRank) && Number.isFinite(awayRank)
-      ? `${englishOrdinal(homeRank)} vs ${englishOrdinal(awayRank)}`
-      : null;
-  const hasRemaining =
-    f.homeRemaining != null &&
-    Number.isFinite(Number(f.homeRemaining)) &&
-    f.awayRemaining != null &&
-    Number.isFinite(Number(f.awayRemaining));
-  const toPlayLabel = hasRemaining
-    ? Number(f.homeRemaining) === 0 && Number(f.awayRemaining) === 0
-      ? 'FT'
-      : `${f.homeRemaining} v ${f.awayRemaining} to play`
-    : null;
-  if (!seedLabel && !toPlayLabel) return null;
-  return (
-    <div className="lo-meta">
-      <span className="lo-meta__text">{seedLabel}</span>
-      {toPlayLabel ? <span className="lo-meta__text">{toPlayLabel}</span> : null}
-    </div>
-  );
-}
-
-/**
- * Edge-aligned matchup header (mockup "C2"): crest pinned to the outer edge,
- * fitted team name beside it, and the score alone in the centre with the
- * Scores-tab winner "glass" pill behind the leading number. Reads left →
- * right with no full-width bars competing for the same line.
- */
-function MatchupHeader({ fixture: f, teamLogoMap, kitIndexByEntry }) {
-  const lead = liveFixtureLead(f.homeLive, f.awayLive);
-  const bothScores = f.homeLive != null && f.awayLive != null;
-  return (
-    <div className="lo-hdr">
-      <div className="lo-hdr__side">
-        <span className="lo-hdr__crest">
-          <TeamAvatar
-            entryId={f.homeId}
-            name={f.homeName}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        </span>
-        <FittedTeamName
-          className="lo-hdr__name"
-          fullName={f.homeName}
-          title={f.homeName}
-        />
-      </div>
-      <div className="lo-hdr__score" aria-label="Gameweek score">
-        {bothScores ? (
-          <>
-            <span
-              className={
-                'lo-hdr__half' + (lead === 'home' ? ' lo-hdr__half--winner' : '')
-              }
-            >
-              {f.homeLive}
-            </span>
-            <span className="lo-hdr__sep" aria-hidden="true">
-              –
-            </span>
-            <span
-              className={
-                'lo-hdr__half' + (lead === 'away' ? ' lo-hdr__half--winner' : '')
-              }
-            >
-              {f.awayLive}
-            </span>
-          </>
-        ) : (
-          <span className="lo-hdr__pending muted">vs</span>
-        )}
-      </div>
-      <div className="lo-hdr__side lo-hdr__side--away">
-        <FittedTeamName
-          className="lo-hdr__name"
-          fullName={f.awayName}
-          title={f.awayName}
-        />
-        <span className="lo-hdr__crest">
-          <TeamAvatar
-            entryId={f.awayId}
-            name={f.awayName}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Win probability, mockup "C2" treatment: the percentages live as TEXT at
- * the two ends of a quiet 7px three-segment strip (home / draw / away),
- * favourite (highest probability, ties share it) coloured to MATCH the
- * strip's favourite segment. The draw share keeps its segment in the strip
- * but gets no text label (combined-cards mockup "C"); it stays in the
- * aria-label for screen readers.
- */
-function WinPcts({ probs, homeName, awayName }) {
+/** Home / draw / away percentages + favourite test, shared by both rows. */
+function probParts(probs) {
   const h = Number(probs.homeWinPct) || 0;
   const d = Number(probs.drawPct) || 0;
   const a = Number(probs.awayWinPct) || 0;
   const max = Math.max(h, d, a);
-  const fav = (pct) => max > 0 && pct === max;
+  return { h, d, a, fav: (pct) => max > 0 && pct === max };
+}
+
+/**
+ * Collapsed-card headline (odds-format mockup "H1"): fair FRACTIONAL ODDS
+ * as text at the two ends of the quiet 7px three-segment strip
+ * (home / draw / away), the draw price as a small caption in the middle,
+ * favourite (highest probability, ties share it) coloured to MATCH the
+ * strip's favourite segment. The card carries one bookie-style price per
+ * outcome; the percentages behind them move to the expanded body
+ * ({@link WinChanceRow}) and the strip still encodes the balance visually.
+ */
+function OddsStrip({ probs, homeName, awayName }) {
+  const { h, d, a, fav } = probParts(probs);
+  const fh = probToFractionalOdds(h) ?? '—';
+  const fd = probToFractionalOdds(d) ?? '—';
+  const fa = probToFractionalOdds(a) ?? '—';
   return (
     <>
       <div
         className="lo-pcts"
-        aria-label={`Win probability — ${homeName} ${Math.round(h)}%, draw ${Math.round(d)}%, ${awayName} ${Math.round(a)}%`}
+        aria-label={`Fair odds — ${homeName} ${fh}, draw ${fd}, ${awayName} ${fa}`}
       >
         <span className={'lo-pcts__side' + (fav(h) ? ' lo-pcts__side--fav' : '')}>
-          {Math.round(h)}%<span className="lo-pcts__w">win</span>
+          {fh}
+          <span className="lo-pcts__w">win</span>
         </span>
+        <span className="lo-pcts__draw">draw {fd}</span>
         <span className={'lo-pcts__side' + (fav(a) ? ' lo-pcts__side--fav' : '')}>
           <span className="lo-pcts__w">win</span>
-          {Math.round(a)}%
+          {fa}
         </span>
       </div>
       <div className="lo-strip" aria-hidden="true">
@@ -168,6 +71,30 @@ function WinPcts({ probs, homeName, awayName }) {
         />
       </div>
     </>
+  );
+}
+
+/**
+ * "Win chance" row inside the expanded body — the percentages behind the
+ * card's fractional prices, same text treatment as the headline row
+ * (favourite in the brand accent, draw as a small centre caption).
+ */
+function WinChanceRow({ probs, homeName, awayName }) {
+  const { h, d, a, fav } = probParts(probs);
+  return (
+    <div
+      className="lo-pcts lo-pcts--body"
+      aria-label={`Win chance — ${homeName} ${Math.round(h)}%, draw ${Math.round(d)}%, ${awayName} ${Math.round(a)}%`}
+    >
+      <span className={'lo-pcts__side' + (fav(h) ? ' lo-pcts__side--fav' : '')}>
+        {Math.round(h)}%<span className="lo-pcts__w">win</span>
+      </span>
+      <span className="lo-pcts__draw">draw {Math.round(d)}%</span>
+      <span className={'lo-pcts__side' + (fav(a) ? ' lo-pcts__side--fav' : '')}>
+        <span className="lo-pcts__w">win</span>
+        {Math.round(a)}%
+      </span>
+    </div>
   );
 }
 
@@ -212,12 +139,12 @@ function ReturnsColumn({ entryId, name, picks, teamLogoMap, kitIndexByEntry }) {
  *
  * Each matchup renders the mockup-C2 header ({@link MatchupHeader}: crests
  * on the outer edges, fitted last-word team names, centred score with the
- * winner glass pill) over the headline **live** win probability shown as
- * text percentages flanking a quiet hairline strip ({@link WinPcts}).
- * Tapping a matchup expands it to Projected points (Live and Pre-Match
- * compare rows, same accents as the fixture-card Odds tab) plus "Most
- * likely to return" route chips (always the pre-match forecast, as on the
- * Odds tab).
+ * winner glass pill) over the headline **live** fair fractional odds
+ * flanking a quiet hairline strip ({@link OddsStrip}). Tapping a matchup
+ * expands it to the "Win chance" percentages ({@link WinChanceRow}),
+ * Projected points (Live and Pre-Match compare rows, same accents as the
+ * fixture-card Odds tab) and "Most likely to return" route chips (always
+ * the pre-match forecast, as on the Odds tab).
  *
  * Before the first kick-off the headline falls back to the pre-match
  * forecast (no live dot, no Live row). Renders nothing for finished
@@ -314,7 +241,7 @@ export function LiveOddsSection({
       <p className="lo-sub muted">
         {computed.gwMismatch
           ? `Projections shown are the pre-match forecast for GW${computed.forecastGw}.`
-          : `Win probability from the ${anyLive ? 'live' : 'pre-match'} projection model. Tap a matchup for the full odds.`}
+          : `Fair odds from the ${anyLive ? 'live' : 'pre-match'} projection model. Tap a matchup for the full odds.`}
       </p>
 
       {fixtures.map((f) => {
@@ -340,7 +267,7 @@ export function LiveOddsSection({
                 teamLogoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
-              <WinPcts
+              <OddsStrip
                 probs={model.probs}
                 homeName={f.homeName}
                 awayName={f.awayName}
@@ -348,6 +275,12 @@ export function LiveOddsSection({
             </button>
             {isOpen ? (
               <div className="lo-matchup__body" id={bodyId}>
+                <h3 className="lfc-block__h lfc-block__h--left">Win chance</h3>
+                <WinChanceRow
+                  probs={model.probs}
+                  homeName={f.homeName}
+                  awayName={f.awayName}
+                />
                 <h3 className="lfc-block__h lfc-block__h--left">
                   Projected points
                 </h3>
