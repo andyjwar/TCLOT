@@ -100,6 +100,22 @@
   gap: 10px;
 }
 
+/* Stacked assessment strip — chosen option ×4 at phone width. */
+.scm-stack-wrap {
+  max-width: 920px;
+  margin: 26px auto 0;
+  background: rgba(255, 253, 244, 0.55);
+  border: 1px solid var(--scm-border);
+  border-radius: 16px;
+  padding: 16px 16px 18px;
+}
+.scm-stack {
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .scm-note {
   max-width: 920px;
   margin: 26px auto 0;
@@ -357,6 +373,9 @@
   height: 100%;
   background: rgba(29, 92, 64, 0.55);
 }
+.scm-gauge__fill--ft {
+  background: var(--scm-green);
+}
 .scm-gauge__side--home .scm-gauge__fill {
   border-radius: 3px 0 0 3px;
 }
@@ -491,4 +510,148 @@
   font-weight: 700;
   color: var(--scm-green);
   margin: 0 3px;
+}
+
+/* ================================================================ */
+/* Option G — formation dots (1-4-4-2 micro-pitch per side)          */
+/* ================================================================ */
+
+.scm-form {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 9px;
+}
+.scm-form__count {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--scm-ghost);
+  min-width: 14px;
+  text-align: center;
+}
+.scm-form__count--ft {
+  color: var(--scm-green);
+}
+.scm-form__pitch {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 5px;
+  border: 1px solid rgba(105, 100, 82, 0.22);
+  border-radius: 4px;
+}
+.scm-form__pitch--ft {
+  border-color: rgba(29, 92, 64, 0.3);
+}
+.scm-form__col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.scm-form__dot {
+  width: 3.5px;
+  height: 3.5px;
+  border-radius: 50%;
+  background: rgba(105, 100, 82, 0.2);
+}
+.scm-form__dot--on {
+  background: var(--scm-green);
+  opacity: 0.75;
+}
+.scm-form__caption {
+  flex: 1;
+  text-align: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--scm-ghost);
+}
+
+/* ================================================================ */
+/* Option H — count chips at the outer edges                         */
+/* ================================================================ */
+
+.scm-chips {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 9px;
+}
+.scm-chip {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1;
+  color: var(--scm-green);
+  background: var(--scm-green-soft);
+  border-radius: 999px;
+  padding: 4px 8px 3px;
+}
+.scm-chip--ft {
+  color: #f3edda;
+  background: rgba(29, 92, 64, 0.75);
+}
+.scm-chips__caption {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--scm-ghost);
+}
+
+/* ================================================================ */
+/* Option I — pie timers draining like a match clock                 */
+/* ================================================================ */
+
+.scm-pies {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 9px;
+}
+.scm-pies__count {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--scm-ghost);
+  min-width: 14px;
+  text-align: center;
+}
+.scm-pies__count--ft {
+  color: var(--scm-green);
+}
+.scm-pie {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.scm-pie--ft {
+  background: none;
+  border: 1.5px solid rgba(29, 92, 64, 0.4);
+  font-size: 7.5px;
+  font-weight: 700;
+  color: var(--scm-green);
+}
+.scm-pies__caption {
+  flex: 1;
+  text-align: center;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--scm-ghost);
 }
