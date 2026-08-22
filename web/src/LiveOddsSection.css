@@ -214,8 +214,9 @@
 
 /* ---- players-remaining centre gauge (scorecard mockup Option C) ----
    One shared strip split by a centre notch: grey track = starters still to
-   play, each half filling with the theme accent from its OUTER edge inward
-   as players finish (fully filled = FT). Counts sit at the outer ends in
+   play, each half filling with the theme accent from the CENTRE notch
+   outward as players finish (fully filled = FT), so the grey remainder sits
+   beside the count that quantifies it. Counts sit at the outer ends in
    the meta strip's ghost mono treatment, flipping to an accented "FT". */
 .lo-gauge {
   display: flex;
@@ -253,11 +254,11 @@
 }
 .lo-gauge__side--home {
   border-radius: 3px 0 0 3px;
-  justify-content: flex-start;
+  justify-content: flex-end;
 }
 .lo-gauge__side--away {
   border-radius: 0 3px 3px 0;
-  justify-content: flex-end;
+  justify-content: flex-start;
 }
 .lo-gauge__fill {
   height: 100%;

@@ -59,8 +59,9 @@ export function MatchupMeta({ fixture: f, liveRankByEntry, rightText }) {
 /**
  * Players-remaining centre gauge (scorecard mockup Option C, locked): one
  * shared strip split by a centre notch, grey when all 11 starters are still
- * to play, each half filling green from its OUTER edge toward the middle as
- * players finish — a fully green strip reads as full time. The count of
+ * to play, each half filling green from the CENTRE notch toward its outer
+ * edge as players finish — the grey remainder sits beside the count that
+ * quantifies it, and a fully green strip reads as full time. The count of
  * players left sits at each outer end, flipping to a green `FT` at 0.
  * Renders nothing when neither side has a usable count (missing squad
  * payloads); a one-sided gap keeps its half's track empty rather than
