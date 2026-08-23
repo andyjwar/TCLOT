@@ -12753,13 +12753,13 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, #fbbf24 18%, transparent);
   color: var(--fm-text-strong);
 }
-.live-xp__cell--min-good {
-  background: color-mix(in srgb, var(--fm-win) 14%, transparent);
-  color: var(--fm-text-strong);
-}
+/* 60+ minutes — same brand-purple chip as achieved DC/G/A/B so all
+   "points-relevant milestones reached" cells share one colour language. */
+.live-xp__cell--min-good,
 .live-xp__cell--min-full {
-  background: color-mix(in srgb, var(--fm-win) 18%, transparent);
-  color: var(--fm-win);
+  background: color-mix(in srgb, var(--tclot-logo-purple) 14%, transparent);
+  color: var(--tclot-logo-purple);
+  font-weight: 700;
 }
 .fotmob[data-theme='light'] .live-xp__cell--min-low {
   background: color-mix(in srgb, #dc2626 12%, transparent);
