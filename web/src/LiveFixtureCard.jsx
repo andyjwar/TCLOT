@@ -25,7 +25,7 @@ function teamSubText(remaining, isLeader, settled) {
  * deck's swipe gesture drags the track directly).
  *
  * The Match tab shows BOTH teams as compact split columns; the Lineups tab
- * keeps the detailed one-team stat table (POS · MIN · DC · G · A · B · PTS)
+ * keeps the detailed one-team stat table (POS · MIN · DC · G · A · B · PTS · FIX)
  * with the scorehead badges / bench chip switching sides.
  *
  * Tab state is controlled by the deck when `tab`/`onTabChange` are passed

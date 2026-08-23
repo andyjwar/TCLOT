@@ -88,7 +88,7 @@ function AutoSubsNote({ squad }) {
 
 /**
  * A single player row inside the per-team table. Mirrors the OPTION 2
- * mockup `mockup-table__row` — columns: PLAYER · POS · MIN · DC · G · A · B · PTS.
+ * mockup `mockup-table__row` — columns: PLAYER · POS · MIN · DC · G · A · B · PTS · FIX.
  */
 function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
   const pillKind = playerXiPillKind(row);
@@ -216,6 +216,26 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
       >
         {pts}
       </div>
+      {/* Fixture pill(s) — Players-tab venue chips (green = home, red = away).
+          DGWs render one pill per fixture in kickoff order. */}
+      <div className="live-xp__cell live-xp__cell--fx">
+        {row.gwOpponents?.length ? (
+          row.gwOpponents.map((fx, i) => (
+            <span
+              key={`${fx.shortName}-${fx.isHome ? 'H' : 'A'}-${i}`}
+              className={`players-fixture-badge players-fixture-badge--${
+                fx.isHome ? 'home' : 'away'
+              }`}
+              title={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
+              aria-label={`${fx.isHome ? 'Home' : 'Away'} vs ${fx.shortName}`}
+            >
+              {fx.shortName}
+            </span>
+          ))
+        ) : (
+          <span className="live-xp__zero">—</span>
+        )}
+      </div>
     </div>
   );
 }
@@ -244,6 +264,9 @@ function LiveExpandedTableHead({ playerLabel = 'Player' }) {
       <div className="live-xp__th live-xp__th--a" title="Assists">A</div>
       <div className="live-xp__th live-xp__th--b">B</div>
       <div className="live-xp__th live-xp__th--pts">Pts</div>
+      <div className="live-xp__th live-xp__th--fx" title="Fixture — green pill = home, red pill = away">
+        Fix
+      </div>
     </div>
   );
 }

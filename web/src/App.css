@@ -12510,7 +12510,7 @@ body[data-tclot-theme='dark'] .live-projections-status-pill--live {
 .live-xp__row {
   display: grid;
   grid-template-columns:
-    minmax(0, 1fr) 28px 36px 28px 22px 22px 22px 32px;
+    minmax(0, 1fr) 28px 36px 28px 22px 22px 22px 32px 42px;
   align-items: center;
   column-gap: 4px;
   padding: 5px 12px;
@@ -12815,6 +12815,20 @@ button.live-xp__player-name:focus-visible {
   font-weight: 500;
 }
 
+/* FIX — the player's PL fixture(s) this GW as Players-tab venue pills
+   (`players-fixture-badge`, green = home / red = away). Wraps so a DGW's
+   second pill drops to a new line inside the same cell. */
+.live-xp__th--fx {
+  text-align: center;
+}
+.live-xp__cell--fx {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
 @media (max-width: 720px) {
   .live-xp {
     gap: 8px;
@@ -12822,7 +12836,7 @@ button.live-xp__player-name:focus-visible {
   .live-xp__thead,
   .live-xp__row {
     grid-template-columns:
-      minmax(0, 1fr) 24px 30px 24px 18px 18px 18px 28px;
+      minmax(0, 1fr) 24px 30px 24px 18px 18px 18px 28px 36px;
     column-gap: 3px;
     padding: 5px 10px;
   }
@@ -12832,6 +12846,12 @@ button.live-xp__player-name:focus-visible {
   }
   .live-xp__cell--pts {
     font-size: 0.8rem;
+  }
+  /* Slimmer venue pill so the 3-letter code fits the 36px mobile column. */
+  .live-xp__cell--fx .players-fixture-badge {
+    padding: 1px 4px;
+    font-size: 9px;
+    letter-spacing: 0.02em;
   }
 }
 

@@ -148,6 +148,39 @@ function opponentShortLabelForTeam(teamId, gwFixtures, teamById) {
 }
 
 /**
+ * Structured opponent list for this club's GW fixtures, kickoff order —
+ * `[{ shortName, isHome }]`. Unlike {@link opponentShortLabelForTeam} this
+ * keeps one entry per fixture (no dedupe) and carries home/away, so the
+ * expanded-lineup table can render Players-tab-style venue pills.
+ * @param {number | null} teamId
+ * @param {object[]} gwFixtures
+ * @param {Record<number, object>} teamById
+ * @returns {Array<{ shortName: string, isHome: boolean }>}
+ */
+function opponentFixturesForTeam(teamId, gwFixtures, teamById) {
+  if (teamId == null || !Number.isFinite(teamId)) return [];
+  if (!Array.isArray(gwFixtures) || !gwFixtures.length) return [];
+  const mine = gwFixtures.filter(
+    (f) => Number(f.team_h) === teamId || Number(f.team_a) === teamId
+  );
+  const sorted = mine.slice().sort((a, b) => {
+    const ka = a.kickoff_time != null ? String(a.kickoff_time) : '';
+    const kb = b.kickoff_time != null ? String(b.kickoff_time) : '';
+    return ka.localeCompare(kb);
+  });
+  /** @type {Array<{ shortName: string, isHome: boolean }>} */
+  const out = [];
+  for (const f of sorted) {
+    const isHome = Number(f.team_h) === teamId;
+    const opp = isHome ? Number(f.team_a) : Number(f.team_h);
+    const short = teamById[opp]?.short_name;
+    if (!short) continue;
+    out.push({ shortName: String(short), isHome });
+  }
+  return out;
+}
+
+/**
  * 0 minutes and club still has at least one unfinished PL fixture this GW (or no fixture list).
  * @param {number} minutes
  * @param {number | null} teamId
@@ -263,6 +296,8 @@ export function mapPickRows(
       teamShort: tm?.short_name ?? '—',
       teamName: tm?.name ?? null,
       opponentShortLabel,
+      /** GW fixtures for this player's club as `{ shortName, isHome }` (kickoff order) — drives venue pills. */
+      gwOpponents: opponentFixturesForTeam(tid, gwFixtures, teamById),
       posSingular: typ?.singular_name_short ?? '—',
       shirtUrl: fplShirtImageUrl(tm?.code, el?.element_type),
       badgeUrl: badgeUrl(tm?.code),
