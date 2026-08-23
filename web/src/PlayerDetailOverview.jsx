@@ -7,6 +7,51 @@ import {
 } from './playerDetailDerivations.js'
 import { PlayerDetailLastFiveCards } from './PlayerDetailLastFiveCards.jsx'
 import { PlayerDetailNextFiveCards } from './PlayerDetailNextFiveCards.jsx'
+import { TeamAvatar } from './TeamAvatar'
+import { useDraftPickForElement } from './useDraftPickForElement.js'
+
+/**
+ * Draft-day provenance strip at the foot of Season summary: round, pick in
+ * round, overall selection, and the fantasy team that made the pick (crest +
+ * name). "Undrafted" when the file loaded and this player was never picked;
+ * hidden entirely while loading or when `draft_picks.json` is unavailable.
+ */
+function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry }) {
+  const { status, pick } = useDraftPickForElement(elementId)
+  if (status !== 'ready') return null
+  if (!pick) {
+    return (
+      <div className="pdetail-draftline pdetail-draftline--undrafted">
+        <span className="pdetail-draftline__k">Draft</span>
+        <span className="pdetail-draftline__team">
+          Undrafted — signed during the season
+        </span>
+      </div>
+    )
+  }
+  return (
+    <div className="pdetail-draftline">
+      <span className="pdetail-draftline__k">Draft</span>
+      <span className="pdetail-draftline__pick tabular">
+        Round {pick.round} · Pick {pick.pickInRound}
+        <span className="pdetail-draftline__overall"> (#{pick.overallPick} overall)</span>
+      </span>
+      <span className="pdetail-draftline__by">by</span>
+      <span className="pdetail-draftline__owner" title={pick.teamName}>
+        {pick.leagueEntryId != null ? (
+          <TeamAvatar
+            entryId={pick.leagueEntryId}
+            name={pick.teamName}
+            size="sm"
+            logoMap={logoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+        ) : null}
+        <span className="pdetail-draftline__team">{pick.teamName}</span>
+      </span>
+    </div>
+  )
+}
 
 function PdetailStatTile({ k, v, tone, prefix = '' }) {
   return (
@@ -35,6 +80,8 @@ function PdetailStatTile({ k, v, tone, prefix = '' }) {
  *   teamById: Map<number, object> | null | undefined,
  *   portrait: boolean,
  *   plFixtures?: Array<object> | null,
+ *   logoMap?: Record<string, string>,
+ *   kitIndexByEntry?: Record<number, number>,
  * }} props
  */
 export function PlayerDetailOverview({
@@ -43,6 +90,8 @@ export function PlayerDetailOverview({
   teamById,
   portrait,
   plFixtures = null,
+  logoMap = {},
+  kitIndexByEntry = undefined,
 }) {
   const elementType = el?.element_type
   const seasonPoints = Number(el?.total_points) || 0
@@ -121,12 +170,21 @@ export function PlayerDetailOverview({
     )
   }
 
+  const draftLine = (
+    <PdetailDraftLine
+      elementId={el?.id}
+      logoMap={logoMap}
+      kitIndexByEntry={kitIndexByEntry}
+    />
+  )
+
   if (portrait) {
     return (
       <div className="pdetail-p__body">
         <section className="pdetail__section">
           <h4 className="pdetail-p__section-h">Season summary</h4>
           <div className="pdetail-p__tiles">{tiles}</div>
+          {draftLine}
         </section>
 
         {lastFiveBlock}
@@ -140,6 +198,7 @@ export function PlayerDetailOverview({
       <section className="pdetail__section">
         <h4 className="pdetail__section-h">Season summary</h4>
         <div className="pdetail__tiles">{tiles}</div>
+        {draftLine}
       </section>
 
       {lastFiveBlock}

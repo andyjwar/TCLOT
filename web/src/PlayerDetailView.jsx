@@ -480,6 +480,8 @@ export function PlayerDetailView({
                     teamById={teamById}
                     portrait={portrait}
                     plFixtures={plFixtures}
+                    logoMap={logoMap}
+                    kitIndexByEntry={kitIndexByEntry}
                   />
                 ) : (
                   <PlayerDetailPerformance

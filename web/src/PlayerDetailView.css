@@ -462,6 +462,53 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
     grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
   }
 }
+
+/* Draft-day provenance strip at the foot of Season summary:
+   "DRAFT  Round 1 · Pick 1 (#1 overall)  by  [crest] Toronto Gimli". */
+.pdetail-draftline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin-top: 8px;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-md, 10px);
+  background: var(--surface);
+  font-size: 12px;
+  color: var(--text);
+}
+.pdetail-draftline__k {
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+.pdetail-draftline__pick {
+  font-weight: 700;
+}
+.pdetail-draftline__overall,
+.pdetail-draftline__by {
+  color: var(--text-muted);
+  font-weight: 500;
+}
+.pdetail-draftline__owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.pdetail-draftline__team {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.pdetail-draftline--undrafted .pdetail-draftline__team {
+  color: var(--text-muted);
+  font-weight: 500;
+}
 /*
  * Tiles all carry a subtle brand-violet tint so the seven-tile row reads
  * as a coherent "stat block" instead of grey-with-one-purple. Points
