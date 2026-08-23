@@ -128,16 +128,18 @@ const EVENT_KINDS = [
   { id: 'sv', glyph: 'SV', title: 'Save points' },
   { id: 'y', card: 'y', title: 'Yellow cards' },
   { id: 'r', card: 'r', title: 'Red cards' },
+  { id: 'b', glyph: 'B', title: 'Bonus points' },
 ];
 
 /**
  * Collects per-category event entries ({ name, tag }) for a squad's
  * starting XI only. Tags are the muted count suffixes: `×n` for repeat
- * goals/assists/cards, and the raw count in brackets `(n)` for DC and
- * saves, where the count is the story rather than a multiplier.
+ * goals/assists/cards, the raw count in brackets `(n)` for DC and
+ * saves, where the count is the story rather than a multiplier, and
+ * `+n` for bonus points.
  */
 function squadEvents(squad) {
-  const ev = { g: [], a: [], dc: [], cs: [], sv: [], y: [], r: [] };
+  const ev = { g: [], a: [], dc: [], cs: [], sv: [], y: [], r: [], b: [] };
   for (const row of sortStartingXIByPosition(effectiveStarters(squad))) {
     const name = row.displayName ?? row.web_name ?? `#${row.element}`;
     const played = (Number(row.minutes) || 0) > 0;
@@ -148,6 +150,9 @@ function squadEvents(squad) {
     const saves = Number(row.saves) || 0;
     const yellows = Number(row.yellowCards) || 0;
     const reds = Number(row.redCards) || 0;
+    // Display bonus: provisional from live BPS until FPL posts official bonus
+    // (`applyBonusColumn` already resolved which to trust onto `row.bonus`).
+    const bonus = Number(row.bonus) || 0;
     if (goals > 0) ev.g.push({ name, tag: goals > 1 ? `×${goals}` : '' });
     if (assists > 0) ev.a.push({ name, tag: assists > 1 ? `×${assists}` : '' });
     if (played && dcThresholdReached(row.posSingular, dc)) {
@@ -161,7 +166,10 @@ function squadEvents(squad) {
     if (saves >= 3) ev.sv.push({ name, tag: `(${saves})` });
     if (yellows > 0) ev.y.push({ name, tag: yellows > 1 ? `×${yellows}` : '' });
     if (reds > 0) ev.r.push({ name, tag: '' });
+    if (bonus > 0) ev.b.push({ name, tag: `+${bonus}`, bonus });
   }
+  // Biggest bonus first — the medal order is the story, not XI position.
+  ev.b.sort((x, y) => y.bonus - x.bonus);
   return ev;
 }
 

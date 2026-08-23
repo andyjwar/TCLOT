@@ -575,6 +575,8 @@
 /* Amber — matches the clean-sheet dot convention elsewhere in the app. */
 .lfc-events__ico--cs { background: rgba(217, 119, 6, 0.13); color: #d97706; }
 .lfc-events__ico--sv { background: rgba(3, 105, 161, 0.11); color: #0369a1; }
+/* Gold — matches the bonus segment colour in the forecast breakdown. */
+.lfc-events__ico--b { background: rgba(224, 179, 65, 0.16); color: #a16207; }
 .lfc-events__cardico {
   display: inline-block;
   width: 9px;
@@ -1274,15 +1276,29 @@
   }
 }
 
-/* Tablet-width fixture page: not enough room for two columns — stack the
-   stats rail beneath the match split. */
-@media (min-width: 768px) and (max-width: 1059px) {
+/* Mid-width fixture page: with the stats rail on the right, the two
+   side-by-side lineup tables don't have room for untruncated player names
+   (each table carries ~290px of fixed stat/FIX columns before the name
+   column gets anything). Each table needs ~460px, so the rail only earns
+   its right-hand slot at ≥1500px; below that it stacks beneath the match
+   split as a responsive card grid instead of one long column. */
+@media (min-width: 768px) and (max-width: 1499px) {
   .lfxp-cols {
     grid-template-columns: minmax(0, 1fr);
   }
   .lfxp-col--side {
     border-left: 0;
     border-top: 1px solid var(--fm-border);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 12px;
+    align-items: start;
+  }
+  /* Cards bring their own stack margins for the single-column rail —
+     the grid gap replaces them here. */
+  .lfxp-col--side > .lfc-block,
+  .lfxp-col--side .live-fixture-season-h2h {
+    margin: 0;
   }
 }
 
