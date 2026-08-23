@@ -463,20 +463,26 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
   }
 }
 
-/* Draft-day provenance strip at the foot of Season summary:
-   "DRAFT  Round 1 · Pick 1 (#1 overall)  by  [crest] Toronto Gimli". */
+/* Draft-day provenance strip above the Season summary section:
+   "DRAFT  Round 1 · Pick 1 (#1 overall)  by  [crest] Toronto Gimli".
+   Desktop body is a gapped flex column, so no own margins needed there. */
 .pdetail-draftline {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
   gap: 4px 8px;
-  margin-top: 8px;
+  margin: 0;
   padding: 8px 12px;
   border: 1px solid var(--border);
   border-radius: var(--r-md, 10px);
   background: var(--surface);
   font-size: 12px;
   color: var(--text);
+}
+/* Portrait body has no flex gap and sections carry their own 12px inset —
+   match it and add breathing room above the Season summary heading. */
+.pdetail-p__body > .pdetail-draftline {
+  margin: 12px 12px 10px;
 }
 .pdetail-draftline__k {
   font-size: 9.5px;

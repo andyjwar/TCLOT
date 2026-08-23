@@ -181,10 +181,10 @@ export function PlayerDetailOverview({
   if (portrait) {
     return (
       <div className="pdetail-p__body">
+        {draftLine}
         <section className="pdetail__section">
           <h4 className="pdetail-p__section-h">Season summary</h4>
           <div className="pdetail-p__tiles">{tiles}</div>
-          {draftLine}
         </section>
 
         {lastFiveBlock}
@@ -195,10 +195,10 @@ export function PlayerDetailOverview({
 
   return (
     <div className="pdetail__body pdetail__body--stacked">
+      {draftLine}
       <section className="pdetail__section">
         <h4 className="pdetail__section-h">Season summary</h4>
         <div className="pdetail__tiles">{tiles}</div>
-        {draftLine}
       </section>
 
       {lastFiveBlock}
