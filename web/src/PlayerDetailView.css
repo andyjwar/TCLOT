@@ -941,8 +941,10 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 }
 .pdetail-p__tiles {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 9px;
+  /* 4-up: the 7 tiles land as 4 + 3 rows instead of 3 + 3 + 1 — one less
+     row of vertical space on phones. */
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 7px;
   padding: 0 12px 6px;
 }
 /*
@@ -954,8 +956,8 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
  * every tile reads as a clean white card (purple lives only on the value).
  */
 .pdetail-p__tiles .pdetail-tile {
-  gap: 6px;
-  padding: 12px 10px;
+  gap: 5px;
+  padding: 10px 6px;
   border-radius: 14px;
   border-color: var(--border);
   background: var(--surface);
