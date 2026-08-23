@@ -1,22 +1,38 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
-import { MatchEventsBlock } from './LiveFixtureMatchSplit.jsx';
+import { LiveFixtureMatchSplit } from './LiveFixtureMatchSplit.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
 import { LiveFixtureKeyStats } from './LiveFixtureKeyStats.jsx';
 import { LiveFixtureH2hBars } from './LiveFixtureH2hBars.jsx';
 import { LiveFixtureOdds } from './LiveFixtureOdds.jsx';
 import { LiveFixtureSeasonH2h } from './LiveFixtureSeasonH2h.jsx';
+import { LiveStandingsTable } from './LiveStandingsTable.jsx';
+import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
 
 /**
- * Desktop fixture page — a full-width takeover that replaces the Scores
- * stack when a fixture row is clicked (FotMob-desktop style). Instead of
- * transplanting the phone card's tab strip, it lays the panes out for width:
- * a hero score strip, then the match events band above the detailed
- * two-team lineup tables on the left, with Key Stats / season H2H / Odds
- * in a right rail. Scrolls as a normal document; Back (button or Esc)
- * returns to the fixtures list. Phones keep the swipeable card deck.
+ * Desktop / tablet fixture page — a full-width takeover that replaces the
+ * Scores stack when a fixture row is clicked. Mirrors the phone card's
+ * structure instead of inventing its own: a hero score strip, then the same
+ * Match / Lineups / Stats / Odds / Table tab strip, then one pane at a time.
+ * The old stacked two-column layout (everything at once + stats rail) read
+ * as a wall on iPads.
+ *
+ * Pane mapping vs the phone card:
+ *   - Match   → `LiveFixtureMatchSplit` (compact split columns + events band),
+ *               width-capped so it doesn't stretch across a monitor.
+ *   - Lineups → the detailed side-by-side `LiveExpandedFixture` desktop
+ *               tables (the phone card shows one team at a time; here both
+ *               fit untruncated at full page width).
+ *   - Stats   → Key Stats + season H2H bars + Season H2H chips as a card grid.
+ *   - Odds    → win probability + projections.
+ *   - Table   → the live standings table.
+ *
+ * Scrolls as a normal document; Back (button or Esc) returns to the
+ * fixtures list. Phones keep the swipeable card deck.
  */
 export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
+  const [tab, setTab] = useState('match');
+
   // Esc backs out, matching the card deck's dismissal affordance.
   useEffect(() => {
     const onKey = (e) => {
@@ -99,25 +115,53 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
         </button>
         <span className="lfxp-comp">{comp}</span>
       </div>
-      <div className="lfxp-hero">
-        {heroSide('home')}
-        <div className="lfxp-hero__mid">
-          <span className="lfxp-hero__score tabular">
-            {homeLive ?? '—'}
-            <span className="lfxp-hero__dash">–</span>
-            {awayLive ?? '—'}
-          </span>
-          <span
-            className={'lfxp-hero__status' + (live ? ' is-live' : '')}
-          >
-            {live ? '● LIVE' : finished ? 'FT' : '—'}
-          </span>
+      {/* Hero + tab strip share one gradient band so the pills sit on the
+          same dark surface as on the phone card. */}
+      <div className="lfxp-head">
+        <div className="lfxp-hero">
+          {heroSide('home')}
+          <div className="lfxp-hero__mid">
+            <span className="lfxp-hero__score tabular">
+              {homeLive ?? '—'}
+              <span className="lfxp-hero__dash">–</span>
+              {awayLive ?? '—'}
+            </span>
+            <span
+              className={'lfxp-hero__status' + (live ? ' is-live' : '')}
+            >
+              {live ? '● LIVE' : finished ? 'FT' : '—'}
+            </span>
+          </div>
+          {heroSide('away')}
         </div>
-        {heroSide('away')}
+        <div className="lfc-tabs lfxp-tabs" role="tablist">
+          {FIXTURE_CARD_TABS.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.id}
+              className={'lfc-tab' + (tab === t.id ? ' is-active' : '')}
+              onClick={() => setTab(t.id)}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
       </div>
-      <div className="lfxp-cols">
-        <div className="lfxp-col lfxp-col--main">
-          <MatchEventsBlock homeSquad={homeSquad} awaySquad={awaySquad} />
+
+      {tab === 'match' ? (
+        <div className="lfxp-pane lfxp-pane--match">
+          <LiveFixtureMatchSplit
+            fixture={fixture}
+            ctx={ctx}
+            onOpenPlayer={ctx.onOpenPlayer}
+          />
+        </div>
+      ) : null}
+
+      {tab === 'lineups' ? (
+        <div className="lfxp-pane lfxp-pane--lineups">
           <LiveExpandedFixture
             homeSquad={homeSquad}
             awaySquad={awaySquad}
@@ -127,7 +171,10 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
             onOpenPlayer={ctx.onOpenPlayer}
           />
         </div>
-        <div className="lfxp-col lfxp-col--side">
+      ) : null}
+
+      {tab === 'stats' ? (
+        <div className="lfxp-pane lfxp-pane--stats">
           <LiveFixtureKeyStats homeSquad={homeSquad} awaySquad={awaySquad} />
           <LiveFixtureH2hBars
             matches={ctx.matches}
@@ -149,6 +196,11 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
             teamLogoMap={ctx.teamLogoMap}
             kitIndexByEntry={ctx.kitIndexByEntry}
           />
+        </div>
+      ) : null}
+
+      {tab === 'odds' ? (
+        <div className="lfxp-pane lfxp-pane--odds">
           <LiveFixtureOdds
             homeSquad={homeSquad}
             awaySquad={awaySquad}
@@ -159,7 +211,20 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
             ctx={ctx}
           />
         </div>
-      </div>
+      ) : null}
+
+      {tab === 'table' ? (
+        <div className="lfxp-pane lfxp-pane--table">
+          <LiveStandingsTable
+            liveStandingsRows={ctx.liveStandingsRows}
+            gwStandingsFrozen={ctx.gwStandingsFrozen}
+            gameweek={ctx.gameweek}
+            teams={ctx.teams}
+            teamLogoMap={ctx.teamLogoMap}
+            kitIndexByEntry={ctx.kitIndexByEntry}
+          />
+        </div>
+      ) : null}
     </section>
   );
 }

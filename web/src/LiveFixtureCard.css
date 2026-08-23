@@ -1158,17 +1158,22 @@
     text-transform: uppercase;
     color: var(--fm-text-muted);
   }
-  .lfxp-hero {
-    display: grid;
-    grid-template-columns: 1fr auto 1fr;
-    align-items: center;
-    gap: 26px;
-    padding: 22px 26px 20px;
+  /* Hero + tab strip share one gradient band so the `.lfc-tab` pills (styled
+     white-on-dark for the phone card header) read the same here. */
+  .lfxp-head {
     background: var(
       --tclot-header-grad,
       linear-gradient(160deg, #6246f0 0%, #795bfb 55%, #9370ff 100%)
     );
     color: #fff;
+    padding-bottom: 8px;
+  }
+  .lfxp-hero {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 26px;
+    padding: 22px 26px 14px;
   }
   /* Both side groups hug the centred score for a symmetric cluster:
      [name/sub  crest]  15 – 5  [crest  name/sub]. */
@@ -1243,61 +1248,59 @@
     color: #ffd76a;
     opacity: 1;
   }
-  .lfxp-cols {
-    /* Main column holds the two detailed lineup tables side by side — give
-       it the lion's share; the stat-card rail is happy at ~380px. */
-    display: grid;
-    grid-template-columns: minmax(0, 1.8fr) minmax(300px, 1fr);
-    gap: 0;
-    align-items: start;
+  /* Tab strip on the gradient band — reuses the phone card's `.lfc-tab`
+     pills, centred for the wider page. */
+  .lfxp-tabs {
+    justify-content: center;
+    padding: 0 16px 2px;
   }
-  .lfxp-col {
+
+  /* One pane at a time below the head — natural document scroll. */
+  .lfxp-pane {
     padding: 14px 16px 18px;
     min-width: 0;
   }
-  .lfxp-col--side {
-    border-left: 1px solid var(--fm-border);
+  /* The compact match split is phone-shaped; cap it so it doesn't stretch
+     across a monitor. Same for the odds stack and the standings table. */
+  .lfxp-pane--match {
+    max-width: 860px;
+    margin: 0 auto;
   }
-  /* The match events band was designed to sit flush inside the card's split
-     grid — boxed as a standalone card above the lineup tables here. */
-  .lfxp-col--main .lfc-events {
-    border: 1px solid var(--fm-border);
-    border-radius: 12px;
-    overflow: hidden;
-    margin-bottom: 12px;
+  .lfxp-pane--odds {
+    max-width: 720px;
+    margin: 0 auto;
   }
-  /* The Season H2H strip was designed for the accordion's tinted panel —
-     box it to match the lfc-block cards around it in the rail. */
-  .lfxp-col--side .live-fixture-season-h2h {
-    border: 1px solid var(--fm-border);
-    border-radius: 14px;
-    padding: 10px 12px;
-    margin: 12px 0;
+  .lfxp-pane--table {
+    max-width: 980px;
+    margin: 0 auto;
   }
-}
-
-/* Mid-width fixture page: with the stats rail on the right, the two
-   side-by-side lineup tables don't have room for untruncated player names
-   (each table carries ~290px of fixed stat/FIX columns before the name
-   column gets anything). Each table needs ~460px, so the rail only earns
-   its right-hand slot at ≥1500px; below that it stacks beneath the match
-   split as a responsive card grid instead of one long column. */
-@media (min-width: 768px) and (max-width: 1499px) {
-  .lfxp-cols {
-    grid-template-columns: minmax(0, 1fr);
+  /* The split's bottom margin exists to clear the phone deck's pagination
+     dots; there are none here. Its sticky team headers resolve against the
+     card's 10px-padded scroll pane (top: -10px) — re-pin to the viewport. */
+  .lfxp-pane--match .lfc-split {
+    margin-bottom: 0;
   }
-  .lfxp-col--side {
-    border-left: 0;
-    border-top: 1px solid var(--fm-border);
+  .lfxp-pane--match .lfc-split__head {
+    top: 0;
+  }
+  /* Stats pane: the three stat cards flow as a responsive grid. */
+  .lfxp-pane--stats {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
     gap: 12px;
     align-items: start;
+    max-width: 1100px;
+    margin: 0 auto;
   }
-  /* Cards bring their own stack margins for the single-column rail —
-     the grid gap replaces them here. */
-  .lfxp-col--side > .lfc-block,
-  .lfxp-col--side .live-fixture-season-h2h {
+  .lfxp-pane--stats > .lfc-block {
+    margin: 0;
+  }
+  /* The Season H2H strip was designed for the accordion's tinted panel —
+     box it to match the lfc-block cards beside it. */
+  .lfxp-pane--stats .live-fixture-season-h2h {
+    border: 1px solid var(--fm-border);
+    border-radius: 14px;
+    padding: 10px 12px;
     margin: 0;
   }
 }
