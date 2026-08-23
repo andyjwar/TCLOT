@@ -38,6 +38,10 @@ function seasonH2hBetween(
         continue;
       }
     } else {
+      /** Future/unplayed rows ship `0-0` points in league data — without
+       *  this guard every upcoming meeting rendered as a 0-0 "draw" chip.
+       *  A genuine drawn match still counts: it has `finished: true`. */
+      if (m.finished !== true) continue;
       const p1 = Number(m.league_entry_1_points);
       const p2 = Number(m.league_entry_2_points);
       if (!Number.isFinite(p1) || !Number.isFinite(p2)) continue;
