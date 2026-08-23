@@ -8,8 +8,9 @@
  *
  * No FDR pip, no points field. Future fixtures: points don't exist yet
  * and the user explicitly dropped FDR from default visible signals
- * ("FDR isn't needed as a default"). The blank lower half of the card
- * keeps height parity with `pdetail-l5__card` so the two rows align.
+ * ("FDR isn't needed as a default"). No spacer below the opponent code
+ * either — a score will never live there, so the card just ends
+ * (deliberately shorter than `pdetail-l5__card`).
  *
  * Production class prefix `pdetail-n5__*`. Hidden by the parent when
  * `rows.length === 0` (e.g. season-end after GW 38).
@@ -71,7 +72,6 @@ export function PlayerDetailNextFiveCards({ rows, teamById }) {
                 title={r.home ? 'Home' : 'Away'}
               />
             </div>
-            <div className="pdetail-n5__spacer" aria-hidden />
           </div>
         )
       })}

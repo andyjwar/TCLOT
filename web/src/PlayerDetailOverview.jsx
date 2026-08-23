@@ -11,10 +11,11 @@ import { TeamAvatar } from './TeamAvatar'
 import { useDraftPickForElement } from './useDraftPickForElement.js'
 
 /**
- * Draft-day provenance strip at the foot of Season summary: round, pick in
- * round, overall selection, and the fantasy team that made the pick (crest +
- * name). "Undrafted" when the file loaded and this player was never picked;
- * hidden entirely while loading or when `draft_picks.json` is unavailable.
+ * Draft-day provenance — one plain sentence above Season summary:
+ * "Drafted Round 1 · Pick 7 by [crest] Toronto Gimli". Never wraps (team
+ * name ellipsizes on narrow phones). "Undrafted" when the file loaded and
+ * this player was never picked; hidden entirely while loading or when
+ * `draft_picks.json` is unavailable.
  */
 function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry }) {
   const { status, pick } = useDraftPickForElement(elementId)
@@ -22,7 +23,6 @@ function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry }) {
   if (!pick) {
     return (
       <div className="pdetail-draftline pdetail-draftline--undrafted">
-        <span className="pdetail-draftline__k">Draft</span>
         <span className="pdetail-draftline__team">
           Undrafted — signed during the season
         </span>
@@ -30,25 +30,20 @@ function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry }) {
     )
   }
   return (
-    <div className="pdetail-draftline">
-      <span className="pdetail-draftline__k">Draft</span>
+    <div className="pdetail-draftline" title={`Drafted by ${pick.teamName}`}>
       <span className="pdetail-draftline__pick tabular">
-        Round {pick.round} · Pick {pick.pickInRound}
-        <span className="pdetail-draftline__overall"> (#{pick.overallPick} overall)</span>
+        Drafted Round {pick.round} · Pick {pick.pickInRound} by
       </span>
-      <span className="pdetail-draftline__by">by</span>
-      <span className="pdetail-draftline__owner" title={pick.teamName}>
-        {pick.leagueEntryId != null ? (
-          <TeamAvatar
-            entryId={pick.leagueEntryId}
-            name={pick.teamName}
-            size="sm"
-            logoMap={logoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
-        ) : null}
-        <span className="pdetail-draftline__team">{pick.teamName}</span>
-      </span>
+      {pick.leagueEntryId != null ? (
+        <TeamAvatar
+          entryId={pick.leagueEntryId}
+          name={pick.teamName}
+          size="sm"
+          logoMap={logoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      ) : null}
+      <span className="pdetail-draftline__team">{pick.teamName}</span>
     </div>
   )
 }

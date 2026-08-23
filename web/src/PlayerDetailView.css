@@ -463,53 +463,36 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
   }
 }
 
-/* Draft-day provenance strip above the Season summary section:
-   "DRAFT  Round 1 · Pick 1 (#1 overall)  by  [crest] Toronto Gimli".
+/* Draft-day provenance — one plain sentence above the Season summary
+   section: "Drafted Round 1 · Pick 7 by [crest] Toronto Gimli". No box; a
+   single non-wrapping line (the team name ellipsizes on narrow phones).
    Desktop body is a gapped flex column, so no own margins needed there. */
 .pdetail-draftline {
   display: flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 8px;
+  flex-wrap: nowrap;
+  gap: 6px;
   margin: 0;
-  padding: 8px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--r-md, 10px);
-  background: var(--surface);
+  overflow: hidden;
   font-size: 12px;
   color: var(--text);
 }
 /* Portrait body has no flex gap and sections carry their own 12px inset —
    match it and add breathing room above the Season summary heading. */
 .pdetail-p__body > .pdetail-draftline {
-  margin: 12px 12px 10px;
-}
-.pdetail-draftline__k {
-  font-size: 9.5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--text-muted);
+  margin: 12px 12px 2px;
 }
 .pdetail-draftline__pick {
-  font-weight: 700;
-}
-.pdetail-draftline__overall,
-.pdetail-draftline__by {
-  color: var(--text-muted);
-  font-weight: 500;
-}
-.pdetail-draftline__owner {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  min-width: 0;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 .pdetail-draftline__team {
-  font-weight: 600;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 .pdetail-draftline--undrafted .pdetail-draftline__team {
   color: var(--text-muted);
@@ -1420,8 +1403,8 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 4px;
-  padding: 10px 6px 12px;
+  gap: 3px;
+  padding: 8px 6px 9px;
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
@@ -1529,9 +1512,6 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 .pdetail-n5__card {
   background: color-mix(in srgb, var(--surface-2) 60%, var(--surface));
 }
-.pdetail-n5__spacer {
-  height: 22px;
-}
 
 /*
  * Season-end placeholder — when the FPL `element-summary.fixtures` array
@@ -1572,13 +1552,12 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
      ~15px brand-violet points, 11px opponent code, small uppercase GW
      eyebrow + DNP pill. */
   .pdetail-l5 { gap: 7px; }
-  .pdetail-l5__card { padding: 9px 4px 10px; gap: 3px; min-height: 86px; }
+  .pdetail-l5__card { padding: 7px 4px 8px; gap: 2px; }
   .pdetail-l5__crest, .pdetail-l5__crest-fallback { width: 24px; height: 24px; }
   .pdetail-l5__gw { font-size: 8.5px; }
   .pdetail-l5__pts { font-size: 15px; }
   .pdetail-l5__opp { font-size: 11px; }
   .pdetail-l5__dnp { font-size: 8.5px; }
-  .pdetail-n5__spacer { height: 18px; }
 }
 
 /* ------------------------------------------------------------------ */
