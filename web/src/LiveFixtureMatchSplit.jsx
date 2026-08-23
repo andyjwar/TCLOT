@@ -3,6 +3,7 @@ import { TeamAvatar } from './TeamAvatar';
 import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
+  isCleanSheetEligible,
   minutesTone,
   playerLiveState,
   rowsByPointsContributed,
@@ -123,6 +124,7 @@ const EVENT_KINDS = [
   { id: 'g', glyph: 'G', title: 'Goals' },
   { id: 'a', glyph: 'A', title: 'Assists' },
   { id: 'dc', glyph: 'DC', title: 'Defensive contribution' },
+  { id: 'cs', glyph: 'CS', title: 'Clean sheets' },
   { id: 'sv', glyph: 'SV', title: 'Save points' },
   { id: 'y', card: 'y', title: 'Yellow cards' },
   { id: 'r', card: 'r', title: 'Red cards' },
@@ -135,13 +137,14 @@ const EVENT_KINDS = [
  * saves, where the count is the story rather than a multiplier.
  */
 function squadEvents(squad) {
-  const ev = { g: [], a: [], dc: [], sv: [], y: [], r: [] };
+  const ev = { g: [], a: [], dc: [], cs: [], sv: [], y: [], r: [] };
   for (const row of sortStartingXIByPosition(effectiveStarters(squad))) {
     const name = row.displayName ?? row.web_name ?? `#${row.element}`;
     const played = (Number(row.minutes) || 0) > 0;
     const goals = Number(row.goalsScored) || 0;
     const assists = Number(row.assists) || 0;
     const dc = Number(row.dcCount) || 0;
+    const cleanSheets = Number(row.cleanSheets) || 0;
     const saves = Number(row.saves) || 0;
     const yellows = Number(row.yellowCards) || 0;
     const reds = Number(row.redCards) || 0;
@@ -149,6 +152,10 @@ function squadEvents(squad) {
     if (assists > 0) ev.a.push({ name, tag: assists > 1 ? `×${assists}` : '' });
     if (played && dcThresholdReached(row.posSingular, dc)) {
       ev.dc.push({ name, tag: `(${dc})` });
+    }
+    // Clean sheets: only positions that score CS points (GK/DEF/MID).
+    if (played && cleanSheets > 0 && isCleanSheetEligible(row.posSingular)) {
+      ev.cs.push({ name, tag: '' });
     }
     // Save points: 1 pt per 3 saves, so only keepers at 3+ saves appear.
     if (saves >= 3) ev.sv.push({ name, tag: `(${saves})` });
