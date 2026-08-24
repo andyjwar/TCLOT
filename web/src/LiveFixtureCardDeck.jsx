@@ -343,8 +343,6 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
               fixtures={fixtures}
               activeIndex={index}
               onSelectFixture={setIndex}
-              teamLogoMap={ctx?.teamLogoMap}
-              kitIndexByEntry={ctx?.kitIndexByEntry}
             />
           ) : null}
         </div>

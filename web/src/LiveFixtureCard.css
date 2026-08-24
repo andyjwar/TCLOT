@@ -177,17 +177,12 @@
 .lfc-fixstrip__chip:active {
   background: rgba(255, 255, 255, 0.24);
 }
-.lfc-fixstrip__crests {
-  display: inline-flex;
-  align-items: center;
-}
-.lfc-fixstrip__crests .team-avatar-frame--sm {
-  width: 17px;
-  height: 17px;
-  border-width: 1px;
-}
-.lfc-fixstrip__crests .team-avatar-frame + .team-avatar-frame {
-  margin-left: -6px;
+.lfc-fixstrip__ab {
+  font-size: 8.5px;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 0.02em;
+  flex: none;
 }
 .lfc-fixstrip__score {
   font-size: 10.5px;
