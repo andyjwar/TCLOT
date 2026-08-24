@@ -8,6 +8,7 @@ import {
 } from 'react';
 import { createPortal } from 'react-dom';
 import { LiveFixtureCard } from './LiveFixtureCard.jsx';
+import { LiveFixtureChipStrip } from './LiveFixtureChipStrip.jsx';
 import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
 import { useOverlayDismissal } from './overlayStack.js';
 import './LiveFixtureCard.css';
@@ -184,6 +185,7 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
       deck.querySelectorAll('.lfc-panes')[indexRef.current] ?? null;
 
     const onDown = (e) => {
+      if (e.target.closest('.lfc-fixstrip, .lfc-sheet-head')) return;
       active = true;
       axis = null;
       mode = null;
@@ -327,6 +329,27 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         aria-modal="true"
         aria-label="Live fixture"
       >
+        <div className="lfc-sheet-head">
+          <div className="lfc-topbar">
+            <button
+              type="button"
+              className="lfc-back"
+              aria-label="Back to scores"
+              onClick={requestClose}
+            >
+              <span aria-hidden="true">‹</span>
+            </button>
+          </div>
+          {N > 1 ? (
+            <LiveFixtureChipStrip
+              fixtures={fixtures}
+              activeIndex={index}
+              onSelectFixture={setIndex}
+              teamLogoMap={ctx?.teamLogoMap}
+              kitIndexByEntry={ctx?.kitIndexByEntry}
+            />
+          ) : null}
+        </div>
         <div className="lfc-viewport">
           <div ref={deckRef} className="lfc-deck">
             {fixtures.map((fx) => (
@@ -336,7 +359,7 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
                   ctx={ctx}
                   tab={activeTabId}
                   onTabChange={handleTabChange}
-                  onBack={requestClose}
+                  compactHeader
                 />
               </div>
             ))}
@@ -351,21 +374,6 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         >
           <span aria-hidden="true">‹</span>
         </button>
-        {N > 1 ? (
-          <div className="lfc-dots" role="tablist" aria-label="Fixtures">
-            {fixtures.map((fx, i) => (
-              <button
-                key={fx.key}
-                type="button"
-                role="tab"
-                className={'lfc-dot' + (i === index ? ' is-on' : '')}
-                aria-label={`Go to fixture ${i + 1}`}
-                aria-selected={i === index}
-                onClick={() => setIndex(i)}
-              />
-            ))}
-          </div>
-        ) : null}
       </div>
     </div>,
     document.body,

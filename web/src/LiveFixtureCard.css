@@ -124,6 +124,77 @@
   opacity: 0.6;
 }
 
+/* Shared chrome above the fixture deck: back + B score chips (variant 5). */
+.lfc-sheet-head {
+  flex: none;
+  background: var(--lfc-header);
+  color: #fff;
+}
+.lfc-sheet-head .lfc-topbar {
+  padding-bottom: 0;
+}
+
+.lfc-fixstrip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 12px 8px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+}
+.lfc-fixstrip::-webkit-scrollbar {
+  display: none;
+}
+.lfc-fixstrip__chip {
+  appearance: none;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 72px;
+  padding: 6px 10px 5px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+.lfc-fixstrip__chip.is-active {
+  border-color: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+.lfc-fixstrip__crests {
+  display: inline-flex;
+  align-items: center;
+}
+.lfc-fixstrip__crests .team-avatar-frame--sm {
+  width: 22px;
+  height: 22px;
+}
+.lfc-fixstrip__crests .team-avatar-frame + .team-avatar-frame {
+  margin-left: -8px;
+}
+.lfc-fixstrip__score {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: -0.3px;
+  line-height: 1.1;
+}
+.lfc-fixstrip__live {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #ffd27a;
+}
+
 .lfc-viewport {
   flex: 1;
   position: relative;
@@ -299,6 +370,69 @@
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   border-color: rgba(255, 255, 255, 0.22);
+}
+
+/* Compact header (variant 5): score above badge, slim bar, underline tabs. */
+.lfc-card--compact .lfc-card__top {
+  padding-bottom: 0;
+}
+.lfc-scorehead--compact {
+  padding: 2px 12px 0;
+  gap: 4px;
+  align-items: end;
+}
+.lfc-scorehead--compact .lfc-team {
+  gap: 3px;
+}
+.lfc-scorehead--compact .lfc-team__score {
+  font-size: 30px;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.lfc-scorehead--compact .lfc-team__badge .team-avatar-frame--sm {
+  width: 26px;
+  height: 26px;
+}
+.lfc-scorehead--compact .lfc-team__name {
+  font-size: 11px;
+  padding: 1px 8px;
+}
+.lfc-scorehead--compact .lfc-team__sub {
+  font-size: 9px;
+  min-height: 10px;
+}
+.lfc-scorehead--compact .lfc-mid {
+  padding-top: 4px;
+  min-width: 48px;
+}
+.lfc-scorehead--compact .lfc-mid__main {
+  font-size: 11px;
+}
+.lfc-scorehead--compact .lfc-mid__sub {
+  font-size: 9.5px;
+}
+
+.lfc-tabs--line {
+  gap: 0;
+  padding: 0 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+.lfc-tabs--line .lfc-tab {
+  flex: 1 1 auto;
+  min-width: 0;
+  padding: 8px 4px 7px;
+  border-radius: 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  font-size: 13px;
+  background: none;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+}
+.lfc-tabs--line .lfc-tab.is-active {
+  color: #fff;
+  border-bottom-color: #fff;
+  background: none;
 }
 
 /* ---- Pane wrapper ---- */

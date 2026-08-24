@@ -38,9 +38,18 @@ function teamSubText(remaining, isLeader, settled) {
  *   tab?: string,
  *   onTabChange?: (id: string) => void,
  *   onBack?: () => void,
+ *   compactHeader?: boolean,
  * }} props
+ * @param compactHeader When true, deck renders back + fixture strip; card uses compact scorehead.
  */
-export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
+export function LiveFixtureCard({
+  fixture,
+  ctx,
+  tab,
+  onTabChange,
+  onBack,
+  compactHeader = false,
+}) {
   const [localTab, setLocalTab] = useState('match');
   const [side, setSide] = useState('home');
   const tabsRef = useRef(null);
@@ -118,7 +127,7 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
           <TeamAvatar
             entryId={isHome ? homeId : awayId}
             name={isHome ? homeName : awayName}
-            size="lg"
+            size={compactHeader ? 'sm' : 'lg'}
             logoMap={ctx.teamLogoMap}
             kitIndexByEntry={ctx.kitIndexByEntry}
           />
@@ -153,9 +162,9 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
   );
 
   return (
-    <div className="lfc-card">
+    <div className={'lfc-card' + (compactHeader ? ' lfc-card--compact' : '')}>
       <div className="lfc-card__top">
-        {onBack ? (
+        {onBack && !compactHeader ? (
           <div className="lfc-topbar">
             <button
               type="button"
@@ -167,7 +176,14 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
             </button>
           </div>
         ) : null}
-        <div className="lfc-scorehead" role="group" aria-label="Tap a team to view its lineup">
+        <div
+          className={
+            'lfc-scorehead' +
+            (compactHeader ? ' lfc-scorehead--compact' : '')
+          }
+          role="group"
+          aria-label="Tap a team to view its lineup"
+        >
           {teamButton('home')}
           <div className="lfc-mid">
             <span className={'lfc-mid__main' + (live ? ' lfc-mid__main--live' : '')}>
@@ -177,7 +193,13 @@ export function LiveFixtureCard({ fixture, ctx, tab, onTabChange, onBack }) {
           </div>
           {teamButton('away')}
         </div>
-        <div className="lfc-tabs" role="tablist" ref={tabsRef}>
+        <div
+          className={
+            'lfc-tabs' + (compactHeader ? ' lfc-tabs--line' : '')
+          }
+          role="tablist"
+          ref={tabsRef}
+        >
           {FIXTURE_CARD_TABS.map((t) => (
             <button
               key={t.id}
