@@ -69,11 +69,12 @@ const moveOrderKey = (m) =>
     ? Infinity
     : Number(m.waiverProcessOrder)
 
-/** `#` cell — league-wide waiver order, or an inline FA tag for free agency. */
+/** `#` cell — league-wide waiver order (green pill), or an inline FA tag
+ *  for free agency. Mirrors the mobile All Swaps card header treatment. */
 function WvOrderCell({ move }) {
   return move.waiverProcessOrder != null &&
     Number.isFinite(Number(move.waiverProcessOrder)) ? (
-    <span className="tabular">{move.waiverProcessOrder}</span>
+    <span className="waivers-order tabular">{move.waiverProcessOrder}</span>
   ) : (
     <span className="waivers-fa-tag">FA</span>
   )

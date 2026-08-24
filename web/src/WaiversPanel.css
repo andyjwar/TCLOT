@@ -161,7 +161,7 @@
 }
 .waivers-weekly-mobile .waivers-weekly__gw { flex: 0 0 auto; }
 
-.waivers-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--r-md); }
+.waivers-table-wrap { overflow-x: auto; border: 1px solid var(--wv-border, var(--border)); border-radius: var(--r-md); background: var(--wv-card, var(--fm-card)); }
 .waivers-table { width: 100%; border-collapse: collapse; }
 
 /* Fixed column geometry so the # / In / Out headings sit directly above their
@@ -213,28 +213,49 @@
 }
 .waivers-table .fw-700 { font-weight: 700; }
 
-/* inline FA tag inside the # column */
+/* Free-agent tag — the "no waiver order" counterpart to the green order
+ * pill. Kept as a quiet warm-outlined chip so the eye separates ranked
+ * waiver claims (green) from free pickups (neutral) at a glance. */
 .waivers-fa-tag {
   display: inline-flex;
   align-items: center;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.04em;
-  color: var(--brand);
-  background: var(--brand-tint);
-  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--wv-warm, #d4a95c) 16%, transparent);
+  border: 1px solid var(--wv-border, var(--border));
   border-radius: 999px;
   padding: 1px 6px;
 }
 /* team grouping header row inside the grouped table */
 .waivers-weekly__grouphead td {
-  background: var(--surface-2);
+  background: var(--wv-inset, var(--surface-2));
   padding-top: var(--space-2);
   padding-bottom: var(--space-2);
 }
 .waivers-weekly__grouphead .waivers-table__team { font-weight: 700; }
 .waivers-weekly__group:not(:first-of-type) .waivers-weekly__grouphead td {
-  border-top: 2px solid var(--border);
+  border-top: 2px solid var(--wv-border, var(--border));
+}
+
+/* ── Warm "parchment" palette ──────────────────────────────────────
+ * The waiver surfaces lean into a soft beige tint so the panel reads as
+ * one warm material rather than flat white cards with grey insets. The
+ * tint is mixed into the theme's own card / border tokens via color-mix,
+ * so it adapts to both light and dark shells instead of hardcoding a
+ * single off-theme colour. Green (`--data-positive`, the same pitch green
+ * as the LIVE chip and W/L accents) carries the waiver-order pill.
+ * Scoped to the panel wrappers so it never leaks into other tabs; every
+ * consumer passes a plain-token fallback for the few atoms that are also
+ * reused outside these wrappers. */
+.waivers-weekly,
+.waivers-weekly-mobile,
+.waivers-weekly-grid {
+  --wv-warm: #d4a95c;
+  --wv-card: color-mix(in srgb, var(--wv-warm) 9%, var(--fm-card));
+  --wv-inset: color-mix(in srgb, var(--wv-warm) 17%, var(--fm-card));
+  --wv-border: color-mix(in srgb, var(--wv-warm) 34%, var(--fm-border));
 }
 
 /* ── Section 1 · mobile glance + tiles ── */
@@ -253,10 +274,10 @@
   gap: 8px;
 }
 .waivers-glance__item {
-  border: 1px solid var(--fm-border);
+  border: 1px solid var(--wv-border, var(--fm-border));
   border-radius: 14px;
   overflow: hidden;
-  background: var(--fm-card);
+  background: var(--wv-card, var(--fm-card));
 }
 .waivers-glance__row {
   display: flex;
@@ -272,7 +293,7 @@
   cursor: pointer;
 }
 .waivers-glance__row[disabled] { cursor: default; }
-.waivers-glance__row.is-open { background: var(--fm-surface-2); }
+.waivers-glance__row.is-open { background: var(--wv-inset, var(--fm-surface-2)); }
 .waivers-glance__caret {
   flex: 0 0 auto;
   color: var(--text-muted);
@@ -336,9 +357,9 @@
 .waivers-weekly-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: var(--space-3); }
 .waivers-weekly-grid--compact { grid-template-columns: 1fr; gap: var(--space-2); }
 .waivers-weekly-tile {
-  border: 1px solid var(--border);
+  border: 1px solid var(--wv-border, var(--border));
   border-radius: var(--r-md);
-  background: var(--surface);
+  background: var(--wv-card, var(--surface));
   overflow: hidden;
 }
 .waivers-weekly-tile__head {
@@ -384,7 +405,7 @@
   font-size: var(--text-xs);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  background: var(--surface-2);
+  background: var(--wv-inset, var(--surface-2));
   border-radius: 999px;
   padding: 1px 8px;
 }
@@ -395,15 +416,22 @@
   transition: transform var(--dur-fast) var(--ease);
 }
 .waivers-weekly-tile__caret.is-open { transform: rotate(90deg); }
-/* Legacy order pill — kept for any non-tile surfaces still using it. */
+/* Waiver-order pill (All Swaps card header). Solid pitch-green — the same
+ * accent as the LIVE chip / W-result dots — so a successful waiver claim
+ * reads as an active, "spent" pickup and contrasts the quiet FA tag. */
 .waivers-order {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
+  min-width: 1.5em;
   font-size: var(--text-xs);
   font-weight: 700;
-  color: var(--text-muted);
-  background: var(--surface-2);
+  color: #fff;
+  background: var(--data-positive);
   border-radius: 999px;
-  padding: 2px 8px;
+  padding: 2px 9px;
+  font-variant-numeric: tabular-nums;
 }
 .waivers-weekly-tile__moves {
   display: flex;
@@ -418,7 +446,7 @@
   gap: var(--space-2);
   padding: var(--space-2);
   border-radius: var(--r-sm);
-  background: var(--surface-2);
+  background: var(--wv-inset, var(--surface-2));
 }
 /* Dense 2-col swap inside mobile tiles: tighten the player cells so real
  * (longer) player names keep more room before truncating, and drop the
