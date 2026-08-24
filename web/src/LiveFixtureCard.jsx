@@ -127,7 +127,7 @@ export function LiveFixtureCard({
           <TeamAvatar
             entryId={isHome ? homeId : awayId}
             name={isHome ? homeName : awayName}
-            size={compactHeader ? 'sm' : 'lg'}
+            size="lg"
             logoMap={ctx.teamLogoMap}
             kitIndexByEntry={ctx.kitIndexByEntry}
           />
@@ -143,6 +143,65 @@ export function LiveFixtureCard({
       </button>
     );
   };
+
+  /** Compact mobile scorehead: name (underline when selected) → score → sub. */
+  const compactTeamButton = (which) => {
+    const isHome = which === 'home';
+    const sel = isHome ? selHome : selAway;
+    const sub = isHome ? homeSub : awaySub;
+    return (
+      <button
+        type="button"
+        className={'lfc-cside' + (sel ? ' is-sel' : '')}
+        onClick={() => {
+          setSide(which);
+          if (activeTab !== 'lineups') setTab('lineups');
+        }}
+        aria-pressed={sel}
+        aria-label={`Show ${isHome ? homeName : awayName} lineup`}
+      >
+        <span className="lfc-cside__name">{isHome ? homeName : awayName}</span>
+        <span className="lfc-cside__score tabular">
+          {(isHome ? homeLive : awayLive) ?? '—'}
+        </span>
+        <span
+          className={
+            'lfc-cside__sub' + (sub.live ? ' lfc-cside__sub--live' : '')
+          }
+        >
+          {sub.text}
+        </span>
+      </button>
+    );
+  };
+
+  const scorehead = compactHeader ? (
+    <div
+      className="lfc-scorehead lfc-scorehead--compact"
+      role="group"
+      aria-label="Tap a team to view its lineup"
+    >
+      {compactTeamButton('home')}
+      <div className="lfc-cmid">
+        <span className={'lfc-cmid__main' + (live ? ' lfc-cmid__main--live' : '')}>
+          {live ? '● LIVE' : 'FT'}
+        </span>
+        {comp ? <span className="lfc-cmid__sub">{comp}</span> : null}
+      </div>
+      {compactTeamButton('away')}
+    </div>
+  ) : (
+    <div className="lfc-scorehead" role="group" aria-label="Tap a team to view its lineup">
+      {teamButton('home')}
+      <div className="lfc-mid">
+        <span className={'lfc-mid__main' + (live ? ' lfc-mid__main--live' : '')}>
+          {live ? '● LIVE' : 'FT'}
+        </span>
+        {comp ? <span className="lfc-mid__sub">{comp}</span> : null}
+      </div>
+      {teamButton('away')}
+    </div>
+  );
 
   // Subtle "switch to opponent" control tucked into the blank right side of the
   // BENCH divider row (mid-screen thumb zone). Shows the team you'll switch to.
@@ -176,23 +235,7 @@ export function LiveFixtureCard({
             </button>
           </div>
         ) : null}
-        <div
-          className={
-            'lfc-scorehead' +
-            (compactHeader ? ' lfc-scorehead--compact' : '')
-          }
-          role="group"
-          aria-label="Tap a team to view its lineup"
-        >
-          {teamButton('home')}
-          <div className="lfc-mid">
-            <span className={'lfc-mid__main' + (live ? ' lfc-mid__main--live' : '')}>
-              {live ? '● LIVE' : 'FT'}
-            </span>
-            {comp ? <span className="lfc-mid__sub">{comp}</span> : null}
-          </div>
-          {teamButton('away')}
-        </div>
+        {scorehead}
         <div
           className={
             'lfc-tabs' + (compactHeader ? ' lfc-tabs--line' : '')

@@ -624,3 +624,28 @@ export function teamInitials(name) {
   }
   return s.slice(0, 2).toUpperCase();
 }
+
+/**
+ * Three-letter chip label for the mobile fixture switcher (variant D).
+ * Uses the first three letters of the leading word when long enough;
+ * otherwise pads from initials across words.
+ *
+ * @param {string | null | undefined} name
+ * @returns {string}
+ */
+export function teamChipAbbr(name) {
+  const parts = String(name ?? '')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!parts.length) return '???';
+  const lead = parts[0].replace(/[^\p{L}\p{N}]/gu, '');
+  if (lead.length >= 3) return lead.slice(0, 3).toUpperCase();
+  let abbr = '';
+  for (const p of parts) {
+    const ch = p.replace(/[^\p{L}\p{N}]/gu, '')[0];
+    if (ch) abbr += ch.toUpperCase();
+    if (abbr.length >= 3) break;
+  }
+  return (abbr + lead).slice(0, 3).toUpperCase().padEnd(3, '?');
+}

@@ -1,4 +1,4 @@
-import { teamInitials } from './liveScoresDerivations.js';
+import { teamChipAbbr } from './liveScoresDerivations.js';
 
 /**
  * Mobile fixture switcher — variant D: small inline text chips on the
@@ -41,11 +41,11 @@ export function LiveFixtureChipStrip({
             onClick={() => onSelectFixture(i)}
             title={`${fx.homeName} vs ${fx.awayName}`}
           >
-            <span className="lfc-fixstrip__ab">{teamInitials(fx.homeName)}</span>
+            <span className="lfc-fixstrip__ab">{teamChipAbbr(fx.homeName)}</span>
             <span className="lfc-fixstrip__score tabular">
               {fx.homeLive ?? '—'}–{fx.awayLive ?? '—'}
             </span>
-            <span className="lfc-fixstrip__ab">{teamInitials(fx.awayName)}</span>
+            <span className="lfc-fixstrip__ab">{teamChipAbbr(fx.awayName)}</span>
             {live ? (
               <span className="lfc-fixstrip__live" aria-hidden="true" />
             ) : null}

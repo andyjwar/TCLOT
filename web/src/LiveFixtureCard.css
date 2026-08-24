@@ -376,53 +376,80 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* Compact header (variant 4): badge above score, compact 3-column grid,
-   underline tabs. Score/badge order is flipped from the tall header via
-   flex `order` so the shared markup stays untouched. */
+/* Compact mobile scorehead: name → score → sub, underline selection (no badges). */
 .lfc-card--compact .lfc-card__top {
   padding-bottom: 5px;
 }
 .lfc-scorehead--compact {
-  padding: 4px 12px 0;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   gap: 6px;
+  padding: 4px 12px 0;
+  align-items: end;
+}
+.lfc-cside {
+  display: flex;
+  flex-direction: column;
   align-items: center;
+  gap: 1px;
+  border: 0;
+  background: none;
+  font: inherit;
+  color: #fff;
+  cursor: pointer;
+  min-width: 0;
+  width: 100%;
+  padding: 0 0 2px;
+  -webkit-tap-highlight-color: transparent;
 }
-.lfc-scorehead--compact .lfc-team {
-  gap: 2px;
+.lfc-cside__name {
+  font-size: 11px;
+  font-weight: 700;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0 4px 5px;
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.72);
+  transition: color 0.15s ease, border-color 0.15s ease;
 }
-.lfc-scorehead--compact .lfc-team__badge {
-  order: -1;
-  margin-top: 0;
+.lfc-cside.is-sel .lfc-cside__name {
+  color: #fff;
+  border-bottom-color: #fff;
 }
-.lfc-scorehead--compact .lfc-team__badge .team-avatar-frame--sm {
-  width: 28px;
-  height: 28px;
-}
-.lfc-scorehead--compact .lfc-team__score {
-  font-size: 28px;
+.lfc-cside__score {
+  font-size: 32px;
+  font-weight: 800;
   letter-spacing: -1px;
   line-height: 1;
 }
-.lfc-scorehead--compact .lfc-team__name {
-  font-size: 11px;
-  padding: 1px 7px;
-}
-.lfc-scorehead--compact .lfc-team.is-sel .lfc-team__name {
-  padding: 1px 7px;
-}
-.lfc-scorehead--compact .lfc-team__sub {
+.lfc-cside__sub {
   font-size: 8.5px;
+  color: rgba(255, 255, 255, 0.82);
   min-height: 10px;
 }
-.lfc-scorehead--compact .lfc-mid {
-  padding-top: 0;
+.lfc-cside__sub--live {
+  color: #ffd27a;
+  font-weight: 800;
+}
+.lfc-cmid {
+  text-align: center;
   min-width: 48px;
+  padding-bottom: 16px;
 }
-.lfc-scorehead--compact .lfc-mid__main {
+.lfc-cmid__main {
+  display: block;
   font-size: 10px;
+  font-weight: 800;
 }
-.lfc-scorehead--compact .lfc-mid__sub {
+.lfc-cmid__main--live {
+  color: #ffd27a;
+}
+.lfc-cmid__sub {
   font-size: 9px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.75);
 }
 
 .lfc-tabs--line {

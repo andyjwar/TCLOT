@@ -18,6 +18,7 @@ import {
   rowsByPointsContributed,
   sortStartingXIByPosition,
   teamInitials,
+  teamChipAbbr,
 } from './liveScoresDerivations.js'
 
 test('liveFixtureLead — strict winner / tie / null branches', () => {
@@ -227,6 +228,15 @@ test('teamInitials — words → first letters; single word → first 2', () => 
   assert.equal(teamInitials('Toronto'), 'TO')
   assert.equal(teamInitials(''), '?')
   assert.equal(teamInitials(null), '?')
+})
+
+test('teamChipAbbr — three letters from leading word or initials', () => {
+  assert.equal(teamChipAbbr('Mordor SFG'), 'MOR')
+  assert.equal(teamChipAbbr('Seoul Shire'), 'SEO')
+  assert.equal(teamChipAbbr('Hackney Rohirrim'), 'HAC')
+  assert.equal(teamChipAbbr('Toronto Gimli'), 'TOR')
+  assert.equal(teamChipAbbr(''), '???')
+  assert.equal(teamChipAbbr(null), '???')
 })
 
 test('isCleanSheetEligible — GK/DEF/MID true; FWD / unknown false', () => {
