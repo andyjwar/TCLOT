@@ -29,6 +29,21 @@ const pick = (arr, key) => arr[variantIndex(key, arr.length)]
 
 const rec = (t) => `${t.record.w}-${t.record.d}-${t.record.l}`
 
+/** Manager's first name, when we have one — the friendly handle for prose. */
+const firstName = (mgr) => {
+  const s = String(mgr ?? '').trim()
+  return s ? s.split(/\s+/)[0] : null
+}
+
+/** How to address a side in flavour text: the manager's first name if known,
+ * otherwise the team name. Keeps rivalry/waiver lines personal. */
+const who = (side) => firstName(side?.manager) || side?.name
+
+/** Waiver vs free-agent wording, so a shrewd claim reads differently from a
+ * casual free-agent add. */
+const pickupLabel = (kind) => (kind === 'f' ? 'free-agent pickup' : 'waiver pickup')
+const puntLabel = (kind) => (kind === 'f' ? 'free-agent punt' : 'waiver gamble')
+
 function resultSentence(m, key) {
   const { winner, loser } = sides(m)
   if (!winner) {
@@ -37,6 +52,7 @@ function resultSentence(m, key) {
       [
         `Nothing between ${m.home.name} and ${m.away.name} — a ${score} stalemate, a point apiece.`,
         `${m.home.name} and ${m.away.name} couldn't be separated at ${score}.`,
+        `Deadlock: ${m.home.name} and ${m.away.name} shared the spoils at ${score}.`,
       ],
       key,
     )
@@ -65,6 +81,7 @@ function resultSentence(m, key) {
     [
       `${winner.name} took care of ${loser.name}, ${score}.`,
       `A solid week's work from ${winner.name}: ${score} over ${loser.name}.`,
+      `${winner.name} had enough in the tank to see off ${loser.name}, ${score}.`,
     ],
     key,
   )
@@ -284,8 +301,95 @@ function funFactSentence(m, key) {
 }
 
 /**
- * The recap paragraph for one matchup: 3–5 sentences depending on whether a
- * pre-match model call exists and whether the players gave us a story.
+ * Waiver / free-agent storyline, when the week's standout (or its biggest
+ * blank) traces back to a transaction. Facts come from `sidePickupFacts` in
+ * build-weekly-recaps.mjs (`side.pickup.star` / `side.pickup.flop`). Returns
+ * null when nobody's roster moves are worth a mention.
+ */
+function waiverSentence(m, key) {
+  const { winner, loser } = sides(m)
+  const cands = []
+  const when = (p) => (p.recent ? 'this week' : `back in GW${p.gw}`)
+
+  // Winner rode a claimed player to the result — the juiciest waiver story.
+  const ws = winner?.pickup?.star
+  if (ws && (ws.wasHaul || ws.pts >= 12)) {
+    cands.push(
+      pick(
+        [
+          `${who(winner)}'s ${pickupLabel(ws.kind)} ${ws.name} (added ${when(ws)}) repaid the faith with ${ws.pts}.`,
+          `That ${pickupLabel(ws.kind)} is ageing well: ${ws.name} chipped in ${ws.pts} for ${who(winner)}.`,
+          `Shrewd business — ${who(winner)} plucked ${ws.name} off the wire and got ${ws.pts} out of him.`,
+        ],
+        key,
+      ),
+    )
+  }
+
+  // A pickup that starred for the losing or drawing side still deserves a nod.
+  for (const side of [m.home, m.away]) {
+    const s = side?.pickup?.star
+    if (s && side !== winner && s.pts >= 12) {
+      cands.push(
+        `${who(side)}'s ${pickupLabel(s.kind)} ${s.name} justified the claim with ${s.pts} in a losing cause.`,
+      )
+    }
+  }
+
+  // A pickup that blanked — the decision that aged badly.
+  const flopSide = [m.home, m.away].find((s) => s?.pickup?.flop)
+  if (flopSide) {
+    const f = flopSide.pickup.flop
+    cands.push(
+      pick(
+        [
+          `The ${puntLabel(f.kind)} on ${f.name} backfired for ${who(flopSide)} — ${f.pts} off a projected ${f.xp}.`,
+          `${who(flopSide)} won't want to relive the ${puntLabel(f.kind)}: ${f.name} returned just ${f.pts}.`,
+        ],
+        key,
+      ),
+    )
+  }
+
+  return cands.length ? cands[0] : null
+}
+
+/**
+ * Season head-to-head rivalry line between the two managers, once they've met
+ * more than once (so it's a series, not a debut). Reads from `m.h2h`
+ * (`homeWins` / `awayWins` / `draws`, oriented home/away). Null otherwise.
+ */
+function rivalrySentence(m) {
+  const h = m.h2h
+  if (!h || h.games < 2) return null
+  const drawn = h.draws ? ` (${h.draws} drawn)` : ''
+  const { winner, loser } = sides(m)
+  // Two managers can share a first name (real leagues have brothers, repeats),
+  // which makes "Nick vs Nick" gibberish — fall back to team names then.
+  const hn = who(m.home)
+  const an = who(m.away)
+  const ambiguous =
+    hn != null && an != null && String(hn).toLowerCase() === String(an).toLowerCase()
+  const label = (side) => (ambiguous ? side.name : who(side))
+  if (!winner) {
+    return `Honours even again — the season series between ${label(m.home)} and ${label(m.away)} stays level at ${h.homeWins}–${h.awayWins}${drawn}.`
+  }
+  const winnerIsHome = winner === m.home
+  const wWins = winnerIsHome ? h.homeWins : h.awayWins
+  const lWins = winnerIsHome ? h.awayWins : h.homeWins
+  if (wWins > lWins) {
+    return `Bragging rights to ${label(winner)}: the season head-to-head with ${label(loser)} now reads ${wWins}–${lWins}${drawn}.`
+  }
+  if (wWins === lWins) {
+    return `That squares their season series — ${label(m.home)} and ${label(m.away)} are locked at ${h.homeWins}–${h.awayWins}${drawn}.`
+  }
+  return `${label(winner)} got one back, but ${label(loser)} still lead the season series ${lWins}–${wWins}${drawn}.`
+}
+
+/**
+ * The recap paragraph for one matchup: 3–6 sentences depending on whether a
+ * pre-match model call exists, whether the players gave us a story, whether a
+ * roster move is worth flagging, and whether the managers have a rivalry going.
  *
  * @param {{
  *   gw: number,
@@ -293,7 +397,11 @@ function funFactSentence(m, key) {
  *                                 //  titleOdds, players via sidePlayerFacts, …)
  *   odds: { favoriteSide: 'home'|'away', favoritePct: number } | null,
  *   leagueAvg?: number | null,    // average team score this GW
+ *   h2h?: { games, homeWins, awayWins, draws } | null,  // season series so far
  * }} m
+ *
+ * Sides may also carry `manager` (human name) and `pickup` (waiver/free-agent
+ * storyline via sidePickupFacts) — both optional and used only for flavour.
  */
 export function matchupRecapSentences(m) {
   const key = `${m.home.entryId}-${m.away.entryId}-gw${m.gw}-${m.home.points}-${m.away.points}`
@@ -303,7 +411,11 @@ export function matchupRecapSentences(m) {
   out.push(contextSentence(m, `${key}-c`))
   const players = playerSentence(m, `${key}-p`)
   if (players) out.push(players)
-  out.push(funFactSentence(m, `${key}-f`))
+  const waiver = waiverSentence(m, `${key}-w`)
+  if (waiver) out.push(waiver)
+  // The season rivalry is the freshest bit of colour once it exists; otherwise
+  // fall back to the best available fun fact.
+  out.push(rivalrySentence(m) ?? funFactSentence(m, `${key}-f`))
   return out
 }
 

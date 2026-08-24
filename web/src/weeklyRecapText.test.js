@@ -188,6 +188,78 @@ test('player sentence: losing side haul reads as wasted', () => {
   assert.match(out[3], /Palmer's 19 .* deserved more/)
 })
 
+test('waiver sentence: winning side rode a claimed player to the result', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({
+      manager: 'Nick Mottershead',
+      players: { top: { id: 42, name: 'Mbeumo', pts: 16 }, share: 0.28, haul: { id: 42, name: 'Mbeumo', pts: 16 }, flop: null },
+      pickup: { star: { name: 'Mbeumo', pts: 16, kind: 'w', gw: 3, recent: true, wasHaul: true } },
+    }),
+  })
+  const waiver = out.find((s) => /Mbeumo/.test(s) && /waiver|wire/.test(s))
+  assert.ok(waiver, `expected a waiver line, got: ${JSON.stringify(out)}`)
+  assert.match(waiver, /Nick/)
+  assert.match(waiver, /16/)
+})
+
+test('waiver sentence: free-agent flop is called out', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    away: {
+      ...base.away,
+      manager: 'Luke Butcher',
+      players: { top: { id: 5, name: 'Foden', pts: 3 }, share: 0.12, haul: null, flop: { id: 9, name: 'Isak', pts: 1, xp: 6.5 } },
+      pickup: { flop: { name: 'Isak', pts: 1, xp: 6.5, kind: 'f', gw: 2, recent: false } },
+    },
+  })
+  const waiver = out.find((s) => /Isak/.test(s) && /free-agent/.test(s))
+  assert.ok(waiver, `expected a free-agent flop line, got: ${JSON.stringify(out)}`)
+  assert.match(waiver, /Luke/)
+})
+
+test('rivalry sentence: appears from the second meeting, replaces fun fact', () => {
+  const withRivalry = matchupRecapSentences({
+    ...base,
+    h2h: { games: 2, homeWins: 2, awayWins: 0, draws: 0 },
+  })
+  const rivalry = withRivalry[withRivalry.length - 1]
+  assert.match(rivalry, /season head-to-head|season series|Bragging rights/i)
+  assert.match(rivalry, /2–0|2-0/)
+  // First-ever meeting (games: 1) → no rivalry line, fun fact instead.
+  const firstMeeting = matchupRecapSentences({
+    ...base,
+    h2h: { games: 1, homeWins: 1, awayWins: 0, draws: 0 },
+  })
+  assert.doesNotMatch(firstMeeting[firstMeeting.length - 1], /head-to-head/i)
+})
+
+test('rivalry sentence: falls back to team names when managers share a first name', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({ name: 'Mordor S.F.G', manager: 'Nick Mottershead' }),
+    away: { ...base.away, name: 'Atlético Bilbo', manager: 'Nick Goodacre' },
+    h2h: { games: 2, homeWins: 2, awayWins: 0, draws: 0 },
+  })
+  const rivalry = out[out.length - 1]
+  // Must not read "Nick ... with Nick"; disambiguate with team names.
+  assert.match(rivalry, /Mordor/)
+  assert.match(rivalry, /Atlético/)
+  assert.doesNotMatch(rivalry, /Nick.*Nick/)
+})
+
+test('rivalry sentence: draw keeps the series level and uses managers', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({ points: 50, manager: 'Nick Mottershead' }),
+    away: { ...base.away, points: 50, manager: 'Luke Butcher' },
+    h2h: { games: 3, homeWins: 1, awayWins: 1, draws: 1 },
+  })
+  const rivalry = out[out.length - 1]
+  assert.match(rivalry, /series|honours even/i)
+  assert.match(rivalry, /Nick|Luke/)
+})
+
 test('variantIndex is stable and in range', () => {
   for (const key of ['a', 'b', 'team-1-gw3', '']) {
     const v = variantIndex(key, 3)
