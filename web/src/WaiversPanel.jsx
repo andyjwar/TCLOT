@@ -3,7 +3,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { PlayerKit } from './PlayerKit.jsx'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { firstWord } from './teamNameUtils.js'
-import { useMobileLayout } from './usePortraitMobile.js'
+import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
 import './WaiversPanel.css'
 
@@ -82,7 +82,7 @@ function WvOrderCell({ move }) {
 
 /* ── Section 1 · Weekly waivers ─────────────────────────────────────── */
 
-/** Desktop flat swap table with an "All swaps" ↔ "By team" grouping filter.
+/** Desktop: "All swaps" flat table ↔ "By team" phone-style tiles (expanded).
  *  `gwPill` (optional node) renders inline on the same row as the toggle. */
 function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
   const [group, setGroup] = useState('flat')
@@ -133,28 +133,30 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
         </div>
         {gwPill ? <span className="waivers-weekly__gw">{gwPill}</span> : null}
       </div>
-      <div className="waivers-table-wrap">
-        <table
-          className={
-            'waivers-table waivers-weekly__table' +
-            (group === 'flat' ? ' waivers-weekly__table--flat' : ' waivers-weekly__table--team')
-          }
-        >
-          <colgroup>
-            <col className="waivers-col-num" />
-            {group === 'flat' ? <col className="waivers-col-team" /> : null}
-            <col className="waivers-col-io" />
-            <col className="waivers-col-io" />
-          </colgroup>
-          <thead>
-            <tr>
-              <th className="waivers-table__num">#</th>
-              {group === 'flat' ? <th>Team</th> : null}
-              <th>In</th>
-              <th>Out</th>
-            </tr>
-          </thead>
-          {group === 'flat' ? (
+      {group === 'team' ? (
+        <WeeklyWaiversTiles
+          groups={groupedTeams}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          defaultExpanded
+        />
+      ) : (
+        <div className="waivers-table-wrap">
+          <table className="waivers-table waivers-weekly__table waivers-weekly__table--flat">
+            <colgroup>
+              <col className="waivers-col-num" />
+              <col className="waivers-col-team" />
+              <col className="waivers-col-io" />
+              <col className="waivers-col-io" />
+            </colgroup>
+            <thead>
+              <tr>
+                <th className="waivers-table__num">#</th>
+                <th>Team</th>
+                <th>In</th>
+                <th>Out</th>
+              </tr>
+            </thead>
             <tbody>
               {flatRows.map((r) => (
                 <tr key={r.transactionId}>
@@ -196,55 +198,9 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
                 </tr>
               ))}
             </tbody>
-          ) : (
-            groupedTeams.map((g) => (
-              <tbody className="waivers-weekly__group" key={g.entry}>
-                <tr className="waivers-weekly__grouphead">
-                  <td className="waivers-table__num waivers-weekly__grouphead-crest">
-                    <TeamAvatar
-                      entryId={g.leagueEntryId}
-                      name={g.teamName}
-                      size="sm"
-                      logoMap={teamLogoMap}
-                      kitIndexByEntry={kitIndexByEntry}
-                    />
-                  </td>
-                  <td colSpan={2}>
-                    <span className="waivers-weekly__groupname">{g.teamName}</span>
-                  </td>
-                </tr>
-                {g.moves.map((m) => (
-                  <tr key={m.transactionId}>
-                    <td className="waivers-table__num tabular">
-                      <WvOrderCell move={m} />
-                    </td>
-                    <td>
-                      <WvPlayerCell
-                        element={m.element_in}
-                        name={m.pickedName}
-                        badgeUrl={m.pickedBadgeUrl}
-                        teamShort={m.pickedTeamShort}
-                        pos={m.pickedPos}
-                        dir="in"
-                      />
-                    </td>
-                    <td>
-                      <WvPlayerCell
-                        element={m.element_out}
-                        name={m.droppedName}
-                        badgeUrl={m.droppedBadgeUrl}
-                        teamShort={m.droppedTeamShort}
-                        pos={m.droppedPos}
-                        dir="out"
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            ))
-          )}
-        </table>
-      </div>
+          </table>
+        </div>
+      )}
     </div>
   )
 }
@@ -340,21 +296,39 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
   )
 }
 
-/** Mobile · tap-a-team-to-expand tiles. */
-function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
+/** Tap-a-team tiles (phone By team + iPad/desktop By team).
+ *  `defaultExpanded`: iPad/desktop start open; phone stays collapsed until tapped.
+ *  Expanded mode tracks a `closed` set so new GW teams stay open by default. */
+function WeeklyWaiversTiles({
+  groups,
+  teamLogoMap,
+  kitIndexByEntry,
+  defaultExpanded = false,
+}) {
   const [open, setOpen] = useState(() => new Set())
-  const toggle = (entry) =>
-    setOpen((prev) => {
-      const next = new Set(prev)
-      if (next.has(entry)) next.delete(entry)
-      else next.add(entry)
-      return next
-    })
+  const [closed, setClosed] = useState(() => new Set())
+  const toggle = (entry) => {
+    if (defaultExpanded) {
+      setClosed((prev) => {
+        const next = new Set(prev)
+        if (next.has(entry)) next.delete(entry)
+        else next.add(entry)
+        return next
+      })
+    } else {
+      setOpen((prev) => {
+        const next = new Set(prev)
+        if (next.has(entry)) next.delete(entry)
+        else next.add(entry)
+        return next
+      })
+    }
+  }
 
   return (
     <div className="waivers-weekly-grid waivers-weekly-grid--compact">
       {groups.map((g) => {
-        const isOpen = open.has(g.entry)
+        const isOpen = defaultExpanded ? !closed.has(g.entry) : open.has(g.entry)
         const teamOrder = Math.min(...(g.moves || []).map(moveOrderKey))
         return (
           <article className="waivers-weekly-tile" key={g.entry}>
@@ -422,9 +396,9 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
 
 /**
  * Section 1 wrapper.
- *  • Desktop: flat / by-team swap table (toggle + inline GW pill).
- *  • Mobile: a segmented toggle of "All Swaps" · "By team" · "Waiver summary"
- *    (the share view, folded in here so there's no separate top-level pill).
+ *  • Desktop: flat swap table ↔ by-team tiles (expanded by default).
+ *  • Mobile/tablet: "All Swaps" · "By team" · "Waiver summary"
+ *    (By team tiles expand by default on tablet; phone stays collapsed).
  * `gwPill` renders inline beside the toggle; `summaryView` is the share card.
  */
 export function WeeklyWaivers({
@@ -436,6 +410,9 @@ export function WeeklyWaivers({
   summaryView,
 }) {
   const isMobile = useMobileLayout()
+  /* Phone-narrow (≤767): collapsed By team. Tablet in the mobile shell
+   * (768–1080): same tiles as phone, expanded by default. */
+  const isPhoneNarrow = useMobileNarrowViewport()
   const [mobileView, setMobileView] = useState('flat')
 
   const hasGroups = Boolean(groups && groups.length > 0)
@@ -484,6 +461,7 @@ export function WeeklyWaivers({
             groups={groups}
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
+            defaultExpanded={!isPhoneNarrow}
           />
         )}
       </div>
