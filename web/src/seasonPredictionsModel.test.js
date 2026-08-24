@@ -13,6 +13,7 @@ import {
   archivedScoreError,
   archivedXi,
   sidePlayerFacts,
+  h2hSeriesAsOf,
 } from './seasonPredictionsModel.js'
 
 const IDS = [1, 2, 3, 4]
@@ -217,6 +218,45 @@ test('archivedXi orients by entry id and tolerates old schemas', () => {
   assert.equal(archivedXi(null, 1), null)
 })
 
+test('h2hSeriesAsOf: counts finished meetings, oriented to entryA', () => {
+  const m = (event, a, b, pa, pb, finished = true) => ({
+    event,
+    league_entry_1: a,
+    league_entry_2: b,
+    league_entry_1_points: pa,
+    league_entry_2_points: pb,
+    finished,
+  })
+  const matches = [
+    m(1, 1, 2, 50, 40), // 1 beats 2
+    m(5, 2, 1, 60, 30), // 2 beats 1 (orientation flipped)
+    m(9, 1, 2, 44, 44), // draw
+    m(13, 2, 1, 0, 0, false), // not finished — ignored
+  ]
+  // Never met yet (through GW0) → null.
+  assert.equal(h2hSeriesAsOf(matches, 1, 2, 0), null)
+  // First meeting only.
+  assert.deepEqual(h2hSeriesAsOf(matches, 1, 2, 1), {
+    games: 1,
+    aWins: 1,
+    bWins: 0,
+    draws: 0,
+    lastResult: 'A',
+  })
+  // Through GW9: 1 win each + a draw, oriented to entryA=1.
+  assert.deepEqual(h2hSeriesAsOf(matches, 1, 2, 20), {
+    games: 3,
+    aWins: 1,
+    bWins: 1,
+    draws: 1,
+    lastResult: 'D',
+  })
+  // Orientation swaps when entryA=2.
+  const flipped = h2hSeriesAsOf(matches, 2, 1, 20)
+  assert.equal(flipped.aWins, 1)
+  assert.equal(flipped.bWins, 1)
+})
+
 test('sidePlayerFacts: top scorer, share, haul and flop detection', () => {
   const xi = [
     { id: 1, name: 'Salah', pos: 'MID', pts: 21, xp: 7.2 },
@@ -225,11 +265,11 @@ test('sidePlayerFacts: top scorer, share, haul and flop detection', () => {
     { id: 4, name: 'Raya', pos: 'GK', pts: 1, xp: 3.9 },
   ]
   const f = sidePlayerFacts(xi)
-  assert.deepEqual(f.top, { name: 'Salah', pts: 21 })
+  assert.deepEqual(f.top, { id: 1, name: 'Salah', pts: 21 })
   assert.equal(f.share, +(21 / 30).toFixed(3))
-  assert.deepEqual(f.haul, { name: 'Salah', pts: 21 })
+  assert.deepEqual(f.haul, { id: 1, name: 'Salah', pts: 21 })
   // Isak is the flop (xp >= 5, pts <= 2); Raya's 1 doesn't count (xp < 5).
-  assert.deepEqual(f.flop, { name: 'Isak', pts: 2, xp: 6.0 })
+  assert.deepEqual(f.flop, { id: 2, name: 'Isak', pts: 2, xp: 6.0 })
 })
 
 test('sidePlayerFacts: quiet weeks produce no haul or flop', () => {
@@ -238,7 +278,7 @@ test('sidePlayerFacts: quiet weeks produce no haul or flop', () => {
     { id: 2, name: 'B', pos: 'FWD', pts: 6, xp: 5.8 },
   ]
   const f = sidePlayerFacts(xi)
-  assert.deepEqual(f.top, { name: 'A', pts: 7 })
+  assert.deepEqual(f.top, { id: 1, name: 'A', pts: 7 })
   assert.equal(f.haul, null)
   assert.equal(f.flop, null)
   assert.equal(sidePlayerFacts([]), null)
@@ -250,5 +290,5 @@ test('sidePlayerFacts: modest score still counts as haul when it doubles the cal
     { id: 1, name: 'Mbeumo', pos: 'MID', pts: 13, xp: 5.0 },
     { id: 2, name: 'B', pos: 'FWD', pts: 4, xp: 4.0 },
   ]
-  assert.deepEqual(sidePlayerFacts(xi).haul, { name: 'Mbeumo', pts: 13 })
+  assert.deepEqual(sidePlayerFacts(xi).haul, { id: 1, name: 'Mbeumo', pts: 13 })
 })
