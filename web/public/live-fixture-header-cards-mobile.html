@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mobile live fixture · fixture cards above the header</title>
+<style>
+  :root {
+    --fm-bg:#f4f4f6; --fm-card:#fff; --fm-border:#ececec; --fm-surface-2:#f0f0f3;
+    --fm-text:rgba(51,51,51,0.92); --fm-text-strong:#1a1a1a; --fm-muted:rgba(0,0,0,0.42);
+    --tclot-logo-purple:#795bfb;
+    --lfc-header:linear-gradient(165deg,#6246f0 0%,#7a5cfb 55%,#9370ff 100%);
+    --win:#ffd27a; --live:#ffd27a;
+    --pill-green-bg:#d7f0e0; --pill-green-tx:#1d7a4d; --pill-amber-bg:#fbeccf; --pill-amber-tx:#a9791a;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:#1f2028; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--fm-text); }
+  .page { padding:30px 26px 70px; }
+  .page__title { font-size:24px; font-weight:800; color:#fff; margin:0 0 6px; }
+  .page__sub { font-size:13.5px; color:#b9bac6; margin:0 0 26px; max-width:1120px; line-height:1.55; }
+  .page__sub b { color:#e6e0ff; }
+  .grid { display:flex; flex-wrap:wrap; gap:28px; align-items:flex-start; }
+
+  .option { width:372px; }
+  .option__cap { margin:0 2px 12px; min-height:96px; }
+  .option__step { display:inline-block; font-size:12px; font-weight:800; color:#22232b; border-radius:999px; padding:2px 10px; margin-right:8px; background:#b7a7ff; }
+  .option__name { font-size:15px; font-weight:800; color:#fff; }
+  .option__desc { font-size:12.5px; color:#b9bac6; margin-top:7px; line-height:1.5; }
+  .option__desc b { color:#e6e0ff; }
+
+  .phone { width:372px; border-radius:38px; background:#000; padding:7px; box-shadow:0 18px 44px rgba(0,0,0,0.5); }
+  .phone__screen { height:760px; border-radius:32px; overflow:hidden; background:#fff; position:relative; display:flex; flex-direction:column; }
+  .sbar { display:flex; align-items:center; justify-content:space-between; padding:9px 22px 5px; background:#6a4ef4; color:#fff; font-size:12px; font-weight:700; flex:none; }
+  .sbar__r { font-size:11px; letter-spacing:1px; }
+
+  .lfc-card { display:flex; flex-direction:column; flex:1 1 auto; min-height:0; background:var(--fm-bg); }
+  .lfc-card__top { background:var(--lfc-header); color:#fff; padding-bottom:7px; flex:none; }
+
+  /* back row */
+  .lfc-topbar { display:flex; align-items:center; padding:6px 10px 0; }
+  .lfc-back { color:#fff; font-size:26px; font-weight:600; line-height:1; padding:2px 8px 4px; }
+
+  /* scorehead (mirrors production .lfc-scorehead) */
+  .lfc-scorehead { display:grid; grid-template-columns:1fr auto 1fr; align-items:start; gap:8px; padding:6px 16px 2px; }
+  .lfc-team { display:flex; flex-direction:column; align-items:center; gap:5px; color:#fff; padding:2px; }
+  .lfc-team.is-sel .lfc-team__name { background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.22); }
+  .lfc-team__score { font-size:44px; font-weight:800; letter-spacing:-2px; line-height:0.95; }
+  .lfc-team__badge { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:12px; color:#fff; border:2px solid rgba(255,255,255,0.5); }
+  .lfc-team__name { font-size:12px; font-weight:700; text-align:center; line-height:1.1; padding:2px 12px; border:1px solid transparent; border-radius:999px; }
+  .lfc-team__sub { font-size:9.5px; color:rgba(255,255,255,0.82); min-height:12px; }
+  .lfc-team__sub--live { color:var(--live); font-weight:800; }
+  .lfc-mid { text-align:center; min-width:54px; padding-top:14px; }
+  .lfc-mid__main { display:block; font-size:13px; font-weight:800; }
+  .lfc-mid__main--live { color:var(--live); }
+  .lfc-mid__sub { font-size:10.5px; font-weight:600; color:rgba(255,255,255,0.82); }
+
+  .lfc-tabs { display:flex; gap:7px; padding:7px 14px 2px; overflow-x:auto; }
+  .lfc-tab { font-size:13.5px; font-weight:700; color:rgba(255,255,255,0.78); padding:5px 12px; border-radius:999px; white-space:nowrap; }
+  .lfc-tab.is-active { color:#fff; background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.22); }
+
+  /* ============ SHARED small crest ============ */
+  .crest { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; flex:none; }
+
+  /* ============ A · named mini-cards ============ */
+  .fxA { display:flex; gap:7px; overflow-x:auto; padding:8px 12px 3px; scrollbar-width:none; }
+  .fxA::-webkit-scrollbar { display:none; }
+  .fxA__card { flex:0 0 auto; width:124px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16); border-radius:12px; padding:6px 8px 5px; display:flex; flex-direction:column; gap:4px; }
+  .fxA__card.is-active { background:rgba(255,255,255,0.22); border-color:rgba(255,255,255,0.55); }
+  .fxA__row { display:flex; align-items:center; gap:6px; }
+  .fxA__row .crest { width:15px; height:15px; font-size:6px; }
+  .fxA__name { flex:1 1 auto; min-width:0; font-size:10px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fxA__score { font-size:11.5px; font-weight:800; color:#fff; margin-left:auto; }
+  .fxA__state { text-align:center; font-size:8px; font-weight:800; letter-spacing:0.4px; color:rgba(255,255,255,0.62); margin-top:1px; }
+  .fxA__state.is-live { color:var(--live); }
+
+  /* ============ B · score chips (no names) ============ */
+  .fxB { display:flex; gap:8px; overflow-x:auto; padding:8px 12px 3px; scrollbar-width:none; }
+  .fxB::-webkit-scrollbar { display:none; }
+  .fxB__chip { flex:0 0 auto; display:flex; align-items:center; gap:7px; padding:5px 11px 5px 8px; border-radius:999px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16); }
+  .fxB__chip.is-active { background:#fff; border-color:#fff; }
+  .fxB__crests { display:flex; }
+  .fxB__crests .crest { width:19px; height:19px; font-size:7px; border:1.5px solid rgba(255,255,255,0.55); }
+  .fxB__crests .crest + .crest { margin-left:-7px; }
+  .fxB__chip.is-active .fxB__crests .crest { border-color:#fff; }
+  .fxB__score { font-size:12px; font-weight:800; color:#fff; white-space:nowrap; }
+  .fxB__chip.is-active .fxB__score { color:#4a2fd0; }
+  .fxB__live { width:6px; height:6px; border-radius:50%; background:var(--live); flex:none; }
+
+  /* ============ C · peek carousel + dots ============ */
+  .fxC { padding:9px 0 5px; }
+  .fxC__track { display:flex; gap:10px; padding:0 46px; overflow-x:auto; scrollbar-width:none; }
+  .fxC__track::-webkit-scrollbar { display:none; }
+  .fxC__card { flex:0 0 236px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16); border-radius:14px; padding:7px 11px; opacity:0.62; transform:scale(0.96); transition:all .2s; }
+  .fxC__card.is-active { background:rgba(255,255,255,0.20); border-color:rgba(255,255,255,0.55); opacity:1; transform:scale(1); }
+  .fxC__row { display:flex; align-items:center; gap:8px; }
+  .fxC__row + .fxC__row { margin-top:3px; }
+  .fxC__row .crest { width:17px; height:17px; font-size:6.5px; }
+  .fxC__name { flex:1 1 auto; min-width:0; font-size:11.5px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .fxC__score { font-size:13px; font-weight:800; color:#fff; }
+  .fxC__state { margin-left:6px; font-size:8.5px; font-weight:800; color:rgba(255,255,255,0.6); }
+  .fxC__state.is-live { color:var(--live); }
+  .fxC__dots { display:flex; justify-content:center; gap:6px; padding:7px 0 0; }
+  .fxC__dot { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,0.35); }
+  .fxC__dot.is-active { width:18px; border-radius:999px; background:#fff; }
+
+  /* ============ D · inline on the back row (no extra band) ============ */
+  .lfc-topbar--rail { display:flex; align-items:center; gap:8px; padding:6px 8px 0 6px; }
+  .fxD { display:flex; gap:6px; overflow-x:auto; flex:1 1 auto; scrollbar-width:none; padding-bottom:2px; }
+  .fxD::-webkit-scrollbar { display:none; }
+  .fxD__chip { flex:0 0 auto; display:flex; align-items:center; gap:6px; padding:4px 9px; border-radius:999px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.16); }
+  .fxD__chip.is-active { background:rgba(255,255,255,0.30); border-color:rgba(255,255,255,0.6); }
+  .fxD__ab { font-size:9px; font-weight:800; color:rgba(255,255,255,0.85); }
+  .fxD__score { font-size:11px; font-weight:800; color:#fff; white-space:nowrap; }
+  .fxD__live { width:5px; height:5px; border-radius:50%; background:var(--live); }
+
+  /* ============ E · segmented strip (equal segments) ============ */
+  .fxE { display:flex; gap:2px; padding:8px 12px 4px; }
+  .fxE__seg { flex:1 1 0; min-width:0; background:rgba(255,255,255,0.09); border-bottom:2px solid transparent; border-radius:10px 10px 6px 6px; padding:6px 5px 5px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .fxE__seg.is-active { background:rgba(255,255,255,0.20); border-bottom-color:#fff; }
+  .fxE__crests { display:flex; }
+  .fxE__crests .crest { width:16px; height:16px; font-size:6px; border:1.5px solid rgba(255,255,255,0.5); }
+  .fxE__crests .crest + .crest { margin-left:-6px; }
+  .fxE__score { font-size:11px; font-weight:800; color:#fff; white-space:nowrap; }
+  .fxE__state { font-size:7.5px; font-weight:800; letter-spacing:0.3px; color:rgba(255,255,255,0.6); }
+  .fxE__state.is-live { color:var(--live); }
+
+  /* ---- lineup list (context under the header) ---- */
+  .lfc-pane { flex:1 1 auto; min-height:0; background:var(--fm-card); overflow:hidden; }
+  .ln-hd { display:grid; grid-template-columns:20px 1fr 28px 30px 22px 18px 18px 18px 24px; gap:2px; align-items:center; padding:6px 12px 5px; background:#fff; }
+  .ln-hd__team { font-size:12px; font-weight:800; color:var(--tclot-logo-purple); white-space:nowrap; grid-column:1/3; }
+  .ln-hd__c { text-align:center; font-size:8px; font-weight:800; color:var(--fm-muted); }
+  .ln-row { display:grid; grid-template-columns:20px 1fr 28px 30px 22px 18px 18px 18px 24px; gap:2px; align-items:center; padding:4.6px 12px; border-top:1px solid var(--fm-border); font-size:11.5px; background:#fff; }
+  .ln-badge { width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:6.5px; font-weight:800; color:#fff; }
+  .ln-name { font-weight:700; color:var(--fm-text-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-left:2px; }
+  .ln-c { text-align:center; color:var(--fm-muted); font-weight:600; }
+  .ln-pos { text-align:center; font-size:8.5px; font-weight:800; color:var(--fm-muted); }
+  .ln-min { justify-self:center; font-weight:800; font-size:10px; padding:2px 4px; border-radius:6px; min-width:24px; text-align:center; }
+  .min-green { background:var(--pill-green-bg); color:var(--pill-green-tx); }
+  .min-amber { background:var(--pill-amber-bg); color:var(--pill-amber-tx); }
+  .ln-pts { text-align:center; font-weight:800; color:var(--fm-text-strong); }
+  .g1 { color:#1d8a55 !important; font-weight:800; } .b1 { color:#5b40d6 !important; font-weight:800; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="page__title">Fixture cards above the live header · iOS</h1>
+  <p class="page__sub">The desktop/iPad page gained a fixture-card switcher strip. On a phone the header is already tall (back row, big scorehead, 5 tabs), so the strip has to earn its vertical space. Five takes below, roughly <b>most info → most compact</b>, all switching between the four Game Week 1 fixtures with <b>Mordor SFG vs Atlético Bilbo</b> open. Each keeps the production violet header, scorehead and tabs underneath.</p>
+
+  <div class="grid">
+    <div class="option" data-shot="a">
+      <div class="option__cap"><div><span class="option__step">A</span><span class="option__name">Named mini-cards</span></div>
+        <div class="option__desc">Closest to the desktop strip: each card shows both <b>crest + team name + score</b> over a small state line. Most informative, but names must truncate hard at this width. Horizontally scrolls.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="a"></div></div>
+    </div>
+
+    <div class="option" data-shot="b">
+      <div class="option__cap"><div><span class="option__step">B</span><span class="option__name">Score chips (crests only)</span></div>
+        <div class="option__desc">Drop the names: overlapping <b>crest pair + score</b> as a pill, active chip flips to solid white. Roomy on one line, three-plus fixtures visible, but you read teams by crest.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="b"></div></div>
+    </div>
+
+    <div class="option" data-shot="c">
+      <div class="option__cap"><div><span class="option__step">C</span><span class="option__name">Peek carousel + dots</span></div>
+        <div class="option__desc">One wide card centred with the neighbours peeking, plus page dots. Names <b>and</b> scores fit because only one card is prominent; you swipe the strip like the deck itself.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="c"></div></div>
+    </div>
+
+    <div class="option" data-shot="d">
+      <div class="option__cap"><div><span class="option__step">D</span><span class="option__name">Inline on the back row</span></div>
+        <div class="option__desc">Zero extra band: the back chevron shares its row with compact <b>abbrev + score</b> chips. Cheapest on vertical space, keeps the big scorehead intact — but tiny targets.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="d"></div></div>
+    </div>
+
+    <div class="option" data-shot="e">
+      <div class="option__cap"><div><span class="option__step">E</span><span class="option__name">Segmented strip</span></div>
+        <div class="option__desc">A fixed segmented control: equal-width segments (crest pair + score), active segment underlined. No scroll for a 4-fixture week, reads as one tidy unit tied to the tabs below.</div></div>
+      <div class="phone"><div class="phone__screen" data-variant="e"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MOR = { ab:'MOR', color:'#2e2a3a', name:'Mordor SFG', short:'Mordor' };
+const ATB = { ab:'ATB', color:'#b8902e', name:'Atlético Bilbo', short:'Atlético' };
+const SEO = { ab:'SEO', color:'#c8102e', name:'Seoul Shire', short:'Seoul' };
+const HAC = { ab:'HAC', color:'#0053a0', name:'Hackney Rohirrim', short:'Hackney' };
+const BRA = { ab:'BAL', color:'#7a263a', name:'Brampton Balrogs', short:'Brampton' };
+const ROK = { ab:'ROK', color:'#12a15a', name:'Rokesly Regorasu', short:'Rokesly' };
+const TOR = { ab:'GIM', color:'#6cabdd', name:'Toronto Gimli', short:'Toronto' };
+const SUF = { ab:'SUF', color:'#241f20', name:'Suffolk Sméagol', short:'Suffolk' };
+
+// Four GW1 fixtures. First is the one that's open.
+const FIXTURES = [
+  { home:MOR, away:ATB, hs:40, as:23, live:true,  active:true },
+  { home:SEO, away:HAC, hs:31, as:29, live:true,  active:false },
+  { home:BRA, away:ROK, hs:55, as:18, live:false, active:false },
+  { home:TOR, away:SUF, hs:22, as:44, live:true,  active:false },
+];
+
+const crest = (t, cls='') => `<span class="crest ${cls}" style="background:${t.color}">${t.ab}</span>`;
+
+/* ---- A: named mini-cards ---- */
+function stripA(){
+  return `<div class="fxA">` + FIXTURES.map(f => `
+    <div class="fxA__card ${f.active?'is-active':''}">
+      <div class="fxA__row">${crest(f.home)}<span class="fxA__name">${f.home.short}</span><span class="fxA__score">${f.hs}</span></div>
+      <div class="fxA__row">${crest(f.away)}<span class="fxA__name">${f.away.short}</span><span class="fxA__score">${f.as}</span></div>
+      <div class="fxA__state ${f.live?'is-live':''}">${f.live?'● LIVE':'FT'}</div>
+    </div>`).join('') + `</div>`;
+}
+
+/* ---- B: score chips (no names) ---- */
+function stripB(){
+  return `<div class="fxB">` + FIXTURES.map(f => `
+    <div class="fxB__chip ${f.active?'is-active':''}">
+      <span class="fxB__crests">${crest(f.home)}${crest(f.away)}</span>
+      <span class="fxB__score">${f.hs}–${f.as}</span>
+      ${f.live?'<span class="fxB__live"></span>':''}
+    </div>`).join('') + `</div>`;
+}
+
+/* ---- C: peek carousel + dots ---- */
+function stripC(){
+  const cards = FIXTURES.map(f => `
+    <div class="fxC__card ${f.active?'is-active':''}">
+      <div class="fxC__row">${crest(f.home)}<span class="fxC__name">${f.home.name}</span><span class="fxC__score">${f.hs}</span></div>
+      <div class="fxC__row">${crest(f.away)}<span class="fxC__name">${f.away.name}</span><span class="fxC__score">${f.as}</span>
+        <span class="fxC__state ${f.live?'is-live':''}">${f.live?'LIVE':'FT'}</span></div>
+    </div>`).join('');
+  const dots = FIXTURES.map(f => `<span class="fxC__dot ${f.active?'is-active':''}"></span>`).join('');
+  return `<div class="fxC"><div class="fxC__track">${cards}</div><div class="fxC__dots">${dots}</div></div>`;
+}
+
+/* ---- D: inline on the back row ---- */
+function stripD(){
+  return `<div class="fxD">` + FIXTURES.map(f => `
+    <div class="fxD__chip ${f.active?'is-active':''}">
+      <span class="fxD__ab">${f.home.ab}</span>
+      <span class="fxD__score">${f.hs}–${f.as}</span>
+      <span class="fxD__ab">${f.away.ab}</span>
+      ${f.live?'<span class="fxD__live"></span>':''}
+    </div>`).join('') + `</div>`;
+}
+
+/* ---- E: segmented strip ---- */
+function stripE(){
+  return `<div class="fxE">` + FIXTURES.map(f => `
+    <div class="fxE__seg ${f.active?'is-active':''}">
+      <span class="fxE__crests">${crest(f.home)}${crest(f.away)}</span>
+      <span class="fxE__score">${f.hs}–${f.as}</span>
+      <span class="fxE__state ${f.live?'is-live':''}">${f.live?'LIVE':'FT'}</span>
+    </div>`).join('') + `</div>`;
+}
+
+function teamCol(t, score, sub, subLive, sel){
+  return `<div class="lfc-team ${sel?'is-sel':''}">
+    <span class="lfc-team__score">${score}</span>
+    <span class="lfc-team__badge" style="background:${t.color}">${t.ab}</span>
+    <span class="lfc-team__name">${t.name}</span>
+    <span class="lfc-team__sub ${subLive?'lfc-team__sub--live':''}">${sub}</span>
+  </div>`;
+}
+function scorehead(){
+  return `<div class="lfc-scorehead">
+    ${teamCol(MOR, 40, '1 to play', true, true)}
+    <div class="lfc-mid"><span class="lfc-mid__main lfc-mid__main--live">● LIVE</span><span class="lfc-mid__sub">Game Week 1</span></div>
+    ${teamCol(ATB, 23, '2 to play', true, false)}
+  </div>`;
+}
+const TABS = `<div class="lfc-tabs"><span class="lfc-tab">Match</span><span class="lfc-tab is-active">Lineups</span><span class="lfc-tab">Stats</span><span class="lfc-tab">Odds</span><span class="lfc-tab">Table</span></div>`;
+
+function header(v){
+  const strip = { a:stripA, b:stripB, c:stripC, e:stripE }[v];
+  if (v === 'd'){
+    // inline: back chevron shares its row with the fixture chips
+    return `<div class="lfc-card__top">
+      <div class="lfc-topbar lfc-topbar--rail"><span class="lfc-back">‹</span>${stripD()}</div>
+      ${scorehead()}${TABS}</div>`;
+  }
+  return `<div class="lfc-card__top">
+    <div class="lfc-topbar"><span class="lfc-back">‹</span></div>
+    ${strip()}
+    ${scorehead()}${TABS}</div>`;
+}
+
+const HEAD_COLS = `<span class="ln-hd__c">POS</span><span class="ln-hd__c">MIN</span><span class="ln-hd__c">DC</span><span class="ln-hd__c">G</span><span class="ln-hd__c">A</span><span class="ln-hd__c">B</span><span class="ln-hd__c">PTS</span>`;
+const STARTERS = [
+  ['#da020e','Ro','Roefs','GKP','90','green','0','0','0','0','1'],
+  ['#132257','Ta','Tarkowski','DEF','90','green','9','0','0','0','6'],
+  ['#6cabdd','Mo','Mosquera','DEF','90','green','6','0','0','0','6'],
+  ['#e30613','NW','N.Williams','DEF','90','green','6','0','0','0','2'],
+  ['#6cabdd','Rú','Rúben','DEF','90','green','6','0','0','0','2'],
+  ['#003399','Nd','Ndiaye','MID','90','green','12',['1','g1'],['1','b1'],'0','9'],
+  ['#e30613','GW','Gibbs-White','MID','90','green','3','0','0','0','2'],
+  ['#da020e','Cu','Cunha','MID','79','amber','3','0','0','0','2'],
+  ['#6cabdd','Fo','Foden','MID','81','amber','6','0','0','0','1'],
+  ['#eb172b','Em','Emersonn','FWD','65','amber','3',['1','g1'],'0','3','9'],
+];
+function cell(v){ return Array.isArray(v)?`<span class="ln-c ${v[1]}">${v[0]}</span>`:`<span class="ln-c">${v}</span>`; }
+function starterRow(r){ const [c,ab,n,pos,min,kind,dc,g,a,b,pts]=r;
+  return `<div class="ln-row"><span class="ln-badge" style="background:${c}">${ab}</span><span class="ln-name">${n}</span><span class="ln-pos">${pos}</span><span class="ln-min min-${kind}">${min}</span>${cell(dc)}${cell(g)}${cell(a)}${cell(b)}<span class="ln-pts">${pts}</span></div>`; }
+function lineup(){
+  return `<div class="lfc-pane"><div class="ln-hd"><span class="ln-hd__team">Mordor SFG</span>${HEAD_COLS}</div>`
+    + STARTERS.map(starterRow).join('') + `</div>`;
+}
+
+function build(el){
+  const v = el.dataset.variant;
+  el.innerHTML = `
+    <div class="sbar"><span>07:53</span><span class="sbar__r">••• 5G ▮</span></div>
+    <div class="lfc-card">${header(v)}${lineup()}</div>`;
+}
+document.querySelectorAll('.phone__screen').forEach(build);
+</script>
+</body>
+</html>
