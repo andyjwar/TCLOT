@@ -376,8 +376,8 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* Compact mobile scorehead: score → badge → name → sub; selection underline
-   sits on the column foot (shared baseline with tabs), not under the name. */
+/* Compact mobile scorehead: badge → score → name → sub (ordering B, large).
+   Selection underline sits on the column foot. */
 .lfc-card--compact .lfc-card__top {
   padding-bottom: 0;
 }
@@ -385,14 +385,14 @@
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 6px;
-  padding: 2px 12px 0;
+  padding: 4px 12px 0;
   align-items: end;
 }
 .lfc-cside {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 3px;
   border: 0;
   border-bottom: 2px solid transparent;
   background: none;
@@ -401,7 +401,7 @@
   cursor: pointer;
   min-width: 0;
   width: 100%;
-  padding: 0 0 4px;
+  padding: 0 0 6px;
   margin-bottom: -1px;
   -webkit-tap-highlight-color: transparent;
   transition: border-color 0.15s ease;
@@ -409,32 +409,32 @@
 .lfc-cside.is-sel {
   border-bottom-color: #fff;
 }
-.lfc-cside__score {
-  font-size: 30px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1;
-}
 .lfc-cside__badge {
   display: inline-flex;
   border-radius: 50%;
   line-height: 0;
 }
-.lfc-cside__badge .team-avatar-frame--sm {
-  width: 28px;
-  height: 28px;
+.lfc-cside__badge .team-avatar-frame--lg {
+  width: 54px;
+  height: 54px;
 }
 .lfc-cside.is-sel .lfc-cside__badge {
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.45);
+}
+.lfc-cside__score {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 0.95;
 }
 .lfc-cside__name {
-  font-size: 10.5px;
+  font-size: 12px;
   font-weight: 700;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 2px;
+  padding: 0 4px;
   color: rgba(255, 255, 255, 0.78);
   transition: color 0.15s ease;
 }
@@ -442,19 +442,21 @@
   color: #fff;
 }
 .lfc-cside__sub {
-  font-size: 8.5px;
+  font-size: 9px;
   color: rgba(255, 255, 255, 0.82);
-  min-height: 10px;
+  min-height: 11px;
   line-height: 1.1;
 }
-.lfc-cside__sub--live {
+/* "N to play" stays gold on both sides, selected or not. */
+.lfc-cside__sub--toplay,
+.lfc-cside:not(.is-sel) .lfc-cside__sub--toplay {
   color: #ffd27a;
   font-weight: 800;
 }
 .lfc-cmid {
   text-align: center;
   min-width: 48px;
-  padding-bottom: 22px;
+  padding-bottom: 28px;
 }
 .lfc-cmid__main {
   display: block;

@@ -144,11 +144,13 @@ export function LiveFixtureCard({
     );
   };
 
-  /** Compact mobile scorehead: score → badge → name → sub; underline at column foot. */
+  /** Compact mobile scorehead: badge → score → name → sub (ordering B). */
   const compactTeamButton = (which) => {
     const isHome = which === 'home';
     const sel = isHome ? selHome : selAway;
     const sub = isHome ? homeSub : awaySub;
+    const remaining = isHome ? homeRemaining : awayRemaining;
+    const toPlay = remaining != null && remaining > 0;
     return (
       <button
         type="button"
@@ -160,22 +162,22 @@ export function LiveFixtureCard({
         aria-pressed={sel}
         aria-label={`Show ${isHome ? homeName : awayName} lineup`}
       >
-        <span className="lfc-cside__score tabular">
-          {(isHome ? homeLive : awayLive) ?? '—'}
-        </span>
         <span className="lfc-cside__badge">
           <TeamAvatar
             entryId={isHome ? homeId : awayId}
             name={isHome ? homeName : awayName}
-            size="sm"
+            size="lg"
             logoMap={ctx.teamLogoMap}
             kitIndexByEntry={ctx.kitIndexByEntry}
           />
         </span>
+        <span className="lfc-cside__score tabular">
+          {(isHome ? homeLive : awayLive) ?? '—'}
+        </span>
         <span className="lfc-cside__name">{isHome ? homeName : awayName}</span>
         <span
           className={
-            'lfc-cside__sub' + (sub.live ? ' lfc-cside__sub--live' : '')
+            'lfc-cside__sub' + (toPlay ? ' lfc-cside__sub--toplay' : '')
           }
         >
           {sub.text}
