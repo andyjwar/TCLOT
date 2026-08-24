@@ -323,6 +323,7 @@ function FixtureStrip({
                   logoMap={teamLogoMap}
                   kitIndexByEntry={kitIndexByEntry}
                 />
+                <span className="lfxp-mini__name">{fx.homeName}</span>
                 <span className="lfxp-mini__score tabular">
                   {fx.homeLive ?? '—'}
                 </span>
@@ -335,6 +336,7 @@ function FixtureStrip({
                   logoMap={teamLogoMap}
                   kitIndexByEntry={kitIndexByEntry}
                 />
+                <span className="lfxp-mini__name">{fx.awayName}</span>
                 <span className="lfxp-mini__score tabular">
                   {fx.awayLive ?? '—'}
                 </span>

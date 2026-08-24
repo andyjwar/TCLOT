@@ -1194,7 +1194,7 @@
     display: flex;
     flex-direction: column;
     gap: 5px;
-    min-width: 96px;
+    width: 168px;
     padding: 7px 9px 6px;
     border: 1px solid var(--fm-border);
     border-radius: 12px;
@@ -1223,14 +1223,26 @@
   .lfxp-mini__row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+    gap: 7px;
   }
   .lfxp-mini__row .team-avatar-frame--sm {
     width: 18px;
     height: 18px;
+    flex: 0 0 auto;
+  }
+  .lfxp-mini__name {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .lfxp-mini__score {
+    flex: 0 0 auto;
+    margin-left: auto;
     font-size: 13px;
     font-weight: 800;
     line-height: 1;
