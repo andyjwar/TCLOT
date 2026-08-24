@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Scorehead sizing mockups</title>
+  <style>
+    :root {
+      --hdr: linear-gradient(160deg, #17402f 0%, #1f4a38 55%, #2a5c46 100%);
+      --gold: #ffd27a;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: #0b0b0b; font-family: 'Schibsted Grotesk', system-ui, sans-serif; }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 22px;
+      padding: 22px;
+      align-items: flex-start;
+    }
+    .option { width: 390px; }
+    .option__label {
+      color: #eaeaea;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0 0 8px;
+      letter-spacing: 0.02em;
+    }
+    .option__note { color: #8f8f8f; font-weight: 500; }
+    .phone {
+      width: 390px;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px #2a2a2a;
+      background: #10231b;
+    }
+    .hdr { background: var(--hdr); color: #fff; }
+
+    /* fixture chip strip */
+    .strip { display: flex; align-items: center; gap: 6px; padding: 10px 8px 4px; overflow: hidden; }
+    .strip__back { flex: none; color: #fff; font-size: 22px; padding: 0 4px; }
+    .chip {
+      flex: 0 0 auto; display: flex; align-items: center; gap: 5px;
+      padding: 3px 8px 3px 8px;
+      border: 1px solid rgba(255,255,255,0.18);
+      border-radius: 999px; background: rgba(255,255,255,0.10); color: #fff;
+    }
+    .chip__ab { font-size: 8.5px; font-weight: 800; color: rgba(255,255,255,0.85); }
+    .chip__sc { font-size: 10.5px; font-weight: 800; letter-spacing: -0.2px; }
+    .chip__live { width: 4px; height: 4px; border-radius: 50%; background: var(--gold); }
+
+    /* scorehead */
+    .sh { display: grid; grid-template-columns: 1fr auto 1fr; gap: 6px; padding: 6px 12px 0; align-items: end; }
+    .side {
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+      border-bottom: 2px solid transparent; padding: 0 0 8px; margin-bottom: -1px; color: #fff;
+    }
+    .side.sel { border-bottom-color: #fff; }
+    .badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 50%; color: #fff; font-weight: 800; overflow: hidden;
+    }
+    .badge img { width: 100%; height: 100%; object-fit: cover; }
+    .side.sel .badge { box-shadow: 0 0 0 2px rgba(255,255,255,0.5); }
+    .name { font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.8); white-space: nowrap; }
+    .side.sel .name { color: #fff; }
+    .sub { font-size: 9px; min-height: 11px; color: rgba(255,255,255,0.82); }
+    .sub.live { color: var(--gold); font-weight: 800; }
+    .mid { text-align: center; min-width: 48px; }
+    .mid__main { display: block; font-size: 11px; font-weight: 800; color: var(--gold); }
+    .mid__sub { font-size: 9px; font-weight: 600; color: rgba(255,255,255,0.75); }
+
+    /* tabs */
+    .tabs { display: flex; padding: 0 8px; }
+    .tab { position: relative; flex: 1 1 auto; text-align: center; color: rgba(255,255,255,0.78);
+      font-size: 13px; font-weight: 700; padding: 8px 4px 10px; }
+    .tab.act { color: #fff; }
+    .tab.act::after { content:''; position:absolute; left:4px; right:4px; bottom:0; height:2px; background:#fff; border-radius:1px; }
+    .body { height: 60px; background: #f3efe2; }
+
+    /* score sizing knobs per variant via CSS vars */
+    .score { font-weight: 800; letter-spacing: -1.5px; line-height: 0.95; }
+  </style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+  <script>
+    const CRESTS = { mor: null, atb: null };
+    // Variant definitions: order = ['score','badge'] or ['badge','score']
+    const variants = [
+      { id:'a-md', label:"A · Score then Badge — medium", note:"score 48 / badge 46", order:['score','badge'], score:48, badge:46 },
+      { id:'a-lg', label:"A · Score then Badge — large", note:"score 56 / badge 54", order:['score','badge'], score:56, badge:54 },
+      { id:'a-xl', label:"A · Score then Badge — x-large", note:"score 64 / badge 60", order:['score','badge'], score:64, badge:60 },
+      { id:'b-md', label:"B · Badge then Score — medium", note:"badge 46 / score 48", order:['badge','score'], score:48, badge:46 },
+      { id:'b-lg', label:"B · Badge then Score — large", note:"badge 54 / score 56", order:['badge','score'], score:56, badge:54 },
+      { id:'b-xl', label:"B · Badge then Score — x-large", note:"badge 60 / score 64", order:['badge','score'], score:64, badge:60 },
+    ];
+
+    function crest(kind, size, initials, grad) {
+      const url = CRESTS[kind];
+      const style = `width:${size}px;height:${size}px;font-size:${Math.round(size*0.34)}px;`;
+      if (url) return `<span class="badge" style="${style}"><img src="${url}" alt=""/></span>`;
+      return `<span class="badge" style="${style}background:${grad};">${initials}</span>`;
+    }
+
+    function sideHTML(v, opts) {
+      const parts = v.order.map((p) => {
+        if (p === 'score') return `<span class="score" style="font-size:${v.score}px;">${opts.score}</span>`;
+        return crest(opts.kind, v.badge, opts.initials, opts.grad);
+      });
+      return `
+        <div class="side ${opts.sel ? 'sel' : ''}">
+          ${parts.join('')}
+          <span class="name">${opts.name}</span>
+          <span class="sub ${opts.live ? 'live' : ''}">${opts.subtext}</span>
+        </div>`;
+    }
+
+    function phoneHTML(v) {
+      return `
+      <div class="phone">
+        <div class="hdr">
+          <div class="strip">
+            <span class="strip__back">&lsaquo;</span>
+            <span class="chip"><span class="chip__ab">SEO</span><span class="chip__sc">39–31</span><span class="chip__ab">HAC</span><span class="chip__live"></span></span>
+            <span class="chip"><span class="chip__ab">BRA</span><span class="chip__sc">38–55</span><span class="chip__ab">ROK</span></span>
+            <span class="chip"><span class="chip__ab">TOR</span><span class="chip__sc">37–33</span><span class="chip__ab">SUF</span><span class="chip__live"></span></span>
+          </div>
+          <div class="sh">
+            ${sideHTML(v, {score:40, kind:'mor', initials:'MS', grad:'linear-gradient(145deg,#5c2d91,#7b3fb8)', name:'Mordor SFG', subtext:'1 to play', live:true, sel:true})}
+            <div class="mid"><span class="mid__main">● LIVE</span><span class="mid__sub">Game Week 1</span></div>
+            ${sideHTML(v, {score:23, kind:'atb', initials:'AB', grad:'linear-gradient(145deg,#0d4d8c,#1a6bb5)', name:'Atlético Bilbo', subtext:'2 to play', live:false, sel:false})}
+          </div>
+          <div class="tabs">
+            <span class="tab act">Match</span><span class="tab">Lineups</span><span class="tab">Stats</span><span class="tab">Odds</span><span class="tab">Table</span>
+          </div>
+        </div>
+        <div class="body"></div>
+      </div>`;
+    }
+
+    document.getElementById('grid').innerHTML = variants.map((v) => `
+      <div class="option" data-shot="${v.id}">
+        <p class="option__label">${v.label} <span class="option__note">(${v.note})</span></p>
+        ${phoneHTML(v)}
+      </div>`).join('');
+  </script>
+</body>
+</html>
