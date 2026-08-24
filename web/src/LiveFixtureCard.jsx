@@ -144,7 +144,7 @@ export function LiveFixtureCard({
     );
   };
 
-  /** Compact mobile scorehead: badge → score → name → sub (ordering B). */
+  /** Compact mobile scorehead: score → badge → name → sub (ordering A). */
   const compactTeamButton = (which) => {
     const isHome = which === 'home';
     const sel = isHome ? selHome : selAway;
@@ -162,6 +162,9 @@ export function LiveFixtureCard({
         aria-pressed={sel}
         aria-label={`Show ${isHome ? homeName : awayName} lineup`}
       >
+        <span className="lfc-cside__score tabular">
+          {(isHome ? homeLive : awayLive) ?? '—'}
+        </span>
         <span className="lfc-cside__badge">
           <TeamAvatar
             entryId={isHome ? homeId : awayId}
@@ -170,9 +173,6 @@ export function LiveFixtureCard({
             logoMap={ctx.teamLogoMap}
             kitIndexByEntry={ctx.kitIndexByEntry}
           />
-        </span>
-        <span className="lfc-cside__score tabular">
-          {(isHome ? homeLive : awayLive) ?? '—'}
         </span>
         <span className="lfc-cside__name">{isHome ? homeName : awayName}</span>
         <span

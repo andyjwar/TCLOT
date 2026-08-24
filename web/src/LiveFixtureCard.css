@@ -376,7 +376,7 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* Compact mobile scorehead: badge → score → name → sub (ordering B, large).
+/* Compact mobile scorehead: score → badge → name → sub (ordering A, large).
    Selection underline sits on the column foot. */
 .lfc-card--compact .lfc-card__top {
   padding-bottom: 0;
