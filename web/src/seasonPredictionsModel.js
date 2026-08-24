@@ -230,6 +230,48 @@ export function streakAsOf(matches, entryId, throughGw) {
 }
 
 /**
+ * Season head-to-head series between two entries, counting every finished
+ * fixture between them with event <= throughGw. Oriented to `entryA` (so
+ * `aWins` is entryA's wins). Returns null when they've never met yet.
+ */
+export function h2hSeriesAsOf(matches, entryA, entryB, throughGw) {
+  const a = Number(entryA)
+  const b = Number(entryB)
+  let aWins = 0
+  let bWins = 0
+  let draws = 0
+  let last = null
+  const meetings = []
+  for (const m of matches) {
+    if (!m.finished || Number(m.event) > throughGw) continue
+    const e1 = Number(m.league_entry_1)
+    const e2 = Number(m.league_entry_2)
+    if (!((e1 === a && e2 === b) || (e1 === b && e2 === a))) continue
+    const p1 = Number(m.league_entry_1_points) || 0
+    const p2 = Number(m.league_entry_2_points) || 0
+    const aPts = e1 === a ? p1 : p2
+    const bPts = e1 === a ? p2 : p1
+    let r
+    if (aPts > bPts) {
+      aWins++
+      r = 'A'
+    } else if (bPts > aPts) {
+      bWins++
+      r = 'B'
+    } else {
+      draws++
+      r = 'D'
+    }
+    meetings.push({ ev: Number(m.event), r })
+  }
+  const games = aWins + bWins + draws
+  if (games === 0) return null
+  meetings.sort((x, y) => x.ev - y.ev)
+  last = meetings[meetings.length - 1].r
+  return { games, aWins, bWins, draws, lastResult: last }
+}
+
+/**
  * Per-team + per-match facts for one finished gameweek, ready for the recap
  * text generator. Returns null when the GW has no finished matches.
  */
@@ -425,9 +467,11 @@ export function sidePlayerFacts(xi) {
     if (!flop || p.xp > flop.xp) flop = p
   }
   return {
-    top: { name: top.name, pts: topPts },
+    top: { id: top.id ?? null, name: top.name, pts: topPts },
     share: total > 0 ? +(topPts / total).toFixed(3) : 0,
-    haul: isHaul ? { name: top.name, pts: topPts } : null,
-    flop: flop ? { name: flop.name, pts: Number(flop.pts) || 0, xp: flop.xp } : null,
+    haul: isHaul ? { id: top.id ?? null, name: top.name, pts: topPts } : null,
+    flop: flop
+      ? { id: flop.id ?? null, name: flop.name, pts: Number(flop.pts) || 0, xp: flop.xp }
+      : null,
   }
 }

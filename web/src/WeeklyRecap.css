@@ -143,13 +143,27 @@
 .weekly-recap-matchup__side--won .weekly-recap-matchup__side-name {
   font-weight: 800;
 }
+.weekly-recap-matchup__side-label {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+.weekly-recap-matchup__side--home .weekly-recap-matchup__side-label {
+  align-items: flex-end;
+}
 .weekly-recap-matchup__side-name {
   font-size: 13.5px;
   font-weight: 600;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.25;
+  /* Show the full team name — wrap rather than truncate. */
+  overflow-wrap: anywhere;
+}
+.weekly-recap-matchup__side-mgr {
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--text-dim, #8b93a7);
+  line-height: 1.2;
 }
 .weekly-recap-matchup__score {
   font-size: 19px;
@@ -192,7 +206,8 @@
 .weekly-recap-matchup__team-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   font-size: 12px;
   color: var(--text-dim, #8b93a7);
 }
@@ -200,6 +215,29 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+}
+.weekly-recap-matchup__team-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1 1 96px;
+  gap: 1px;
+}
+.weekly-recap-matchup__team-name {
+  font-weight: 700;
+  color: var(--text, #e8ecf4);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.weekly-recap-matchup__team-mgr {
+  font-size: 10px;
+  line-height: 1.15;
+  color: var(--text-dim, #8b93a7);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .weekly-recap-matchup__team-rank {
   font-weight: 800;

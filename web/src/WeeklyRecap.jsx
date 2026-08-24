@@ -211,8 +211,11 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
             (homeWon ? ' weekly-recap-matchup__side--won' : '')
           }
         >
-          <span className="weekly-recap-matchup__side-name">
-            {standingsMobileTeamName(m.home.name)}
+          <span className="weekly-recap-matchup__side-label">
+            <span className="weekly-recap-matchup__side-name">{m.home.name}</span>
+            {m.home.manager ? (
+              <span className="weekly-recap-matchup__side-mgr">{m.home.manager}</span>
+            ) : null}
           </span>
           <TeamAvatar
             entryId={m.home.entryId}
@@ -238,8 +241,11 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
             logoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
           />
-          <span className="weekly-recap-matchup__side-name">
-            {standingsMobileTeamName(m.away.name)}
+          <span className="weekly-recap-matchup__side-label">
+            <span className="weekly-recap-matchup__side-name">{m.away.name}</span>
+            {m.away.manager ? (
+              <span className="weekly-recap-matchup__side-mgr">{m.away.manager}</span>
+            ) : null}
           </span>
         </span>
       </div>
@@ -287,6 +293,14 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
               logoMap={teamLogoMap}
               kitIndexByEntry={kitIndexByEntry}
             />
+            <span className="weekly-recap-matchup__team-id">
+              <span className="weekly-recap-matchup__team-name">
+                {standingsMobileTeamName(t.name)}
+              </span>
+              {t.manager ? (
+                <span className="weekly-recap-matchup__team-mgr">{t.manager}</span>
+              ) : null}
+            </span>
             <span className="weekly-recap-matchup__team-rank tabular">
               {ordinal(t.rank)}
               {t.prevRank != null && t.prevRank !== t.rank ? (
