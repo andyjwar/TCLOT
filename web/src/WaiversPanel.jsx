@@ -329,9 +329,6 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
                     pos={m.droppedPos}
                     dir="out"
                   />
-                  {m.transactionKind === 'f' ? (
-                    <span className="waivers-fa-chip">FA</span>
-                  ) : null}
                 </div>
               </div>
             ) : null}
@@ -411,9 +408,6 @@ function WeeklyWaiversTiles({ groups, teamLogoMap, kitIndexByEntry }) {
                       pos={m.droppedPos}
                       dir="out"
                     />
-                    {m.transactionKind === 'f' ? (
-                      <span className="waivers-fa-chip">FA</span>
-                    ) : null}
                   </div>
                 ))}
               </div>

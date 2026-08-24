@@ -420,31 +420,12 @@
   border-radius: var(--r-sm);
   background: var(--surface-2);
 }
-/* Free-agency rows extend the grid with a trailing `auto` column so
- * the coloured FA pill sits inline on the same row as the two player
- * cells (was previously absolutely positioned and floated above the
- * row, which looked detached on narrow viewports). */
-.waivers-swap:has(.waivers-fa-chip) {
-  grid-template-columns: 1fr 1fr auto;
-}
 /* Dense 2-col swap inside mobile tiles: tighten the player cells so real
  * (longer) player names keep more room before truncating, and drop the
  * name down a size step so two players + arrows + position letters
  * comfortably co-exist on one row at 360px viewports. */
 .waivers-swap .waivers-player { gap: var(--space-1); }
 .waivers-swap .waivers-player__name { font-size: var(--text-sm); }
-.waivers-fa-chip {
-  justify-self: end;
-  align-self: center;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--brand);
-  background: var(--brand-tint);
-  border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent);
-  border-radius: 999px;
-  padding: 1px 6px;
-}
 
 /* ── Section 3 · first-picks table (fixed-height scroller) ── */
 .waivers-first { border: 1px solid var(--border); border-radius: var(--r-md); overflow: hidden; }
