@@ -1213,9 +1213,9 @@ export function LiveScores({
            two-column page (Match split | Stats + H2H + Odds) with a back
            button — natural document scroll, no overlays. */
         <LiveFixtureDesktopPage
-          fixture={
-            cardFixtures[Math.min(cardDeckIndex, cardFixtures.length - 1)]
-          }
+          fixtures={cardFixtures}
+          activeIndex={Math.min(cardDeckIndex, cardFixtures.length - 1)}
+          onSelectFixture={setCardDeckIndex}
           ctx={cardDeckCtx}
           onBack={closeFixtureCard}
         />

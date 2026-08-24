@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { LiveFixtureMatchSplit } from './LiveFixtureMatchSplit.jsx';
 import { LiveExpandedFixture } from './LiveExpandedFixture.jsx';
@@ -29,9 +29,34 @@ import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
  *
  * Scrolls as a normal document; Back (button or Esc) returns to the
  * fixtures list. Phones keep the swipeable card deck.
+ *
+ * A slim strip of mini fixture cards sits along the top so the manager can
+ * click straight through to another game (score + live state at a glance)
+ * without bouncing back to the full scores list. The currently open fixture
+ * is highlighted; the active tab (Match / Lineups / Odds …) is preserved as
+ * you flip between fixtures.
+ *
+ * @param {Object} props
+ * @param {Object[]} props.fixtures     All card fixtures for the gameweek.
+ * @param {number}  props.activeIndex   Index of the open fixture in `fixtures`.
+ * @param {(index: number) => void} props.onSelectFixture  Switch open fixture.
+ * @param {Object}  props.ctx           Shared live context (teams, logos, …).
+ * @param {() => void} props.onBack     Return to the scores list.
  */
-export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
+export function LiveFixtureDesktopPage({
+  fixtures,
+  activeIndex,
+  onSelectFixture,
+  ctx,
+  onBack,
+}) {
   const [tab, setTab] = useState('match');
+
+  const safeIndex = Math.min(
+    Math.max(Number(activeIndex) || 0, 0),
+    Math.max(fixtures.length - 1, 0),
+  );
+  const fixture = fixtures[safeIndex];
 
   // Esc backs out, matching the card deck's dismissal affordance.
   useEffect(() => {
@@ -110,11 +135,23 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
   return (
     <section className="tile tile--compact lfx-page" aria-label={`${homeName} vs ${awayName}`}>
       <div className="lfx-page__topbar">
-        <button type="button" className="lfxp-back" onClick={onBack}>
-          <span aria-hidden="true">‹</span> All fixtures
+        <button
+          type="button"
+          className="lfxp-back lfxp-back--ghost"
+          onClick={onBack}
+        >
+          <span aria-hidden="true">‹</span> All Scores
         </button>
         <span className="lfxp-comp">{comp}</span>
       </div>
+      <FixtureStrip
+        fixtures={fixtures}
+        activeIndex={safeIndex}
+        gwFinished={ctx.gwFinished}
+        teamLogoMap={ctx.teamLogoMap}
+        kitIndexByEntry={ctx.kitIndexByEntry}
+        onSelectFixture={onSelectFixture}
+      />
       {/* Hero + tab strip share one gradient band so the pills sit on the
           same dark surface as on the phone card. */}
       <div className="lfxp-head">
@@ -226,5 +263,91 @@ export function LiveFixtureDesktopPage({ fixture, ctx, onBack }) {
         </div>
       ) : null}
     </section>
+  );
+}
+
+/**
+ * Horizontal strip of mini fixture cards along the top of the fixture page.
+ * Each card shows both crests with their live totals and a compact state
+ * badge (LIVE / FT / —). Clicking a card opens that fixture in place; the
+ * active card is highlighted and auto-scrolled into view.
+ */
+function FixtureStrip({
+  fixtures,
+  activeIndex,
+  gwFinished,
+  teamLogoMap,
+  kitIndexByEntry,
+  onSelectFixture,
+}) {
+  const activeRef = useRef(null);
+
+  useEffect(() => {
+    activeRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      inline: 'center',
+      block: 'nearest',
+    });
+  }, [activeIndex]);
+
+  if (!Array.isArray(fixtures) || fixtures.length <= 1) return null;
+
+  return (
+    <div className="lfxp-strip" role="tablist" aria-label="Gameweek fixtures">
+      {fixtures.map((fx, i) => {
+        const toPlay =
+          (Number(fx.homeRemaining) || 0) + (Number(fx.awayRemaining) || 0);
+        const live = toPlay > 0;
+        const finished =
+          !live &&
+          (gwFinished === true ||
+            (fx.homeRemaining === 0 && fx.awayRemaining === 0));
+        const isActive = i === activeIndex;
+        return (
+          <button
+            key={fx.key ?? `${fx.homeId}-${fx.awayId}-${i}`}
+            type="button"
+            role="tab"
+            aria-selected={isActive}
+            ref={isActive ? activeRef : null}
+            className={'lfxp-strip__card' + (isActive ? ' is-active' : '')}
+            onClick={() => onSelectFixture(i)}
+            title={`${fx.homeName} vs ${fx.awayName}`}
+          >
+            <span className="lfxp-mini">
+              <span className="lfxp-mini__row">
+                <TeamAvatar
+                  entryId={fx.homeId}
+                  name={fx.homeName}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span className="lfxp-mini__score tabular">
+                  {fx.homeLive ?? '—'}
+                </span>
+              </span>
+              <span className="lfxp-mini__row">
+                <TeamAvatar
+                  entryId={fx.awayId}
+                  name={fx.awayName}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span className="lfxp-mini__score tabular">
+                  {fx.awayLive ?? '—'}
+                </span>
+              </span>
+            </span>
+            <span
+              className={'lfxp-mini__state' + (live ? ' is-live' : '')}
+            >
+              {live ? '● LIVE' : finished ? 'FT' : '—'}
+            </span>
+          </button>
+        );
+      })}
+    </div>
   );
 }
