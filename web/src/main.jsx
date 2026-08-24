@@ -9,6 +9,7 @@ import { RebrandGallery } from './RebrandGallery.jsx'
 import { SeedLabelMockup } from './SeedLabelMockup.jsx'
 import { TradePillsMockup } from './TradePillsMockup.jsx'
 import { ScorecardRemainingMockup } from './ScorecardRemainingMockup.jsx'
+import { IdeasMockup } from './IdeasMockup.jsx'
 
 // Local-only design preview (no production impact).
 // Visit `?mockup=1` to render the design system mockup instead of the live app.
@@ -30,6 +31,9 @@ const isTradePillsMockup =
 const isScorecardMockup =
   typeof window !== 'undefined' &&
   new URLSearchParams(window.location.search).get('scorecard') === '1'
+const isIdeasMockup =
+  typeof window !== 'undefined' &&
+  new URLSearchParams(window.location.search).get('ideas') === '1'
 
 // "Scorebook" theme (PaintPreview.css) — token-level coat of paint on the
 // real app. Now the DEFAULT for everyone. `?paint=0` is a kill switch that
@@ -66,6 +70,8 @@ createRoot(document.getElementById('root')).render(
   <StrictMode>
     {isRebrandGallery
       ? <RebrandGallery />
+      : isIdeasMockup
+        ? <IdeasMockup />
       : isScorecardMockup
         ? <ScorecardRemainingMockup />
         : isTradePillsMockup
