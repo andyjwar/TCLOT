@@ -124,21 +124,31 @@
   opacity: 0.6;
 }
 
-/* Shared chrome above the fixture deck: back + B score chips (variant 5). */
+/* Shared chrome above the fixture deck (variant 4): back chevron + inline
+   D-style fixture chips share one row, then the compact grid scorehead. */
 .lfc-sheet-head {
   flex: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
   background: var(--lfc-header);
   color: #fff;
+  padding: calc(env(safe-area-inset-top, 8px) + 2px) 8px 0 4px;
 }
-.lfc-sheet-head .lfc-topbar {
-  padding-bottom: 0;
+.lfc-sheet-head .lfc-back {
+  flex: none;
+  padding: 2px 6px 4px;
+  font-size: 24px;
 }
 
 .lfc-fixstrip {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  gap: 5px;
+  flex: 1 1 auto;
+  min-width: 0;
   overflow-x: auto;
-  padding: 0 12px 8px;
+  padding: 1px 0 3px;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-x;
@@ -150,14 +160,12 @@
   appearance: none;
   flex: 0 0 auto;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 3px;
-  min-width: 72px;
-  padding: 6px 10px 5px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.08);
+  gap: 5px;
+  padding: 3px 8px 3px 4px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
   color: #fff;
   cursor: pointer;
   font: inherit;
@@ -166,33 +174,34 @@
     border-color 0.15s ease,
     background 0.15s ease;
 }
-.lfc-fixstrip__chip.is-active {
-  border-color: rgba(255, 255, 255, 0.45);
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12);
+.lfc-fixstrip__chip:active {
+  background: rgba(255, 255, 255, 0.24);
 }
 .lfc-fixstrip__crests {
   display: inline-flex;
   align-items: center;
 }
 .lfc-fixstrip__crests .team-avatar-frame--sm {
-  width: 22px;
-  height: 22px;
+  width: 17px;
+  height: 17px;
+  border-width: 1px;
 }
 .lfc-fixstrip__crests .team-avatar-frame + .team-avatar-frame {
-  margin-left: -8px;
+  margin-left: -6px;
 }
 .lfc-fixstrip__score {
-  font-size: 12px;
+  font-size: 10.5px;
   font-weight: 800;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.2px;
   line-height: 1.1;
+  white-space: nowrap;
 }
 .lfc-fixstrip__live {
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   border-radius: 50%;
   background: #ffd27a;
+  flex: none;
 }
 
 .lfc-viewport {
@@ -372,44 +381,53 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* Compact header (variant 5): score above badge, slim bar, underline tabs. */
+/* Compact header (variant 4): badge above score, compact 3-column grid,
+   underline tabs. Score/badge order is flipped from the tall header via
+   flex `order` so the shared markup stays untouched. */
 .lfc-card--compact .lfc-card__top {
-  padding-bottom: 0;
+  padding-bottom: 5px;
 }
 .lfc-scorehead--compact {
-  padding: 2px 12px 0;
-  gap: 4px;
-  align-items: end;
+  padding: 4px 12px 0;
+  gap: 6px;
+  align-items: center;
 }
 .lfc-scorehead--compact .lfc-team {
-  gap: 3px;
+  gap: 2px;
+}
+.lfc-scorehead--compact .lfc-team__badge {
+  order: -1;
+  margin-top: 0;
+}
+.lfc-scorehead--compact .lfc-team__badge .team-avatar-frame--sm {
+  width: 28px;
+  height: 28px;
 }
 .lfc-scorehead--compact .lfc-team__score {
-  font-size: 30px;
+  font-size: 28px;
   letter-spacing: -1px;
   line-height: 1;
 }
-.lfc-scorehead--compact .lfc-team__badge .team-avatar-frame--sm {
-  width: 26px;
-  height: 26px;
-}
 .lfc-scorehead--compact .lfc-team__name {
   font-size: 11px;
-  padding: 1px 8px;
+  padding: 1px 7px;
+}
+.lfc-scorehead--compact .lfc-team.is-sel .lfc-team__name {
+  padding: 1px 7px;
 }
 .lfc-scorehead--compact .lfc-team__sub {
-  font-size: 9px;
+  font-size: 8.5px;
   min-height: 10px;
 }
 .lfc-scorehead--compact .lfc-mid {
-  padding-top: 4px;
+  padding-top: 0;
   min-width: 48px;
 }
 .lfc-scorehead--compact .lfc-mid__main {
-  font-size: 11px;
+  font-size: 10px;
 }
 .lfc-scorehead--compact .lfc-mid__sub {
-  font-size: 9.5px;
+  font-size: 9px;
 }
 
 .lfc-tabs--line {

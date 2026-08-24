@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Mobile live fixture · compact header preview</title>
+  <link rel="stylesheet" href="/assets/index-GDwIjtxn.css" />
+  <style>
+    html, body { margin: 0; background: #0a0a0a; }
+    .preview-wrap {
+      max-width: 390px;
+      margin: 0 auto;
+      min-height: 100vh;
+      box-shadow: 0 0 0 1px #333;
+    }
+    .preview-note {
+      font: 12px/1.4 system-ui, sans-serif;
+      color: #888;
+      text-align: center;
+      padding: 10px 12px 0;
+    }
+    /* Demo crest colours (sample league teams) */
+    .demo-crest { display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:800;color:#fff;font-size:0.65rem; }
+    .demo-crest--mor { background: linear-gradient(145deg,#5c2d91,#7b3fb8); }
+    .demo-crest--atb { background: linear-gradient(145deg,#0d4d8c,#1a6bb5); }
+    .demo-crest--dal { background: linear-gradient(145deg,#1a6b3c,#2d9b5a); }
+    .demo-crest--ess { background: linear-gradient(145deg,#8b1a1a,#c42b2b); }
+    .lfc-card__scroll { min-height: 280px; }
+    .lfc-demo-body {
+      padding: 12px;
+      font: 11px/1.4 system-ui, sans-serif;
+      color: var(--fm-muted);
+    }
+  </style>
+</head>
+<body>
+  <p class="preview-note">Variant 4 · badge above score · D inline chips (current omitted) · underline tabs</p>
+  <div class="preview-wrap fotmob" data-theme="dark">
+    <div class="lfc-root is-open" style="position:relative;inset:auto;min-height:100vh;z-index:1;">
+      <div class="lfc-sheet is-open" style="position:relative;transform:none;max-height:none;height:100vh;box-shadow:none;">
+        <div class="lfc-sheet-head">
+          <button type="button" class="lfc-back" aria-label="Back"><span aria-hidden="true">‹</span></button>
+          <div class="lfc-fixstrip" role="tablist" aria-label="Switch fixture">
+            <button type="button" class="lfc-fixstrip__chip" role="tab" aria-selected="false">
+              <span class="lfc-fixstrip__crests">
+                <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--dal">DB</span>
+                <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--ess">ER</span>
+              </span>
+              <span class="lfc-fixstrip__score tabular">31–31</span>
+              <span class="lfc-fixstrip__live" aria-hidden="true"></span>
+            </button>
+            <button type="button" class="lfc-fixstrip__chip" role="tab" aria-selected="false">
+              <span class="lfc-fixstrip__crests">
+                <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--mor">MS</span>
+                <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--dal">DB</span>
+              </span>
+              <span class="lfc-fixstrip__score tabular">18–42</span>
+            </button>
+            <button type="button" class="lfc-fixstrip__chip" role="tab" aria-selected="false">
+              <span class="lfc-fixstrip__crests">
+                <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--ess">ER</span>
+                <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--atb">AB</span>
+              </span>
+              <span class="lfc-fixstrip__score tabular">27–35</span>
+              <span class="lfc-fixstrip__live" aria-hidden="true"></span>
+            </button>
+          </div>
+        </div>
+        <div class="lfc-viewport" style="flex:1;">
+          <div class="lfc-deck" style="transform:none;">
+            <div class="lfc-page">
+              <div class="lfc-card lfc-card--compact">
+                <div class="lfc-card__top">
+                  <div class="lfc-scorehead lfc-scorehead--compact" role="group">
+                    <button type="button" class="lfc-team is-sel">
+                      <span class="lfc-team__score tabular">40</span>
+                      <span class="lfc-team__badge">
+                        <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--mor">MS</span>
+                      </span>
+                      <span class="lfc-team__name">Mordor SFG</span>
+                      <span class="lfc-team__sub lfc-team__sub--live">1 to play</span>
+                    </button>
+                    <div class="lfc-mid">
+                      <span class="lfc-mid__main lfc-mid__main--live">● LIVE</span>
+                      <span class="lfc-mid__sub">GW1</span>
+                    </div>
+                    <button type="button" class="lfc-team">
+                      <span class="lfc-team__score tabular">23</span>
+                      <span class="lfc-team__badge">
+                        <span class="team-avatar-frame team-avatar-frame--sm demo-crest demo-crest--atb">AB</span>
+                      </span>
+                      <span class="lfc-team__name">Athens Blues</span>
+                      <span class="lfc-team__sub">2 to play</span>
+                    </button>
+                  </div>
+                  <div class="lfc-tabs lfc-tabs--line" role="tablist">
+                    <button type="button" class="lfc-tab is-active" role="tab">Match</button>
+                    <button type="button" class="lfc-tab" role="tab">Lineups</button>
+                    <button type="button" class="lfc-tab" role="tab">Stats</button>
+                    <button type="button" class="lfc-tab" role="tab">Odds</button>
+                    <button type="button" class="lfc-tab" role="tab">Table</button>
+                  </div>
+                </div>
+                <div class="lfc-card__scroll lfc-demo-body">
+                  Match tab content continues below — scrollable pane with player rows, stats, etc.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="lfc-back-bottom" aria-label="Back"><span aria-hidden="true">‹</span></button>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

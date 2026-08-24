@@ -330,16 +330,14 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
         aria-label="Live fixture"
       >
         <div className="lfc-sheet-head">
-          <div className="lfc-topbar">
-            <button
-              type="button"
-              className="lfc-back"
-              aria-label="Back to scores"
-              onClick={requestClose}
-            >
-              <span aria-hidden="true">‹</span>
-            </button>
-          </div>
+          <button
+            type="button"
+            className="lfc-back"
+            aria-label="Back to scores"
+            onClick={requestClose}
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
           {N > 1 ? (
             <LiveFixtureChipStrip
               fixtures={fixtures}

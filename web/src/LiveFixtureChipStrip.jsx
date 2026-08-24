@@ -1,10 +1,10 @@
-import { useEffect, useRef } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 
 /**
- * Mobile fixture switcher — overlapping crest pair + score chips (variant B).
- * Sits under the back chevron on the live fixture sheet; tapping a chip
- * pages the deck to that fixture.
+ * Mobile fixture switcher — variant D: small inline chips on the back-chevron
+ * row. Each chip is a crest pair + combined score, so it jumps straight to
+ * another game. The currently open fixture is omitted (it already fills the
+ * scorehead below), leaving just the other games to switch to.
  */
 export function LiveFixtureChipStrip({
   fixtures,
@@ -13,39 +13,33 @@ export function LiveFixtureChipStrip({
   teamLogoMap,
   kitIndexByEntry,
 }) {
-  const activeRef = useRef(null);
-
-  useEffect(() => {
-    activeRef.current?.scrollIntoView({
-      behavior: 'smooth',
-      inline: 'center',
-      block: 'nearest',
-    });
-  }, [activeIndex]);
-
   if (!Array.isArray(fixtures) || fixtures.length <= 1) return null;
+
+  const others = fixtures
+    .map((fx, i) => ({ fx, i }))
+    .filter(({ i }) => i !== activeIndex);
+
+  if (others.length === 0) return null;
 
   return (
     <div
       className="lfc-fixstrip"
       role="tablist"
-      aria-label="Gameweek fixtures"
+      aria-label="Switch fixture"
       onTouchStart={(e) => e.stopPropagation()}
       onMouseDown={(e) => e.stopPropagation()}
     >
-      {fixtures.map((fx, i) => {
+      {others.map(({ fx, i }) => {
         const toPlay =
           (Number(fx.homeRemaining) || 0) + (Number(fx.awayRemaining) || 0);
         const live = toPlay > 0;
-        const isActive = i === activeIndex;
         return (
           <button
             key={fx.key ?? `${fx.homeId}-${fx.awayId}-${i}`}
             type="button"
             role="tab"
-            aria-selected={isActive}
-            ref={isActive ? activeRef : null}
-            className={'lfc-fixstrip__chip' + (isActive ? ' is-active' : '')}
+            aria-selected="false"
+            className="lfc-fixstrip__chip"
             onClick={() => onSelectFixture(i)}
             title={`${fx.homeName} vs ${fx.awayName}`}
           >
