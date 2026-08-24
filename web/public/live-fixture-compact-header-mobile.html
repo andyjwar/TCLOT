@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Mobile live fixture · compact header mockups</title>
+<style>
+  :root {
+    --fm-bg:#f4f4f6; --fm-card:#fff; --fm-border:#ececec;
+    --fm-text:rgba(51,51,51,0.92); --fm-text-strong:#1a1a1a; --fm-muted:rgba(0,0,0,0.42);
+    --tclot-logo-purple:#795bfb;
+    --lfc-header:linear-gradient(165deg,#6246f0 0%,#7a5cfb 55%,#9370ff 100%);
+    --live:#ffd27a;
+    --pill-green-bg:#d7f0e0; --pill-green-tx:#1d7a4d; --pill-amber-bg:#fbeccf; --pill-amber-tx:#a9791a;
+  }
+  * { box-sizing:border-box; }
+  html,body { margin:0; background:#1f2028; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; color:var(--fm-text); }
+  .page { padding:28px 24px 60px; }
+  .page__title { font-size:24px; font-weight:800; color:#fff; margin:0 0 6px; }
+  .page__sub { font-size:13.5px; color:#b9bac6; margin:0 0 8px; max-width:1100px; line-height:1.55; }
+  .page__sub b { color:#e6e0ff; }
+  .page__ref { font-size:12px; color:#8b8c98; margin:0 0 24px; max-width:1100px; }
+  .grid { display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start; }
+  .band { width:100%; font-size:14px; font-weight:800; color:#fff; margin:8px 2px 12px; padding-top:12px; border-top:1px solid #33343f; }
+
+  .option { width:372px; }
+  .option__cap { margin:0 2px 10px; min-height:88px; }
+  .option__step { display:inline-block; font-size:12px; font-weight:800; color:#22232b; border-radius:999px; padding:2px 10px; margin-right:8px; background:#b7a7ff; }
+  .option__name { font-size:15px; font-weight:800; color:#fff; }
+  .option__tag { font-size:10px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:#9ff3b1; margin-left:6px; }
+  .option__desc { font-size:12.5px; color:#b9bac6; margin-top:6px; line-height:1.48; }
+  .option__desc b { color:#e6e0ff; }
+  .option__h { font-size:11px; font-weight:700; color:#7a7b88; margin-top:5px; }
+
+  .phone { width:372px; border-radius:38px; background:#000; padding:7px; box-shadow:0 18px 44px rgba(0,0,0,0.5); position:relative; }
+  .phone__h { position:absolute; top:-22px; right:12px; font-size:10px; font-weight:800; letter-spacing:0.04em; color:#7a7b88; text-transform:uppercase; }
+  .phone__screen { height:780px; border-radius:32px; overflow:hidden; background:#fff; display:flex; flex-direction:column; }
+  .sbar { display:flex; align-items:center; justify-content:space-between; padding:9px 22px 5px; background:#6a4ef4; color:#fff; font-size:12px; font-weight:700; flex:none; }
+  .sbar__r { font-size:11px; letter-spacing:1px; }
+
+  .lfc-card { display:flex; flex-direction:column; flex:1 1 auto; min-height:0; background:var(--fm-bg); }
+  .lfc-card__top { background:var(--lfc-header); color:#fff; flex:none; }
+  .crest { border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; color:#fff; flex:none; }
+
+  /* ---- fixture strips (B + D from prior mockup) ---- */
+  .fxB { display:flex; gap:7px; overflow-x:auto; padding:7px 12px 4px; scrollbar-width:none; }
+  .fxB::-webkit-scrollbar { display:none; }
+  .fxB__chip { flex:0 0 auto; display:flex; align-items:center; gap:6px; padding:4px 10px 4px 7px; border-radius:999px; background:rgba(255,255,255,0.10); border:1px solid rgba(255,255,255,0.16); }
+  .fxB__chip.is-active { background:#fff; border-color:#fff; }
+  .fxB__crests { display:flex; }
+  .fxB__crests .crest { width:18px; height:18px; font-size:6.5px; border:1.5px solid rgba(255,255,255,0.55); }
+  .fxB__crests .crest + .crest { margin-left:-6px; }
+  .fxB__score { font-size:11.5px; font-weight:800; color:#fff; white-space:nowrap; }
+  .fxB__chip.is-active .fxB__score { color:#4a2fd0; }
+  .fxB__live { width:5px; height:5px; border-radius:50%; background:var(--live); flex:none; }
+
+  .toprail { display:flex; align-items:center; gap:6px; padding:5px 8px 0 4px; }
+  .back { color:#fff; font-size:24px; font-weight:600; line-height:1; padding:2px 6px 4px; flex:none; }
+  .fxD { display:flex; gap:5px; overflow-x:auto; flex:1 1 auto; scrollbar-width:none; padding:1px 0 3px; }
+  .fxD::-webkit-scrollbar { display:none; }
+  .fxD__chip { flex:0 0 auto; display:flex; align-items:center; gap:5px; padding:3px 8px; border-radius:999px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.16); }
+  .fxD__chip.is-active { background:rgba(255,255,255,0.32); border-color:rgba(255,255,255,0.65); }
+  .fxD__ab { font-size:8.5px; font-weight:800; color:rgba(255,255,255,0.88); }
+  .fxD__score { font-size:10.5px; font-weight:800; color:#fff; white-space:nowrap; }
+  .fxD__live { width:4px; height:4px; border-radius:50%; background:var(--live); }
+
+  .gw-tag { flex:none; font-size:9px; font-weight:800; letter-spacing:0.05em; text-transform:uppercase; color:rgba(255,255,255,0.72); padding:4px 8px 0 0; white-space:nowrap; }
+
+  /* ---- REF: current production header ---- */
+  .ref-topbar { padding:5px 10px 0; }
+  .ref-back { color:#fff; font-size:26px; font-weight:600; line-height:1; padding:2px 8px 4px; }
+  .ref-scorehead { display:grid; grid-template-columns:1fr auto 1fr; gap:8px; padding:4px 16px 0; }
+  .ref-team { display:flex; flex-direction:column; align-items:center; gap:5px; }
+  .ref-team.is-sel .ref-name { background:rgba(255,255,255,0.16); border:1px solid rgba(255,255,255,0.22); }
+  .ref-score { font-size:44px; font-weight:800; letter-spacing:-2px; line-height:0.95; }
+  .ref-badge { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:11px; border:2px solid rgba(255,255,255,0.5); }
+  .ref-name { font-size:12px; font-weight:700; padding:2px 12px; border:1px solid transparent; border-radius:999px; text-align:center; }
+  .ref-sub { font-size:9.5px; color:rgba(255,255,255,0.82); min-height:12px; }
+  .ref-sub--live { color:var(--live); font-weight:800; }
+  .ref-mid { text-align:center; min-width:54px; padding-top:14px; }
+  .ref-mid__main { font-size:13px; font-weight:800; color:var(--live); }
+  .ref-mid__sub { font-size:10.5px; font-weight:600; color:rgba(255,255,255,0.82); }
+
+  /* ---- shared tab styles ---- */
+  .tabs-pill { display:flex; gap:6px; padding:6px 12px 5px; overflow-x:auto; scrollbar-width:none; }
+  .tabs-pill::-webkit-scrollbar { display:none; }
+  .tab-pill { font-size:13px; font-weight:700; color:rgba(255,255,255,0.78); padding:4px 11px; border-radius:999px; white-space:nowrap; border:1px solid transparent; }
+  .tab-pill.is-active { color:#fff; background:rgba(255,255,255,0.16); border-color:rgba(255,255,255,0.22); }
+
+  .tabs-line { display:flex; gap:0; padding:0 10px; border-bottom:1px solid rgba(255,255,255,0.14); }
+  .tab-line { flex:1 1 0; min-width:0; text-align:center; font-size:12px; font-weight:700; color:rgba(255,255,255,0.62); padding:8px 2px 7px; white-space:nowrap; border-bottom:2px solid transparent; margin-bottom:-1px; }
+  .tab-line.is-active { color:#fff; border-bottom-color:#fff; }
+
+  /* ---- 1 · B chips + horizontal score bar ---- */
+  .h1-bar { display:flex; align-items:center; gap:8px; padding:6px 14px 2px; }
+  .h1-side { flex:1 1 0; min-width:0; display:flex; align-items:center; gap:8px; }
+  .h1-side--away { flex-direction:row-reverse; text-align:right; }
+  .h1-side .crest { width:32px; height:32px; font-size:9px; border:2px solid rgba(255,255,255,0.45); }
+  .h1-meta { min-width:0; }
+  .h1-side--away .h1-meta { text-align:right; }
+  .h1-name { font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .h1-name.is-sel { display:inline-block; padding:1px 8px; border-radius:999px; background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.2); }
+  .h1-sub { font-size:9px; font-weight:700; color:var(--live); margin-top:1px; }
+  .h1-mid { flex:0 0 auto; text-align:center; }
+  .h1-score { font-size:34px; font-weight:900; letter-spacing:-1px; line-height:1; white-space:nowrap; }
+  .h1-live { font-size:9px; font-weight:800; color:var(--live); letter-spacing:0.04em; margin-top:2px; }
+
+  /* ---- 2 · D rail + one-line score ---- */
+  .h2-row { display:flex; align-items:center; justify-content:center; gap:10px; padding:4px 16px 0; }
+  .h2-score { font-size:38px; font-weight:900; letter-spacing:-2px; line-height:1; }
+  .h2-dash { font-size:22px; opacity:0.55; font-weight:700; }
+  .h2-names { display:flex; align-items:center; justify-content:space-between; gap:8px; padding:2px 16px 0; font-size:11px; font-weight:700; }
+  .h2-name { flex:1 1 0; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .h2-name--r { text-align:right; }
+  .h2-name.is-sel { color:#fff; }
+  .h2-subrow { display:flex; justify-content:space-between; padding:0 16px 2px; font-size:9px; font-weight:700; color:var(--live); }
+  .h2-center { text-align:center; font-size:9px; font-weight:800; color:rgba(255,255,255,0.75); letter-spacing:0.04em; text-transform:uppercase; }
+
+  /* ---- 3 · B chips + score-only hero (chips carry crests) ---- */
+  .h3-hero { text-align:center; padding:2px 16px 0; }
+  .h3-score { font-size:42px; font-weight:900; letter-spacing:-2px; line-height:1; }
+  .h3-vs { font-size:18px; opacity:0.5; font-weight:700; margin:0 6px; }
+  .h3-line { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:6px 10px; padding:4px 14px 0; font-size:11px; font-weight:700; }
+  .h3-team { display:inline-flex; align-items:center; gap:5px; max-width:46%; }
+  .h3-team.is-sel .h3-teamname { background:rgba(255,255,255,0.14); border:1px solid rgba(255,255,255,0.2); border-radius:999px; padding:1px 8px; }
+  .h3-teamname { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .h3-play { font-size:9px; font-weight:800; color:var(--live); }
+  .h3-status { font-size:10px; font-weight:800; color:var(--live); letter-spacing:0.04em; }
+
+  /* ---- 4 · D rail + compact two-column ---- */
+  .h4-grid { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:6px; padding:4px 12px 0; }
+  .h4-col { display:flex; flex-direction:column; align-items:center; gap:2px; min-width:0; }
+  .h4-col .crest { width:28px; height:28px; font-size:8px; border:1.5px solid rgba(255,255,255,0.45); }
+  .h4-score { font-size:28px; font-weight:900; letter-spacing:-1px; line-height:1; }
+  .h4-name { font-size:11px; font-weight:800; max-width:100%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .h4-name.is-sel { padding:1px 7px; border-radius:999px; background:rgba(255,255,255,0.14); }
+  .h4-sub { font-size:8.5px; font-weight:700; color:var(--live); }
+  .h4-mid { text-align:center; padding:0 4px; }
+  .h4-live { font-size:10px; font-weight:800; color:var(--live); }
+  .h4-gw { font-size:9px; font-weight:600; color:rgba(255,255,255,0.75); margin-top:1px; }
+
+  /* ---- 5 · B chips + underline tabs + slim bar ---- */
+  .h5-bar { display:flex; align-items:flex-end; justify-content:center; gap:12px; padding:4px 14px 0; }
+  .h5-block { text-align:center; min-width:0; flex:1 1 0; }
+  .h5-block .crest { width:26px; height:26px; font-size:7.5px; margin:0 auto 3px; border:1.5px solid rgba(255,255,255,0.4); }
+  .h5-score { font-size:30px; font-weight:900; letter-spacing:-1px; line-height:1; }
+  .h5-name { font-size:10.5px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+  .h5-name.is-sel { display:inline-block; padding:0 6px; border-radius:999px; background:rgba(255,255,255,0.12); }
+  .h5-sub { font-size:8.5px; font-weight:700; color:var(--live); }
+  .h5-mid { flex:0 0 auto; text-align:center; padding-bottom:14px; }
+  .h5-live { font-size:9px; font-weight:800; color:var(--live); }
+  .h5-gw { font-size:8.5px; font-weight:600; color:rgba(255,255,255,0.72); }
+
+  /* ---- 6 · D rail + contextual (minimal repeat) ---- */
+  .h6-focus { padding:3px 14px 0; text-align:center; }
+  .h6-title { font-size:13px; font-weight:800; letter-spacing:-0.01em; }
+  .h6-title span { opacity:0.55; font-weight:700; margin:0 4px; }
+  .h6-scoreline { display:flex; align-items:baseline; justify-content:center; gap:8px; margin-top:2px; }
+  .h6-big { font-size:36px; font-weight:900; letter-spacing:-2px; line-height:1; }
+  .h6-meta { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:1px; font-size:9px; font-weight:700; }
+  .h6-meta .live { color:var(--live); font-weight:800; }
+  .h6-meta .play { color:var(--live); }
+  .h6-sel { display:inline-block; margin-top:3px; font-size:10px; font-weight:700; padding:2px 10px; border-radius:999px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); }
+
+  /* ---- lineup pane (shared context) ---- */
+  .lfc-pane { flex:1 1 auto; min-height:0; background:var(--fm-card); overflow:hidden; }
+  .ln-hd { display:grid; grid-template-columns:20px 1fr 28px 30px 22px 18px 18px 18px 24px; gap:2px; align-items:center; padding:6px 12px 5px; background:#fff; }
+  .ln-hd__team { font-size:12px; font-weight:800; color:var(--tclot-logo-purple); grid-column:1/3; white-space:nowrap; }
+  .ln-hd__c { text-align:center; font-size:8px; font-weight:800; color:var(--fm-muted); }
+  .ln-row { display:grid; grid-template-columns:20px 1fr 28px 30px 22px 18px 18px 18px 24px; gap:2px; align-items:center; padding:4.6px 12px; border-top:1px solid var(--fm-border); font-size:11.5px; background:#fff; }
+  .ln-badge { width:17px; height:17px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:6.5px; font-weight:800; color:#fff; }
+  .ln-name { font-weight:700; color:var(--fm-text-strong); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ln-c { text-align:center; color:var(--fm-muted); font-weight:600; }
+  .ln-pos { text-align:center; font-size:8.5px; font-weight:800; color:var(--fm-muted); }
+  .ln-min { justify-self:center; font-weight:800; font-size:10px; padding:2px 4px; border-radius:6px; min-width:24px; text-align:center; }
+  .min-green { background:var(--pill-green-bg); color:var(--pill-green-tx); }
+  .min-amber { background:var(--pill-amber-bg); color:var(--pill-amber-tx); }
+  .ln-pts { text-align:center; font-weight:800; color:var(--fm-text-strong); }
+  .g1 { color:#1d8a55 !important; font-weight:800; } .b1 { color:#5b40d6 !important; font-weight:800; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1 class="page__title">Compact scorecard header · iOS</h1>
+  <p class="page__sub">Same information as today's header (scores, crests, team names, to-play, LIVE, Game Week, tabs), but tighter. Each variant pairs a <b>B score-chip</b> or <b>D inline</b> fixture strip with a reworked scorehead. The reference shows what's shipped now for height comparison.</p>
+  <p class="page__ref">Fixture chips use the four GW1 matchups; Mordor SFG vs Atlético Bilbo is open on Lineups. Header height labels are approximate px from the violet band top to the tab baseline.</p>
+
+  <div class="grid">
+    <div class="band">Reference · current header</div>
+
+    <div class="option" data-shot="ref">
+      <div class="option__cap"><div><span class="option__step">REF</span><span class="option__name">Production today</span></div>
+        <div class="option__desc">Back row, stacked scorehead (44px scores + 40px badges + name pills + to-play), glass tab pills. Looks great, ~<b>168px</b> before content.</div>
+        <div class="option__h">Header ≈ 168px</div></div>
+      <div class="phone"><span class="phone__h">~168px</span><div class="phone__screen" data-variant="ref"></div></div>
+    </div>
+
+    <div class="band">Compact treatments · fixture strip + slimmer scorehead</div>
+
+    <div class="option" data-shot="1">
+      <div class="option__cap"><div><span class="option__step">1</span><span class="option__name">Horizontal score bar</span><span class="option__tag">B chips</span></div>
+        <div class="option__desc"><b>One row:</b> crest + name + to-play flanking a centred <b>40–23</b> and LIVE. Drops the vertical stack per team; names truncate on the sides. Tabs stay as pills.</div>
+        <div class="option__h">Header ≈ 118px · saves ~50px</div></div>
+      <div class="phone"><span class="phone__h">~118px</span><div class="phone__screen" data-variant="1"></div></div>
+    </div>
+
+    <div class="option" data-shot="2">
+      <div class="option__cap"><div><span class="option__step">2</span><span class="option__name">D rail + score line</span><span class="option__tag">D inline</span></div>
+        <div class="option__desc">Fixture chips share the back row with a <b>GW1</b> tag. Scorehead is just a big <b>40 – 23</b> line, team names on the row below, to-play on a third micro-row. No crests in the hero (chips already show them).</div>
+        <div class="option__h">Header ≈ 108px · saves ~60px</div></div>
+      <div class="phone"><span class="phone__h">~108px</span><div class="phone__screen" data-variant="2"></div></div>
+    </div>
+
+    <div class="option" data-shot="3">
+      <div class="option__cap"><div><span class="option__step">3</span><span class="option__name">Score-only hero</span><span class="option__tag">B chips</span></div>
+        <div class="option__desc">Chips carry crest context, so the hero is mostly <b>40 – 23</b> + LIVE. Team names sit on one line beneath with inline to-play counts. Selected team gets the glass pill.</div>
+        <div class="option__h">Header ≈ 112px · saves ~56px</div></div>
+      <div class="phone"><span class="phone__h">~112px</span><div class="phone__screen" data-variant="3"></div></div>
+    </div>
+
+    <div class="option" data-shot="4">
+      <div class="option__cap"><div><span class="option__step">4</span><span class="option__name">Compact grid</span><span class="option__tag">D inline</span></div>
+        <div class="option__desc">D chips on the back row, then a <b>smaller 3-column grid</b>: 28px crests, 28px scores, truncated names, LIVE/GW in the middle. Closest to today's layout but ~35% shorter.</div>
+        <div class="option__h">Header ≈ 122px · saves ~46px</div></div>
+      <div class="phone"><span class="phone__h">~122px</span><div class="phone__screen" data-variant="4"></div></div>
+    </div>
+
+    <div class="option" data-shot="5">
+      <div class="option__cap"><div><span class="option__step">5</span><span class="option__name">Slim bar + underline tabs</span><span class="option__tag">B chips</span></div>
+        <div class="option__desc">B chips, then a slim score bar (26px crests, 30px scores). Tabs switch to <b>underline</b> style (no glass pills) to claw back another ~12px without losing wayfinding.</div>
+        <div class="option__h">Header ≈ 102px · saves ~66px</div></div>
+      <div class="phone"><span class="phone__h">~102px</span><div class="phone__screen" data-variant="5"></div></div>
+    </div>
+
+    <div class="option" data-shot="6">
+      <div class="option__cap"><div><span class="option__step">6</span><span class="option__name">Contextual minimal</span><span class="option__tag">D inline</span></div>
+        <div class="option__desc">Most aggressive: D chips + back, then a single <b>"Mordor SFG vs Atlético Bilbo"</b> title, big score, and one meta row (LIVE · 1/2 to play · GW1). Selected team shown as a small pill. Tabs as underline.</div>
+        <div class="option__h">Header ≈ 96px · saves ~72px</div></div>
+      <div class="phone"><span class="phone__h">~96px</span><div class="phone__screen" data-variant="6"></div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MOR = { ab:'MOR', color:'#2e2a3a', name:'Mordor SFG' };
+const ATB = { ab:'ATB', color:'#b8902e', name:'Atlético Bilbo' };
+const SEO = { ab:'SEO', color:'#c8102e', name:'Seoul Shire' };
+const HAC = { ab:'HAC', color:'#0053a0', name:'Hackney Rohirrim' };
+const BRA = { ab:'BAL', color:'#7a263a', name:'Brampton Balrogs' };
+const ROK = { ab:'ROK', color:'#12a15a', name:'Rokesly Regorasu' };
+const TOR = { ab:'GIM', color:'#6cabdd', name:'Toronto Gimli' };
+const SUF = { ab:'SUF', color:'#241f20', name:'Suffolk Sméagol' };
+const FIXTURES = [
+  { home:MOR, away:ATB, hs:40, as:23, live:true,  active:true },
+  { home:SEO, away:HAC, hs:31, as:29, live:true,  active:false },
+  { home:BRA, away:ROK, hs:55, as:18, live:false, active:false },
+  { home:TOR, away:SUF, hs:22, as:44, live:true,  active:false },
+];
+const crest = (t, w) => `<span class="crest" style="background:${t.color}">${t.ab}</span>`;
+
+function stripB(){
+  return `<div class="fxB">` + FIXTURES.map(f => `
+    <div class="fxB__chip ${f.active?'is-active':''}">
+      <span class="fxB__crests">${crest(f.home)}${crest(f.away)}</span>
+      <span class="fxB__score">${f.hs}–${f.as}</span>
+      ${f.live?'<span class="fxB__live"></span>':''}
+    </div>`).join('') + `</div>`;
+}
+function stripD(){
+  return `<div class="fxD">` + FIXTURES.map(f => `
+    <div class="fxD__chip ${f.active?'is-active':''}">
+      <span class="fxD__ab">${f.home.ab}</span>
+      <span class="fxD__score">${f.hs}–${f.as}</span>
+      <span class="fxD__ab">${f.away.ab}</span>
+      ${f.live?'<span class="fxD__live"></span>':''}
+    </div>`).join('') + `</div>`;
+}
+function tabsPill(){
+  return `<div class="tabs-pill"><span class="tab-pill">Match</span><span class="tab-pill is-active">Lineups</span><span class="tab-pill">Stats</span><span class="tab-pill">Odds</span><span class="tab-pill">Table</span></div>`;
+}
+function tabsLine(){
+  return `<div class="tabs-line"><span class="tab-line">Match</span><span class="tab-line is-active">Lineups</span><span class="tab-line">Stats</span><span class="tab-line">Odds</span><span class="tab-line">Table</span></div>`;
+}
+
+function headerRef(){
+  return `<div class="lfc-card__top" style="padding-bottom:5px">
+    <div class="ref-topbar"><span class="ref-back">‹</span></div>
+    <div class="ref-scorehead">
+      <div class="ref-team is-sel"><span class="ref-score">40</span><span class="ref-badge" style="background:${MOR.color}">${MOR.ab}</span><span class="ref-name">${MOR.name}</span><span class="ref-sub ref-sub--live">1 to play</span></div>
+      <div class="ref-mid"><div class="ref-mid__main">● LIVE</div><div class="ref-mid__sub">Game Week 1</div></div>
+      <div class="ref-team"><span class="ref-score">23</span><span class="ref-badge" style="background:${ATB.color}">${ATB.ab}</span><span class="ref-name">${ATB.name}</span><span class="ref-sub ref-sub--live">2 to play</span></div>
+    </div>
+    ${tabsPill()}
+  </div>`;
+}
+
+function header1(){
+  return `<div class="lfc-card__top" style="padding-bottom:5px">
+    <div class="ref-topbar"><span class="ref-back">‹</span></div>
+    ${stripB()}
+    <div class="h1-bar">
+      <div class="h1-side">
+        <span class="crest" style="background:${MOR.color};width:32px;height:32px;font-size:9px;border:2px solid rgba(255,255,255,0.45)">${MOR.ab}</span>
+        <div class="h1-meta"><div class="h1-name is-sel">${MOR.name}</div><div class="h1-sub">1 to play</div></div>
+      </div>
+      <div class="h1-mid"><div class="h1-score">40<span style="opacity:0.45;font-size:24px;margin:0 4px">–</span>23</div><div class="h1-live">● LIVE · GW1</div></div>
+      <div class="h1-side h1-side--away">
+        <span class="crest" style="background:${ATB.color};width:32px;height:32px;font-size:9px;border:2px solid rgba(255,255,255,0.45)">${ATB.ab}</span>
+        <div class="h1-meta"><div class="h1-name">${ATB.name}</div><div class="h1-sub">2 to play</div></div>
+      </div>
+    </div>
+    ${tabsPill()}
+  </div>`;
+}
+
+function header2(){
+  return `<div class="lfc-card__top" style="padding-bottom:5px">
+    <div class="toprail"><span class="back">‹</span>${stripD()}<span class="gw-tag">GW1</span></div>
+    <div class="h2-row"><span class="h2-score">40</span><span class="h2-dash">–</span><span class="h2-score">23</span></div>
+    <div class="h2-names"><span class="h2-name is-sel">${MOR.name}</span><span class="h2-center">● LIVE</span><span class="h2-name h2-name--r">${ATB.name}</span></div>
+    <div class="h2-subrow"><span>1 to play</span><span></span><span>2 to play</span></div>
+    ${tabsPill()}
+  </div>`;
+}
+
+function header3(){
+  return `<div class="lfc-card__top" style="padding-bottom:5px">
+    <div class="ref-topbar"><span class="ref-back">‹</span></div>
+    ${stripB()}
+    <div class="h3-hero"><div class="h3-score">40<span class="h3-vs">–</span>23</div><div class="h3-status">● LIVE · Game Week 1</div></div>
+    <div class="h3-line">
+      <span class="h3-team is-sel"><span class="h3-teamname">${MOR.name}</span><span class="h3-play">· 1 to play</span></span>
+      <span class="h3-team"><span class="h3-teamname">${ATB.name}</span><span class="h3-play">· 2 to play</span></span>
+    </div>
+    ${tabsPill()}
+  </div>`;
+}
+
+function header4(){
+  return `<div class="lfc-card__top" style="padding-bottom:5px">
+    <div class="toprail"><span class="back">‹</span>${stripD()}</div>
+    <div class="h4-grid">
+      <div class="h4-col">
+        <span class="crest" style="background:${MOR.color};width:28px;height:28px;font-size:8px;border:1.5px solid rgba(255,255,255,0.45)">${MOR.ab}</span>
+        <span class="h4-score">40</span>
+        <span class="h4-name is-sel">${MOR.name}</span>
+        <span class="h4-sub">1 to play</span>
+      </div>
+      <div class="h4-mid"><div class="h4-live">● LIVE</div><div class="h4-gw">Game Week 1</div></div>
+      <div class="h4-col">
+        <span class="crest" style="background:${ATB.color};width:28px;height:28px;font-size:8px;border:1.5px solid rgba(255,255,255,0.45)">${ATB.ab}</span>
+        <span class="h4-score">23</span>
+        <span class="h4-name">${ATB.name}</span>
+        <span class="h4-sub">2 to play</span>
+      </div>
+    </div>
+    ${tabsPill()}
+  </div>`;
+}
+
+function header5(){
+  return `<div class="lfc-card__top" style="padding-bottom:0">
+    <div class="ref-topbar"><span class="ref-back">‹</span></div>
+    ${stripB()}
+    <div class="h5-bar">
+      <div class="h5-block">
+        <span class="crest" style="background:${MOR.color};width:26px;height:26px;font-size:7.5px;border:1.5px solid rgba(255,255,255,0.4);margin:0 auto 3px">${MOR.ab}</span>
+        <div class="h5-score">40</div>
+        <div class="h5-name is-sel">${MOR.name}</div>
+        <div class="h5-sub">1 to play</div>
+      </div>
+      <div class="h5-mid"><div class="h5-live">● LIVE</div><div class="h5-gw">GW1</div></div>
+      <div class="h5-block">
+        <span class="crest" style="background:${ATB.color};width:26px;height:26px;font-size:7.5px;border:1.5px solid rgba(255,255,255,0.4);margin:0 auto 3px">${ATB.ab}</span>
+        <div class="h5-score">23</div>
+        <div class="h5-name">${ATB.name}</div>
+        <div class="h5-sub">2 to play</div>
+      </div>
+    </div>
+    ${tabsLine()}
+  </div>`;
+}
+
+function header6(){
+  return `<div class="lfc-card__top" style="padding-bottom:0">
+    <div class="toprail"><span class="back">‹</span>${stripD()}<span class="gw-tag">All</span></div>
+    <div class="h6-focus">
+      <div class="h6-title">${MOR.name} <span>vs</span> ${ATB.name}</div>
+      <div class="h6-scoreline"><span class="h6-big">40</span><span style="opacity:0.45;font-size:20px;font-weight:700">–</span><span class="h6-big">23</span></div>
+      <div class="h6-meta"><span class="live">● LIVE</span><span class="play">1 / 2 to play</span><span>Game Week 1</span></div>
+      <div class="h6-sel">Viewing ${MOR.name} lineup</div>
+    </div>
+    ${tabsLine()}
+  </div>`;
+}
+
+const HEADERS = { ref:headerRef, 1:header1, 2:header2, 3:header3, 4:header4, 5:header5, 6:header6 };
+
+const HEAD_COLS = `<span class="ln-hd__c">POS</span><span class="ln-hd__c">MIN</span><span class="ln-hd__c">DC</span><span class="ln-hd__c">G</span><span class="ln-hd__c">A</span><span class="ln-hd__c">B</span><span class="ln-hd__c">PTS</span>`;
+const STARTERS = [
+  ['#da020e','Ro','Roefs','GKP','90','green','0','0','0','0','1'],
+  ['#132257','Ta','Tarkowski','DEF','90','green','9','0','0','0','6'],
+  ['#6cabdd','Mo','Mosquera','DEF','90','green','6','0','0','0','6'],
+  ['#e30613','NW','N.Williams','DEF','90','green','6','0','0','0','2'],
+  ['#6cabdd','Rú','Rúben','DEF','90','green','6','0','0','0','2'],
+  ['#003399','Nd','Ndiaye','MID','90','green','12',['1','g1'],['1','b1'],'0','9'],
+  ['#e30613','GW','Gibbs-White','MID','90','green','3','0','0','0','2'],
+  ['#da020e','Cu','Cunha','MID','79','amber','3','0','0','0','2'],
+  ['#6cabdd','Fo','Foden','MID','81','amber','6','0','0','0','1'],
+  ['#eb172b','Em','Emersonn','FWD','65','amber','3',['1','g1'],'0','3','9'],
+];
+function cell(v){ return Array.isArray(v)?`<span class="ln-c ${v[1]}">${v[0]}</span>`:`<span class="ln-c">${v}</span>`; }
+function starterRow(r){ const [c,ab,n,pos,min,kind,dc,g,a,b,pts]=r;
+  return `<div class="ln-row"><span class="ln-badge" style="background:${c}">${ab}</span><span class="ln-name">${n}</span><span class="ln-pos">${pos}</span><span class="ln-min min-${kind}">${min}</span>${cell(dc)}${cell(g)}${cell(a)}${cell(b)}<span class="ln-pts">${pts}</span></div>`; }
+function lineup(){
+  return `<div class="lfc-pane"><div class="ln-hd"><span class="ln-hd__team">Mordor SFG</span>${HEAD_COLS}</div>`
+    + STARTERS.map(starterRow).join('') + `</div>`;
+}
+
+function build(el){
+  const v = el.dataset.variant;
+  el.innerHTML = `
+    <div class="sbar"><span>07:53</span><span class="sbar__r">••• 5G ▮</span></div>
+    <div class="lfc-card">${HEADERS[v]()}${lineup()}</div>`;
+}
+document.querySelectorAll('.phone__screen').forEach(build);
+</script>
+</body>
+</html>
