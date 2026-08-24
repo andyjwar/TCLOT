@@ -376,58 +376,76 @@
   border-color: rgba(255, 255, 255, 0.22);
 }
 
-/* Compact mobile scorehead: name → score → sub, underline selection (no badges). */
+/* Compact mobile scorehead: score → badge → name → sub; selection underline
+   sits on the column foot (shared baseline with tabs), not under the name. */
 .lfc-card--compact .lfc-card__top {
-  padding-bottom: 5px;
+  padding-bottom: 0;
 }
 .lfc-scorehead--compact {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   gap: 6px;
-  padding: 4px 12px 0;
+  padding: 2px 12px 0;
   align-items: end;
 }
 .lfc-cside {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1px;
+  gap: 2px;
   border: 0;
+  border-bottom: 2px solid transparent;
   background: none;
   font: inherit;
   color: #fff;
   cursor: pointer;
   min-width: 0;
   width: 100%;
-  padding: 0 0 2px;
+  padding: 0 0 4px;
+  margin-bottom: -1px;
   -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s ease;
+}
+.lfc-cside.is-sel {
+  border-bottom-color: #fff;
+}
+.lfc-cside__score {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1;
+}
+.lfc-cside__badge {
+  display: inline-flex;
+  border-radius: 50%;
+  line-height: 0;
+}
+.lfc-cside__badge .team-avatar-frame--sm {
+  width: 28px;
+  height: 28px;
+}
+.lfc-cside.is-sel .lfc-cside__badge {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.4);
 }
 .lfc-cside__name {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  padding: 0 4px 5px;
-  border-bottom: 2px solid transparent;
-  color: rgba(255, 255, 255, 0.72);
-  transition: color 0.15s ease, border-color 0.15s ease;
+  padding: 0 2px;
+  color: rgba(255, 255, 255, 0.78);
+  transition: color 0.15s ease;
 }
 .lfc-cside.is-sel .lfc-cside__name {
   color: #fff;
-  border-bottom-color: #fff;
-}
-.lfc-cside__score {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1;
 }
 .lfc-cside__sub {
   font-size: 8.5px;
   color: rgba(255, 255, 255, 0.82);
   min-height: 10px;
+  line-height: 1.1;
 }
 .lfc-cside__sub--live {
   color: #ffd27a;
@@ -436,7 +454,7 @@
 .lfc-cmid {
   text-align: center;
   min-width: 48px;
-  padding-bottom: 16px;
+  padding-bottom: 22px;
 }
 .lfc-cmid__main {
   display: block;
@@ -455,15 +473,14 @@
 .lfc-tabs--line {
   gap: 0;
   padding: 0 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 .lfc-tabs--line .lfc-tab {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
-  padding: 8px 4px 7px;
+  padding: 6px 4px 8px;
   border-radius: 0;
   border: 0;
-  border-bottom: 2px solid transparent;
   font-size: 13px;
   background: none;
   -webkit-backdrop-filter: none;
@@ -471,8 +488,17 @@
 }
 .lfc-tabs--line .lfc-tab.is-active {
   color: #fff;
-  border-bottom-color: #fff;
   background: none;
+}
+.lfc-tabs--line .lfc-tab.is-active::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 0;
+  height: 2px;
+  background: #fff;
+  border-radius: 1px;
 }
 
 /* ---- Pane wrapper ---- */
