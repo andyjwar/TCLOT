@@ -260,6 +260,62 @@ test('rivalry sentence: draw keeps the series level and uses managers', () => {
   assert.match(rivalry, /Nick|Luke/)
 })
 
+test('named fixture leads the recap every time the pair meets', () => {
+  const warderloo = {
+    ...base,
+    home: team({ name: 'Toronto Gimli', manager: 'Andy Ward' }),
+    away: { ...base.away, name: 'Suffolk Sméagol', manager: 'Jon Ward' },
+  }
+  // First meeting (no series yet) still gets the name.
+  const first = matchupRecapSentences({ ...warderloo, h2h: { games: 1, homeWins: 1, awayWins: 0, draws: 0 } })
+  assert.match(first[0], /Battle of Warderloo/)
+  // And on the rematch.
+  const second = matchupRecapSentences({ ...warderloo, h2h: { games: 2, homeWins: 1, awayWins: 1, draws: 0 } })
+  assert.match(second[0], /Battle of Warderloo/)
+})
+
+test('named fixture: the two Nicks get the Battle of the Nicks', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({ name: 'Mordor S.F.G', manager: 'Nick Mottershead' }),
+    away: { ...base.away, name: 'Atlético Bilbo', manager: 'Nick Goodacre' },
+  })
+  assert.match(out[0], /Battle of the Nicks/)
+})
+
+test('no named-fixture lead for an ordinary pairing', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({ manager: 'Nick Mottershead' }),
+    away: { ...base.away, manager: 'Mike Sutton' },
+  })
+  assert.doesNotMatch(out[0], /Battle|derby/i)
+})
+
+test('manager fun facts are woven in sometimes and stay deterministic', () => {
+  // Sweep GWs to find at least one where the joke fires (it is gated ~1/3).
+  let sawVegan = false
+  for (let gw = 1; gw <= 20; gw++) {
+    const out = matchupRecapSentences({
+      ...base,
+      gw,
+      home: team({ manager: 'Nick Mottershead' }),
+    })
+    const joined = out.join(' ')
+    if (/vegan|tofu|plant|oat milk/i.test(joined)) sawVegan = true
+    // Deterministic: same inputs → same output.
+    assert.deepEqual(out, matchupRecapSentences({ ...base, gw, home: team({ manager: 'Nick Mottershead' }) }))
+  }
+  assert.ok(sawVegan, 'expected the vegan joke to surface at least once across 20 GWs')
+})
+
+test('no manager fun fact when neither manager has lore', () => {
+  for (let gw = 1; gw <= 10; gw++) {
+    const out = matchupRecapSentences({ ...base, gw })
+    assert.doesNotMatch(out.join(' '), /vegan|Boxhead|twins/i)
+  }
+})
+
 test('variantIndex is stable and in range', () => {
   for (const key of ['a', 'b', 'team-1-gw3', '']) {
     const v = variantIndex(key, 3)

@@ -14,6 +14,8 @@
  *     season-high, a streak, a title-odds swing, or the fixture's weight.
  */
 
+import { namedFixtureFor, managerFunFact, hasManagerLore } from './leagueLore.js'
+
 /** Small deterministic hash for stable template variation per matchup+GW. */
 export function variantIndex(key, n) {
   let h = 2166136261
@@ -386,10 +388,49 @@ function rivalrySentence(m) {
   return `${label(winner)} got one back, but ${label(loser)} still lead the season series ${lWins}–${wWins}${drawn}.`
 }
 
+const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
+
 /**
- * The recap paragraph for one matchup: 3–6 sentences depending on whether a
- * pre-match model call exists, whether the players gave us a story, whether a
- * roster move is worth flagging, and whether the managers have a rivalry going.
+ * Named-fixture lead — when the two managers have a grudge-match nickname (see
+ * leagueLore.js) it opens the recap, every single time they meet. Uses the
+ * running meeting count for a "Round N" flavour when the series is known.
+ */
+function namedFixtureSentence(m, key) {
+  const name = namedFixtureFor(m.home?.manager, m.away?.manager)
+  if (!name) return null
+  const round = m.h2h && Number.isFinite(m.h2h.games) ? m.h2h.games : null
+  return pick(
+    [
+      `Another edition of ${name}.`,
+      `${capitalize(name)} is back on the fixture list.`,
+      round ? `Round ${round} of ${name}.` : `${capitalize(name)}, renewed.`,
+    ],
+    key,
+  )
+}
+
+/**
+ * A manager's running joke, woven in only *sometimes* (~1 matchup in 3) and
+ * only when a side's manager has lore. Deterministic per matchup+GW, so it
+ * never churns on rebuild.
+ */
+function managerFunFactSentence(m, key) {
+  const home = m.home?.manager
+  const away = m.away?.manager
+  const homeHas = hasManagerLore(home)
+  const awayHas = hasManagerLore(away)
+  if (!homeHas && !awayHas) return null
+  if (variantIndex(`${key}-gate`, 3) !== 0) return null
+  let manager
+  if (homeHas && awayHas) manager = variantIndex(`${key}-side`, 2) === 0 ? home : away
+  else manager = homeHas ? home : away
+  return managerFunFact(manager, pick, key)
+}
+
+/**
+ * The recap paragraph for one matchup: 3–7 sentences depending on whether the
+ * fixture has a nickname, a pre-match model call, a player or roster-move
+ * story, a manager running joke, and a season rivalry.
  *
  * @param {{
  *   gw: number,
@@ -405,7 +446,10 @@ function rivalrySentence(m) {
  */
 export function matchupRecapSentences(m) {
   const key = `${m.home.entryId}-${m.away.entryId}-gw${m.gw}-${m.home.points}-${m.away.points}`
-  const out = [resultSentence(m, `${key}-r`)]
+  const out = []
+  const named = namedFixtureSentence(m, `${key}-n`)
+  if (named) out.push(named)
+  out.push(resultSentence(m, `${key}-r`))
   const odds = oddsSentence(m, `${key}-o`)
   if (odds) out.push(odds)
   out.push(contextSentence(m, `${key}-c`))
@@ -413,6 +457,8 @@ export function matchupRecapSentences(m) {
   if (players) out.push(players)
   const waiver = waiverSentence(m, `${key}-w`)
   if (waiver) out.push(waiver)
+  const managerJoke = managerFunFactSentence(m, `${key}-mff`)
+  if (managerJoke) out.push(managerJoke)
   // The season rivalry is the freshest bit of colour once it exists; otherwise
   // fall back to the best available fun fact.
   out.push(rivalrySentence(m) ?? funFactSentence(m, `${key}-f`))
