@@ -451,6 +451,14 @@
   border-radius: var(--r-sm);
   background: var(--wv-inset, var(--surface-2));
 }
+/* iPad/desktop By team uses the same single-column tiles as phone. Cap the
+ * In/Out swap row so it keeps phone-like density instead of stretching the
+ * two columns across the full content width. */
+@media (min-width: 768px) {
+  .waivers-weekly-tile__moves .waivers-swap {
+    max-width: 28rem;
+  }
+}
 /* Dense 2-col swap inside mobile tiles: tighten the player cells so real
  * (longer) player names keep more room before truncating, and drop the
  * name down a size step so two players + arrows + position letters
