@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { fplElementFullName, fplElementWebName } from './fplElementNames.js'
 import { POS_LABEL } from './playersWireList.js'
 import { TeamAvatar } from './TeamAvatar'
+import { ClickableManagerName } from './teamDetailBus.jsx'
 
 /**
  * Premier League transparent club crest, retina variant for crisp
@@ -122,16 +123,22 @@ function PlayerDetailHeroDesktop({
           {ownerName ? (
             <>
               <span>On</span>
-              <span className="pdetail__hero-owner-crest" aria-hidden>
-                <TeamAvatar
-                  entryId={ownerLeagueEntryId}
-                  name={ownerName}
-                  size="sm"
-                  logoMap={logoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-              </span>
-              <span className="pdetail__hero-owner-name">{ownerName}</span>
+              <ClickableManagerName
+                leagueEntryId={ownerLeagueEntryId}
+                title={`${ownerName} — manager card`}
+                className="pdetail__hero-owner-link"
+              >
+                <span className="pdetail__hero-owner-crest" aria-hidden>
+                  <TeamAvatar
+                    entryId={ownerLeagueEntryId}
+                    name={ownerName}
+                    size="sm"
+                    logoMap={logoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </span>
+                <span className="pdetail__hero-owner-name">{ownerName}</span>
+              </ClickableManagerName>
               <span className="pdetail__hero-owner-status">· Starting XI</span>
             </>
           ) : (
@@ -206,7 +213,11 @@ function PlayerDetailHeroPortrait({
           </div>
           <div className="pdetail-p__hero-meta">
             {ownerName ? (
-              <span className="pdetail-p__hero-fant">
+              <ClickableManagerName
+                leagueEntryId={ownerLeagueEntryId}
+                title={`${ownerName} — manager card`}
+                className="pdetail-p__hero-fant"
+              >
                 <span className="pdetail-p__owner-crest" aria-hidden>
                   <TeamAvatar
                     entryId={ownerLeagueEntryId}
@@ -217,7 +228,7 @@ function PlayerDetailHeroPortrait({
                   />
                 </span>
                 <span className="pdetail-p__owner-name">{ownerName}</span>
-              </span>
+              </ClickableManagerName>
             ) : (
               <span className="pdetail-p__hero-fant">
                 <span className="pdetail-p__owner-free-dot" aria-hidden />

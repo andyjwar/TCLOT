@@ -11,6 +11,7 @@ import {
 import { createPortal } from 'react-dom'
 import { computeTeamCardData } from './teamCardStats.js'
 import { useOverlayDismissal } from './overlayStack.js'
+import { registerTeamDetailOpener } from './teamDetailBus.jsx'
 import { TeamDetailView } from './TeamDetailView.jsx'
 import { matchesMobileLayoutViewport, useMobileLayout } from './usePortraitMobile.js'
 import './TeamDetailView.css'
@@ -321,6 +322,10 @@ export function TeamDetailOverlayProvider({
   )
 
   const ctxValue = useMemo(() => ({ openTeamDetail }), [openTeamDetail])
+
+  // Expose the opener to out-of-tree surfaces (e.g. the player detail card,
+  // which renders in a portal above this provider) via the module-level bus.
+  useEffect(() => registerTeamDetailOpener(openTeamDetail), [openTeamDetail])
 
   const overlayMobileSlidePhaseAttr =
     mobileSheetPhase === 'shown'
