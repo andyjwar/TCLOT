@@ -206,10 +206,38 @@ body[data-tclot-theme='ceefax'] .fotmob *::after {
   box-shadow: none !important;
 }
 
-/* Team crests / avatars: keep them (they are content), but render nearest-
- * neighbour for a pixelated, low-res teletext feel. */
+/* Remaining images (player photos, etc.) render nearest-neighbour for a
+ * pixelated, low-res teletext feel. */
 body[data-tclot-theme='ceefax'] img {
   image-rendering: pixelated;
+}
+
+/* Team crests / club badges are removed entirely — teletext is text-only,
+ * and the coloured club logos clash with the flat 8-colour palette. */
+body[data-tclot-theme='ceefax'] .team-avatar-frame,
+body[data-tclot-theme='ceefax'] .team-shirt,
+body[data-tclot-theme='ceefax'] .team-avatar-fallback-initials,
+body[data-tclot-theme='ceefax'] .brand-header__crest,
+body[data-tclot-theme='ceefax'] .draft-board-row__club-badge,
+body[data-tclot-theme='ceefax'] .draft-grid__club,
+body[data-tclot-theme='ceefax'] .draft-rlist__club,
+body[data-tclot-theme='ceefax'] .forbidden-waivers__badge,
+body[data-tclot-theme='ceefax'] .tc-l5__badge,
+body[data-tclot-theme='ceefax'] .pdetail-l5__crest,
+body[data-tclot-theme='ceefax'] .pdetail-l5__crest-fallback {
+  display: none !important;
+}
+
+/* Form guide: green for a win, red for a loss, yellow for a draw — the
+ * Standings `.form-dot--win` otherwise inherits the yellow accent. */
+body[data-tclot-theme='ceefax'] .form-dot--win {
+  background: var(--cf-green) !important;
+}
+body[data-tclot-theme='ceefax'] .form-dot--loss {
+  background: var(--cf-red) !important;
+}
+body[data-tclot-theme='ceefax'] .form-dot--draw {
+  background: var(--cf-yellow) !important;
 }
 
 /* ------------------------------------------------------------------ */
