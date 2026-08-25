@@ -14,7 +14,8 @@ function bucketTitle(key, kind) {
   if (key === '2') return `${verb} by exactly 2 points`
   if (key === '3-5') return `${verb} by 3–5 points`
   if (key === '5-10') return `${verb} by 6–10 points`
-  if (key === '10+') return `${verb} by more than 10 points`
+  if (key === '10-20') return `${verb} by 11–20 points`
+  if (key === '20+') return `${verb} by more than 20 points`
   return `${verb} by ${key}`
 }
 
@@ -22,7 +23,7 @@ function bucketTitle(key, kind) {
  * Stats sub-tab — Phase 2 redesign.
  *
  * Sections (matches the 5.56 PM screenshot):
- *  1. Wins by margin — toggle Wins / Losses (new buckets: 1 / 2 / 3-5 / 5-10 / 10+).
+ *  1. Wins by margin — toggle Wins / Losses (buckets: 1 / 2 / 3-5 / 5-10 / 10-20 / 20+).
  *  2. Game weeks in 1st place — toggle 1st / Last + horizontal bars.
  *  3. Schedule luck matrix — embedded (delta cells).
  *  4. Head-to-Head rivals — team picker + per-opponent P/W/D/L/PF/PA.

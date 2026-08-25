@@ -8188,6 +8188,8 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   font-size: 0.62rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
+  /* Range headers like "10-20" must not wrap at the hyphen. */
+  white-space: nowrap;
   background: var(--fm-table-head);
   color: var(--fm-text);
 }
