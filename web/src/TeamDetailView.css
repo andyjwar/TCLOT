@@ -697,6 +697,12 @@ body[data-tclot-theme='dark'] .tc-card {
   color: var(--tc-text-strong);
   text-align: left;
   vertical-align: bottom;
+  cursor: pointer;
+}
+.tc-squad__name-btn:hover {
+  color: var(--tc-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 .tc-squad__cell {
   font-family: var(--tc-mono);

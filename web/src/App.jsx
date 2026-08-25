@@ -3344,6 +3344,7 @@ function App() {
       kitIndexByEntry={kitIndexByEntry}
       onOpenChange={setPlayerDetailOverlayOpen}
     >
+    <PlayerHistoryProvider>
     <TeamDetailOverlayProvider
       dashboardView={dashboardView}
       leagueEntries={leagueEntries}
@@ -3355,7 +3356,6 @@ function App() {
         import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
       ).trim()}
     >
-    <PlayerHistoryProvider>
     <div
       className="app fotmob"
       data-theme={colorTheme}
@@ -4294,8 +4294,8 @@ function App() {
         onDefaultTabChange={setDefaultTabPref}
       />
     </div>
-    </PlayerHistoryProvider>
     </TeamDetailOverlayProvider>
+    </PlayerHistoryProvider>
     </PlayerDetailOverlayProvider>
   )
 }

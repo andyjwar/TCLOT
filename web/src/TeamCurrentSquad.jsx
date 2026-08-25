@@ -70,6 +70,7 @@ export function TeamCurrentSquad({
                     element={p.element}
                     displayName={p.name}
                     web_name={p.name}
+                    leagueEntryId={leagueEntryId}
                     className="tc-squad__name-btn"
                   >
                     {p.name}
