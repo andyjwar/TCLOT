@@ -153,7 +153,7 @@ body[data-tclot-theme='ceefax'] {
    * cascade stays proportional (do NOT put em-bumps on `*`). A larger
    * base + roomier line-height gives the tall teletext glyph feel. */
   font-size: 22px;
-  line-height: 1.45;
+  line-height: 1.5;
 }
 /* Mild vertical stretch for authentic Mode-7 "tall text". Leaf text
  * spans only — never table cells (display:inline-block would break
@@ -162,18 +162,19 @@ body[data-tclot-theme='ceefax'] .tile-title,
 body[data-tclot-theme='ceefax'] .brand-header__wordmark,
 body[data-tclot-theme='ceefax'] .standings-divider__label,
 body[data-tclot-theme='ceefax'] .mobile-tab-bar__label,
+body[data-tclot-theme='ceefax'] .dashboard-nav__label,
 body[data-tclot-theme='ceefax'] .team-name,
 body[data-tclot-theme='ceefax'] .standings-team-mgr {
   display: inline-block;
-  transform: scaleY(1.22);
+  transform: scaleY(1.35);
   transform-origin: center;
 }
 /* Extra vertical breathing room in table rows for the taller glyphs. */
 body[data-tclot-theme='ceefax'] th,
 body[data-tclot-theme='ceefax'] td {
-  line-height: 1.55;
-  padding-top: 0.28em;
-  padding-bottom: 0.28em;
+  line-height: 1.65;
+  padding-top: 0.32em;
+  padding-bottom: 0.32em;
 }
 body[data-tclot-theme='ceefax'],
 body[data-tclot-theme='ceefax'] * {
@@ -304,14 +305,16 @@ body[data-tclot-theme='ceefax'] .standings-hero-card {
 }
 
 /* Group separators → solid red Ceefax rules (leader / titans / minnows).
- * Labels are hidden; the line itself carries the grouping. */
+ * Labels are hidden; a short red bar carries the grouping. Use a filled
+ * cell (not border-top on a 0-height row) so the rule stays visible under
+ * border-collapse. */
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider td {
   padding: 0 !important;
-  height: 0 !important;
+  height: 3px !important;
   line-height: 0 !important;
+  font-size: 0 !important;
   border: 0 !important;
-  border-top: 2px solid var(--cf-red) !important;
-  background: transparent !important;
+  background: var(--cf-red) !important;
 }
 body[data-tclot-theme='ceefax'] .standings-divider__label {
   display: none !important;
@@ -324,10 +327,10 @@ body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider--top
 /* Row-based cuts (leader below, 8th above) also render as solid red. */
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-below td,
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-leader-cut td {
-  border-bottom: 2px solid var(--cf-red) !important;
+  border-bottom: 3px solid var(--cf-red) !important;
 }
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-above td {
-  border-top: 2px solid var(--cf-red) !important;
+  border-top: 3px solid var(--cf-red) !important;
 }
 
 /* ------------------------------------------------------------------ */
