@@ -6,6 +6,7 @@ import {
   currentStreak,
   ordinal,
 } from './teamCardStats.js'
+import { TeamCurrentSquad } from './TeamCurrentSquad.jsx'
 import { archivedSeasonLabel } from './seasonArchive.js'
 import { getSeasonLabel } from './seasonString.js'
 import './TeamDetailView.css'
@@ -90,6 +91,8 @@ function H2HRivals({ rivals, idToName, logoMap, kitIndexByEntry }) {
  * @param {() => void} props.onBack
  * @param {Record<string, string>} props.teamLogoMap
  * @param {Record<number, number>} props.kitIndexByEntry
+ * @param {{ id: number, fplEntryId: number | null }[]} [props.teamsForFormSelect]
+ * @param {string} [props.leagueDataRevision]
  */
 export function TeamDetailView({
   teamId,
@@ -98,12 +101,17 @@ export function TeamDetailView({
   onBack,
   teamLogoMap = {},
   kitIndexByEntry = {},
+  teamsForFormSelect = [],
+  leagueDataRevision = '',
 }) {
   const [marginMode, setMarginMode] = useState('wins')
+  /** @type {['season' | 'squad', Function]} */
+  const [tab, setTab] = useState('season')
   const bodyRef = useRef(null)
 
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = 0
+    setTab('season')
   }, [teamId])
 
   if (!data || !data.S[teamId]) return null
@@ -137,6 +145,10 @@ export function TeamDetailView({
   /** Pre-season / no finished games: the stat seeds (high -1, GW0, an
    * all-tied luck rank) are meaningless — render placeholder tiles instead. */
   const played = s.seq.length > 0
+
+  const fplEntryId =
+    teamsForFormSelect.find((t) => Number(t?.id) === Number(id))?.fplEntryId ??
+    null
 
   return (
     <div className="tc-card" aria-label={`${s.name} team detail`}>
@@ -191,7 +203,37 @@ export function TeamDetailView({
         ))}
       </div>
 
+      <div className="tc-tabs" role="tablist" aria-label="Manager card views">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'season'}
+          className={'tc-tab' + (tab === 'season' ? ' is-active' : '')}
+          onClick={() => setTab('season')}
+        >
+          Season stats
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={tab === 'squad'}
+          className={'tc-tab' + (tab === 'squad' ? ' is-active' : '')}
+          onClick={() => setTab('squad')}
+        >
+          Current squad
+        </button>
+      </div>
+
       <div className="tc-body" ref={bodyRef}>
+        {tab === 'squad' ? (
+          <TeamCurrentSquad
+            leagueEntryId={id}
+            fplEntryId={fplEntryId}
+            active={tab === 'squad'}
+            leagueDataRevision={leagueDataRevision}
+          />
+        ) : (
+          <>
         <div className="tc-sec">
           <div className="tc-sec__h">Story of the season</div>
           <div className="tc-boxes">
@@ -349,6 +391,8 @@ export function TeamDetailView({
             ))}
           </div>
         </div>
+          </>
+        )}
 
         <div className="tc-foot">
           TC LEAGUE OF TITANS · {archivedSeasonLabel() || getSeasonLabel()}
