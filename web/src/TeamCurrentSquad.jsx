@@ -1,4 +1,5 @@
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
+import { PlayerKit } from './PlayerKit.jsx'
 import { useManagerSquad } from './useManagerSquad.js'
 
 /**
@@ -40,6 +41,8 @@ export function TeamCurrentSquad({
     )
   }
 
+  const gwColLabel = gameweek ? `GW${gameweek}` : 'GW'
+
   return (
     <div className="tc-squad">
       <div className="tc-squad__caption">
@@ -47,14 +50,14 @@ export function TeamCurrentSquad({
           {gameweek ? `Squad · last scored GW${gameweek}` : 'Current squad'}
         </span>
         <span className="tc-squad__total">
-          {totalSeasonPoints}
+          <span className="tc-squad__total-pill tabular">{totalSeasonPoints}</span>
           <small>season pts</small>
         </span>
       </div>
 
       <div className="tc-squad__head" aria-hidden="true">
         <span className="tc-squad__ch tc-squad__ch--name">Player</span>
-        <span className="tc-squad__ch">GW</span>
+        <span className="tc-squad__ch">{gwColLabel}</span>
         <span className="tc-squad__ch">On squad</span>
         <span className="tc-squad__ch">Season</span>
       </div>
@@ -65,17 +68,24 @@ export function TeamCurrentSquad({
           <ul className="tc-squad__list">
             {group.players.map((p) => (
               <li key={p.element} className="tc-squad__row">
-                <span className="tc-squad__name">
+                <div className="tc-squad__player">
+                  <span className="tc-squad__kit">
+                    <PlayerKit
+                      badgeUrl={p.badgeUrl}
+                      teamShort={p.teamShort}
+                    />
+                  </span>
                   <ClickablePlayerName
                     element={p.element}
                     displayName={p.name}
                     web_name={p.name}
+                    teamShort={p.teamShort}
                     leagueEntryId={leagueEntryId}
                     className="tc-squad__name-btn"
                   >
                     {p.name}
                   </ClickablePlayerName>
-                </span>
+                </div>
                 <span className="tc-squad__cell tc-squad__cell--gw">
                   {p.lastGwPoints == null ? '–' : p.lastGwPoints}
                 </span>

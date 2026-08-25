@@ -26,6 +26,8 @@ import { liveStatsByElementId } from './useLiveScores.js'
  * @property {number|null} joinedGw
  * @property {number|null} gwsOwned
  * @property {'draft'|'transfer'|'trade'|null} joinedKind
+ * @property {string|null} teamShort PL club short name
+ * @property {string|null} badgeUrl official PL club crest URL
  */
 
 /**
@@ -114,6 +116,10 @@ export function useManagerSquad({
         for (const el of boot?.elements || []) {
           elemsById.set(Number(el.id), el)
         }
+        const teamById = new Map()
+        for (const t of boot?.teams || []) {
+          teamById.set(Number(t.id), t)
+        }
 
         const currentGw = draftCurrentGameweek(boot)
         const lastGw = lastFinishedGameweek(boot)
@@ -171,6 +177,13 @@ export function useManagerSquad({
             liveRow && typeof liveRow.total_points === 'number'
               ? liveRow.total_points
               : null
+          const plTeam = teamById.get(Number(el.team))
+          const teamShort =
+            plTeam?.short_name != null ? String(plTeam.short_name) : null
+          const badgeUrl =
+            plTeam?.code != null
+              ? `https://resources.premierleague.com/premierleague/badges/50/t${plTeam.code}.png`
+              : null
           byType.get(type).push({
             element: pid,
             name: fplElementWebName(el, pid),
@@ -180,6 +193,8 @@ export function useManagerSquad({
             joinedGw,
             gwsOwned,
             joinedKind: joined?.kind ?? null,
+            teamShort,
+            badgeUrl,
           })
         }
 

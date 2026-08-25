@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { TeamAvatar } from './TeamAvatar'
+import { PlayerKit } from './PlayerKit.jsx'
 import { usePlayerDetailOverlayOptional } from './PlayerDetailOverlay.jsx'
 import { useTeamDetailOverlayOptional } from './TeamDetailOverlay.jsx'
 import {
@@ -10,6 +11,7 @@ import {
 import {
   buildOwnerByElementFromElementStatus,
   POS_LABEL,
+  PORTRAIT_POS_LABEL_SINGLE,
 } from './playersWireList.js'
 import { fplElementWebName, fplElementFullName } from './fplElementNames.js'
 import './GlobalSearch.css'
@@ -168,11 +170,17 @@ export function GlobalSearch({
       const club = teamById.get(Number(el.team))
       const owner = ownerByElementId.get(id) ?? null
       const displayName = fplElementWebName(el, id)
+      const badgeUrl =
+        club?.code != null
+          ? `https://resources.premierleague.com/premierleague/badges/50/t${club.code}.png`
+          : null
       out.push({
         id,
         displayName,
         positionLabel: POS_LABEL[Number(el.element_type)] ?? '',
+        positionLetter: PORTRAIT_POS_LABEL_SINGLE[Number(el.element_type)] ?? '?',
         clubShort: club?.short_name ?? '',
+        badgeUrl,
         owner,
         haystack: normalize(
           `${displayName} ${fplElementFullName(el, id)} ${club?.short_name ?? ''} ${club?.name ?? ''}`,
@@ -385,7 +393,7 @@ export function GlobalSearch({
                               type="button"
                               key={`p-${p.id}`}
                               className={
-                                'gsearch__row' +
+                                'gsearch__row gsearch__row--player' +
                                 (activeIndex === idx ? ' is-active' : '')
                               }
                               onMouseEnter={() => setActiveIndex(idx)}
@@ -393,15 +401,22 @@ export function GlobalSearch({
                                 selectResult({ kind: 'player', ref: p })
                               }
                             >
-                              <span className="gsearch__pos">
-                                {p.positionLabel}
-                              </span>
-                              <span className="gsearch__main">
-                                <span className="gsearch__title">
+                              <span className="gsearch__pident">
+                                <span className="gsearch__kit">
+                                  <PlayerKit
+                                    badgeUrl={p.badgeUrl}
+                                    teamShort={p.clubShort}
+                                  />
+                                </span>
+                                <span className="gsearch__pname">
                                   {p.displayName}
                                 </span>
-                                <span className="gsearch__sub">
-                                  {p.clubShort}
+                                <span
+                                  className="gsearch__poschip"
+                                  aria-label={`Position ${p.positionLabel}`}
+                                  title={p.positionLabel}
+                                >
+                                  {p.positionLetter}
                                 </span>
                               </span>
                               {p.owner ? (
