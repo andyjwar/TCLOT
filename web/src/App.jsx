@@ -3700,7 +3700,7 @@ function App() {
                                 )}
                               </td>
                             </tr>
-                            {colorTheme === 'ceefax' && row.rank === 1 ? (
+                            {colorTheme !== 'ceefax' && row.rank === 1 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows standings-divider--ceefax"
                                 aria-hidden="true"
@@ -3712,7 +3712,7 @@ function App() {
                                 </td>
                               </tr>
                             ) : null}
-                            {row.rank === 4 ? (
+                            {colorTheme !== 'ceefax' && row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
                                 aria-hidden="true"
@@ -3870,7 +3870,7 @@ function App() {
                                 )}
                               </td>
                             </tr>
-                            {colorTheme === 'ceefax' && row.rank === 1 ? (
+                            {colorTheme !== 'ceefax' && row.rank === 1 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows standings-divider--ceefax"
                                 aria-hidden="true"
@@ -3882,7 +3882,7 @@ function App() {
                                 </td>
                               </tr>
                             ) : null}
-                            {row.rank === 4 ? (
+                            {colorTheme !== 'ceefax' && row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
                                 aria-hidden="true"

@@ -379,7 +379,7 @@ body[data-tclot-theme='ceefax'] .brand-header__status-strong {
 }
 
 /* ------------------------------------------------------------------ */
-/* Tables / standings — the heart of the teletext look                 */
+/* Tables / standings — teletext league table (white / cyan zebra)     */
 /* ------------------------------------------------------------------ */
 body[data-tclot-theme='ceefax'] table {
   border-collapse: collapse !important;
@@ -389,54 +389,63 @@ body[data-tclot-theme='ceefax'] th {
   background: var(--cf-black) !important;
   color: var(--cf-yellow) !important;
 }
-/* Zebra rows in cyan/white like the Ceefax league table screenshots. */
+/* League tables: no row rules or tinted bands — colour is the zebra only. */
+body[data-tclot-theme='ceefax'] .standings-table th,
+body[data-tclot-theme='ceefax'] .standings-table td {
+  border: 0 !important;
+  background: transparent !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider {
+  display: none !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-below td,
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-above td,
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-leader-cut td {
+  border: 0 !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--8th td,
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.row-highlight td {
+  background: transparent !important;
+}
+/* Odd rows white, even rows cyan — like a real Ceefax league page. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr td {
+  color: var(--cf-cyan) !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr:nth-child(odd) td {
+  color: var(--cf-white) !important;
+}
+/* Team name, manager subtitle, and text crest inherit the row colour. */
+body[data-tclot-theme='ceefax'] .standings-table .team-name,
+body[data-tclot-theme='ceefax'] .standings-table .standings-team-mgr,
+body[data-tclot-theme='ceefax'] .standings-table .team-avatar-code,
+body[data-tclot-theme='ceefax'] .standings-table .col-num,
+body[data-tclot-theme='ceefax'] .standings-table .col-rank {
+  color: inherit !important;
+}
+/* Selected row: yellow text, no tinted band or left stripe. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.is-selected td,
+body[data-tclot-theme='ceefax'] .standings-table tbody tr[aria-selected='true'] td {
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--cf-yellow) !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.is-selected td:first-child {
+  box-shadow: none !important;
+}
+
+/* Other tables (stats, historic) keep the generic zebra below. */
 body[data-tclot-theme='ceefax'] tbody tr td {
   color: var(--cf-cyan) !important;
-  border-color: var(--cf-grid) !important;
+  border-color: transparent !important;
 }
 body[data-tclot-theme='ceefax'] tbody tr:nth-child(even) td {
   color: var(--cf-white) !important;
-}
-/* Leader / highlighted row → green, echoing the top-of-table colour. */
-body[data-tclot-theme='ceefax'] tbody tr[aria-selected='true'] td,
-body[data-tclot-theme='ceefax'] tbody tr.is-selected td {
-  background: #001a3a !important;
-  color: var(--cf-green) !important;
 }
 
 /* Hero leader card is suppressed in App.jsx for Ceefax; belt-and-braces
  * hide if anything still renders it. */
 body[data-tclot-theme='ceefax'] .standings-hero-card {
   display: none !important;
-}
-
-/* Group separators → solid red Ceefax rules (leader / titans / minnows).
- * Labels are hidden; a short red bar carries the grouping. Use a filled
- * cell (not border-top on a 0-height row) so the rule stays visible under
- * border-collapse. */
-body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider td {
-  padding: 0 !important;
-  height: 3px !important;
-  line-height: 0 !important;
-  font-size: 0 !important;
-  border: 0 !important;
-  background: var(--cf-rule-red) !important;
-}
-body[data-tclot-theme='ceefax'] .standings-divider__label {
-  display: none !important;
-  transform: none !important;
-}
-/* Live Table's top "Titans" label — no rule above row 1. */
-body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider--top {
-  display: none !important;
-}
-/* Row-based cuts (leader below, 8th above) also render as solid red. */
-body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-below td,
-body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-leader-cut td {
-  border-bottom: 3px solid var(--cf-rule-red) !important;
-}
-body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-above td {
-  border-top: 3px solid var(--cf-rule-red) !important;
 }
 
 /* ------------------------------------------------------------------ */

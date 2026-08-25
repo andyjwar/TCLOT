@@ -3,6 +3,7 @@ import { TeamAvatar } from './TeamAvatar';
 import { PointsCell } from './PointsCell.jsx';
 import { standingsMobileTeamName } from './teamNameUtils.js';
 import { ClickableTeamName } from './TeamDetailOverlay.jsx';
+import { useIsCeefax } from './useIsCeefax.js';
 
 /**
  * Local copy mirroring the per-file helper in `LiveScores.jsx`,
@@ -21,9 +22,9 @@ function teamNameForEntry(teams, leagueEntryId) {
  * 8th-place band is kept. `standings-row--ceefax-leader-cut` is a
  * no-op outside the Ceefax skin (red rule under the top row).
  */
-function liveStandingsRowClass(row, idx) {
+function liveStandingsRowClass(row, idx, isCeefax) {
   const parts = [];
-  if (idx === 0) parts.push('standings-row--ceefax-leader-cut');
+  if (!isCeefax && idx === 0) parts.push('standings-row--ceefax-leader-cut');
   if (row.liveRank === 8) {
     parts.push('standings-row--divider-above', 'standings-row--8th');
   }
@@ -171,6 +172,7 @@ export function LiveStandingsTable({
   kitIndexByEntry,
   mobile,
 }) {
+  const isCeefax = useIsCeefax();
   const lastTitle = gwStandingsFrozen
     ? 'This GW’s H2H result: green win, amber draw, red loss'
     : 'Live H2H result vs opponent: green winning, amber drawing, red losing, muted pre-kickoff';
@@ -195,9 +197,9 @@ export function LiveStandingsTable({
             </tr>
           </thead>
           <tbody>
-            <SectionLabelRow label="Titans" colSpan={5} top />
+            {!isCeefax ? <SectionLabelRow label="Titans" colSpan={5} top /> : null}
             {liveStandingsRows.map((row, idx) => {
-              const rowClass = liveStandingsRowClass(row, idx);
+              const rowClass = liveStandingsRowClass(row, idx, isCeefax);
               return (
                 <Fragment key={row.league_entry}>
                   <tr className={rowClass || undefined}>
@@ -236,7 +238,7 @@ export function LiveStandingsTable({
                       />
                     </td>
                   </tr>
-                  {idx === 3 ? (
+                  {idx === 3 && !isCeefax ? (
                     <SectionLabelRow label="Minnows" colSpan={5} />
                   ) : null}
                 </Fragment>
@@ -320,9 +322,9 @@ export function LiveStandingsTable({
           </tr>
         </thead>
         <tbody>
-          <SectionLabelRow label="Titans" colSpan={11} top />
+          {!isCeefax ? <SectionLabelRow label="Titans" colSpan={11} top /> : null}
           {liveStandingsRows.map((row, idx) => {
-            const rowClass = liveStandingsRowClass(row, idx);
+            const rowClass = liveStandingsRowClass(row, idx, isCeefax);
             return (
               <Fragment key={row.league_entry}>
                 <tr className={rowClass || undefined}>
@@ -378,7 +380,7 @@ export function LiveStandingsTable({
                     />
                   </td>
                 </tr>
-                {idx === 3 ? (
+                {idx === 3 && !isCeefax ? (
                   <SectionLabelRow label="Minnows" colSpan={11} />
                 ) : null}
               </Fragment>
