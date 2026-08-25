@@ -883,6 +883,7 @@ export function PlayerDetailOverlayProvider({
                 ownerByElementId={ownerByElementId}
                 rostersHealthy={rostersHealthy}
                 plFixtures={plFixtures}
+                onNavigateAway={closeDetailImmediately}
               />
             </div>
           </div>
@@ -908,6 +909,7 @@ export function PlayerDetailOverlayProvider({
                 ownerByElementId={ownerByElementId}
                 rostersHealthy={rostersHealthy}
                 plFixtures={plFixtures}
+                onNavigateAway={closeDetailImmediately}
               />
             </div>,
           )}

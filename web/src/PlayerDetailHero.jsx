@@ -84,6 +84,7 @@ function PlayerDetailHeroDesktop({
   xiKind,
   logoMap,
   kitIndexByEntry,
+  onManagerNavigate,
 }) {
   const badgeUrl = plBadgeUrl(team?.code)
   const posLabel = POS_LABEL[el?.element_type] ?? '?'
@@ -127,6 +128,7 @@ function PlayerDetailHeroDesktop({
                 leagueEntryId={ownerLeagueEntryId}
                 title={`${ownerName} — manager card`}
                 className="pdetail__hero-owner-link"
+                onNavigate={onManagerNavigate}
               >
                 <span className="pdetail__hero-owner-crest" aria-hidden>
                   <TeamAvatar
@@ -175,6 +177,7 @@ function PlayerDetailHeroPortrait({
   onBack,
   logoMap,
   kitIndexByEntry,
+  onManagerNavigate,
 }) {
   const badgeUrl = plBadgeUrl(team?.code)
   const posLabel = POS_LABEL[el?.element_type] ?? '?'
@@ -217,6 +220,7 @@ function PlayerDetailHeroPortrait({
                 leagueEntryId={ownerLeagueEntryId}
                 title={`${ownerName} — manager card`}
                 className="pdetail-p__hero-fant"
+                onNavigate={onManagerNavigate}
               >
                 <span className="pdetail-p__owner-crest" aria-hidden>
                   <TeamAvatar
@@ -269,6 +273,7 @@ export function PlayerDetailHero({
   onBack,
   logoMap,
   kitIndexByEntry,
+  onManagerNavigate,
 }) {
   if (portrait) {
     return (
@@ -280,6 +285,7 @@ export function PlayerDetailHero({
         onBack={onBack}
         logoMap={logoMap}
         kitIndexByEntry={kitIndexByEntry}
+        onManagerNavigate={onManagerNavigate}
       />
     )
   }
@@ -291,6 +297,7 @@ export function PlayerDetailHero({
       xiKind={xiKind}
       logoMap={logoMap}
       kitIndexByEntry={kitIndexByEntry}
+      onManagerNavigate={onManagerNavigate}
     />
   )
 }

@@ -53,12 +53,16 @@ export function requestOpenTeamDetail(leagueEntryId) {
  * @param {import('react').ReactNode} props.children
  * @param {string} [props.className]
  * @param {string} [props.title]
+ * @param {() => void} [props.onNavigate] fired after the manager card is opened
+ *   (only when an opener handled it) — e.g. to close the surface it was
+ *   triggered from so the manager card *replaces* it rather than stacking.
  */
 export function ClickableManagerName({
   leagueEntryId,
   children,
   className = '',
   title,
+  onNavigate,
 }) {
   const id = Number(leagueEntryId)
   const canOpen = leagueEntryId != null && Number.isFinite(id)
@@ -71,7 +75,7 @@ export function ClickableManagerName({
   }
   const open = (e) => {
     e.stopPropagation()
-    requestOpenTeamDetail(id)
+    if (requestOpenTeamDetail(id)) onNavigate?.()
   }
   return (
     <span

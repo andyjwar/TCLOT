@@ -177,6 +177,7 @@ export function PlayerDetailView({
   ownerByElementId,
   rostersHealthy = false,
   plFixtures = null,
+  onNavigateAway,
 }) {
   const portrait = usePortraitMobile()
   const mobileLayout = useMobileLayout()
@@ -401,6 +402,7 @@ export function PlayerDetailView({
         onBack={onBack}
         logoMap={logoMap}
         kitIndexByEntry={kitIndexByEntry}
+        onManagerNavigate={onNavigateAway}
       />
 
       {compareOpen ? (
@@ -482,6 +484,7 @@ export function PlayerDetailView({
                     plFixtures={plFixtures}
                     logoMap={logoMap}
                     kitIndexByEntry={kitIndexByEntry}
+                    onManagerNavigate={onNavigateAway}
                   />
                 ) : (
                   <PlayerDetailPerformance
