@@ -38,6 +38,7 @@ import {
 import { useMobileNarrowViewport } from './usePortraitMobile.js';
 import { standingsMobileTeamName } from './teamNameUtils.js';
 import { usePredictions } from './usePredictions.js';
+import { useModelCalibration } from './useModelCalibration.js';
 import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
 import { teamProjection, anyFixtureLive } from './liveBlend.js';
@@ -54,14 +55,14 @@ import {
  * when the forecast covers neither XI (missing/stale predictions artifact,
  * orphan squads) so the meta strip can skip the odds cleanly.
  */
-function fixtureWinProbs(homeSquad, awaySquad, byId) {
+function fixtureWinProbs(homeSquad, awaySquad, byId, sigmaScale = 1) {
   const homeRows = effectiveStartersForCard(homeSquad);
   const awayRows = effectiveStartersForCard(awaySquad);
   const mode = anyFixtureLive(homeRows, awayRows) ? 'live' : 'prematch';
   const home = teamProjection(homeRows, byId, mode);
   const away = teamProjection(awayRows, byId, mode);
   if (home.matched === 0 && away.matched === 0) return null;
-  return h2hWinProbs(home, away);
+  return h2hWinProbs(home, away, 0.5, sigmaScale);
 }
 
 /**
@@ -698,6 +699,7 @@ export function LiveScores({
    * result doesn't need a win probability next to it.
    */
   const { predictions } = usePredictions();
+  const sigmaScale = useModelCalibration();
   const oddsById = useMemo(
     () => (predictions?.players?.length ? predictionsById(predictions) : null),
     [predictions],
@@ -1320,7 +1322,7 @@ export function LiveScores({
                */
               const favLabel = showFixtureOdds
                 ? favouriteMetaLabel(
-                    fixtureWinProbs(homeSquad, awaySquad, oddsById),
+                    fixtureWinProbs(homeSquad, awaySquad, oddsById, sigmaScale),
                     homeDisplayName,
                     awayDisplayName,
                   )

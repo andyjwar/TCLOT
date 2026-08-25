@@ -1,0 +1,18 @@
+{
+ "schemaVersion": 1,
+ "generatedAt": "2026-08-25T17:49:11.590Z",
+ "sigmaInflation": 1.059,
+ "applied": true,
+ "matchCount": 4,
+ "empiricalMatchSd": 18.84,
+ "modelMatchSd": 15.26,
+ "rawRatio": 1.235,
+ "credibility": 0.25,
+ "gameweeks": [
+  {
+   "gw": 1,
+   "matches": 4
+  }
+ ],
+ "method": "sd of per-match differential residuals (actual − xPtsXi) vs CLT model sd of the archived XIs; credibility-shrunk toward 1, clamped [1, 1.75]"
+}
