@@ -9,6 +9,7 @@ import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from '
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { reconstructDraftPicks } from '../src/draftBoardPicks.js'
+import { draftIdFromDetails, picksFromDraftChoices } from '../src/draftChoicesPicks.js'
 import { readLeagueId } from './readLeagueId.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
@@ -60,27 +61,55 @@ try {
   }
 
   const startGw = Number(details.league?.start_event) >= 1 ? Number(details.league.start_event) : 1
-  const picksByFpl = new Map()
 
-  for (const le of leagueEntries) {
-    const j = await fetchJson(`${DRAFT}/entry/${le.entry_id}/event/${startGw}`)
-    picksByFpl.set(
-      le.entry_id,
-      (j.picks || []).map((p) => p.element).filter((x) => x != null),
-    )
+  // Preferred: the draft's true pick log (/draft/{id}/choices) — exact order the
+  // picks were made, so reaches (e.g. João Pedro before a lower-draft_rank
+  // Gibbs-White) land in the right slot. Reconstruction is only a fallback.
+  let picks = null
+  let note = ''
+  const draftId = draftIdFromDetails(details)
+  if (draftId != null) {
+    try {
+      const choices = await fetchJson(`${DRAFT}/draft/${draftId}/choices`)
+      const fromChoices = picksFromDraftChoices(choices, leagueEntries, elementById, teamById, 15)
+      if (fromChoices?.length) {
+        picks = fromChoices
+        note = `Built directly from draft API /draft/${draftId}/choices (true pick order).`
+      } else {
+        console.warn(
+          `build-draft-picks: /draft/${draftId}/choices unusable (empty/partial) — using reconstruction fallback.`,
+        )
+      }
+    } catch (e) {
+      console.warn(`build-draft-picks: /draft/${draftId}/choices failed (${e.message}) — using reconstruction fallback.`)
+    }
+  } else {
+    console.warn('build-draft-picks: no draft id in details.league.drafts — using reconstruction fallback.')
   }
 
-  const picks = reconstructDraftPicks(leagueEntries, picksByFpl, elementById, teamById, 15, {
-    round1FplEntryIds,
-  })
+  if (!picks) {
+    const picksByFpl = new Map()
+    for (const le of leagueEntries) {
+      const j = await fetchJson(`${DRAFT}/entry/${le.entry_id}/event/${startGw}`)
+      picksByFpl.set(
+        le.entry_id,
+        (j.picks || []).map((p) => p.element).filter((x) => x != null),
+      )
+    }
+    picks = reconstructDraftPicks(leagueEntries, picksByFpl, elementById, teamById, 15, {
+      round1FplEntryIds,
+    })
+    note = round1FplEntryIds?.length
+      ? 'Snake round 1 from draft_round1_order.json; player order within team from draft_rank (reaches may be mis-ordered).'
+      : 'Snake round 1 from fallback FPL entry_id order (add draft_round1_order.json for true draft slots); within team from draft_rank.'
+  }
+
   const out = {
     _meta: {
       built: new Date().toISOString(),
       leagueId: Number(leagueId),
       startGw,
-      note: round1FplEntryIds?.length
-        ? 'Snake round 1 from draft_round1_order.json; player order within team from draft_rank.'
-        : 'Snake round 1 from fallback FPL entry_id order (add draft_round1_order.json for true draft slots); within team from draft_rank.',
+      note,
     },
     picks,
   }

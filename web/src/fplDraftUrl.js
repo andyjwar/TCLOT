@@ -29,6 +29,11 @@ export function draftResourceUrl(path) {
   return `${DRAFT_DIRECT}/${p}`
 }
 
+/** True pick log for a draft: `/draft/{draftId}/choices` (real order, auto-picks included). */
+export function draftChoicesUrl(draftId) {
+  return draftResourceUrl(`${draftId}/choices`)
+}
+
 /** FPL `entry_id` (not internal league_entry id) + GW for squad picks JSON. */
 export function draftEntryEventUrl(entryId, gameweek) {
   const base = fplApiBase()
