@@ -33,6 +33,14 @@ import {
 const LEAGUE_TITLE_ABBR = 'TCLOT'
 const BRAND_HEADER_TOP_N = 8
 
+/** Ceefax league tables: explicit odd/even row class (row 1 white, row 2 cyan). */
+function ceefaxStandingsZebraClass(rowIdx, colorTheme) {
+  if (colorTheme !== 'ceefax') return ''
+  return rowIdx % 2 === 0
+    ? 'standings-row--ceefax-odd'
+    : 'standings-row--ceefax-even'
+}
+
 function wallClockSeasonLabel() {
   return getSeasonLabel()
 }
@@ -3624,11 +3632,12 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {mobileNonLeaderStandingsRows.map((row) => {
+                        {mobileNonLeaderStandingsRows.map((row, rowIdx) => {
                           const isSelected = selectedStandingsEntry === row.league_entry
                           const rowClass = [
                             row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
                             isSelected ? 'is-selected' : '',
+                            ceefaxStandingsZebraClass(rowIdx, colorTheme),
                           ]
                             .filter(Boolean)
                             .join(' ')
@@ -3783,12 +3792,13 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {nonLeaderStandingsRows.map((row) => {
+                        {nonLeaderStandingsRows.map((row, rowIdx) => {
                           const isSelected = selectedStandingsEntry === row.league_entry
                           const mgr = managerByEntry.get(row.league_entry) ?? ''
                           const rowClass = [
                             row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
                             isSelected ? 'is-selected' : '',
+                            ceefaxStandingsZebraClass(rowIdx, colorTheme),
                           ]
                             .filter(Boolean)
                             .join(' ')

@@ -54,8 +54,6 @@ body[data-tclot-paint='1'][data-tclot-theme='ceefax'] {
   --cf-blue: #1246e0;
   --cf-blue-band: #0a2fb0;
   --cf-grid: #12408a;
-  /* Legible teletext blue for alternating league-table rows on black. */
-  --cf-table-blue: #4d84ff;
 
   --tclot-font-ui: 'VT323';
   /* Header bands: flat teletext blue (kills the violet/green gradients). */
@@ -409,12 +407,14 @@ body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--8th td,
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.row-highlight td {
   background: transparent !important;
 }
-/* Odd rows white, even rows blue — like a real Ceefax league page. */
-body[data-tclot-theme='ceefax'] .standings-table tbody tr td {
-  color: var(--cf-table-blue) !important;
-}
-body[data-tclot-theme='ceefax'] .standings-table tbody tr:nth-child(odd) td {
+/* Odd rows white, even rows cyan — like a real Ceefax league page.
+ * Row classes are set in JS (standings-row--ceefax-odd/even) so zebra
+ * survives hidden divider rows and beats later generic tbody rules. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-odd td {
   color: var(--cf-white) !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-even td {
+  color: var(--cf-cyan) !important;
 }
 /* Team name, manager subtitle, and text crest inherit the row colour. */
 body[data-tclot-theme='ceefax'] .standings-table .team-name,
@@ -440,11 +440,11 @@ body[data-tclot-theme='ceefax'] .standings-table tbody tr.is-selected td:first-c
 }
 
 /* Other tables (stats, historic) keep the generic zebra below. */
-body[data-tclot-theme='ceefax'] tbody tr td {
+body[data-tclot-theme='ceefax'] table:not(.standings-table) tbody tr td {
   color: var(--cf-cyan) !important;
   border-color: transparent !important;
 }
-body[data-tclot-theme='ceefax'] tbody tr:nth-child(even) td {
+body[data-tclot-theme='ceefax'] table:not(.standings-table) tbody tr:nth-child(even) td {
   color: var(--cf-white) !important;
 }
 

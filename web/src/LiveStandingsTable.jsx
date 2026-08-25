@@ -25,6 +25,13 @@ function teamNameForEntry(teams, leagueEntryId) {
 function liveStandingsRowClass(row, idx, isCeefax) {
   const parts = [];
   if (!isCeefax && idx === 0) parts.push('standings-row--ceefax-leader-cut');
+  if (isCeefax) {
+    parts.push(
+      idx % 2 === 0
+        ? 'standings-row--ceefax-odd'
+        : 'standings-row--ceefax-even',
+    );
+  }
   if (row.liveRank === 8) {
     parts.push('standings-row--divider-above', 'standings-row--8th');
   }
