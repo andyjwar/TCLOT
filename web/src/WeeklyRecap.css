@@ -80,10 +80,6 @@
 .weekly-recap__odds-dot--draw {
   background: var(--data-neutral, #9ca3af);
 }
-.weekly-recap__odds-note {
-  font-size: 11.5px;
-  color: var(--text-dim, #8b93a7);
-}
 .weekly-recap__upset {
   margin: 6px 0 0;
   font-size: 11.5px;
