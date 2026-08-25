@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
-import { draftEntryEventUrl } from './fplDraftUrl'
+import { draftChoicesUrl, draftEntryEventUrl } from './fplDraftUrl'
 import { reconstructDraftPicks } from './draftBoardPicks'
+import { draftIdFromDetails, picksFromDraftChoices } from './draftChoicesPicks'
 import {
   draftCurrentGameweek,
   buildFirstLeftGameweekMap,
@@ -190,36 +191,62 @@ export function useDraftBoard(league, leagueEntries) {
         const elementById = new Map((boot.elements || []).map((e) => [e.id, e]))
         const teamById = new Map((boot.teams || []).map((t) => [t.id, t]))
 
-        const orderRaw = await fetchOptionalJson('draft_round1_order.json')
-        const round1FplEntryIds = Array.isArray(orderRaw?.fplEntryIds)
-          ? orderRaw.fplEntryIds
-          : null
-
-        const picksByFpl = new Map()
-        await Promise.all(
-          leagueEntries.map(async (le) => {
-            const urlGw1 = draftEntryEventUrl(le.entry_id, startGw)
-            const r1 = await fetch(urlGw1)
-            if (!r1.ok) {
-              throw new Error(
-                `GW${startGw} picks for entry ${le.entry_id}: HTTP ${r1.status}`,
+        // Preferred: the draft's true pick log (/draft/{id}/choices) — real order,
+        // so reaches are not re-sorted by draft_rank the way reconstruction does.
+        let picksFromApi = null
+        const draftId = draftIdFromDetails({ league })
+        if (draftId != null) {
+          try {
+            const choicesRes = await fetch(draftChoicesUrl(draftId))
+            if (choicesRes.ok) {
+              const choices = await choicesRes.json()
+              const fromChoices = picksFromDraftChoices(
+                choices,
+                leagueEntries,
+                elementById,
+                teamById,
+                15,
               )
+              if (fromChoices?.length) picksFromApi = fromChoices
             }
-            const j1 = await r1.json()
-            const els = (j1.picks || []).map((p) => p.element).filter((x) => x != null)
-            picksByFpl.set(le.entry_id, els)
-          }),
-        )
+          } catch {
+            /* fall through to reconstruction */
+          }
+        }
 
-        const reconstructed = reconstructDraftPicks(
-          leagueEntries,
-          picksByFpl,
-          elementById,
-          teamById,
-          15,
-          { round1FplEntryIds },
-        )
-        let enriched = enrichPicksFromBootstrap(boot, reconstructed)
+        if (!picksFromApi) {
+          const orderRaw = await fetchOptionalJson('draft_round1_order.json')
+          const round1FplEntryIds = Array.isArray(orderRaw?.fplEntryIds)
+            ? orderRaw.fplEntryIds
+            : null
+
+          const picksByFpl = new Map()
+          await Promise.all(
+            leagueEntries.map(async (le) => {
+              const urlGw1 = draftEntryEventUrl(le.entry_id, startGw)
+              const r1 = await fetch(urlGw1)
+              if (!r1.ok) {
+                throw new Error(
+                  `GW${startGw} picks for entry ${le.entry_id}: HTTP ${r1.status}`,
+                )
+              }
+              const j1 = await r1.json()
+              const els = (j1.picks || []).map((p) => p.element).filter((x) => x != null)
+              picksByFpl.set(le.entry_id, els)
+            }),
+          )
+
+          picksFromApi = reconstructDraftPicks(
+            leagueEntries,
+            picksByFpl,
+            elementById,
+            teamById,
+            15,
+            { round1FplEntryIds },
+          )
+        }
+
+        let enriched = enrichPicksFromBootstrap(boot, picksFromApi)
         enriched = await applyRosterStatus(enriched, leagueEntries, boot)
 
         if (!cancelled) {
