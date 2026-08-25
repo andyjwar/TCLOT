@@ -124,7 +124,8 @@ body[data-tclot-theme='dark'] .gsearch__inputbar {
   border: 0;
   background: transparent;
   font: inherit;
-  font-size: 15px;
+  /* 16px keeps iOS Safari from auto-zooming the page when the field is focused. */
+  font-size: 16px;
   font-weight: 500;
   color: inherit;
   outline: none;
