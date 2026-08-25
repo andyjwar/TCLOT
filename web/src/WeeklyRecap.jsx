@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
+import { fetchLeagueDataJson } from './leagueDataFetch.js'
 import './WeeklyRecap.css'
 
 /**
@@ -18,8 +19,7 @@ export function WeeklyRecap({ teamLogoMap = {}, kitIndexByEntry }) {
 
   useEffect(() => {
     let alive = true
-    fetch(`${import.meta.env.BASE_URL}league-data/weekly-recaps.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+    fetchLeagueDataJson('weekly-recaps.json')
       .then((json) => {
         if (alive) setData(json)
       })

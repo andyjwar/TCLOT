@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { fetchLeagueDataJsonOptional } from './leagueDataFetch.js'
 import './ForbiddenWaivers.css'
 
 /** PL club badge for an FPL team `code`. */
@@ -22,12 +23,9 @@ export function ForbiddenWaivers() {
 
   useEffect(() => {
     let alive = true
-    fetch(`${import.meta.env.BASE_URL}league-data/forbidden-waivers.json`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((json) => {
-        if (alive && json) setData(json)
-      })
-      .catch(() => {})
+    fetchLeagueDataJsonOptional('forbidden-waivers.json').then((json) => {
+      if (alive && json) setData(json)
+    })
     return () => {
       alive = false
     }
