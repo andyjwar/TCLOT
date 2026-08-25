@@ -22,7 +22,7 @@ import {
   rosterIdsForLeagueEntry,
   suggestBenchTarget,
 } from './playersBenchShared.js'
-import { useOverlayDismissal } from './overlayStack.js'
+import { useOverlayDismissal, suppressOverlayHistoryOnce } from './overlayStack.js'
 import { PlayerDetailView } from './PlayerDetailView.jsx'
 import { matchesMobileLayoutViewport, useMobileLayout } from './usePortraitMobile.js'
 import './PlayerDetailOverlay.css'
@@ -673,6 +673,17 @@ export function PlayerDetailOverlayProvider({
     setBenchId(id)
   }, [])
 
+  /**
+   * Close the player card when navigating to *replace* it (e.g. tapping the
+   * owner/manager name to open the manager card). Suppresses this overlay's
+   * `history.back()` so the incoming manager overlay isn't closed by the
+   * stray `popstate` (see `suppressOverlayHistoryOnce`).
+   */
+  const navigateAwayToReplace = useCallback(() => {
+    suppressOverlayHistoryOnce('playerDetail')
+    closeDetailImmediately()
+  }, [closeDetailImmediately])
+
   const desktopSlideChrome = useCallback(
     (slideInner) => (
       <div
@@ -883,7 +894,7 @@ export function PlayerDetailOverlayProvider({
                 ownerByElementId={ownerByElementId}
                 rostersHealthy={rostersHealthy}
                 plFixtures={plFixtures}
-                onNavigateAway={closeDetailImmediately}
+                onNavigateAway={navigateAwayToReplace}
               />
             </div>
           </div>
@@ -909,7 +920,7 @@ export function PlayerDetailOverlayProvider({
                 ownerByElementId={ownerByElementId}
                 rostersHealthy={rostersHealthy}
                 plFixtures={plFixtures}
-                onNavigateAway={closeDetailImmediately}
+                onNavigateAway={navigateAwayToReplace}
               />
             </div>,
           )}

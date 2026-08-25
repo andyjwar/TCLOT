@@ -10,6 +10,24 @@ import { useEffect, useRef } from 'react';
  */
 const stack = [];
 
+/**
+ * One-shot suppression of an overlay's history `back()` on its next close.
+ *
+ * Used when one overlay *replaces* another (e.g. tapping a manager name on the
+ * player card): the outgoing overlay is unmounted synchronously while the
+ * incoming one mounts. Without this, the outgoing overlay's cleanup fires
+ * `history.back()`, and the resulting `popstate` reaches the freshly-mounted
+ * overlay before it has pushed its own history sentinel — which the new
+ * overlay misreads as a back-press aimed at it and closes itself. Suppressing
+ * the outgoing `back()` for that one close avoids the stray `popstate`.
+ */
+const suppressedHistoryKeys = new Set();
+
+/** Skip the next `history.back()` for `historyKey` when that overlay closes. */
+export function suppressOverlayHistoryOnce(historyKey) {
+  suppressedHistoryKeys.add(historyKey);
+}
+
 /** Register an open overlay. Call `release()` on unmount/close. */
 export function registerOverlay() {
   const token = {};
@@ -77,7 +95,14 @@ export function useOverlayDismissal(active, onClose, historyKey) {
       window.removeEventListener('popstate', onPop);
       reg.release();
       if (pushed && window.history.state && window.history.state[historyKey]) {
-        window.history.back();
+        if (suppressedHistoryKeys.has(historyKey)) {
+          // A replace-navigation asked us not to pop our sentinel this time,
+          // so the incoming overlay's fresh popstate isn't hijacked. The
+          // orphaned sentinel is harmless (absorbed by one extra back press).
+          suppressedHistoryKeys.delete(historyKey);
+        } else {
+          window.history.back();
+        }
       }
     };
   }, [active, historyKey]);
