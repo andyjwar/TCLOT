@@ -355,6 +355,7 @@ function SeasonSwitcher({ currentSeasonLabel, archivedSeasons = [] }) {
  *   kitIndexByEntry?: Record<string, number>,
  *   liveStatus?: object | null,
  *   hideStatusStrip?: boolean,
+ *   teamsForFormSelect?: object[],
  * }} props
  */
 function BrandHeader({
@@ -368,6 +369,7 @@ function BrandHeader({
   currentSeasonLabel,
   archivedSeasons = [],
   hideStatusStrip = false,
+  teamsForFormSelect = [],
 }) {
   const entryById = useMemo(() => {
     const m = new Map()
@@ -445,6 +447,17 @@ function BrandHeader({
               </span>
             )
           })}
+          {!showStatusStrip ? (
+            <GlobalSearch
+              leagueEntries={leagueEntries}
+              teamsForFormSelect={teamsForFormSelect}
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+              leagueDataRevision={String(
+                import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
+              ).trim()}
+            />
+          ) : null}
         </span>
       </div>
       {showStatusStrip ? (
@@ -453,7 +466,18 @@ function BrandHeader({
           role="status"
           aria-live="polite"
         >
-          <BrandHeaderStatusBody liveStatus={liveStatus} />
+          <span className="brand-header__status-copy">
+            <BrandHeaderStatusBody liveStatus={liveStatus} />
+          </span>
+          <GlobalSearch
+            leagueEntries={leagueEntries}
+            teamsForFormSelect={teamsForFormSelect}
+            teamLogoMap={teamLogoMap}
+            kitIndexByEntry={kitIndexByEntry}
+            leagueDataRevision={String(
+              import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
+            ).trim()}
+          />
         </div>
       ) : null}
     </section>
@@ -482,6 +506,7 @@ import { MobileBottomNav } from './MobileBottomNav'
 import { SettingsPage } from './SettingsPage'
 import { BrandHeaderWordmark } from './BrandHeaderWordmark'
 import { LeagueInfoModal } from './LeagueInfoModal'
+import { GlobalSearch } from './GlobalSearch.jsx'
 import { PointsCell } from './PointsCell.jsx'
 import {
   DEFAULT_TAB_STORAGE_KEY,
@@ -3319,14 +3344,18 @@ function App() {
       kitIndexByEntry={kitIndexByEntry}
       onOpenChange={setPlayerDetailOverlayOpen}
     >
+    <PlayerHistoryProvider>
     <TeamDetailOverlayProvider
       dashboardView={dashboardView}
       leagueEntries={leagueEntries}
       matches={matches}
       teamLogoMap={teamLogoMap}
       kitIndexByEntry={kitIndexByEntry}
+      teamsForFormSelect={teamsForFormSelect}
+      leagueDataRevision={String(
+        import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
+      ).trim()}
     >
-    <PlayerHistoryProvider>
     <div
       className="app fotmob"
       data-theme={colorTheme}
@@ -3348,6 +3377,7 @@ function App() {
               currentSeasonLabel={seasonCatalog.current}
               archivedSeasons={seasonCatalog.archived}
               hideStatusStrip={hideMobileStatusStrip}
+              teamsForFormSelect={teamsForFormSelect}
             />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">
@@ -4264,8 +4294,8 @@ function App() {
         onDefaultTabChange={setDefaultTabPref}
       />
     </div>
-    </PlayerHistoryProvider>
     </TeamDetailOverlayProvider>
+    </PlayerHistoryProvider>
     </PlayerDetailOverlayProvider>
   )
 }

@@ -81,6 +81,8 @@ export function TeamDetailOverlayProvider({
   matches = [],
   teamLogoMap = {},
   kitIndexByEntry = {},
+  teamsForFormSelect = [],
+  leagueDataRevision = '',
   onOpenChange,
 }) {
   const data = useMemo(
@@ -336,6 +338,8 @@ export function TeamDetailOverlayProvider({
         onBack={requestClose}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
+        teamsForFormSelect={teamsForFormSelect}
+        leagueDataRevision={leagueDataRevision}
       />
     ) : null
 

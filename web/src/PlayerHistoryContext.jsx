@@ -92,13 +92,14 @@ function useOpenPlayerHistoryOptional() {
 
 /**
  * Renders player text as a button when an FPL element id is valid and the provider is present.
- * @param {{ element: number | string | null | undefined, displayName?: string, web_name?: string, teamShort?: string, className?: string, title?: string, children: import('react').ReactNode }} props
+ * @param {{ element: number | string | null | undefined, displayName?: string, web_name?: string, teamShort?: string, leagueEntryId?: number | null, className?: string, title?: string, children: import('react').ReactNode }} props
  */
 export function ClickablePlayerName({
   element,
   displayName,
   web_name,
   teamShort,
+  leagueEntryId,
   className = '',
   title: titleProp,
   children,
@@ -121,7 +122,15 @@ export function ClickablePlayerName({
       className={`player-history-name-btn${className ? ` ${className}` : ''}`}
       title={title}
       onClick={() => {
-        openHistory?.({ element: id, displayName, web_name, teamShort });
+        openHistory?.({
+          element: id,
+          displayName,
+          web_name,
+          teamShort,
+          ...(leagueEntryId != null && Number.isFinite(Number(leagueEntryId))
+            ? { leagueEntryId: Number(leagueEntryId) }
+            : {}),
+        });
       }}
     >
       {children}

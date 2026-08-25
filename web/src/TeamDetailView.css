@@ -553,3 +553,174 @@ body[data-tclot-theme='dark'] .tc-card {
   font-family: var(--tc-mono);
   letter-spacing: 0.04em;
 }
+
+/* ------------------------------------------------------------------ */
+/* Season stats | Current squad tabs (underline, mirrors player card) */
+/* ------------------------------------------------------------------ */
+.tc-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  padding: 0 8px;
+  background: var(--tc-surface);
+  border-bottom: 1px solid var(--tc-border);
+  flex: 0 0 auto;
+}
+.tc-tab {
+  position: relative;
+  background: transparent;
+  border: none;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tc-text-muted);
+  padding: 11px 14px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.14s ease, border-color 0.14s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.tc-tab:hover {
+  color: var(--tc-text-strong);
+}
+.tc-tab.is-active {
+  color: var(--tc-text-strong);
+  font-weight: 700;
+  border-bottom-color: var(--tc-brand);
+}
+.tc-tab:focus-visible {
+  outline: 2px solid var(--tc-brand);
+  outline-offset: -3px;
+  border-radius: 4px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Current squad list                                                   */
+/* ------------------------------------------------------------------ */
+.tc-squad {
+  padding: 12px 14px 4px;
+}
+.tc-squad__note {
+  padding: 22px 16px;
+  text-align: center;
+  font-size: 12.5px;
+}
+.tc-squad__caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 700;
+  color: var(--tc-text-muted);
+  margin-bottom: 10px;
+}
+.tc-squad__total {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-family: var(--tc-mono);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--tc-brand);
+}
+.tc-squad__total small {
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--tc-text-muted);
+}
+/* Shared column geometry for header + rows. */
+.tc-squad__head,
+.tc-squad__row {
+  display: grid;
+  grid-template-columns: 1fr 2.6rem 3.6rem 3rem;
+  align-items: center;
+  gap: 6px;
+}
+.tc-squad__head {
+  padding: 0 2px 6px;
+  border-bottom: 1px solid var(--tc-border);
+}
+.tc-squad__ch {
+  font-size: 8.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 800;
+  color: var(--tc-text-muted);
+  text-align: right;
+}
+.tc-squad__ch--name {
+  text-align: left;
+}
+.tc-squad__group {
+  margin-top: 12px;
+}
+.tc-squad__pos {
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+  color: var(--tc-brand);
+  margin: 0 0 4px 2px;
+}
+.tc-squad__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tc-squad__row {
+  padding: 7px 2px;
+  border-bottom: 1px solid color-mix(in srgb, var(--tc-border) 55%, transparent);
+}
+.tc-squad__row:last-child {
+  border-bottom: none;
+}
+.tc-squad__name {
+  min-width: 0;
+  overflow: hidden;
+}
+.tc-squad__name-btn {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--tc-text-strong);
+  text-align: left;
+  vertical-align: bottom;
+  cursor: pointer;
+}
+.tc-squad__name-btn:hover {
+  color: var(--tc-brand);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.tc-squad__cell {
+  font-family: var(--tc-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+  font-weight: 700;
+  text-align: right;
+  color: var(--tc-text);
+}
+.tc-squad__cell--tenure {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--tc-text-muted);
+}
+.tc-squad__cell--gw {
+  color: var(--tc-brand);
+}
+.tc-squad__cell--season {
+  color: var(--tc-text-strong);
+  font-weight: 800;
+}
