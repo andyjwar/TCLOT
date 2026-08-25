@@ -100,57 +100,6 @@ export function WeeklyRecap({ teamLogoMap = {}, kitIndexByEntry }) {
           ) : null}
         </div>
 
-        {decided > 0 || activeGw.model.draws > 0 ? (
-          <div className="weekly-recap__model" role="status">
-            <div className="weekly-recap__model-line">
-              <span className="weekly-recap__model-label">Model vs reality</span>
-              <span className="weekly-recap__model-value tabular">
-                {activeGw.model.hits} of {decided}
-              </span>
-              <span className="weekly-recap__model-note">
-                winner calls landed
-                {activeGw.model.draws ? ` (${activeGw.model.draws} drawn)` : ''}
-                {activeGw.model.avgAbsErr != null
-                  ? ` · avg points miss ±${activeGw.model.avgAbsErr}`
-                  : ''}
-              </span>
-            </div>
-            {activeGw.model.calls.length > 0 ? (
-              <div className="weekly-recap__calls">
-                {activeGw.model.calls.map((c, i) => (
-                  <span
-                    key={i}
-                    className={
-                      'weekly-recap__call' +
-                      (c.outcome === 'hit'
-                        ? ' weekly-recap__call--hit'
-                        : c.outcome === 'miss'
-                          ? ' weekly-recap__call--miss'
-                          : '')
-                    }
-                    title={`${c.homeName} v ${c.awayName} — model favorite ${c.favoriteName} (${c.favoritePct}%)`}
-                  >
-                    <span className="weekly-recap__call-mark" aria-hidden>
-                      {c.outcome === 'hit' ? '✓' : c.outcome === 'miss' ? '✗' : '–'}
-                    </span>
-                    {standingsMobileTeamName(c.favoriteName)}{' '}
-                    <span className="tabular">{c.favoritePct}%</span>
-                  </span>
-                ))}
-              </div>
-            ) : null}
-            {activeGw.model.upset ? (
-              <p className="weekly-recap__upset">
-                Upset of the week:{' '}
-                {standingsMobileTeamName(activeGw.model.upset.winnerName)} beat{' '}
-                {standingsMobileTeamName(activeGw.model.upset.loserName)} with just a{' '}
-                <span className="tabular">{activeGw.model.upset.winnerPct}%</span>{' '}
-                pre-match chance.
-              </p>
-            ) : null}
-          </div>
-        ) : null}
-
         <div className="weekly-recap__superlatives">
           {activeGw.superlatives.weekHigh ? (
             <span className="weekly-recap__superlative">
@@ -182,6 +131,57 @@ export function WeeklyRecap({ teamLogoMap = {}, kitIndexByEntry }) {
             </span>
           ) : null}
         </div>
+
+        {decided > 0 || activeGw.model.draws > 0 ? (
+          <div className="weekly-recap__odds" role="status">
+            <div className="weekly-recap__odds-line">
+              <span className="weekly-recap__odds-label">Odds accuracy</span>
+              <span className="weekly-recap__odds-value tabular">
+                {activeGw.model.hits} of {decided}
+              </span>
+              {activeGw.model.calls.length > 0 ? (
+                <span className="weekly-recap__odds-dots" aria-hidden>
+                  {activeGw.model.calls.map((c, i) => (
+                    <span
+                      key={i}
+                      className={
+                        'weekly-recap__odds-dot' +
+                        (c.outcome === 'hit'
+                          ? ' weekly-recap__odds-dot--hit'
+                          : c.outcome === 'miss'
+                            ? ' weekly-recap__odds-dot--miss'
+                            : ' weekly-recap__odds-dot--draw')
+                      }
+                      title={`${standingsMobileTeamName(c.favoriteName)} ${c.favoritePct}% — ${
+                        c.outcome === 'hit'
+                          ? 'called it'
+                          : c.outcome === 'miss'
+                            ? 'wrong'
+                            : 'drawn'
+                      }`}
+                    />
+                  ))}
+                </span>
+              ) : null}
+              <span className="weekly-recap__odds-note">
+                winner calls landed
+                {activeGw.model.draws ? ` (${activeGw.model.draws} drawn)` : ''}
+                {activeGw.model.avgAbsErr != null
+                  ? ` · avg miss ±${activeGw.model.avgAbsErr}`
+                  : ''}
+              </span>
+            </div>
+            {activeGw.model.upset ? (
+              <p className="weekly-recap__upset">
+                Upset of the week:{' '}
+                {standingsMobileTeamName(activeGw.model.upset.winnerName)} beat{' '}
+                {standingsMobileTeamName(activeGw.model.upset.loserName)} with just a{' '}
+                <span className="tabular">{activeGw.model.upset.winnerPct}%</span>{' '}
+                pre-match chance.
+              </p>
+            ) : null}
+          </div>
+        ) : null}
       </section>
 
       {activeGw.matchups.map((m) => (
@@ -268,15 +268,28 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
           ) : null}
           <span
             className={
-              'weekly-recap-matchup__outcome' +
+              'weekly-recap-matchup__outcome-dot' +
               (m.odds.outcome === 'hit'
-                ? ' weekly-recap-matchup__outcome--hit'
+                ? ' weekly-recap-matchup__outcome-dot--hit'
                 : m.odds.outcome === 'miss'
-                  ? ' weekly-recap-matchup__outcome--miss'
-                  : '')
+                  ? ' weekly-recap-matchup__outcome-dot--miss'
+                  : ' weekly-recap-matchup__outcome-dot--draw')
             }
-          >
-            {m.odds.outcome === 'hit' ? '✓' : m.odds.outcome === 'miss' ? '✗' : '–'}
+            title={
+              m.odds.outcome === 'hit'
+                ? 'Model called it'
+                : m.odds.outcome === 'miss'
+                  ? 'Model missed'
+                  : 'Drawn'
+            }
+            aria-hidden
+          />
+          <span className="visually-hidden">
+            {m.odds.outcome === 'hit'
+              ? 'Model called it'
+              : m.odds.outcome === 'miss'
+                ? 'Model missed'
+                : 'Drawn'}
           </span>
         </p>
       ) : null}
