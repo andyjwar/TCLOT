@@ -18,7 +18,7 @@ import { useDraftPickForElement } from './useDraftPickForElement.js'
  * this player was never picked; hidden entirely while loading or when
  * `draft_picks.json` is unavailable.
  */
-function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry }) {
+function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry, onManagerNavigate }) {
   const { status, pick } = useDraftPickForElement(elementId)
   if (status !== 'ready') return null
   if (!pick) {
@@ -39,6 +39,7 @@ function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry }) {
         leagueEntryId={pick.leagueEntryId}
         title={`${pick.teamName} — manager card`}
         className="pdetail-draftline__owner"
+        onNavigate={onManagerNavigate}
       >
         {pick.leagueEntryId != null ? (
           <TeamAvatar
@@ -94,6 +95,7 @@ export function PlayerDetailOverview({
   plFixtures = null,
   logoMap = {},
   kitIndexByEntry = undefined,
+  onManagerNavigate,
 }) {
   const elementType = el?.element_type
   const seasonPoints = Number(el?.total_points) || 0
@@ -177,6 +179,7 @@ export function PlayerDetailOverview({
       elementId={el?.id}
       logoMap={logoMap}
       kitIndexByEntry={kitIndexByEntry}
+      onManagerNavigate={onManagerNavigate}
     />
   )
 
