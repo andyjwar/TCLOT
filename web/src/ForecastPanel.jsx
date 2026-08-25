@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { usePredictions } from './usePredictions.js';
+import { useModelCalibration } from './useModelCalibration.js';
 import { useConfirmedLineups } from './useConfirmedLineups.js';
 import {
   POSITIONS,
@@ -315,6 +316,7 @@ function BreakdownBar({ forecast }) {
 }
 
 function MatchupPreview({ matchups, byId }) {
+  const sigmaScale = useModelCalibration();
   const rows = useMemo(() => {
     return (matchups || []).map((m) => {
       const homeIds = m.home?.elementIds ?? [];
@@ -322,11 +324,11 @@ function MatchupPreview({ matchups, byId }) {
       const hasXp = homeIds.length > 0 && awayIds.length > 0;
       const homeDist = teamForecastDistribution(byId, homeIds);
       const awayDist = teamForecastDistribution(byId, awayIds);
-      const probs = hasXp ? h2hWinProbs(homeDist, awayDist) : null;
+      const probs = hasXp ? h2hWinProbs(homeDist, awayDist, 0.5, sigmaScale) : null;
       const lean = hasXp ? matchupLean(homeDist.mu, awayDist.mu) : null;
       return { ...m, homeDist, awayDist, probs, lean, hasXp };
     });
-  }, [matchups, byId]);
+  }, [matchups, byId, sigmaScale]);
 
   if (!rows.length) {
     return (

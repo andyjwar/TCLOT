@@ -227,6 +227,18 @@ test('h2hWinProbs near-even teams split roughly evenly', () => {
   assert.ok(Math.abs(p.homeWinPct - p.awayWinPct) < 2);
 });
 
+test('h2hWinProbs sigmaScale > 1 pulls the same edge toward even', () => {
+  const home = { mu: 55, sigma: 8 };
+  const away = { mu: 45, sigma: 8 };
+  const raw = h2hWinProbs(home, away);
+  const damped = h2hWinProbs(home, away, 0.5, 1.4);
+  assert.ok(damped.homeWinPct < raw.homeWinPct, 'inflated sigma damps the favorite');
+  assert.ok(damped.homeWinPct > 50, 'favorite is still favored');
+  // Default / invalid scales are a no-op.
+  assert.deepEqual(h2hWinProbs(home, away, 0.5, 1), raw);
+  assert.deepEqual(h2hWinProbs(home, away, 0.5, NaN), raw);
+});
+
 test('h2hWinProbs degenerate (no variance) returns a certain result', () => {
   assert.deepEqual(h2hWinProbs({ mu: 50, sigma: 0 }, { mu: 40, sigma: 0 }), {
     homeWinPct: 100,

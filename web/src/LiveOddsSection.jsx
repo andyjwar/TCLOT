@@ -3,6 +3,7 @@ import { LiveFixtureCompareRow } from './LiveFixtureKeyStats.jsx';
 import { TeamAvatar } from './TeamAvatar';
 import { MatchupMeta, MatchupHeader } from './MatchupScorecard.jsx';
 import { usePredictions } from './usePredictions.js';
+import { useModelCalibration } from './useModelCalibration.js';
 import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
 import { teamProjection, teamReturns, anyFixtureLive } from './liveBlend.js';
@@ -169,6 +170,7 @@ export function LiveOddsSection({
   liveRankByEntry,
 }) {
   const { predictions, loading } = usePredictions();
+  const sigmaScale = useModelCalibration();
   const [openKeys, setOpenKeys] = useState(() => new Set());
 
   const computed = useMemo(() => {
@@ -200,7 +202,7 @@ export function LiveOddsSection({
       const headline = liveData ?? pre;
       models.set(f.key, {
         live,
-        probs: h2hWinProbs(headline.home, headline.away),
+        probs: h2hWinProbs(headline.home, headline.away, 0.5, sigmaScale),
         pre,
         liveData,
         homeReturns: teamReturns(homeRows, byId, 'prematch', 'home', 3),
@@ -209,7 +211,7 @@ export function LiveOddsSection({
     }
     if (models.size === 0) return null;
     return { gwMismatch, forecastGw: gw, models };
-  }, [predictions, fixtures, gameweek, gwFinished]);
+  }, [predictions, fixtures, gameweek, gwFinished, sigmaScale]);
 
   if (loading || !computed) return null;
 

@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { LiveFixtureCompareRow } from './LiveFixtureKeyStats.jsx';
 import { usePredictions } from './usePredictions.js';
+import { useModelCalibration } from './useModelCalibration.js';
 import { useGwProjectionsHistory } from './useGwProjectionsHistory.js';
 import { predictionsById, h2hWinProbs, finishedMatchupOdds } from './forecastHelpers.js';
 import { effectiveStartersForCard } from './liveFixtureCardDerivations.js';
@@ -260,6 +261,7 @@ function FinishedGwOdds({ gw, homeId, awayId, homeName, awayName }) {
  */
 function CurrentGwOdds({ homeSquad, awaySquad, homeId, awayId, homeName, awayName, ctx }) {
   const { predictions, loading } = usePredictions();
+  const sigmaScale = useModelCalibration();
   const [modeOverride, setModeOverride] = useState(null);
 
   const model = useMemo(() => {
@@ -303,7 +305,7 @@ function CurrentGwOdds({ homeSquad, awaySquad, homeId, awayId, homeName, awayNam
       : 'prematch';
   const isLive = mode === 'live';
   const data = isLive && model.liveData ? model.liveData : model.pre;
-  const probs = h2hWinProbs(data.home, data.away);
+  const probs = h2hWinProbs(data.home, data.away, 0.5, sigmaScale);
   const f1 = (v) => (Number(v) || 0).toFixed(1);
 
   return (

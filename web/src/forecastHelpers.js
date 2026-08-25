@@ -204,10 +204,16 @@ export function teamForecastDistribution(byId, elementIds = []) {
  * Win / draw / loss probabilities for two team distributions via a CLT normal
  * approximation (sum of ~11 independent player scores). `drawBand` accounts for
  * integer-point ties. Returns percentages (1 dp) that sum to ~100.
+ *
+ * `sigmaScale` is an empirical variance-inflation factor (>= 1) from
+ * model-calibration.json: the independence assumption understates the true
+ * team-week spread (teammates share clean sheets and goals), which made the
+ * win bar overreact to small point differentials. 1 = no calibration data yet.
  */
-export function h2hWinProbs(home, away, drawBand = 0.5) {
+export function h2hWinProbs(home, away, drawBand = 0.5, sigmaScale = 1) {
   const dMu = (home?.mu ?? 0) - (away?.mu ?? 0);
-  const sd = Math.sqrt((home?.sigma ?? 0) ** 2 + (away?.sigma ?? 0) ** 2);
+  const scale = Number.isFinite(sigmaScale) && sigmaScale > 0 ? sigmaScale : 1;
+  const sd = scale * Math.sqrt((home?.sigma ?? 0) ** 2 + (away?.sigma ?? 0) ** 2);
   const r = (x) => Math.round(x * 1000) / 10;
   if (!(sd > 0)) {
     if (dMu > 0) return { homeWinPct: 100, drawPct: 0, awayWinPct: 0 };
