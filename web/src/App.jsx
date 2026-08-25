@@ -2497,16 +2497,17 @@ const EMPTY_TEAM_LOGO_MAP = {}
  * picked light/dark keep their choice. */
 const THEME_STORAGE_KEY = 'tclot-theme'
 
-/** Possible values: 'light' | 'dark' | 'system'. 'system' means "follow
- * `prefers-color-scheme`". Users who haven't picked a theme yet get LIGHT
- * (the app's default look); dark and follow-OS are opt-in via Settings.
- * Older stored values ('light'/'dark'/'system') remain valid prefs — no
- * migration needed, and any explicit choice still wins. */
+/** Possible values: 'light' | 'dark' | 'system' | 'ceefax'. 'system' means
+ * "follow `prefers-color-scheme`"; 'ceefax' is a nostalgic teletext skin
+ * (resolved directly, like light/dark, not via the OS). Users who haven't
+ * picked a theme yet get LIGHT (the app's default look); dark, follow-OS and
+ * Ceefax are opt-in via Settings. Older stored values remain valid prefs —
+ * no migration needed, and any explicit choice still wins. */
 function readStoredThemePref() {
   if (typeof window === 'undefined') return 'light'
   try {
     const s = window.localStorage.getItem(THEME_STORAGE_KEY)
-    if (s === 'light' || s === 'dark' || s === 'system') return s
+    if (s === 'light' || s === 'dark' || s === 'system' || s === 'ceefax') return s
   } catch {
     /* ignore */
   }
@@ -2690,6 +2691,17 @@ function App() {
 
   useLayoutEffect(() => {
     document.body.dataset.tclotTheme = colorTheme
+    // Browser / iOS status-bar chrome: black for Ceefax, leave Scorebook
+    // green alone for light/dark (set once in main.jsx).
+    if (colorTheme === 'ceefax') {
+      document
+        .querySelector("meta[name='theme-color']")
+        ?.setAttribute('content', '#000000')
+    } else if (document.body.dataset.tclotPaint === '1') {
+      document
+        .querySelector("meta[name='theme-color']")
+        ?.setAttribute('content', '#17402f')
+    }
   }, [colorTheme])
 
 
