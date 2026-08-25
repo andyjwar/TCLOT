@@ -198,28 +198,34 @@
 }
 
 .weekly-recap-matchup__teams {
+  /* Shared column tracks so home + away rows align rank / record / star. */
   display: grid;
-  gap: 4px;
+  grid-template-columns: 18px minmax(0, 1fr) 5ch 5.5ch minmax(9ch, max-content);
+  column-gap: 8px;
+  row-gap: 4px;
   margin-top: 10px;
   padding-top: 8px;
   border-top: 1px solid var(--line, rgba(139, 147, 167, 0.18));
 }
-/* Per-team meta: a fixed grid so both sides' columns line up exactly.
- *   row 1:  avatar | name (+streak) | rank | record | star
- *   row 2:  avatar |  manager       | title-odds change (right-aligned)
- * The avatar and identity block span both rows; the title-odds line gets
- * its own aligned row instead of wrapping under a random column. */
+/* Per-team meta: two lines per team (stats row + title-odds row). Subgrid
+ * inherits the parent column tracks above so both teams' columns line up. */
 .weekly-recap-matchup__team-row {
   display: grid;
-  grid-template-columns: 18px minmax(0, 1fr) auto auto minmax(0, auto);
+  grid-column: 1 / -1;
+  grid-template-columns: subgrid;
+  grid-template-rows: auto auto;
   grid-template-areas:
     'avatar identity rank record star'
     'avatar identity odds  odds   odds';
   align-items: center;
-  column-gap: 8px;
   row-gap: 1px;
   font-size: 12px;
   color: var(--text-dim, #8b93a7);
+}
+@supports not (grid-template-columns: subgrid) {
+  .weekly-recap-matchup__team-row {
+    grid-template-columns: 18px minmax(0, 1fr) 5ch 5.5ch minmax(9ch, max-content);
+  }
 }
 .weekly-recap-matchup__team-row .team-avatar-frame {
   grid-area: avatar;
