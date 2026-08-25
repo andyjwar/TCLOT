@@ -48,6 +48,9 @@ body[data-tclot-paint='1'][data-tclot-theme='ceefax'] {
   --cf-green: #00e64c;
   --cf-magenta: #ff5cff;
   --cf-red: #ff3b30;
+  /* Darker, faded red for the standings group rules — the bright red read
+   * too hot as full-width lines. Text/losses keep the vivid --cf-red. */
+  --cf-rule-red: #8f221b;
   --cf-blue: #1246e0;
   --cf-blue-band: #0a2fb0;
   --cf-grid: #12408a;
@@ -78,7 +81,7 @@ body[data-tclot-theme='ceefax'] [data-theme='ceefax'] {
   --fm-table-head: #001133;
   --fm-row-hi: #001a3a;
   --fm-border: var(--cf-grid);
-  --fm-standings-cut: var(--cf-red);
+  --fm-standings-cut: var(--cf-rule-red);
 
   /* Type ramp — white primary, cyan secondary (as Ceefax used cyan a lot) */
   --fm-text: var(--cf-white);
@@ -326,7 +329,7 @@ body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider td {
   line-height: 0 !important;
   font-size: 0 !important;
   border: 0 !important;
-  background: var(--cf-red) !important;
+  background: var(--cf-rule-red) !important;
 }
 body[data-tclot-theme='ceefax'] .standings-divider__label {
   display: none !important;
@@ -339,10 +342,10 @@ body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider--top
 /* Row-based cuts (leader below, 8th above) also render as solid red. */
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-below td,
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-leader-cut td {
-  border-bottom: 3px solid var(--cf-red) !important;
+  border-bottom: 3px solid var(--cf-rule-red) !important;
 }
 body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-above td {
-  border-top: 3px solid var(--cf-red) !important;
+  border-top: 3px solid var(--cf-rule-red) !important;
 }
 
 /* ------------------------------------------------------------------ */
