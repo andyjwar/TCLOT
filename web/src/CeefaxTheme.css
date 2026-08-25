@@ -143,16 +143,27 @@ body[data-tclot-theme='ceefax'] [data-theme='ceefax'] {
   --live-villain-color: var(--cf-magenta);
   --live-villain-strong: var(--cf-magenta);
   --live-villain-tint: rgba(255, 92, 255, 0.12);
+
+  /* Ceefax type ramp — ~1.4× the default --text-* tokens so every
+   * var(--text-sm) etc. site-wide reads chunky on a phone. */
+  --text-xs: 16px;
+  --text-sm: 19px;
+  --text-md: 22px;
+  --text-lg: 25px;
+  --text-xl: 28px;
+  --text-2xl: 36px;
+  --text-3xl: 42px;
+  --text-4xl: 52px;
 }
 
 /* ------------------------------------------------------------------ */
 /* Structural flatten — mono type, square corners, no shadows         */
 /* ------------------------------------------------------------------ */
 body[data-tclot-theme='ceefax'] {
-  /* VT323 reads small at Inter's sizes; bump the body once so the
-   * cascade stays proportional (do NOT put em-bumps on `*`). A larger
-   * base + roomier line-height gives the tall teletext glyph feel. */
-  font-size: 22px;
+  /* VT323 reads small at Inter's sizes; bump the body once so rem-based
+   * content (schedule rows, stats tables, etc.) scales with the cascade.
+   * 32px base ≈ 45% up from the prior 22px — chunky teletext on mobile. */
+  font-size: 32px;
   line-height: 1.5;
 }
 /* Mild vertical stretch for authentic Mode-7 "tall text". Leaf text
@@ -205,6 +216,7 @@ body[data-tclot-theme='ceefax'] img {
 /* ------------------------------------------------------------------ */
 body[data-tclot-theme='ceefax'] .app.fotmob {
   background: var(--cf-black) !important;
+  font-size: 1em;
 }
 
 /* Tiles/cards → black panels ruled with a blue grid line (teletext table
@@ -383,6 +395,70 @@ body[data-tclot-theme='ceefax'] .mobile-tab-bar__label {
   letter-spacing: 0.04em !important;
   text-transform: none;
   line-height: 1.2 !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Type bump — hardcoded px sizes in App.css / LiveFixtureCard.css    */
+/* that ignore the body rem cascade (standings, subnav, overlays).    */
+/* ------------------------------------------------------------------ */
+/* Standings mobile table headers are locked to 10px in App.css. */
+body[data-tclot-theme='ceefax'] .standings-table--variant-c-mobile thead th,
+body[data-tclot-theme='ceefax'] .standings-table--live-mobile thead th {
+  font-size: 16px !important;
+}
+/* Manager subtitle under team names. */
+body[data-tclot-theme='ceefax'] .standings-team-mgr {
+  font-size: 17px !important;
+}
+/* Mobile underline subnav (Table / Schedule / Stats) — 13px in App.css. */
+@media (max-width: 720px) {
+  body[data-tclot-theme='ceefax'] .subnav:not(.li-subnav) .subnav__tab {
+    font-size: 20px !important;
+    padding: 14px 16px 13px !important;
+  }
+}
+/* Stats margin / weeks tables use small rem bases — lift explicitly. */
+body[data-tclot-theme='ceefax'] .win-margin-table {
+  font-size: 1.05rem !important;
+}
+body[data-tclot-theme='ceefax'] .win-margin-table thead th {
+  font-size: 0.9rem !important;
+}
+/* Live fixture overlay — portalled shell + Key Stats / H2H blocks. */
+body[data-tclot-theme='ceefax'] .lfc-root {
+  font-size: 32px;
+}
+body[data-tclot-theme='ceefax'] .lfc-block__h,
+body[data-tclot-theme='ceefax'] .lfc-h2h__meta,
+body[data-tclot-theme='ceefax'] .lfc-h2h__empty {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-cmp__val {
+  font-size: 22px !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-cmp__label {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__ab,
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__score {
+  font-size: 1.05em !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-team__name {
+  font-size: 1.05em !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-team__score {
+  font-size: 1.15em !important;
+}
+/* Section kickers (NEXT GAME WEEK TWO, WINS BY MARGIN, etc.). */
+body[data-tclot-theme='ceefax'] .tile-title,
+body[data-tclot-theme='ceefax'] .tile-title--sm,
+body[data-tclot-theme='ceefax'] .tile--standings-next-gw__title,
+body[data-tclot-theme='ceefax'] .standings-stats-eyebrow {
+  font-size: 1.15em !important;
+}
+body[data-tclot-theme='ceefax'] .standings-stats-toggle__btn {
+  font-size: 1em !important;
+  padding: 7px 16px !important;
 }
 /* Colour the five slots (Table / Moves / centre / Players / More).
  * Centre uses the sibling `.mobile-tab-bar__label` under `.mobile-tab-bar__center`. */
