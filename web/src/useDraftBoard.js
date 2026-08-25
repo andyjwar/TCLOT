@@ -109,7 +109,8 @@ function enrichPicksFromBootstrap(boot, picks) {
     }
     const full = [el?.first_name, el?.second_name].filter(Boolean).join(' ').trim()
     const playerFullName = full || el?.web_name || p.playerName
-    return { ...p, totalPoints, playerFullName, badgeUrl }
+    const clubShort = tm?.short_name ? String(tm.short_name) : null
+    return { ...p, totalPoints, playerFullName, badgeUrl, clubShort }
   })
 }
 

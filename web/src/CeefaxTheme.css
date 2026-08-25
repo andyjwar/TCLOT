@@ -212,20 +212,51 @@ body[data-tclot-theme='ceefax'] img {
   image-rendering: pixelated;
 }
 
-/* Team crests / club badges are removed entirely — teletext is text-only,
- * and the coloured club logos clash with the flat 8-colour palette. */
-body[data-tclot-theme='ceefax'] .team-avatar-frame,
-body[data-tclot-theme='ceefax'] .team-shirt,
+/* Team crests / club badges become text initials in Ceefax (handled in JS:
+ * TeamAvatar + club-badge renderers emit the club code). A few decorative
+ * crest images with no code plumbed through are hidden outright. */
 body[data-tclot-theme='ceefax'] .team-avatar-fallback-initials,
 body[data-tclot-theme='ceefax'] .brand-header__crest,
-body[data-tclot-theme='ceefax'] .draft-board-row__club-badge,
-body[data-tclot-theme='ceefax'] .draft-grid__club,
-body[data-tclot-theme='ceefax'] .draft-rlist__club,
-body[data-tclot-theme='ceefax'] .forbidden-waivers__badge,
-body[data-tclot-theme='ceefax'] .tc-l5__badge,
 body[data-tclot-theme='ceefax'] .pdetail-l5__crest,
 body[data-tclot-theme='ceefax'] .pdetail-l5__crest-fallback {
   display: none !important;
+}
+
+/* Text club/team codes that replace crests. Cyan monospace so they read as
+ * teletext data, sized to sit where the badge used to. */
+body[data-tclot-theme='ceefax'] .team-avatar-code,
+body[data-tclot-theme='ceefax'] .draft-rlist__club--code,
+body[data-tclot-theme='ceefax'] .draft-grid__club--code,
+body[data-tclot-theme='ceefax'] .draft-board-row__club-badge--code,
+body[data-tclot-theme='ceefax'] .forbidden-waivers__badge--code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--cf-cyan) !important;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+body[data-tclot-theme='ceefax'] .team-avatar-code {
+  min-width: 2.4em;
+  font-size: 0.92em;
+}
+body[data-tclot-theme='ceefax'] .team-avatar-code--sm {
+  min-width: 2.2em;
+  font-size: 0.82em;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__club--code,
+body[data-tclot-theme='ceefax'] .draft-grid__club--code,
+body[data-tclot-theme='ceefax'] .draft-board-row__club-badge--code {
+  width: auto;
+  min-width: 2.4em;
+  font-size: 0.95rem;
+}
+body[data-tclot-theme='ceefax'] .forbidden-waivers__badge--code {
+  min-width: 2.6em;
+  font-size: 1rem;
 }
 
 /* Form guide: green for a win, red for a loss, yellow for a draw — the
