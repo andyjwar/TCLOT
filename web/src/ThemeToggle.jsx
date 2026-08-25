@@ -59,11 +59,35 @@ function SystemIcon() {
   )
 }
 
+/** Teletext "mosaic" glyph — a 3×3 grid of blocks evoking Ceefax's
+ * chunky graphics characters. Uses filled rects (not strokes) so it
+ * reads as blocky pixels rather than a line icon. */
+function CeefaxIcon() {
+  return (
+    <svg
+      className="theme-toggle__icon"
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      stroke="none"
+      aria-hidden
+    >
+      <rect x="3" y="3" width="5" height="5" />
+      <rect x="14.5" y="3" width="6.5" height="5" />
+      <rect x="3" y="9.5" width="18" height="5" />
+      <rect x="3" y="16" width="6.5" height="5" />
+      <rect x="16" y="16" width="5" height="5" />
+    </svg>
+  )
+}
+
 /**
  * @param {{
- *   value: 'light' | 'dark' | 'system',
- *   onChange: (t: 'light' | 'dark' | 'system') => void,
+ *   value: 'light' | 'dark' | 'system' | 'ceefax',
+ *   onChange: (t: 'light' | 'dark' | 'system' | 'ceefax') => void,
  *   includeSystem?: boolean,
+ *   includeCeefax?: boolean,
  *   showLabels?: boolean,
  * }} props
  *
@@ -73,12 +97,23 @@ function SystemIcon() {
  * including a "follow OS" option. Callers pass `value: 'system'` to
  * mark the System button as active.
  *
+ * When `includeCeefax` is true, appends a fourth "Ceefax" button — a
+ * nostalgic teletext skin. It is a pure presentation theme (like light
+ * / dark), resolved directly (not via prefers-color-scheme), so callers
+ * pass `value: 'ceefax'` to mark it active.
+ *
  * `showLabels` renders text labels next to the icons (used by the
  * Settings rows, where "Light / Dark / System" should be readable
  * without hovering); the compact icon-only form stays the default for
  * tight toolbars.
  */
-export function ThemeToggle({ value, onChange, includeSystem = false, showLabels = false }) {
+export function ThemeToggle({
+  value,
+  onChange,
+  includeSystem = false,
+  includeCeefax = false,
+  showLabels = false,
+}) {
   const btnClass = (t) =>
     [
       'theme-toggle__btn',
@@ -119,6 +154,18 @@ export function ThemeToggle({ value, onChange, includeSystem = false, showLabels
         >
           <SystemIcon />
           {showLabels ? <span className="theme-toggle__label">System</span> : null}
+        </button>
+      ) : null}
+      {includeCeefax ? (
+        <button
+          type="button"
+          className={`${btnClass('ceefax')} theme-toggle__btn--ceefax`}
+          onClick={() => onChange('ceefax')}
+          aria-pressed={value === 'ceefax'}
+          aria-label="Ceefax mode"
+        >
+          <CeefaxIcon />
+          {showLabels ? <span className="theme-toggle__label">Ceefax</span> : null}
         </button>
       ) : null}
     </div>

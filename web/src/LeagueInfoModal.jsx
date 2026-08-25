@@ -97,8 +97,8 @@ function liInitials(text, count = 2) {
  *   teamLogoMap?: Record<string|number, string>,
  *   kitIndexByEntry?: Record<string|number, number>,
  *   gw?: number | null,
- *   themePref: 'light' | 'dark' | 'system',
- *   onThemePrefChange: (t: 'light' | 'dark' | 'system') => void,
+ *   themePref: 'light' | 'dark' | 'system' | 'ceefax',
+ *   onThemePrefChange: (t: 'light' | 'dark' | 'system' | 'ceefax') => void,
  *   defaultTab: string,
  *   onDefaultTabChange: (id: string) => void,
  * }} props

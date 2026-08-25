@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
 import './PaintPreview.css'
+import './CeefaxTheme.css'
 import App from './App.jsx'
 import { Mockup } from './Mockup.jsx'
 import { GameweekStatesMockup } from './GameweekStatesMockup.jsx'
@@ -44,7 +45,12 @@ if (typeof window !== 'undefined') {
     if (paint === '1') localStorage.removeItem('tclot-paint')
     else if (paint === '0') localStorage.setItem('tclot-paint', '0')
     const theme = params.get('theme')
-    if (theme === 'light' || theme === 'dark' || theme === 'system') {
+    if (
+      theme === 'light' ||
+      theme === 'dark' ||
+      theme === 'system' ||
+      theme === 'ceefax'
+    ) {
       localStorage.setItem('tclot-theme', theme)
     }
     if (localStorage.getItem('tclot-paint') === '0') paintOn = false

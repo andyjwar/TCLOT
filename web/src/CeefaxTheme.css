@@ -1,0 +1,762 @@
+/*
+ * TCLOT "Ceefax" theme — a nostalgic BBC teletext skin.
+ * ============================================================================
+ * Selected via the Settings theme toggle (a 4th option beside
+ * Light / Dark / System). It is a pure PRESENTATION layer: no selector in
+ * this file changes geometry logic, data, or behaviour — only colour, type,
+ * borders, radii and a couple of decorative CRT flourishes. Deleting this
+ * file + its `main.jsx` import + the toggle button restores the app exactly.
+ *
+ * Wiring: App sets `data-theme="ceefax"` on `.app.fotmob` and
+ * `data-tclot-theme="ceefax"` on <body> (mirrored to overlay portals). This
+ * file therefore scopes everything under `body[data-tclot-theme='ceefax']`.
+ *
+ * Teletext look, drawn from real Ceefax pages:
+ *   - Pure black canvas, chunky fixed-pitch (mono) type.
+ *   - The 8 teletext colours: white, yellow, cyan, green, magenta, red, blue.
+ *   - Solid colour header bands (blue), coloured "fastext" nav links along
+ *     the bottom (red / green / yellow / cyan), red/coloured row separators.
+ *   - No rounded corners, no drop shadows, no gradients — flat blocks.
+ *   - Faint CRT scanlines over the top (very low opacity, non-interactive).
+ *
+ * NOTE ON `!important`: this is a bold, opt-in, whole-app reskin sitting on
+ * top of a ~19k-line stylesheet AND the default "Scorebook" paint layer.
+ * Scoped `!important`s here are the least-fragile way to guarantee the flat
+ * teletext look holds over hard-coded colours/gradients elsewhere, while
+ * staying fully self-contained and trivially removable.
+ * ============================================================================
+ */
+
+/* Classic CRT / teletext-ish fixed-pitch face. VT323 is a freely available
+ * pixel-terminal font that reads as authentically "on-screen" as any web
+ * font gets without shipping a bespoke Mode-7 face. */
+@import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+/* ------------------------------------------------------------------ */
+/* Teletext palette + token remap (body scope — also covers portals)  */
+/* ------------------------------------------------------------------ */
+/* The compound `[data-tclot-paint='1']` twin keeps specificity level with
+ * the always-on paint layer; this file imports after PaintPreview.css, so at
+ * equal specificity these win. */
+body[data-tclot-theme='ceefax'],
+body[data-tclot-paint='1'][data-tclot-theme='ceefax'] {
+  /* Teletext 8-colour set (text-legible eases of the pure RGB values) */
+  --cf-black: #000000;
+  --cf-white: #ffffff;
+  --cf-yellow: #ffe400;
+  --cf-cyan: #00e6ff;
+  --cf-green: #00e64c;
+  --cf-magenta: #ff5cff;
+  --cf-red: #ff3b30;
+  /* Darker, faded red for the standings group rules — the bright red read
+   * too hot as full-width lines. Text/losses keep the vivid --cf-red. */
+  --cf-rule-red: #8f221b;
+  --cf-blue: #1246e0;
+  --cf-blue-band: #0a2fb0;
+  --cf-grid: #12408a;
+
+  --tclot-font-ui: 'VT323';
+  /* Header bands: flat teletext blue (kills the violet/green gradients). */
+  --tclot-header-grad: var(--cf-blue-band);
+  --tclot-header-solid: var(--cf-blue-band);
+
+  /* index.css body-shell tokens */
+  --bg: var(--cf-black);
+  --text: var(--cf-white);
+  --text-h: var(--cf-white);
+  --border: var(--cf-grid);
+
+  background: var(--cf-black) !important;
+  color: var(--cf-white);
+}
+
+/* App shell + any overlay portal carrying data-theme='ceefax' */
+body[data-tclot-theme='ceefax'] .fotmob,
+body[data-tclot-theme='ceefax'] [data-theme='ceefax'] {
+  /* Surfaces — everything collapses to pure black; delineation comes from
+   * coloured grid borders, not tonal cards. */
+  --fm-bg: var(--cf-black);
+  --fm-card: var(--cf-black);
+  --fm-surface-2: var(--cf-black);
+  --fm-table-head: #001133;
+  --fm-row-hi: #001a3a;
+  --fm-border: var(--cf-grid);
+  --fm-standings-cut: var(--cf-rule-red);
+
+  /* Type ramp — white primary, cyan secondary (as Ceefax used cyan a lot) */
+  --fm-text: var(--cf-white);
+  --fm-text-strong: var(--cf-white);
+  --fm-muted: var(--cf-cyan);
+
+  /* Result / data semantics mapped to teletext hues */
+  --fm-win: var(--cf-green);
+  --fm-draw: var(--cf-yellow);
+  --fm-loss: var(--cf-red);
+  --fm-loss-dot: var(--cf-red);
+  --fm-pitch: var(--cf-green);
+  --fm-accent: var(--cf-yellow);
+  --fm-accent-gradient: var(--cf-yellow);
+  --fm-accent-glow: none;
+  --fm-dash-gradient: var(--cf-blue-band);
+
+  /* Chrome / selection accent → teletext yellow */
+  --tclot-logo-purple: var(--cf-yellow);
+  --fm-dashboard-nav-active-bg: var(--cf-blue-band);
+  --fm-dashboard-nav-active-glow: none;
+  --fm-nav-hover-bg: #001a3a;
+  --fm-nav-hover-border: var(--cf-cyan);
+  --fm-nav-hover-text: var(--cf-cyan);
+  --dash-nav-tab-active: var(--cf-yellow);
+  --dash-nav-tab-line: var(--cf-yellow);
+  --dash-nav-tab-idle: var(--cf-cyan);
+  --pill-active-bg: var(--cf-blue-band);
+  --pill-active-fg: var(--cf-yellow);
+  --pill-active-border: var(--cf-cyan);
+  --pill-idle-hover-bg: #001a3a;
+  --fm-standings-8th-bg: rgba(255, 59, 48, 0.16);
+
+  /* Phase-1 design-system tokens */
+  --brand: var(--cf-yellow);
+  --brand-grad: var(--cf-blue-band);
+  --brand-tint: rgba(255, 228, 0, 0.14);
+  --data-positive: var(--cf-green);
+  --data-negative: var(--cf-red);
+  --data-neutral: var(--cf-cyan);
+  --data-warning: var(--cf-yellow);
+  --surface: var(--cf-black);
+  --surface-2: var(--cf-black);
+  --border: var(--cf-grid);
+  --text: var(--cf-white);
+  --text-strong: var(--cf-white);
+  --text-muted: var(--cf-cyan);
+  --row-hi: #001a3a;
+
+  /* Radii → square. Motion kept, glOws removed. */
+  --r-xs: 0px;
+  --r-sm: 0px;
+  --r-md: 0px;
+  --r-lg: 0px;
+  --r-xl: 0px;
+  --r-circle: 0px;
+
+  /* Narrative hero/villain tints → teletext magenta/green */
+  --live-hero-color: var(--cf-yellow);
+  --live-hero-strong: var(--cf-yellow);
+  --live-hero-tint: rgba(255, 228, 0, 0.12);
+  --live-villain-color: var(--cf-magenta);
+  --live-villain-strong: var(--cf-magenta);
+  --live-villain-tint: rgba(255, 92, 255, 0.12);
+
+  /* Ceefax type ramp — bumped again for VT323 legibility on dense lists. */
+  --text-xs: 18px;
+  --text-sm: 22px;
+  --text-md: 25px;
+  --text-lg: 28px;
+  --text-xl: 32px;
+  --text-2xl: 38px;
+  --text-3xl: 44px;
+  --text-4xl: 54px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Structural flatten — mono type, square corners, no shadows         */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] {
+  /* VT323 reads small at Inter's sizes; bump the body once so rem-based
+   * content (schedule rows, stats tables, etc.) scales with the cascade. */
+  font-size: 36px;
+  line-height: 1.5;
+}
+/* Mild vertical stretch for authentic Mode-7 "tall text". Leaf text
+ * spans only — never table cells (display:inline-block would break
+ * table layout). */
+body[data-tclot-theme='ceefax'] .tile-title,
+body[data-tclot-theme='ceefax'] .brand-header__wordmark,
+body[data-tclot-theme='ceefax'] .standings-divider__label,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__label,
+body[data-tclot-theme='ceefax'] .dashboard-nav__label,
+body[data-tclot-theme='ceefax'] .team-name,
+body[data-tclot-theme='ceefax'] .standings-team-mgr {
+  display: inline-block;
+  transform: scaleY(1.35);
+  transform-origin: center;
+}
+/* Extra vertical breathing room in table rows for the taller glyphs. */
+body[data-tclot-theme='ceefax'] th,
+body[data-tclot-theme='ceefax'] td {
+  line-height: 1.65;
+  padding-top: 0.32em;
+  padding-bottom: 0.32em;
+}
+body[data-tclot-theme='ceefax'],
+body[data-tclot-theme='ceefax'] * {
+  font-family: 'VT323', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace !important;
+  letter-spacing: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  font-style: normal !important;
+}
+
+/* Kill decorative gradients / glows that are painted directly (not via a
+ * token) so nothing bleeds a violet or green wash onto the black canvas. */
+body[data-tclot-theme='ceefax'] .fotmob *::before,
+body[data-tclot-theme='ceefax'] .fotmob *::after {
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+/* Team crests / avatars: keep them (they are content), but render nearest-
+ * neighbour for a pixelated, low-res teletext feel. */
+body[data-tclot-theme='ceefax'] img {
+  image-rendering: pixelated;
+}
+
+/* ------------------------------------------------------------------ */
+/* App canvas + tiles                                                  */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] .app.fotmob {
+  background: var(--cf-black) !important;
+  font-size: 1em;
+}
+
+/* Tiles/cards → black panels ruled with a blue grid line (teletext table
+ * boxes). Reset any gradient/banded backgrounds to flat black. */
+body[data-tclot-theme='ceefax'] .tile,
+body[data-tclot-theme='ceefax'] .settings-card,
+body[data-tclot-theme='ceefax'] .settings-page {
+  background: var(--cf-black) !important;
+  background-image: none !important;
+  border: 1px solid var(--cf-grid) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Brand header → teletext page masthead                               */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] .tile--brand-header {
+  border: 1px solid var(--cf-grid) !important;
+  background: var(--cf-black) !important;
+  background-image: none !important;
+}
+
+/* A synthetic teletext status line above the masthead:
+ *   P300  TCLOT  <league>          FOOTBALL
+ * Pure decoration via ::before, so no DOM/behaviour change. */
+body[data-tclot-theme='ceefax'] .tile--brand-header::before {
+  content: 'P300  TCLOT 1  FOOTBALL';
+  display: block;
+  margin: -2px 0 8px;
+  padding: 2px 6px;
+  color: var(--cf-white);
+  background: var(--cf-black);
+  font-size: clamp(0px, 1.1em, 34px);
+  letter-spacing: 0.06em !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+}
+
+/* Wordmark pill → flat blue block, yellow label (BBC-masthead vibe). */
+body[data-tclot-theme='ceefax'] .brand-header__pill,
+body[data-tclot-theme='ceefax'] .brand-header-wordmark {
+  background: var(--cf-blue-band) !important;
+  background-image: none !important;
+  border: 0 !important;
+  color: var(--cf-yellow) !important;
+}
+body[data-tclot-theme='ceefax'] .brand-header__wordmark {
+  color: var(--cf-yellow) !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Section / tile titles → double-height coloured teletext headings. */
+body[data-tclot-theme='ceefax'] .tile-title {
+  color: var(--cf-green) !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Live status strip dots/monospace bits keep their semantic colours via the
+ * tokens above; make the whole strip read on black. */
+body[data-tclot-theme='ceefax'] .brand-header__status-strip {
+  background: var(--cf-black) !important;
+  color: var(--cf-cyan) !important;
+}
+body[data-tclot-theme='ceefax'] .brand-header__status-strong {
+  color: var(--cf-white) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tables / standings — the heart of the teletext look                 */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] table {
+  border-collapse: collapse !important;
+}
+body[data-tclot-theme='ceefax'] thead,
+body[data-tclot-theme='ceefax'] th {
+  background: var(--cf-black) !important;
+  color: var(--cf-yellow) !important;
+}
+/* Zebra rows in cyan/white like the Ceefax league table screenshots. */
+body[data-tclot-theme='ceefax'] tbody tr td {
+  color: var(--cf-cyan) !important;
+  border-color: var(--cf-grid) !important;
+}
+body[data-tclot-theme='ceefax'] tbody tr:nth-child(even) td {
+  color: var(--cf-white) !important;
+}
+/* Leader / highlighted row → green, echoing the top-of-table colour. */
+body[data-tclot-theme='ceefax'] tbody tr[aria-selected='true'] td,
+body[data-tclot-theme='ceefax'] tbody tr.is-selected td {
+  background: #001a3a !important;
+  color: var(--cf-green) !important;
+}
+
+/* Hero leader card is suppressed in App.jsx for Ceefax; belt-and-braces
+ * hide if anything still renders it. */
+body[data-tclot-theme='ceefax'] .standings-hero-card {
+  display: none !important;
+}
+
+/* Group separators → solid red Ceefax rules (leader / titans / minnows).
+ * Labels are hidden; a short red bar carries the grouping. Use a filled
+ * cell (not border-top on a 0-height row) so the rule stays visible under
+ * border-collapse. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider td {
+  padding: 0 !important;
+  height: 3px !important;
+  line-height: 0 !important;
+  font-size: 0 !important;
+  border: 0 !important;
+  background: var(--cf-rule-red) !important;
+}
+body[data-tclot-theme='ceefax'] .standings-divider__label {
+  display: none !important;
+  transform: none !important;
+}
+/* Live Table's top "Titans" label — no rule above row 1. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider--top {
+  display: none !important;
+}
+/* Row-based cuts (leader below, 8th above) also render as solid red. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-below td,
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-leader-cut td {
+  border-bottom: 3px solid var(--cf-rule-red) !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-above td {
+  border-top: 3px solid var(--cf-rule-red) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Nav — desktop tabs + mobile "fastext" bottom bar                    */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar,
+body[data-tclot-theme='ceefax'] .dashboard-nav {
+  background: var(--cf-black) !important;
+  border-color: var(--cf-grid) !important;
+}
+
+/* Pin the fastext bar to the bottom edge, always. The label bump below
+ * must never let a word spill into the neighbouring slot's tap target
+ * (that made "Preview" overlap Moves/Players and hard to hit), so every
+ * slot clips its own content. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar {
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  z-index: 200 !important;
+  background: var(--cf-black) !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row {
+  align-items: stretch !important;
+}
+
+/* Classic Ceefax fastext: coloured WORDS only — no icons, chips, or
+ * button chrome. Red / green / yellow / cyan / white by slot, matching
+ * the screenshot's "Next page · Football · Headlines · Sport" strip.
+ * Each slot is an equal 1/5 column that clips its own label so words
+ * can't bleed across into a neighbour's hit zone. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__btn,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__center {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  background: transparent !important;
+  background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  min-height: 0 !important;
+  padding: 12px 1px !important;
+  gap: 0 !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__center {
+  position: relative;
+  justify-content: center !important;
+}
+/* Hide icons and the LIVE/FT chip — fastext is words only. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__ico,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__chip {
+  display: none !important;
+}
+/* Centre "Preview" tab: the visible label is a sibling of the FAB, so
+ * overlay the (invisible) FAB across the whole centre slot and put it on
+ * top — the entire slot, including the word, is one big tap target. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__fab {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  opacity: 0;
+  padding: 0 !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__center .mobile-tab-bar__label {
+  pointer-events: none; /* clicks fall through to the overlay FAB */
+}
+/* Fastext words: sized to FIT five across a phone (the site-wide bump
+ * would otherwise overflow 7-letter labels like Preview / Players).
+ * clamp scales with viewport width but never spills the slot. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__label {
+  display: block;
+  max-width: 100%;
+  font-size: clamp(11px, 3.4vw, 17px) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0 !important;
+  text-transform: none;
+  line-height: 1.15 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  text-align: center;
+}
+
+/* ------------------------------------------------------------------ */
+/* Type bump — hardcoded px sizes in App.css / LiveFixtureCard.css    */
+/* that ignore the body rem cascade (standings, subnav, overlays).    */
+/* ------------------------------------------------------------------ */
+/* Standings mobile table headers are locked to 10px in App.css. */
+body[data-tclot-theme='ceefax'] .standings-table--variant-c-mobile thead th,
+body[data-tclot-theme='ceefax'] .standings-table--live-mobile thead th {
+  font-size: 18px !important;
+}
+/* Manager subtitle under team names. */
+body[data-tclot-theme='ceefax'] .standings-team-mgr {
+  font-size: 20px !important;
+}
+/* Mobile underline subnav (Table / Schedule / Stats) — 13px in App.css. */
+@media (max-width: 720px) {
+  body[data-tclot-theme='ceefax'] .subnav:not(.li-subnav) .subnav__tab {
+    font-size: 22px !important;
+    padding: 14px 16px 13px !important;
+  }
+}
+/* Stats margin / weeks tables use small rem bases — lift explicitly. */
+body[data-tclot-theme='ceefax'] .win-margin-table {
+  font-size: 1.05rem !important;
+}
+body[data-tclot-theme='ceefax'] .win-margin-table thead th {
+  font-size: 0.9rem !important;
+}
+/* Live fixture overlay — portalled shell + Key Stats / H2H blocks. */
+body[data-tclot-theme='ceefax'] .lfc-root {
+  font-size: 36px;
+}
+body[data-tclot-theme='ceefax'] .lfc-block__h,
+body[data-tclot-theme='ceefax'] .lfc-h2h__meta,
+body[data-tclot-theme='ceefax'] .lfc-h2h__empty {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-cmp__val {
+  font-size: 22px !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-cmp__label {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__ab,
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__score {
+  font-size: 1.05em !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-team__name {
+  font-size: 1.05em !important;
+}
+body[data-tclot-theme='ceefax'] .lfc-team__score {
+  font-size: 1.15em !important;
+}
+/* Section kickers (NEXT GAME WEEK TWO, WINS BY MARGIN, etc.). */
+body[data-tclot-theme='ceefax'] .tile-title,
+body[data-tclot-theme='ceefax'] .tile-title--sm,
+body[data-tclot-theme='ceefax'] .tile--standings-next-gw__title,
+body[data-tclot-theme='ceefax'] .standings-stats-eyebrow {
+  font-size: 1.15em !important;
+}
+body[data-tclot-theme='ceefax'] .standings-stats-toggle__btn {
+  font-size: 1em !important;
+  padding: 7px 16px !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dense lists — draft / schedule / waivers / hints (hardcoded px/rem) */
+/* ------------------------------------------------------------------ */
+/* Draft mobile list (draft-rlist) — main Draft tab on phone. */
+body[data-tclot-theme='ceefax'] .draft-rlist__round {
+  font-size: 18px !important;
+  padding: 10px 14px !important;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__row {
+  padding: 12px 14px !important;
+  gap: 12px !important;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__pick {
+  font-size: 1.05rem !important;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__name {
+  font-size: 1.15rem !important;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__team-name {
+  font-size: 1rem !important;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__pts-val {
+  font-size: 1.2rem !important;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__pts-lbl {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .draft-pos {
+  height: auto !important;
+  min-height: 18px;
+  padding: 2px 6px !important;
+  font-size: 14px !important;
+}
+/* Draft board table + filter pills. */
+@media (max-width: 560px) {
+  body[data-tclot-theme='ceefax'] .draft-board-head,
+  body[data-tclot-theme='ceefax'] .draft-board-row {
+    font-size: 1.05rem !important;
+    padding: 12px !important;
+  }
+  body[data-tclot-theme='ceefax'] .draft-board-row__player-names {
+    font-size: 1.05rem !important;
+  }
+  body[data-tclot-theme='ceefax'] .draft-board-row__status {
+    font-size: 0.95rem !important;
+  }
+}
+body[data-tclot-theme='ceefax'] .draft-board-hint {
+  font-size: 1.05rem !important;
+}
+body[data-tclot-theme='ceefax'] .cpsp__value {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .cpsp__sep {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .cpsp__btn {
+  min-height: 44px !important;
+  padding: 10px 12px !important;
+}
+/* Forbidden waivers + rule copy. */
+body[data-tclot-theme='ceefax'] .forbidden-waivers__row {
+  font-size: 22px !important;
+  padding: 10px 12px !important;
+  gap: 10px !important;
+}
+body[data-tclot-theme='ceefax'] .forbidden-waivers__pos {
+  font-size: 16px !important;
+  min-width: 42px !important;
+  padding: 3px 8px !important;
+}
+body[data-tclot-theme='ceefax'] .forbidden-waivers__count {
+  font-size: 16px !important;
+  padding: 3px 10px !important;
+}
+body[data-tclot-theme='ceefax'] .forbidden-waivers__empty {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .tile-hint,
+body[data-tclot-theme='ceefax'] .tile-hint--tight {
+  font-size: 1.05rem !important;
+  line-height: 1.45 !important;
+}
+/* Schedule fixture rows. */
+body[data-tclot-theme='ceefax'] .standings-schedule__fixture {
+  padding: 12px 14px !important;
+}
+body[data-tclot-theme='ceefax'] .standings-schedule__fixture-name {
+  font-size: 1.1rem !important;
+}
+body[data-tclot-theme='ceefax'] .standings-schedule__fixture-mid {
+  font-size: 1.05rem !important;
+}
+body[data-tclot-theme='ceefax'] .standings-schedule__fixture-vs {
+  font-size: 0.95rem !important;
+}
+body[data-tclot-theme='ceefax'] .standings-schedule__gw-num {
+  font-size: 1.05rem !important;
+}
+body[data-tclot-theme='ceefax'] .standings-schedule__gw-status {
+  font-size: 0.95rem !important;
+}
+body[data-tclot-theme='ceefax'] .standings-schedule__gw-band {
+  padding: 10px 14px !important;
+}
+body[data-tclot-theme='ceefax'] .standings-schedule__seg-btn,
+body[data-tclot-theme='ceefax'] .standings-schedule__picker-select {
+  font-size: 1rem !important;
+  padding: 10px 12px !important;
+}
+body[data-tclot-theme='ceefax'] .gw-fixture-teams {
+  font-size: 1.1rem !important;
+}
+body[data-tclot-theme='ceefax'] .gw-fixture-row {
+  padding: 14px 0 !important;
+}
+/* Waivers / moves feed captions. */
+body[data-tclot-theme='ceefax'] .latest-waivers__team-title {
+  font-size: 1.05rem !important;
+}
+body[data-tclot-theme='ceefax'] .latest-waivers__move-stack {
+  font-size: 1rem !important;
+}
+body[data-tclot-theme='ceefax'] .latest-waivers__txn-badge {
+  font-size: 0.9rem !important;
+  padding: 3px 7px !important;
+}
+body[data-tclot-theme='ceefax'] .latest-waivers__io-label {
+  font-size: 0.95rem !important;
+}
+
+/* Colour the five slots (Table / Moves / centre / Players / More).
+ * Centre uses the sibling `.mobile-tab-bar__label` under `.mobile-tab-bar__center`. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(1) .mobile-tab-bar__label {
+  color: var(--cf-red) !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(2) .mobile-tab-bar__label {
+  color: var(--cf-green) !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(3) .mobile-tab-bar__label {
+  color: var(--cf-yellow) !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(4) .mobile-tab-bar__label {
+  color: var(--cf-cyan) !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(5) .mobile-tab-bar__label {
+  color: var(--cf-white) !important;
+}
+/* Active tab: underline in its own colour (teletext has no pill chrome). */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__btn.is-active .mobile-tab-bar__label,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__center:has(.mobile-tab-bar__fab.is-active) .mobile-tab-bar__label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Desktop top nav — same fastext colour cycle by tab position. */
+body[data-tclot-theme='ceefax'] .dashboard-nav__icon,
+body[data-tclot-theme='ceefax'] .dashboard-nav__emoji {
+  display: none !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn {
+  background: transparent !important;
+  border: 0 !important;
+  gap: 0 !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 1),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 1),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 1) {
+  color: var(--cf-red) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 2),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 2),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 2) {
+  color: var(--cf-green) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 3),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 3),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 3) {
+  color: var(--cf-yellow) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 4),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 4),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 4) {
+  color: var(--cf-cyan) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 5),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 5),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 5) {
+  color: var(--cf-white) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pills / chips / buttons                                             */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] .tile,
+body[data-tclot-theme='ceefax'] button,
+body[data-tclot-theme='ceefax'] .pill,
+body[data-tclot-theme='ceefax'] [class*='pill'] {
+  background-image: none !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Theme toggle — teletext highlight (yellow-on-blue active chip)      */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] .theme-toggle {
+  border: 1px solid var(--cf-cyan) !important;
+  background: var(--cf-black) !important;
+  padding: 3px;
+}
+body[data-tclot-theme='ceefax'] .theme-toggle__btn {
+  color: var(--cf-cyan) !important;
+}
+body[data-tclot-theme='ceefax'] .theme-toggle__btn:hover {
+  color: var(--cf-white) !important;
+}
+body[data-tclot-theme='ceefax'] .theme-toggle__btn--active {
+  background: var(--cf-blue-band) !important;
+  color: var(--cf-yellow) !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Overlays / modals portalled to <body>                               */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax'] .league-info-modal-shell,
+body[data-tclot-theme='ceefax'] .player-detail-overlay-shell,
+body[data-tclot-theme='ceefax'] .team-detail-overlay-shell,
+body[data-tclot-theme='ceefax'] .lfc-root,
+body[data-tclot-theme='ceefax'] [role='dialog'] {
+  background: var(--cf-black) !important;
+  background-image: none !important;
+  color: var(--cf-white) !important;
+  --fm-bg: var(--cf-black);
+  --fm-card: var(--cf-black);
+  --fm-text: var(--cf-white);
+  --fm-text-strong: var(--cf-white);
+  --fm-muted: var(--cf-cyan);
+  --fm-border: var(--cf-grid);
+  --tclot-header-grad: var(--cf-blue-band);
+  --tclot-header-solid: var(--cf-blue-band);
+}
+
+/* ------------------------------------------------------------------ */
+/* CRT scanline overlay — very subtle, non-interactive                 */
+/* ------------------------------------------------------------------ */
+body[data-tclot-theme='ceefax']::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000; /* above app chrome, below nothing that needs input */
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0) 0,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.16) 3px
+  );
+  mix-blend-mode: multiply;
+}
+
+/* Respect reduced-transparency / reduced-motion users: drop the overlay. */
+@media (prefers-reduced-motion: reduce) {
+  body[data-tclot-theme='ceefax']::after {
+    display: none;
+  }
+}

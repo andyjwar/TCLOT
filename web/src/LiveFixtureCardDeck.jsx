@@ -27,10 +27,13 @@ const TH_MIN_FLICK_DIST = 24;
 const EDGE_CLOSE_PX = 28;
 const ANIM_MS = 440;
 
-/** Read the current app theme (set by App on `document.body`). */
+/** Read the current app theme (set by App on `document.body`). Passes
+ * through the three explicit skins (light / dark / ceefax); anything
+ * else falls back to dark. */
 function readTheme() {
   if (typeof document === 'undefined') return 'dark';
-  return document.body?.dataset?.tclotTheme === 'light' ? 'light' : 'dark';
+  const t = document.body?.dataset?.tclotTheme;
+  return t === 'light' || t === 'ceefax' ? t : 'dark';
 }
 
 /** Subscribe to `data-tclot-theme` changes on <body> for live theming. */

@@ -2522,16 +2522,17 @@ const EMPTY_TEAM_LOGO_MAP = {}
  * picked light/dark keep their choice. */
 const THEME_STORAGE_KEY = 'tclot-theme'
 
-/** Possible values: 'light' | 'dark' | 'system'. 'system' means "follow
- * `prefers-color-scheme`". Users who haven't picked a theme yet get LIGHT
- * (the app's default look); dark and follow-OS are opt-in via Settings.
- * Older stored values ('light'/'dark'/'system') remain valid prefs — no
- * migration needed, and any explicit choice still wins. */
+/** Possible values: 'light' | 'dark' | 'system' | 'ceefax'. 'system' means
+ * "follow `prefers-color-scheme`"; 'ceefax' is a nostalgic teletext skin
+ * (resolved directly, like light/dark, not via the OS). Users who haven't
+ * picked a theme yet get LIGHT (the app's default look); dark, follow-OS and
+ * Ceefax are opt-in via Settings. Older stored values remain valid prefs —
+ * no migration needed, and any explicit choice still wins. */
 function readStoredThemePref() {
   if (typeof window === 'undefined') return 'light'
   try {
     const s = window.localStorage.getItem(THEME_STORAGE_KEY)
-    if (s === 'light' || s === 'dark' || s === 'system') return s
+    if (s === 'light' || s === 'dark' || s === 'system' || s === 'ceefax') return s
   } catch {
     /* ignore */
   }
@@ -2715,6 +2716,17 @@ function App() {
 
   useLayoutEffect(() => {
     document.body.dataset.tclotTheme = colorTheme
+    // Browser / iOS status-bar chrome: black for Ceefax, leave Scorebook
+    // green alone for light/dark (set once in main.jsx).
+    if (colorTheme === 'ceefax') {
+      document
+        .querySelector("meta[name='theme-color']")
+        ?.setAttribute('content', '#000000')
+    } else if (document.body.dataset.tclotPaint === '1') {
+      document
+        .querySelector("meta[name='theme-color']")
+        ?.setAttribute('content', '#17402f')
+    }
   }, [colorTheme])
 
 
@@ -3114,16 +3126,24 @@ function App() {
     return (tableRows ?? []).find((r) => r.rank === 1) ?? null
   }, [tableRows])
 
+  /** Ceefax skin keeps the whole table teletext-style: the leader stays
+   * IN the table (no hero card) and a red rule separates leader / titans /
+   * minnows, like a real Ceefax league page. Other themes pull rank-1 out
+   * into the hero card as before. */
   const nonLeaderStandingsRows = useMemo(() => {
-    return sortedStandingsRows.filter((r) => r.rank !== 1)
-  }, [sortedStandingsRows])
+    return colorTheme === 'ceefax'
+      ? sortedStandingsRows
+      : sortedStandingsRows.filter((r) => r.rank !== 1)
+  }, [sortedStandingsRows, colorTheme])
 
   /** Mobile always renders PTS-desc — which is league order
    * (`tableRows` is already sorted by total desc with tiebreakers).
-   * We just drop the leader (rendered in the hero card). */
+   * We just drop the leader (rendered in the hero card) — except in the
+   * Ceefax skin, where the leader stays in the table. */
   const mobileNonLeaderStandingsRows = useMemo(() => {
-    return (tableRows ?? []).filter((r) => r.rank !== 1)
-  }, [tableRows])
+    const rows = tableRows ?? []
+    return colorTheme === 'ceefax' ? rows : rows.filter((r) => r.rank !== 1)
+  }, [tableRows, colorTheme])
 
   /** Next-GW H2H fixtures for the full-width "Next gameweek" tile below the
    * standings table. Hidden entirely when the season is complete. */
@@ -3486,7 +3506,7 @@ function App() {
                     className="tile tile--standings tile--standings-c"
                     aria-label="Standings"
                   >
-                {leaderStandingsRow && (() => {
+                {colorTheme !== 'ceefax' && leaderStandingsRow && (() => {
                   const leader = leaderStandingsRow
                   const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
                   const isSelected = selectedStandingsEntry === leader.league_entry
@@ -3584,7 +3604,11 @@ function App() {
                     <table
                       className="standings-table standings-table--variant-c standings-table--variant-c-mobile"
                       role="table"
-                      aria-label="Standings — ranks 2 through 8 (sorted by points descending)"
+                      aria-label={
+                        colorTheme === 'ceefax'
+                          ? 'Standings — ranks 1 through 8 (sorted by points descending)'
+                          : 'Standings — ranks 2 through 8 (sorted by points descending)'
+                      }
                     >
                       <thead>
                         <tr>
@@ -3673,6 +3697,18 @@ function App() {
                                 )}
                               </td>
                             </tr>
+                            {colorTheme === 'ceefax' && row.rank === 1 ? (
+                              <tr
+                                className="standings-divider standings-divider--minnows standings-divider--ceefax"
+                                aria-hidden="true"
+                              >
+                                <td colSpan={6}>
+                                  <span className="standings-divider__label">
+                                    Titans
+                                  </span>
+                                </td>
+                              </tr>
+                            ) : null}
                             {row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
@@ -3831,6 +3867,18 @@ function App() {
                                 )}
                               </td>
                             </tr>
+                            {colorTheme === 'ceefax' && row.rank === 1 ? (
+                              <tr
+                                className="standings-divider standings-divider--minnows standings-divider--ceefax"
+                                aria-hidden="true"
+                              >
+                                <td colSpan={12}>
+                                  <span className="standings-divider__label">
+                                    Titans
+                                  </span>
+                                </td>
+                              </tr>
+                            ) : null}
                             {row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"

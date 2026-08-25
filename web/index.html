@@ -47,7 +47,7 @@
         try {
           var s = localStorage.getItem('tclot-theme')
           var resolved =
-            s === 'light' || s === 'dark'
+            s === 'light' || s === 'dark' || s === 'ceefax'
               ? s
               : window.matchMedia &&
                   window.matchMedia('(prefers-color-scheme: dark)').matches
