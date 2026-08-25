@@ -24,7 +24,7 @@
 import { readFileSync, writeFileSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { simulateSeasonAsOf } from '../src/seasonPredictionsModel.js'
+import { simulateSeasonAsOf, STRENGTH_PRIOR_WEIGHT } from '../src/seasonPredictionsModel.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -150,8 +150,9 @@ for (const t of modeled) {
 /** Pre-season = "as of GW0" of the shared living model: nothing banked, the
  * whole schedule simulated, and each team's strength drawn per iteration
  * around its estimate (se = sigma/√prior-weight) so the odds honestly carry
- * how little a draft alone can tell us. */
-const PRIOR_WEIGHT = 6
+ * how little a draft alone can tell us. Must match STRENGTH_PRIOR_WEIGHT in
+ * seasonPredictionsModel.js so GW0 and GW1+ treat the prior consistently. */
+const PRIOR_WEIGHT = STRENGTH_PRIOR_WEIGHT
 const ids = modeled.map((t) => t.leagueEntryId)
 const strengths = new Map(
   modeled.map((t) => [

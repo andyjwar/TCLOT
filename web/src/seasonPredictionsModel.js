@@ -42,24 +42,118 @@ export function teamWeeklyScores(matches, entryId, throughGw) {
 }
 
 /**
+ * How many pseudo-games the draft prior is worth in `updatedStrength`.
+ *
+ * Was 6, which let a single week move a team's strength by 1/7th of the gap —
+ * over a 38-game season one result could halve a team's title odds. A weekly
+ * H2H score is a very noisy read on true strength (fixtures, autosubs, one
+ * red card), while the draft prior aggregates full player projections, so the
+ * prior deserves more weight: with weekly noise sigma ~11 and prior accuracy
+ * ~±3 weekly points, the implied weight is (11/3)^2 ≈ 12.
+ */
+export const STRENGTH_PRIOR_WEIGHT = 12
+
+/**
  * Bayesian-ish strength update: the draft prior counts as `priorWeight`
  * pseudo-games, observed scores take over as real games accumulate.
  *
+ * `muScores` optionally supplies a lower-noise observation series (e.g. the
+ * xP-blended scores from `blendedWeeklyScoresByEntry`) that drives the mean
+ * update, while `scores` (the raw actuals) always drive the variance estimate
+ * — blended series are artificially smooth, and feeding them into the
+ * variance would make the simulator overconfident about weekly spread.
+ *
  * @param {{ mu: number, sigma: number }} prior
- * @param {number[]} scores
+ * @param {number[]} scores actual weekly scores (variance + fallback mean)
+ * @param {number} [priorWeight]
+ * @param {number[]|null} [muScores] de-noised scores for the mean update
  */
-export function updatedStrength(prior, scores, priorWeight = 6) {
+export function updatedStrength(prior, scores, priorWeight = STRENGTH_PRIOR_WEIGHT, muScores = null) {
   const n = scores.length
   const se = prior.sigma / Math.sqrt(priorWeight + n)
   if (n === 0) return { mu: prior.mu, sigma: prior.sigma, se }
+  const meanScores = Array.isArray(muScores) && muScores.length === n ? muScores : scores
   const sum = scores.reduce((a, b) => a + b, 0)
-  const mu = (priorWeight * prior.mu + sum) / (priorWeight + n)
+  const meanSum = meanScores.reduce((a, b) => a + b, 0)
+  const mu = (priorWeight * prior.mu + meanSum) / (priorWeight + n)
   const obsVar =
     n > 1 ? scores.reduce((a, b) => a + (b - sum / n) ** 2, 0) / (n - 1) : prior.sigma ** 2
   const sigma = Math.sqrt(
     (priorWeight * prior.sigma ** 2 + n * obsVar) / (priorWeight + n),
   )
   return { mu, sigma, se: sigma / Math.sqrt(priorWeight + n) }
+}
+
+/**
+ * De-noised weekly observation series per entry: each finished week's score
+ * is blended toward the engine's pre-match expectation for the XI actually
+ * fielded (`xPtsXi` from the projections-history archive). Actual score =
+ * underlying performance + one-week luck; xP strips a whole layer of luck
+ * (a 90-point fluke or a 25-point disasterclass moves strength far less),
+ * while real squad changes still flow through because they move xP too.
+ *
+ * The engine's level can run hot/cold vs actuals (e.g. GW1 ran ~3.5 pts low
+ * league-wide), so each week's xP values are re-centered to that week's
+ * actual league mean before blending — xP contributes the *relative* signal,
+ * actuals anchor the scoring level.
+ *
+ * Weeks with no archive row fall back to the raw actual score.
+ *
+ * @param {any[]} matches details.json matches
+ * @param {number[]} entryIds all league entry ids
+ * @param {number} throughGw
+ * @param {Map<number, any>} historyByGw gw → parsed projections-history file
+ * @param {number} [xpWeight] weight on the (re-centered) engine expectation
+ * @returns {Map<number, number[]>} entry id → blended weekly series
+ */
+export function blendedWeeklyScoresByEntry(matches, entryIds, throughGw, historyByGw, xpWeight = 0.7) {
+  const ids = entryIds.map(Number)
+  const out = new Map(ids.map((id) => [id, []]))
+
+  // Per-GW re-centering shift: actual league mean − engine league mean.
+  const shiftByGw = new Map()
+  for (const [gw, history] of historyByGw ?? []) {
+    const rows = Array.isArray(history?.h2h) ? history.h2h : []
+    let sumActual = 0
+    let sumXp = 0
+    let count = 0
+    for (const row of rows) {
+      const a1 = Number(row.actualH2hPts1)
+      const a2 = Number(row.actualH2hPts2)
+      const x1 = Number(row.xPtsXi1)
+      const x2 = Number(row.xPtsXi2)
+      if (![a1, a2, x1, x2].every(Number.isFinite)) continue
+      sumActual += a1 + a2
+      sumXp += x1 + x2
+      count += 2
+    }
+    if (count > 0) shiftByGw.set(Number(gw), (sumActual - sumXp) / count)
+  }
+
+  const sorted = [...matches]
+    .filter((m) => m.finished && Number(m.event) <= throughGw)
+    .sort((a, b) => Number(a.event) - Number(b.event))
+  for (const m of sorted) {
+    const gw = Number(m.event)
+    const history = historyByGw?.get(gw)
+    for (const side of [1, 2]) {
+      const id = Number(side === 1 ? m.league_entry_1 : m.league_entry_2)
+      if (!out.has(id)) continue
+      const actual = Number(side === 1 ? m.league_entry_1_points : m.league_entry_2_points) || 0
+      let blended = actual
+      const row = history ? findArchivedH2hRow(history, id, Number(side === 1 ? m.league_entry_2 : m.league_entry_1)) : null
+      if (row) {
+        const isE1 = Number(row.league_entry_1) === id
+        const xp = Number(isE1 ? row.xPtsXi1 : row.xPtsXi2)
+        if (Number.isFinite(xp)) {
+          const centered = xp + (shiftByGw.get(gw) ?? 0)
+          blended = xpWeight * centered + (1 - xpWeight) * actual
+        }
+      }
+      out.get(id).push(blended)
+    }
+  }
+  return out
 }
 
 /** H2H table state (pts/w/d/l/pf) from finished matches through `throughGw`. */
@@ -348,9 +442,16 @@ function normCdf(z) {
   return p
 }
 
-/** P(home outscores away) from two normal strengths, as a clamped percent. */
+/**
+ * P(home outscores away) from two normal strengths, as a clamped percent.
+ * Uses the predictive spread: weekly score noise (sigma) plus each side's
+ * strength-estimate uncertainty (se), so early-season fallback odds don't
+ * overstate confidence in barely-separated estimates.
+ */
 export function strengthWinPct(home, away) {
-  const sd = Math.sqrt(home.sigma ** 2 + away.sigma ** 2)
+  const sd = Math.sqrt(
+    home.sigma ** 2 + away.sigma ** 2 + (home.se ?? 0) ** 2 + (away.se ?? 0) ** 2,
+  )
   if (!(sd > 0)) return home.mu > away.mu ? 99 : home.mu < away.mu ? 1 : 50
   const p = normCdf((home.mu - away.mu) / sd)
   return Math.min(99, Math.max(1, Math.round(p * 100)))

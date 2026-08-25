@@ -12,9 +12,11 @@
  *    matchup favorites + score errors so they match the live win bars.
  *
  * For each asOfGw 0..lastFinished: strengths are the draft prior updated by
- * the weekly scores seen so far (prior worth ~6 games), banked results stand,
- * and every later match is simulated (2000 runs, seeded per snapshot so
- * output is stable across rebuilds).
+ * the weekly observations seen so far (prior worth ~12 games; each week is an
+ * xP-blend of the engine's pre-match call for the fielded XI and the actual
+ * score, so one freak result can't crater a team), banked results stand, and
+ * every later match is simulated (5000 runs, seeded per snapshot so output is
+ * stable across rebuilds).
  *
  * Run after build-projections-history + build-season-preview inputs exist:
  *   node scripts/build-season-predictions.mjs
@@ -25,6 +27,8 @@ import { fileURLToPath } from 'node:url'
 import {
   teamWeeklyScores,
   updatedStrength,
+  STRENGTH_PRIOR_WEIGHT,
+  blendedWeeklyScoresByEntry,
   simulateSeasonAsOf,
   ranksAsOf,
   matchFavorite,
@@ -86,10 +90,29 @@ function loadHistory(gw) {
   }
 }
 
+/** Every finished GW's archive up front, for the xP-blended strength update. */
+const historyByGw = new Map()
+for (let gw = 1; gw <= lastFinishedGw; gw++) {
+  const h = loadHistory(gw)
+  if (h) historyByGw.set(gw, h)
+}
+
+/**
+ * How much each week's strength observation leans on the engine's pre-match
+ * xP for the fielded XI vs the raw actual score. Actual = performance + luck;
+ * xP strips one whole layer of luck, so a single freak week (huge haul or a
+ * disasterclass) moves a team's strength far less while genuine squad changes
+ * still flow through.
+ */
+const XP_BLEND_WEIGHT = 0.7
+
 function strengthsAsOf(gw) {
+  const blended = blendedWeeklyScoresByEntry(matches, entryIds, gw, historyByGw, XP_BLEND_WEIGHT)
   const m = new Map()
   for (const id of entryIds) {
-    m.set(id, updatedStrength(priors.get(id), teamWeeklyScores(matches, id, gw)))
+    const actuals = teamWeeklyScores(matches, id, gw)
+    // Blended series drives the mean; raw actuals keep the honest variance.
+    m.set(id, updatedStrength(priors.get(id), actuals, STRENGTH_PRIOR_WEIGHT, blended.get(id)))
   }
   return m
 }
@@ -244,9 +267,10 @@ const output = {
   season: preview.season,
   asOfGw: lastFinishedGw,
   method: {
-    prior: 'season-preview draft model (worth ~6 games)',
-    update: 'strength re-weighted toward actual weekly scores as games accumulate',
-    simulations: 2000,
+    prior: `season-preview draft model (worth ~${STRENGTH_PRIOR_WEIGHT} games)`,
+    update:
+      'strength re-weighted toward weekly observations as games accumulate; each week is an xP-blend (0.7 engine xP for the fielded XI, re-centered to the week, + 0.3 actual) so one lucky/unlucky result cannot crater a team',
+    simulations: 5000,
     favorites: 'weekly engine archive when available, strength model otherwise',
   },
   current: snapshots[snapshots.length - 1],

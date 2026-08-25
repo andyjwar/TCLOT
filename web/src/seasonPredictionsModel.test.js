@@ -3,6 +3,9 @@ import assert from 'node:assert/strict'
 import {
   teamWeeklyScores,
   updatedStrength,
+  STRENGTH_PRIOR_WEIGHT,
+  blendedWeeklyScoresByEntry,
+  strengthWinPct,
   bankedTable,
   simulateSeasonAsOf,
   ranksAsOf,
@@ -51,13 +54,98 @@ test('teamWeeklyScores respects throughGw and finished flag', () => {
 
 test('updatedStrength: no games returns the prior, se shrinks with games', () => {
   const prior = { mu: 50, sigma: 10 }
-  const none = updatedStrength(prior, [])
+  const none = updatedStrength(prior, [], 6)
   assert.equal(none.mu, 50)
   assert.equal(none.sigma, 10)
   const one = updatedStrength(prior, [29], 6)
   // (6*50 + 29) / 7 = 47
   assert.equal(one.mu, 47)
   assert.ok(one.se < none.se, 'standard error shrinks as games accumulate')
+})
+
+test('updatedStrength default prior weight is 12 (damped single-week response)', () => {
+  assert.equal(STRENGTH_PRIOR_WEIGHT, 12)
+  const prior = { mu: 50, sigma: 10 }
+  const d = updatedStrength(prior, [29])
+  // (12*50 + 29) / 13 ≈ 48.38 — roughly half the swing of the old weight-6 update (47)
+  assert.ok(Math.abs(d.mu - 629 / 13) < 1e-9)
+  assert.ok(d.mu > updatedStrength(prior, [29], 6).mu, 'heavier prior damps one bad week')
+})
+
+test('updatedStrength muScores drive the mean while actuals drive the variance', () => {
+  const prior = { mu: 50, sigma: 10 }
+  const actuals = [20, 80] // wild swings
+  const denoised = [48, 52] // what the engine thought those weeks were worth
+  const blended = updatedStrength(prior, actuals, 6, denoised)
+  const raw = updatedStrength(prior, actuals, 6)
+  // Same actual sum (100) either way here, so pick asymmetric actuals to see the mean move:
+  const blended2 = updatedStrength(prior, [20, 30], 6, [48, 52])
+  const raw2 = updatedStrength(prior, [20, 30], 6)
+  assert.ok(blended2.mu > raw2.mu, 'de-noised series pulls the mean less than raw bad weeks')
+  // Variance always comes from the actuals — smooth muScores must not shrink sigma.
+  assert.equal(blended.sigma, raw.sigma)
+  // Mismatched-length muScores are ignored (falls back to actuals).
+  const mismatched = updatedStrength(prior, [20, 30], 6, [48])
+  assert.equal(mismatched.mu, raw2.mu)
+})
+
+test('blendedWeeklyScoresByEntry re-centers xP to the week level and blends', () => {
+  const matches = [
+    {
+      event: 1,
+      league_entry_1: 1,
+      league_entry_2: 2,
+      league_entry_1_points: 31,
+      league_entry_2_points: 51,
+      finished: true,
+    },
+  ]
+  const historyByGw = new Map([
+    [
+      1,
+      {
+        h2h: [
+          {
+            league_entry_1: 1,
+            league_entry_2: 2,
+            xPtsXi1: 45,
+            xPtsXi2: 39,
+            actualH2hPts1: 31,
+            actualH2hPts2: 51,
+          },
+        ],
+      },
+    ],
+  ])
+  const out = blendedWeeklyScoresByEntry(matches, [1, 2], 1, historyByGw, 0.7)
+  // Week shift: actual mean 41, xP mean 42 → shift −1. Centered xP: 44 and 38.
+  // Team 1: 0.7*44 + 0.3*31 = 40.1 — a 31-point week with a 45-xP XI reads as unlucky.
+  assert.ok(Math.abs(out.get(1)[0] - 40.1) < 1e-9)
+  // Team 2: 0.7*38 + 0.3*51 = 41.9 — a 51-point week on a 39-xP XI reads as fortunate.
+  assert.ok(Math.abs(out.get(2)[0] - 41.9) < 1e-9)
+})
+
+test('blendedWeeklyScoresByEntry falls back to actuals when no archive exists', () => {
+  const matches = [
+    {
+      event: 1,
+      league_entry_1: 1,
+      league_entry_2: 2,
+      league_entry_1_points: 31,
+      league_entry_2_points: 51,
+      finished: true,
+    },
+  ]
+  const out = blendedWeeklyScoresByEntry(matches, [1, 2], 1, new Map())
+  assert.deepEqual(out.get(1), [31])
+  assert.deepEqual(out.get(2), [51])
+})
+
+test('strengthWinPct includes strength-estimate uncertainty when present', () => {
+  const withSe = strengthWinPct({ mu: 50, sigma: 8, se: 5 }, { mu: 45, sigma: 8, se: 5 })
+  const noSe = strengthWinPct({ mu: 50, sigma: 8 }, { mu: 45, sigma: 8 })
+  assert.ok(withSe < noSe, 'extra estimate uncertainty pulls odds toward even')
+  assert.ok(withSe > 50, 'higher mu still favored')
 })
 
 test('updatedStrength moves toward the observed mean with more games', () => {
