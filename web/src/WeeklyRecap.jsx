@@ -163,19 +163,12 @@ export function WeeklyRecap({ teamLogoMap = {}, kitIndexByEntry }) {
                   ))}
                 </span>
               ) : null}
-              <span className="weekly-recap__odds-note">
-                winner calls landed
-                {activeGw.model.draws ? ` (${activeGw.model.draws} drawn)` : ''}
-                {activeGw.model.avgAbsErr != null
-                  ? ` · avg miss ±${activeGw.model.avgAbsErr}`
-                  : ''}
-              </span>
             </div>
             {activeGw.model.upset ? (
               <p className="weekly-recap__upset">
                 Upset of the week:{' '}
                 {standingsMobileTeamName(activeGw.model.upset.winnerName)} beat{' '}
-                {standingsMobileTeamName(activeGw.model.upset.loserName)} with just a{' '}
+                {standingsMobileTeamName(activeGw.model.upset.loserName)} with a{' '}
                 <span className="tabular">{activeGw.model.upset.winnerPct}%</span>{' '}
                 pre-match chance.
               </p>
