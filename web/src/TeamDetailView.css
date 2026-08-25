@@ -621,12 +621,26 @@ body[data-tclot-theme='dark'] .tc-card {
 .tc-squad__total {
   display: inline-flex;
   align-items: baseline;
-  gap: 4px;
+  gap: 6px;
+  flex-shrink: 0;
+}
+/* Dark-green glass pill — same recipe as live PTS / W/L chips on this card. */
+.tc-squad__total-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.75em;
+  padding: 0.12em 0.45em;
+  border-radius: 0.35em;
   font-family: var(--tc-mono);
   font-size: 16px;
   font-weight: 800;
+  font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
-  color: var(--tc-brand);
+  line-height: 1;
+  color: var(--tc-text-strong);
+  background: color-mix(in srgb, var(--tc-pos) 18%, transparent);
+  box-shadow: 0 0 0 0.15em color-mix(in srgb, var(--tc-pos) 15%, transparent);
 }
 .tc-squad__total small {
   font-size: 8.5px;
@@ -682,9 +696,27 @@ body[data-tclot-theme='dark'] .tc-card {
 .tc-squad__row:last-child {
   border-bottom: none;
 }
-.tc-squad__name {
+/* Player column — club crest + name, aligned with prem lineups / Players wire. */
+.tc-squad__player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   min-width: 0;
-  overflow: hidden;
+  font-size: 13px;
+  line-height: 1.25;
+}
+.tc-squad__kit {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+}
+.tc-squad__kit .pl-kit-badge,
+.tc-squad__kit .pl-kit-fallback {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
 }
 .tc-squad__name-btn {
   display: inline-block;
@@ -692,7 +724,7 @@ body[data-tclot-theme='dark'] .tc-card {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: inherit;
   font-weight: 600;
   color: var(--tc-text-strong);
   text-align: left;
@@ -700,7 +732,7 @@ body[data-tclot-theme='dark'] .tc-card {
   cursor: pointer;
 }
 .tc-squad__name-btn:hover {
-  color: var(--tc-brand);
+  color: var(--tc-pos);
   text-decoration: underline;
   text-underline-offset: 2px;
 }
