@@ -416,10 +416,14 @@ body[data-tclot-theme='ceefax'] .standings-table tbody tr:nth-child(odd) td {
 }
 /* Team name, manager subtitle, and text crest inherit the row colour. */
 body[data-tclot-theme='ceefax'] .standings-table .team-name,
+body[data-tclot-theme='ceefax'] .standings-table .live-standings-team-name,
 body[data-tclot-theme='ceefax'] .standings-table .standings-team-mgr,
 body[data-tclot-theme='ceefax'] .standings-table .team-avatar-code,
 body[data-tclot-theme='ceefax'] .standings-table .col-num,
-body[data-tclot-theme='ceefax'] .standings-table .col-rank {
+body[data-tclot-theme='ceefax'] .standings-table .col-rank,
+body[data-tclot-theme='ceefax'] .standings-table .pts-cell__value,
+body[data-tclot-theme='ceefax'] .standings-table .pts-cell__value strong,
+body[data-tclot-theme='ceefax'] .standings-table strong {
   color: inherit !important;
 }
 /* Selected row: yellow text, no tinted band or left stripe. */
