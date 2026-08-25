@@ -18,12 +18,16 @@ function teamNameForEntry(teams, leagueEntryId) {
  * table there's no rank-1 leader tint here — the Titans/Minnows
  * section labels carry the grouping instead (and a tint would band
  * multiple rows whenever teams are tied at the top). Only the rank-8
- * 8th-place band is kept.
+ * 8th-place band is kept. `standings-row--ceefax-leader-cut` is a
+ * no-op outside the Ceefax skin (red rule under the top row).
  */
-function liveStandingsRowClass(row) {
-  return row.liveRank === 8
-    ? 'standings-row--divider-above standings-row--8th'
-    : '';
+function liveStandingsRowClass(row, idx) {
+  const parts = [];
+  if (idx === 0) parts.push('standings-row--ceefax-leader-cut');
+  if (row.liveRank === 8) {
+    parts.push('standings-row--divider-above', 'standings-row--8th');
+  }
+  return parts.join(' ');
 }
 
 /**
@@ -193,7 +197,7 @@ export function LiveStandingsTable({
           <tbody>
             <SectionLabelRow label="Titans" colSpan={5} top />
             {liveStandingsRows.map((row, idx) => {
-              const rowClass = liveStandingsRowClass(row);
+              const rowClass = liveStandingsRowClass(row, idx);
               return (
                 <Fragment key={row.league_entry}>
                   <tr className={rowClass || undefined}>
@@ -318,7 +322,7 @@ export function LiveStandingsTable({
         <tbody>
           <SectionLabelRow label="Titans" colSpan={11} top />
           {liveStandingsRows.map((row, idx) => {
-            const rowClass = liveStandingsRowClass(row);
+            const rowClass = liveStandingsRowClass(row, idx);
             return (
               <Fragment key={row.league_entry}>
                 <tr className={rowClass || undefined}>

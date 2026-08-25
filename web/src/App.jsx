@@ -3101,16 +3101,24 @@ function App() {
     return (tableRows ?? []).find((r) => r.rank === 1) ?? null
   }, [tableRows])
 
+  /** Ceefax skin keeps the whole table teletext-style: the leader stays
+   * IN the table (no hero card) and a red rule separates leader / titans /
+   * minnows, like a real Ceefax league page. Other themes pull rank-1 out
+   * into the hero card as before. */
   const nonLeaderStandingsRows = useMemo(() => {
-    return sortedStandingsRows.filter((r) => r.rank !== 1)
-  }, [sortedStandingsRows])
+    return colorTheme === 'ceefax'
+      ? sortedStandingsRows
+      : sortedStandingsRows.filter((r) => r.rank !== 1)
+  }, [sortedStandingsRows, colorTheme])
 
   /** Mobile always renders PTS-desc — which is league order
    * (`tableRows` is already sorted by total desc with tiebreakers).
-   * We just drop the leader (rendered in the hero card). */
+   * We just drop the leader (rendered in the hero card) — except in the
+   * Ceefax skin, where the leader stays in the table. */
   const mobileNonLeaderStandingsRows = useMemo(() => {
-    return (tableRows ?? []).filter((r) => r.rank !== 1)
-  }, [tableRows])
+    const rows = tableRows ?? []
+    return colorTheme === 'ceefax' ? rows : rows.filter((r) => r.rank !== 1)
+  }, [tableRows, colorTheme])
 
   /** Next-GW H2H fixtures for the full-width "Next gameweek" tile below the
    * standings table. Hidden entirely when the season is complete. */
@@ -3468,7 +3476,7 @@ function App() {
                     className="tile tile--standings tile--standings-c"
                     aria-label="Standings"
                   >
-                {leaderStandingsRow && (() => {
+                {colorTheme !== 'ceefax' && leaderStandingsRow && (() => {
                   const leader = leaderStandingsRow
                   const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
                   const isSelected = selectedStandingsEntry === leader.league_entry
@@ -3566,7 +3574,11 @@ function App() {
                     <table
                       className="standings-table standings-table--variant-c standings-table--variant-c-mobile"
                       role="table"
-                      aria-label="Standings — ranks 2 through 8 (sorted by points descending)"
+                      aria-label={
+                        colorTheme === 'ceefax'
+                          ? 'Standings — ranks 1 through 8 (sorted by points descending)'
+                          : 'Standings — ranks 2 through 8 (sorted by points descending)'
+                      }
                     >
                       <thead>
                         <tr>
@@ -3655,6 +3667,18 @@ function App() {
                                 )}
                               </td>
                             </tr>
+                            {colorTheme === 'ceefax' && row.rank === 1 ? (
+                              <tr
+                                className="standings-divider standings-divider--minnows standings-divider--ceefax"
+                                aria-hidden="true"
+                              >
+                                <td colSpan={6}>
+                                  <span className="standings-divider__label">
+                                    Titans
+                                  </span>
+                                </td>
+                              </tr>
+                            ) : null}
                             {row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
@@ -3813,6 +3837,18 @@ function App() {
                                 )}
                               </td>
                             </tr>
+                            {colorTheme === 'ceefax' && row.rank === 1 ? (
+                              <tr
+                                className="standings-divider standings-divider--minnows standings-divider--ceefax"
+                                aria-hidden="true"
+                              >
+                                <td colSpan={12}>
+                                  <span className="standings-divider__label">
+                                    Titans
+                                  </span>
+                                </td>
+                              </tr>
+                            ) : null}
                             {row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"

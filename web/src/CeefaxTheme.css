@@ -150,8 +150,30 @@ body[data-tclot-theme='ceefax'] [data-theme='ceefax'] {
 /* ------------------------------------------------------------------ */
 body[data-tclot-theme='ceefax'] {
   /* VT323 reads small at Inter's sizes; bump the body once so the
-   * cascade stays proportional (do NOT put em-bumps on `*`). */
-  font-size: 18px;
+   * cascade stays proportional (do NOT put em-bumps on `*`). A larger
+   * base + roomier line-height gives the tall teletext glyph feel. */
+  font-size: 22px;
+  line-height: 1.45;
+}
+/* Mild vertical stretch for authentic Mode-7 "tall text". Leaf text
+ * spans only — never table cells (display:inline-block would break
+ * table layout). */
+body[data-tclot-theme='ceefax'] .tile-title,
+body[data-tclot-theme='ceefax'] .brand-header__wordmark,
+body[data-tclot-theme='ceefax'] .standings-divider__label,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__label,
+body[data-tclot-theme='ceefax'] .team-name,
+body[data-tclot-theme='ceefax'] .standings-team-mgr {
+  display: inline-block;
+  transform: scaleY(1.22);
+  transform-origin: center;
+}
+/* Extra vertical breathing room in table rows for the taller glyphs. */
+body[data-tclot-theme='ceefax'] th,
+body[data-tclot-theme='ceefax'] td {
+  line-height: 1.55;
+  padding-top: 0.28em;
+  padding-bottom: 0.28em;
 }
 body[data-tclot-theme='ceefax'],
 body[data-tclot-theme='ceefax'] * {
@@ -275,6 +297,39 @@ body[data-tclot-theme='ceefax'] tbody tr.is-selected td {
   color: var(--cf-green) !important;
 }
 
+/* Hero leader card is suppressed in App.jsx for Ceefax; belt-and-braces
+ * hide if anything still renders it. */
+body[data-tclot-theme='ceefax'] .standings-hero-card {
+  display: none !important;
+}
+
+/* Group separators → solid red Ceefax rules (leader / titans / minnows).
+ * Labels are hidden; the line itself carries the grouping. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider td {
+  padding: 0 !important;
+  height: 0 !important;
+  line-height: 0 !important;
+  border: 0 !important;
+  border-top: 2px solid var(--cf-red) !important;
+  background: transparent !important;
+}
+body[data-tclot-theme='ceefax'] .standings-divider__label {
+  display: none !important;
+  transform: none !important;
+}
+/* Live Table's top "Titans" label — no rule above row 1. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-divider--top {
+  display: none !important;
+}
+/* Row-based cuts (leader below, 8th above) also render as solid red. */
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-below td,
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--ceefax-leader-cut td {
+  border-bottom: 2px solid var(--cf-red) !important;
+}
+body[data-tclot-theme='ceefax'] .standings-table tbody tr.standings-row--divider-above td {
+  border-top: 2px solid var(--cf-red) !important;
+}
+
 /* ------------------------------------------------------------------ */
 /* Nav — desktop tabs + mobile "fastext" bottom bar                    */
 /* ------------------------------------------------------------------ */
@@ -284,32 +339,105 @@ body[data-tclot-theme='ceefax'] .dashboard-nav {
   border-color: var(--cf-grid) !important;
 }
 
-/* Classic Ceefax fastext strip: red / green / yellow / cyan / white
- * tinted by position across the five tab slots. Pure colour — no DOM or
- * label changes. */
+/* Classic Ceefax fastext: coloured WORDS only — no icons, chips, or
+ * button chrome. Red / green / yellow / cyan / white by slot, matching
+ * the screenshot's "Next page · Football · Headlines · Sport" strip. */
 body[data-tclot-theme='ceefax'] .mobile-tab-bar__btn,
 body[data-tclot-theme='ceefax'] .mobile-tab-bar__fab {
-  background: var(--cf-black) !important;
+  background: transparent !important;
   background-image: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  min-height: 0 !important;
+  padding: 10px 2px 12px !important;
+  gap: 0 !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(1) .mobile-tab-bar__label,
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(1) .mobile-tab-bar__ico {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__center {
+  position: relative;
+  gap: 0 !important;
+  padding: 10px 2px 12px !important;
+  justify-content: center !important;
+}
+/* Hide icons and the LIVE/FT chip — fastext is words only. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__ico,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__chip {
+  display: none !important;
+}
+/* Keep the centre FAB for hit-testing (label lives outside the button),
+ * but make it an invisible full-slot overlay so only the word shows. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__fab {
+  position: absolute;
+  inset: 0;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  opacity: 0;
+  padding: 0 !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__label {
+  font-size: 1.05em !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: none;
+  line-height: 1.2 !important;
+}
+/* Colour the five slots (Table / Moves / centre / Players / More).
+ * Centre uses the sibling `.mobile-tab-bar__label` under `.mobile-tab-bar__center`. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(1) .mobile-tab-bar__label {
   color: var(--cf-red) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(2) .mobile-tab-bar__label,
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(2) .mobile-tab-bar__ico {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(2) .mobile-tab-bar__label {
   color: var(--cf-green) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(3) .mobile-tab-bar__label,
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(3) .mobile-tab-bar__chip {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(3) .mobile-tab-bar__label {
   color: var(--cf-yellow) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(4) .mobile-tab-bar__label,
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(4) .mobile-tab-bar__ico {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(4) .mobile-tab-bar__label {
   color: var(--cf-cyan) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(5) .mobile-tab-bar__label,
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(5) .mobile-tab-bar__ico {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(5) .mobile-tab-bar__label {
+  color: var(--cf-white) !important;
+}
+/* Active tab: underline in its own colour (teletext has no pill chrome). */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__btn.is-active .mobile-tab-bar__label,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__center:has(.mobile-tab-bar__fab.is-active) .mobile-tab-bar__label {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Desktop top nav — same fastext colour cycle by tab position. */
+body[data-tclot-theme='ceefax'] .dashboard-nav__icon,
+body[data-tclot-theme='ceefax'] .dashboard-nav__emoji {
+  display: none !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn {
+  background: transparent !important;
+  border: 0 !important;
+  gap: 0 !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 1),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 1),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 1) {
+  color: var(--cf-red) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 2),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 2),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 2) {
+  color: var(--cf-green) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 3),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 3),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 3) {
+  color: var(--cf-yellow) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 4),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 4),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 4) {
+  color: var(--cf-cyan) !important;
+}
+body[data-tclot-theme='ceefax'] .dashboard-nav button:nth-child(5n + 5),
+body[data-tclot-theme='ceefax'] .dashboard-nav a:nth-child(5n + 5),
+body[data-tclot-theme='ceefax'] .dashboard-nav__btn:nth-child(5n + 5) {
   color: var(--cf-white) !important;
 }
 
