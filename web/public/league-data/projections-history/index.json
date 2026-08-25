@@ -1,6 +1,8 @@
 {
   "schemaVersion": 1,
-  "updatedAt": "2026-08-17T14:14:25.558Z",
-  "gameweeks": [],
-  "note": "Reset at season rollover; regenerate via npm run build or build-projections-history.mjs"
+  "updatedAt": "2026-08-25T12:14:59.302Z",
+  "gameweeks": [
+    1
+  ],
+  "note": "Existing gw-NN.json archives are left intact unless PROJECTIONS_HISTORY_FORCE=1. GW1 pre-match reinstated from prematch-predictions-gw-01.json (13c11a7 / 2026-08-22)."
 }

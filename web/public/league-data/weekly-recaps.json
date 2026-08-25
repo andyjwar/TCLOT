@@ -1,7 +1,495 @@
 {
  "schemaVersion": 2,
- "generatedAt": "2026-08-18T18:52:16.305Z",
+ "generatedAt": "2026-08-25T12:15:08.354Z",
  "season": "2026-27",
- "lastFinishedGw": 0,
- "gameweeks": []
+ "lastFinishedGw": 1,
+ "gameweeks": [
+  {
+   "gw": 1,
+   "model": {
+    "hits": 3,
+    "misses": 1,
+    "draws": 0,
+    "avgAbsErr": 9.1,
+    "upset": {
+     "winnerName": "Seoul Shire",
+     "loserName": "Hackney Rohirrim",
+     "winnerPct": 23
+    },
+    "calls": [
+     {
+      "homeName": "Mordor S.F.G",
+      "awayName": "Atlético Bilbo",
+      "favoriteName": "Mordor S.F.G",
+      "favoritePct": 74,
+      "outcome": "hit"
+     },
+     {
+      "homeName": "Seoul Shire",
+      "awayName": "Hackney Rohirrim",
+      "favoriteName": "Hackney Rohirrim",
+      "favoritePct": 77,
+      "outcome": "miss"
+     },
+     {
+      "homeName": "Brampton Balrogs",
+      "awayName": "Rokesly Regorasu",
+      "favoriteName": "Rokesly Regorasu",
+      "favoritePct": 50,
+      "outcome": "hit"
+     },
+     {
+      "homeName": "Toronto Gimli",
+      "awayName": "Suffolk Sméagol",
+      "favoriteName": "Suffolk Sméagol",
+      "favoritePct": 58,
+      "outcome": "hit"
+     }
+    ]
+   },
+   "superlatives": {
+    "weekHigh": {
+     "name": "Rokesly Regorasu",
+     "points": 55
+    },
+    "closest": {
+     "homeName": "Toronto Gimli",
+     "awayName": "Suffolk Sméagol",
+     "margin": 13
+    },
+    "starPlayer": {
+     "name": "Stach",
+     "pts": 13,
+     "teamName": "Hackney Rohirrim"
+    }
+   },
+   "matchups": [
+    {
+     "home": {
+      "entryId": 18279,
+      "name": "Mordor S.F.G",
+      "manager": "Nick Mottershead",
+      "points": 51,
+      "rank": 3,
+      "prevRank": null,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "seasonAvg": 51,
+      "isSeasonHigh": false,
+      "isWeekHigh": false,
+      "titleOdds": {
+       "before": 25.6,
+       "after": 28.5
+      },
+      "players": {
+       "top": {
+        "id": 165,
+        "name": "João Pedro",
+        "pts": 11
+       },
+       "share": 0.216,
+       "haul": null,
+       "flop": {
+        "id": 529,
+        "name": "Roefs",
+        "pts": 1,
+        "xp": 5.4
+       }
+      },
+      "pickup": null
+     },
+     "away": {
+      "entryId": 4259,
+      "name": "Atlético Bilbo",
+      "manager": "Nick Goodacre",
+      "points": 24,
+      "rank": 8,
+      "prevRank": null,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "seasonAvg": 24,
+      "isSeasonHigh": false,
+      "isWeekHigh": false,
+      "titleOdds": {
+       "before": 3.2,
+       "after": 0.6
+      },
+      "players": {
+       "top": {
+        "id": 230,
+        "name": "Branthwaite",
+        "pts": 6
+       },
+       "share": 0.25,
+       "haul": null,
+       "flop": {
+        "id": 423,
+        "name": "Shaw",
+        "pts": 1,
+        "xp": 5.1
+       }
+      },
+      "pickup": null
+     },
+     "winner": 18279,
+     "margin": 27,
+     "odds": {
+      "favoriteSide": "home",
+      "favoritePct": 74,
+      "source": "engine",
+      "outcome": "hit"
+     },
+     "predicted": {
+      "home": 38.4,
+      "away": 30.6
+     },
+     "h2h": {
+      "games": 1,
+      "homeWins": 1,
+      "awayWins": 0,
+      "draws": 0
+     },
+     "sentences": [
+      "Mordor S.F.G steamrolled Atlético Bilbo 51–24 — the kind of scoreline that gets screenshotted.",
+      "Chalk: the model gave Mordor S.F.G 74% pre-match, and that's how it went.",
+      "That leaves Mordor S.F.G 3rd (1-0-0); Atlético Bilbo are 8th at 0-0-1.",
+      "Atlético Bilbo will point at Shaw: projected for 5.1, he returned 1.",
+      "Both sides finished within touching distance of their season averages — a matchup that went to form."
+     ]
+    },
+    {
+     "home": {
+      "entryId": 30728,
+      "name": "Seoul Shire",
+      "manager": "Luke Butcher",
+      "points": 47,
+      "rank": 4,
+      "prevRank": null,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "seasonAvg": 47,
+      "isSeasonHigh": false,
+      "isWeekHigh": false,
+      "titleOdds": {
+       "before": 5.3,
+       "after": 7.1
+      },
+      "players": {
+       "top": {
+        "id": 12,
+        "name": "Saka",
+        "pts": 9
+       },
+       "share": 0.191,
+       "haul": null,
+       "flop": null
+      },
+      "pickup": null
+     },
+     "away": {
+      "entryId": 10173,
+      "name": "Hackney Rohirrim",
+      "manager": "Mike Sutton",
+      "points": 31,
+      "rank": 7,
+      "prevRank": null,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "seasonAvg": 31,
+      "isSeasonHigh": false,
+      "isWeekHigh": false,
+      "titleOdds": {
+       "before": 13,
+       "after": 5.5
+      },
+      "players": {
+       "top": {
+        "id": 335,
+        "name": "Stach",
+        "pts": 13
+       },
+       "share": 0.419,
+       "haul": {
+        "id": 335,
+        "name": "Stach",
+        "pts": 13
+       },
+       "flop": {
+        "id": 418,
+        "name": "Maguire",
+        "pts": 1,
+        "xp": 5.6
+       }
+      },
+      "pickup": null
+     },
+     "winner": 30728,
+     "margin": 16,
+     "odds": {
+      "favoriteSide": "away",
+      "favoritePct": 77,
+      "source": "engine",
+      "outcome": "miss"
+     },
+     "predicted": {
+      "home": 35.5,
+      "away": 45.6
+     },
+     "h2h": {
+      "games": 1,
+      "homeWins": 1,
+      "awayWins": 0,
+      "draws": 0
+     },
+     "sentences": [
+      "Seoul Shire took care of Hackney Rohirrim, 47–31.",
+      "The model had Hackney Rohirrim at 77% and Seoul Shire tore up the script.",
+      "That leaves Seoul Shire 4th (1-0-0); Hackney Rohirrim are 7th at 0-0-1.",
+      "Hackney Rohirrim will point at Maguire: projected for 5.6, he returned 1.",
+      "The result moved Hackney Rohirrim's title odds down: 13% → 5.5%."
+     ]
+    },
+    {
+     "home": {
+      "entryId": 44904,
+      "name": "Brampton Balrogs",
+      "manager": "Eddy Webster",
+      "points": 38,
+      "rank": 6,
+      "prevRank": null,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "seasonAvg": 38,
+      "isSeasonHigh": false,
+      "isWeekHigh": false,
+      "titleOdds": {
+       "before": 6.2,
+       "after": 3.3
+      },
+      "players": {
+       "top": {
+        "id": 391,
+        "name": "Gvardiol",
+        "pts": 9
+       },
+       "share": 0.237,
+       "haul": null,
+       "flop": null
+      },
+      "pickup": null
+     },
+     "away": {
+      "entryId": 6849,
+      "name": "Rokesly Regorasu",
+      "manager": "David Higman",
+      "points": 55,
+      "rank": 1,
+      "prevRank": null,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "seasonAvg": 55,
+      "isSeasonHigh": false,
+      "isWeekHigh": true,
+      "titleOdds": {
+       "before": 25.5,
+       "after": 34.5
+      },
+      "players": {
+       "top": {
+        "id": 367,
+        "name": "Gakpo",
+        "pts": 12
+       },
+       "share": 0.218,
+       "haul": null,
+       "flop": {
+        "id": 426,
+        "name": "B.Fernandes",
+        "pts": 2,
+        "xp": 5.2
+       }
+      },
+      "pickup": null
+     },
+     "winner": 6849,
+     "margin": 17,
+     "odds": {
+      "favoriteSide": "away",
+      "favoritePct": 50,
+      "source": "engine",
+      "outcome": "hit"
+     },
+     "predicted": {
+      "home": 39.1,
+      "away": 39.6
+     },
+     "h2h": {
+      "games": 1,
+      "homeWins": 0,
+      "awayWins": 1,
+      "draws": 0
+     },
+     "sentences": [
+      "A solid week's work from Rokesly Regorasu: 55–38 over Brampton Balrogs.",
+      "The model called it a near coin flip (50–50) and Rokesly Regorasu shaded it.",
+      "That keeps Rokesly Regorasu top of the pile (1-0-0); Brampton Balrogs are 6th at 0-0-1.",
+      "Nobody in the league scored more than Rokesly Regorasu's 55 this week."
+     ]
+    },
+    {
+     "home": {
+      "entryId": 4898,
+      "name": "Toronto Gimli",
+      "manager": "Andy Ward",
+      "points": 39,
+      "rank": 5,
+      "prevRank": null,
+      "record": {
+       "w": 0,
+       "d": 0,
+       "l": 1
+      },
+      "streak": {
+       "type": "L",
+       "len": 1
+      },
+      "seasonAvg": 39,
+      "isSeasonHigh": false,
+      "isWeekHigh": false,
+      "titleOdds": {
+       "before": 11,
+       "after": 6.2
+      },
+      "players": {
+       "top": {
+        "id": 10,
+        "name": "White",
+        "pts": 11
+       },
+       "share": 0.282,
+       "haul": null,
+       "flop": {
+        "id": 412,
+        "name": "Lammens",
+        "pts": 1,
+        "xp": 5.7
+       }
+      },
+      "pickup": null
+     },
+     "away": {
+      "entryId": 5220,
+      "name": "Suffolk Sméagol",
+      "manager": "Jon Ward",
+      "points": 52,
+      "rank": 2,
+      "prevRank": null,
+      "record": {
+       "w": 1,
+       "d": 0,
+       "l": 0
+      },
+      "streak": {
+       "type": "W",
+       "len": 1
+      },
+      "seasonAvg": 52,
+      "isSeasonHigh": false,
+      "isWeekHigh": false,
+      "titleOdds": {
+       "before": 10.2,
+       "after": 14.4
+      },
+      "players": {
+       "top": {
+        "id": 154,
+        "name": "Palmer",
+        "pts": 13
+       },
+       "share": 0.25,
+       "haul": {
+        "id": 154,
+        "name": "Palmer",
+        "pts": 13
+       },
+       "flop": {
+        "id": 417,
+        "name": "Dalot",
+        "pts": 1,
+        "xp": 5.4
+       }
+      },
+      "pickup": null
+     },
+     "winner": 5220,
+     "margin": 13,
+     "odds": {
+      "favoriteSide": "away",
+      "favoritePct": 58,
+      "source": "engine",
+      "outcome": "hit"
+     },
+     "predicted": {
+      "home": 38.5,
+      "away": 41.6
+     },
+     "h2h": {
+      "games": 1,
+      "homeWins": 0,
+      "awayWins": 1,
+      "draws": 0
+     },
+     "sentences": [
+      "Suffolk Sméagol took care of Toronto Gimli, 52–39.",
+      "Pre-match the model fancied Suffolk Sméagol (58%) — right call.",
+      "That leaves Suffolk Sméagol 2nd (1-0-0); Toronto Gimli are 5th at 0-0-1.",
+      "Palmer hauled 13 for Suffolk Sméagol while Toronto Gimli's Lammens — pegged for 5.7 — managed just 1.",
+      "Both sides finished within touching distance of their season averages — a matchup that went to form."
+     ]
+    }
+   ]
+  }
+ ]
 }

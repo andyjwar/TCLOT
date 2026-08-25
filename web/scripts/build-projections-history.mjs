@@ -5,10 +5,16 @@
  * applicable Proj MC % + projected XI totals — plus actual H2H scores for backtesting.
  *
  * Reads:  public/league-data/details.json, bootstrap_draft.json
+ *         (+ seasons/<label>/bootstrap_draft.json for early-season cold-start priors)
  * Writes: public/league-data/projections-history/gw-NN.json (+ index.json)
  *
  * Fetches draft event/live + classic fixtures + per-entry picks from FPL APIs (same as
  * build-waiver-gw-analytics). Skips quietly when OFFLINE=1 or SKIP_PROJECTIONS_HISTORY=1.
+ *
+ * Early-season note: without cold-start priors, `bootstrapElementToPlayer` scales
+ * start rate as starts/19, so after GW1 every regular reads ~5% nailed and XI xPts
+ * collapse to ~7 (ruining archived odds + weekly recap). Same prior blend as
+ * build-predictions.mjs keeps the archive aligned with pre-match Odds.
  *
  * Quick test: PROJECTIONS_HISTORY_LAST_N_GWS=3 only processes the last 3 finished GWs.
  */
@@ -18,6 +24,7 @@ import { fileURLToPath } from 'url';
 import { DEFAULT_MODEL_CONFIG } from 'fpl-predictions';
 import { buildEffectiveLineup } from '../src/fplAutosubProjection.js';
 import {
+  bootstrapElementToPlayer,
   bootstrapTeamToPredictionTeam,
   simulateFantasyH2hPercents,
   simulateFantasyH2hPercentsFromProjBlends,
@@ -28,6 +35,8 @@ import {
 import { projectedGwTotalLiveBlendForElement } from '../src/liveGwMidProjection.js';
 import { defensiveContributionCountFromLiveRow } from '../src/fplBonusFromBps.js';
 import { dcThresholdReached } from '../src/liveScoresDerivations.js';
+import { buildHistoricalRates, applyColdStartPriors } from '../src/coldStartPriors.js';
+import { resolveSeasonFromBootstrap, getSeasonLabel } from '../src/seasonString.js';
 
 const POS_MAP = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' };
 const CS_POSITIONS = new Set(['GK', 'DEF', 'MID']);
@@ -275,6 +284,69 @@ function actualH2hWinner(p1, p2) {
   return 'draw';
 }
 
+/**
+ * Prior-season draft bootstrap for cold-start priors (same discovery rule as
+ * build-predictions.mjs). Labels are "YYYY-YY" so lexical compare orders them.
+ */
+function loadPriorSeasonBootstrap(currentLabel) {
+  const seasonsDir = join(leagueDataDir, 'seasons');
+  if (!existsSync(seasonsDir)) return null;
+  let entries;
+  try {
+    entries = readdirSync(seasonsDir, { withFileTypes: true });
+  } catch {
+    return null;
+  }
+  let best = null;
+  for (const e of entries) {
+    if (!e.isDirectory()) continue;
+    const label = e.name;
+    if (currentLabel && label >= currentLabel) continue;
+    const p = join(seasonsDir, label, 'bootstrap_draft.json');
+    if (!existsSync(p)) continue;
+    if (!best || label > best.label) best = { label, path: p };
+  }
+  if (!best) return null;
+  try {
+    return { label: best.label, bootstrap: JSON.parse(readFileSync(best.path, 'utf8')) };
+  } catch {
+    return null;
+  }
+}
+
+/** Engine Player map with cold-start priors applied (fades out after ~6 matches). */
+function buildColdStartedPlayerById(boot, seasonLabel) {
+  const prior = loadPriorSeasonBootstrap(seasonLabel);
+  const historical = prior ? buildHistoricalRates(prior.bootstrap) : null;
+  const playerById = new Map();
+  let applied = 0;
+  let fromHistory = 0;
+  let fromBaseline = 0;
+  for (const el of boot?.elements ?? []) {
+    if (!el || el.removed) continue;
+    let player = bootstrapElementToPlayer(el);
+    const cold = applyColdStartPriors(player, {
+      code: el.code,
+      currentMinutes: Number(el.minutes) || 0,
+      historical,
+    });
+    if (cold.weight > 0) {
+      player = cold.player;
+      applied += 1;
+      if (cold.source === 'history') fromHistory += 1;
+      else if (cold.source === 'baseline') fromBaseline += 1;
+    }
+    playerById.set(Number(el.id), player);
+  }
+  return {
+    playerById,
+    priorLabel: prior?.label ?? null,
+    applied,
+    fromHistory,
+    fromBaseline,
+  };
+}
+
 async function main() {
   if (process.env.OFFLINE === '1' || process.env.SKIP_PROJECTIONS_HISTORY === '1') {
     console.log(
@@ -320,9 +392,23 @@ async function main() {
     teamsById.set(tm.id, tm);
   }
 
+  const season =
+    resolveSeasonFromBootstrap(boot) || { label: getSeasonLabel() };
+  const cold = buildColdStartedPlayerById(boot, season.label);
+  if (cold.applied) {
+    console.log(
+      `build-projections-history: cold-start priors on ${cold.applied} ` +
+        `(${cold.fromHistory} hist${cold.priorLabel ? ` from ${cold.priorLabel}` : ''}, ` +
+        `${cold.fromBaseline} baseline)`,
+    );
+  } else {
+    console.log('build-projections-history: no cold-start priors applied (enough minutes or no archive)');
+  }
+
   const ctxBase = {
     elementById,
     teamById: teamByIdObj,
+    playerById: cold.playerById,
   };
 
   mkdirSync(historyDir, { recursive: true });
@@ -333,6 +419,17 @@ async function main() {
 
   for (const gw of finishedGws) {
     const outPath = join(historyDir, `gw-${String(gw).padStart(2, '0')}.json`);
+
+    // Once a GW snapshot exists, keep it: pre-match xPts/odds are an archive of
+    // what the model showed that week. Rebuilding later (with post-GW minutes and
+    // no locked predictions.json) is what crushed GW1 to ~7 xPts and flipped
+    // favorites. Set PROJECTIONS_HISTORY_FORCE=1 to intentionally rewrite.
+    if (existsSync(outPath) && process.env.PROJECTIONS_HISTORY_FORCE !== '1') {
+      console.log(
+        `build-projections-history: GW ${gw} snapshot exists — leaving pre-match archive intact (PROJECTIONS_HISTORY_FORCE=1 to rewrite)`,
+      );
+      continue;
+    }
 
     let liveJson;
     let gwFixtures;
@@ -587,6 +684,12 @@ async function main() {
         h2hMonteCarloItersXp: H2H_MONTE_CARLO_ITERS,
         h2hMonteCarloItersProj: 1500,
         fplPredictionsSemver: pkgV,
+        coldStart: {
+          priorSeason: cold.priorLabel,
+          applied: cold.applied,
+          fromHistory: cold.fromHistory,
+          fromBaseline: cold.fromBaseline,
+        },
       },
       fixtures: {
         classicPlGameweek: gw,

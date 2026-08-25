@@ -1,0 +1,851 @@
+{
+  "schemaVersion": 3,
+  "gameweek": 1,
+  "generatedAt": "2026-08-25T12:14:59.302Z",
+  "leagueId": 1577,
+  "leagueName": "The TC League of Titans",
+  "disclaimer": "Pre-match xPts/odds reinstated from committed GW1 predictions.json @ 13c11a7 (generated 2026-08-22) \u2014 the Live Odds source during the gameweek. Actuals unchanged.",
+  "model": {
+    "simulationIterations": 450,
+    "h2hMonteCarloItersXp": 2000,
+    "h2hMonteCarloItersProj": 1500,
+    "fplPredictionsSemver": "0.1.0",
+    "preMatchSource": {
+      "kind": "predictions.json",
+      "commit": "13c11a7",
+      "predictionsGeneratedAt": "2026-08-22T00:20:43.717Z",
+      "reinstatedAt": "2026-08-25T12:14:59.302Z"
+    }
+  },
+  "fixtures": {
+    "classicPlGameweek": 1,
+    "plGwHadFinishedFixture": true,
+    "fixtureCount": 10
+  },
+  "h2h": [
+    {
+      "league_entry_1": 18279,
+      "league_entry_2": 4259,
+      "teamName1": "Mordor S.F.G",
+      "teamName2": "Atl\u00e9tico Bilbo",
+      "fpl_entry_1": 18269,
+      "fpl_entry_2": 4258,
+      "actualH2hPts1": 51,
+      "actualH2hPts2": 24,
+      "actualXiPts1": 51,
+      "actualXiPts2": 24,
+      "actualWinner": "home",
+      "xPtsXi1": 38.4,
+      "xPtsXi2": 30.6,
+      "xPtsFavorite": "home",
+      "xPtsMc": {
+        "homeWinPct": 74,
+        "drawPct": 3,
+        "awayWinPct": 24
+      },
+      "projXi1": 51,
+      "projXi2": 24,
+      "projFavorite": "home",
+      "projMc": {
+        "homeWinPct": 100,
+        "drawPct": 0,
+        "awayWinPct": 0
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "none",
+      "autosubSourceAway": "none",
+      "xGoals1": 1.2,
+      "xGoals2": 1.2,
+      "xAssists1": 0.6,
+      "xAssists2": 0.5,
+      "xCs1": 2,
+      "xCs2": 1.5,
+      "xDefcon1": 1.9,
+      "xDefcon2": 0.8,
+      "actualGoals1": 2,
+      "actualGoals2": 0,
+      "actualAssists1": 2,
+      "actualAssists2": 1,
+      "actualCs1": 3,
+      "actualCs2": 2,
+      "actualDefcon1": 2,
+      "actualDefcon2": 0,
+      "xi1": [
+        {
+          "id": 529,
+          "name": "Roefs",
+          "pos": "GK",
+          "pts": 1,
+          "xp": 5.4
+        },
+        {
+          "id": 229,
+          "name": "Tarkowski",
+          "pos": "DEF",
+          "pts": 6,
+          "xp": 4.1
+        },
+        {
+          "id": 11,
+          "name": "Mosquera",
+          "pos": "DEF",
+          "pts": 6,
+          "xp": 2.3
+        },
+        {
+          "id": 469,
+          "name": "N.Williams",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 3.3
+        },
+        {
+          "id": 390,
+          "name": "R\u00faben",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 3.2
+        },
+        {
+          "id": 480,
+          "name": "Gibbs-White",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 3.9
+        },
+        {
+          "id": 428,
+          "name": "Cunha",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 4.2
+        },
+        {
+          "id": 398,
+          "name": "Foden",
+          "pos": "MID",
+          "pts": 1,
+          "xp": 4
+        },
+        {
+          "id": 237,
+          "name": "Ndiaye",
+          "pos": "MID",
+          "pts": 9,
+          "xp": 3.8
+        },
+        {
+          "id": 165,
+          "name": "Jo\u00e3o Pedro",
+          "pos": "FWD",
+          "pts": 11,
+          "xp": 3.7
+        },
+        {
+          "id": 316,
+          "name": "Emersonn",
+          "pos": "FWD",
+          "pts": 9,
+          "xp": 0.5
+        }
+      ],
+      "xi2": [
+        {
+          "id": 496,
+          "name": "Kinsky",
+          "pos": "GK",
+          "pts": 2,
+          "xp": 1
+        },
+        {
+          "id": 230,
+          "name": "Branthwaite",
+          "pos": "DEF",
+          "pts": 6,
+          "xp": 1.2
+        },
+        {
+          "id": 423,
+          "name": "Shaw",
+          "pos": "DEF",
+          "pts": 1,
+          "xp": 5.1
+        },
+        {
+          "id": 149,
+          "name": "Colwill",
+          "pos": "DEF",
+          "pts": 0,
+          "xp": 0.7
+        },
+        {
+          "id": 427,
+          "name": "Mbeumo",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 5.1
+        },
+        {
+          "id": 155,
+          "name": "Enzo",
+          "pos": "MID",
+          "pts": 1,
+          "xp": 4.1
+        },
+        {
+          "id": 41,
+          "name": "Buend\u00eda",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 3.4
+        },
+        {
+          "id": 337,
+          "name": "Aaronson",
+          "pos": "MID",
+          "pts": 3,
+          "xp": 3.2
+        },
+        {
+          "id": 79,
+          "name": "Evanilson",
+          "pos": "FWD",
+          "pts": 4,
+          "xp": 3.1
+        },
+        {
+          "id": 379,
+          "name": "Isak",
+          "pos": "FWD",
+          "pts": 2,
+          "xp": 1.2
+        },
+        {
+          "id": 222,
+          "name": "Strand Larsen",
+          "pos": "FWD",
+          "pts": 1,
+          "xp": 2.5
+        }
+      ]
+    },
+    {
+      "league_entry_1": 30728,
+      "league_entry_2": 10173,
+      "teamName1": "Seoul Shire",
+      "teamName2": "Hackney Rohirrim",
+      "fpl_entry_1": 30692,
+      "fpl_entry_2": 10168,
+      "actualH2hPts1": 47,
+      "actualH2hPts2": 31,
+      "actualXiPts1": 47,
+      "actualXiPts2": 31,
+      "actualWinner": "home",
+      "xPtsXi1": 35.5,
+      "xPtsXi2": 45.6,
+      "xPtsFavorite": "away",
+      "xPtsMc": {
+        "homeWinPct": 21,
+        "drawPct": 2,
+        "awayWinPct": 77
+      },
+      "projXi1": 47,
+      "projXi2": 31,
+      "projFavorite": "home",
+      "projMc": {
+        "homeWinPct": 100,
+        "drawPct": 0,
+        "awayWinPct": 0
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "none",
+      "autosubSourceAway": "none",
+      "xGoals1": 1.3,
+      "xGoals2": 1.1,
+      "xAssists1": 1.1,
+      "xAssists2": 0.8,
+      "xCs1": 1.9,
+      "xCs2": 2.1,
+      "xDefcon1": 0.4,
+      "xDefcon2": 5.4,
+      "actualGoals1": 2,
+      "actualGoals2": 1,
+      "actualAssists1": 4,
+      "actualAssists2": 0,
+      "actualCs1": 2,
+      "actualCs2": 2,
+      "actualDefcon1": 2,
+      "actualDefcon2": 6,
+      "xi1": [
+        {
+          "id": 350,
+          "name": "A.Becker",
+          "pos": "GK",
+          "pts": 2,
+          "xp": 3.1
+        },
+        {
+          "id": 387,
+          "name": "O'Reilly",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 4.4
+        },
+        {
+          "id": 502,
+          "name": "Robertson",
+          "pos": "DEF",
+          "pts": 3,
+          "xp": 1.8
+        },
+        {
+          "id": 142,
+          "name": "James",
+          "pos": "DEF",
+          "pts": 0,
+          "xp": 4
+        },
+        {
+          "id": 514,
+          "name": "Tel",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 2.2
+        },
+        {
+          "id": 12,
+          "name": "Saka",
+          "pos": "MID",
+          "pts": 9,
+          "xp": 6.1
+        },
+        {
+          "id": 40,
+          "name": "Rogers",
+          "pos": "MID",
+          "pts": 8,
+          "xp": 3.3
+        },
+        {
+          "id": 399,
+          "name": "Cherki",
+          "pos": "MID",
+          "pts": 8,
+          "xp": 4.6
+        },
+        {
+          "id": 554,
+          "name": "Tzolis",
+          "pos": "MID",
+          "pts": 6,
+          "xp": 0.5
+        },
+        {
+          "id": 552,
+          "name": "Brobbey",
+          "pos": "FWD",
+          "pts": 2,
+          "xp": 2.7
+        },
+        {
+          "id": 125,
+          "name": "Georginio",
+          "pos": "FWD",
+          "pts": 5,
+          "xp": 2.8
+        }
+      ],
+      "xi2": [
+        {
+          "id": 384,
+          "name": "Donnarumma",
+          "pos": "GK",
+          "pts": 3,
+          "xp": 3.2
+        },
+        {
+          "id": 4,
+          "name": "Gabriel",
+          "pos": "DEF",
+          "pts": 5,
+          "xp": 5.6
+        },
+        {
+          "id": 498,
+          "name": "Senesi",
+          "pos": "DEF",
+          "pts": 3,
+          "xp": 4
+        },
+        {
+          "id": 356,
+          "name": "Virgil",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 4.2
+        },
+        {
+          "id": 418,
+          "name": "Maguire",
+          "pos": "DEF",
+          "pts": 1,
+          "xp": 5.6
+        },
+        {
+          "id": 452,
+          "name": "Bruno G.",
+          "pos": "MID",
+          "pts": 0,
+          "xp": 4.8
+        },
+        {
+          "id": 481,
+          "name": "Anderson",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 4
+        },
+        {
+          "id": 542,
+          "name": "E.Le F\u00e9e",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 4.1
+        },
+        {
+          "id": 335,
+          "name": "Stach",
+          "pos": "MID",
+          "pts": 13,
+          "xp": 3.4
+        },
+        {
+          "id": 415,
+          "name": "Dorgu",
+          "pos": "MID",
+          "pts": 0,
+          "xp": 3
+        },
+        {
+          "id": 55,
+          "name": "Watkins",
+          "pos": "FWD",
+          "pts": 0,
+          "xp": 3.7
+        }
+      ]
+    },
+    {
+      "league_entry_1": 44904,
+      "league_entry_2": 6849,
+      "teamName1": "Brampton Balrogs",
+      "teamName2": "Rokesly Regorasu",
+      "fpl_entry_1": 44841,
+      "fpl_entry_2": 6845,
+      "actualH2hPts1": 38,
+      "actualH2hPts2": 55,
+      "actualXiPts1": 38,
+      "actualXiPts2": 55,
+      "actualWinner": "away",
+      "xPtsXi1": 39.1,
+      "xPtsXi2": 39.6,
+      "xPtsFavorite": "away",
+      "xPtsMc": {
+        "homeWinPct": 47,
+        "drawPct": 3,
+        "awayWinPct": 50
+      },
+      "projXi1": 38,
+      "projXi2": 55,
+      "projFavorite": "away",
+      "projMc": {
+        "homeWinPct": 0,
+        "drawPct": 0,
+        "awayWinPct": 100
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "official",
+      "autosubSourceAway": "none",
+      "xGoals1": 1.6,
+      "xGoals2": 1.5,
+      "xAssists1": 0.7,
+      "xAssists2": 0.7,
+      "xCs1": 2.3,
+      "xCs2": 2,
+      "xDefcon1": 1.2,
+      "xDefcon2": 1.4,
+      "actualGoals1": 3,
+      "actualGoals2": 3,
+      "actualAssists1": 0,
+      "actualAssists2": 1,
+      "actualCs1": 1,
+      "actualCs2": 3,
+      "actualDefcon1": 2,
+      "actualDefcon2": 2,
+      "xi1": [
+        {
+          "id": 467,
+          "name": "Sels",
+          "pos": "GK",
+          "pts": 2,
+          "xp": 3.4
+        },
+        {
+          "id": 391,
+          "name": "Gvardiol",
+          "pos": "DEF",
+          "pts": 9,
+          "xp": 3.2
+        },
+        {
+          "id": 449,
+          "name": "Hall",
+          "pos": "DEF",
+          "pts": 3,
+          "xp": 3.7
+        },
+        {
+          "id": 201,
+          "name": "Mu\u00f1oz",
+          "pos": "DEF",
+          "pts": 0,
+          "xp": 3.7
+        },
+        {
+          "id": 397,
+          "name": "Semenyo",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 3.8
+        },
+        {
+          "id": 368,
+          "name": "Szoboszlai",
+          "pos": "MID",
+          "pts": 8,
+          "xp": 3.2
+        },
+        {
+          "id": 124,
+          "name": "Gro\u00df",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 3.1
+        },
+        {
+          "id": 453,
+          "name": "Barnes",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 4.2
+        },
+        {
+          "id": 106,
+          "name": "Thiago",
+          "pos": "FWD",
+          "pts": 0,
+          "xp": 4.3
+        },
+        {
+          "id": 491,
+          "name": "Igor Jesus",
+          "pos": "FWD",
+          "pts": 2,
+          "xp": 3.2
+        },
+        {
+          "id": 249,
+          "name": "Barry",
+          "pos": "FWD",
+          "pts": 8,
+          "xp": 3.3
+        }
+      ],
+      "xi2": [
+        {
+          "id": 82,
+          "name": "Kelleher",
+          "pos": "GK",
+          "pts": 7,
+          "xp": 3.6
+        },
+        {
+          "id": 8,
+          "name": "Calafiori",
+          "pos": "DEF",
+          "pts": 9,
+          "xp": 5.5
+        },
+        {
+          "id": 388,
+          "name": "Gu\u00e9hi",
+          "pos": "DEF",
+          "pts": 10,
+          "xp": 4
+        },
+        {
+          "id": 389,
+          "name": "Matheus N.",
+          "pos": "DEF",
+          "pts": 1,
+          "xp": 3.2
+        },
+        {
+          "id": 471,
+          "name": "Milenkovi\u0107",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 3.4
+        },
+        {
+          "id": 426,
+          "name": "B.Fernandes",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 5.2
+        },
+        {
+          "id": 67,
+          "name": "Rayan",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 2
+        },
+        {
+          "id": 95,
+          "name": "O.Dango",
+          "pos": "MID",
+          "pts": 3,
+          "xp": 4.2
+        },
+        {
+          "id": 367,
+          "name": "Gakpo",
+          "pos": "MID",
+          "pts": 12,
+          "xp": 3.5
+        },
+        {
+          "id": 26,
+          "name": "Havertz",
+          "pos": "FWD",
+          "pts": 6,
+          "xp": 1.2
+        },
+        {
+          "id": 346,
+          "name": "Calvert-Lewin",
+          "pos": "FWD",
+          "pts": 1,
+          "xp": 3.8
+        }
+      ]
+    },
+    {
+      "league_entry_1": 4898,
+      "league_entry_2": 5220,
+      "teamName1": "Toronto Gimli",
+      "teamName2": "Suffolk Sm\u00e9agol",
+      "fpl_entry_1": 4895,
+      "fpl_entry_2": 5217,
+      "actualH2hPts1": 39,
+      "actualH2hPts2": 52,
+      "actualXiPts1": 39,
+      "actualXiPts2": 52,
+      "actualWinner": "away",
+      "xPtsXi1": 38.5,
+      "xPtsXi2": 41.6,
+      "xPtsFavorite": "away",
+      "xPtsMc": {
+        "homeWinPct": 39,
+        "drawPct": 3,
+        "awayWinPct": 58
+      },
+      "projXi1": 39,
+      "projXi2": 52,
+      "projFavorite": "away",
+      "projMc": {
+        "homeWinPct": 0,
+        "drawPct": 0,
+        "awayWinPct": 100
+      },
+      "plHadFinishedFixtureForMc": true,
+      "autosubSourceHome": "official",
+      "autosubSourceAway": "official",
+      "xGoals1": 1.5,
+      "xGoals2": 1,
+      "xAssists1": 0.7,
+      "xAssists2": 0.7,
+      "xCs1": 1.9,
+      "xCs2": 2,
+      "xDefcon1": 1.4,
+      "xDefcon2": 2,
+      "actualGoals1": 1,
+      "actualGoals2": 2,
+      "actualAssists1": 1,
+      "actualAssists2": 2,
+      "actualCs1": 4,
+      "actualCs2": 4,
+      "actualDefcon1": 0,
+      "actualDefcon2": 2,
+      "xi1": [
+        {
+          "id": 412,
+          "name": "Lammens",
+          "pos": "GK",
+          "pts": 1,
+          "xp": 5.7
+        },
+        {
+          "id": 10,
+          "name": "White",
+          "pos": "DEF",
+          "pts": 11,
+          "xp": 2.3
+        },
+        {
+          "id": 112,
+          "name": "Van Hecke",
+          "pos": "DEF",
+          "pts": 1,
+          "xp": 3.4
+        },
+        {
+          "id": 305,
+          "name": "Davis",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 0.5
+        },
+        {
+          "id": 393,
+          "name": "Khusanov",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 2.9
+        },
+        {
+          "id": 13,
+          "name": "Rice",
+          "pos": "MID",
+          "pts": 3,
+          "xp": 4.2
+        },
+        {
+          "id": 366,
+          "name": "Wirtz",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 3.8
+        },
+        {
+          "id": 236,
+          "name": "Dewsbury-Hall",
+          "pos": "MID",
+          "pts": 11,
+          "xp": 3.2
+        },
+        {
+          "id": 94,
+          "name": "Schade",
+          "pos": "MID",
+          "pts": 3,
+          "xp": 4.2
+        },
+        {
+          "id": 411,
+          "name": "Haaland",
+          "pos": "FWD",
+          "pts": 2,
+          "xp": 5.2
+        },
+        {
+          "id": 439,
+          "name": "\u0160e\u0161ko",
+          "pos": "FWD",
+          "pts": 1,
+          "xp": 3.1
+        }
+      ],
+      "xi2": [
+        {
+          "id": 1,
+          "name": "Raya",
+          "pos": "GK",
+          "pts": 6,
+          "xp": 4.9
+        },
+        {
+          "id": 358,
+          "name": "Kerkez",
+          "pos": "DEF",
+          "pts": 0,
+          "xp": 3.1
+        },
+        {
+          "id": 200,
+          "name": "Lacroix",
+          "pos": "DEF",
+          "pts": 6,
+          "xp": 4.9
+        },
+        {
+          "id": 417,
+          "name": "Dalot",
+          "pos": "DEF",
+          "pts": 1,
+          "xp": 5.4
+        },
+        {
+          "id": 233,
+          "name": "Mykolenko",
+          "pos": "DEF",
+          "pts": 6,
+          "xp": 3.1
+        },
+        {
+          "id": 259,
+          "name": "Diop",
+          "pos": "DEF",
+          "pts": 2,
+          "xp": 1.6
+        },
+        {
+          "id": 154,
+          "name": "Palmer",
+          "pos": "MID",
+          "pts": 13,
+          "xp": 4.5
+        },
+        {
+          "id": 15,
+          "name": "\u00d8degaard",
+          "pos": "MID",
+          "pts": 11,
+          "xp": 2.9
+        },
+        {
+          "id": 260,
+          "name": "Wilson",
+          "pos": "MID",
+          "pts": 3,
+          "xp": 3.2
+        },
+        {
+          "id": 43,
+          "name": "Tielemans",
+          "pos": "MID",
+          "pts": 2,
+          "xp": 3.9
+        },
+        {
+          "id": 223,
+          "name": "Mateta",
+          "pos": "FWD",
+          "pts": 2,
+          "xp": 4.1
+        }
+      ]
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 {
  "schemaVersion": 1,
- "generatedAt": "2026-08-18T20:34:11.509Z",
+ "generatedAt": "2026-08-25T12:15:08.327Z",
  "season": "2026-27",
- "asOfGw": 0,
+ "asOfGw": 1,
  "method": {
   "prior": "season-preview draft model (worth ~6 games)",
   "update": "strength re-weighted toward actual weekly scores as games accumulate",
@@ -10,166 +10,166 @@
   "favorites": "weekly engine archive when available, strength model otherwise"
  },
  "current": {
-  "asOfGw": 0,
+  "asOfGw": 1,
   "teams": [
-   {
-    "leagueEntryId": 18279,
-    "name": "Mordor S.F.G",
-    "titlePct": 25.6,
-    "topHalfPct": 72,
-    "lastPct": 4,
-    "avgFinish": 3.29,
-    "projPts": 65.8,
-    "projPf": 1727,
-    "strength": 45.6,
-    "banked": {
-     "pts": 0,
-     "w": 0,
-     "d": 0,
-     "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
-    }
-   },
    {
     "leagueEntryId": 6849,
     "name": "Rokesly Regorasu",
-    "titlePct": 25.5,
-    "topHalfPct": 71.9,
-    "lastPct": 3.9,
-    "avgFinish": 3.31,
-    "projPts": 65.9,
-    "projPf": 1728,
-    "strength": 45.5,
+    "titlePct": 34.5,
+    "topHalfPct": 83.3,
+    "lastPct": 1.1,
+    "avgFinish": 2.68,
+    "projPts": 71.1,
+    "projPf": 1789,
+    "strength": 46.9,
     "banked": {
-     "pts": 0,
-     "w": 0,
+     "pts": 3,
+     "w": 1,
      "d": 0,
      "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
+     "pf": 55,
+     "played": 1,
+     "rank": 1
     }
    },
    {
-    "leagueEntryId": 10173,
-    "name": "Hackney Rohirrim",
-    "titlePct": 13,
-    "topHalfPct": 58.8,
-    "lastPct": 6.6,
-    "avgFinish": 4.08,
-    "projPts": 59.7,
-    "projPf": 1649,
-    "strength": 43.5,
+    "leagueEntryId": 18279,
+    "name": "Mordor S.F.G",
+    "titlePct": 28.5,
+    "topHalfPct": 81.2,
+    "lastPct": 1.4,
+    "avgFinish": 2.85,
+    "projPts": 69.5,
+    "projPf": 1762,
+    "strength": 46.4,
     "banked": {
-     "pts": 0,
-     "w": 0,
+     "pts": 3,
+     "w": 1,
      "d": 0,
      "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
-    }
-   },
-   {
-    "leagueEntryId": 4898,
-    "name": "Toronto Gimli",
-    "titlePct": 11,
-    "topHalfPct": 51,
-    "lastPct": 10.6,
-    "avgFinish": 4.46,
-    "projPts": 56.8,
-    "projPf": 1609,
-    "strength": 42.4,
-    "banked": {
-     "pts": 0,
-     "w": 0,
-     "d": 0,
-     "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
+     "pf": 51,
+     "played": 1,
+     "rank": 3
     }
    },
    {
     "leagueEntryId": 5220,
     "name": "Suffolk Sméagol",
-    "titlePct": 10.2,
-    "topHalfPct": 48.1,
-    "lastPct": 12,
-    "avgFinish": 4.58,
-    "projPts": 55.8,
-    "projPf": 1601,
-    "strength": 42.2,
+    "titlePct": 14.4,
+    "topHalfPct": 64.4,
+    "lastPct": 4.4,
+    "avgFinish": 3.79,
+    "projPts": 62,
+    "projPf": 1669,
+    "strength": 43.6,
     "banked": {
-     "pts": 0,
-     "w": 0,
+     "pts": 3,
+     "w": 1,
      "d": 0,
      "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
-    }
-   },
-   {
-    "leagueEntryId": 44904,
-    "name": "Brampton Balrogs",
-    "titlePct": 6.2,
-    "topHalfPct": 36.4,
-    "lastPct": 17.8,
-    "avgFinish": 5.22,
-    "projPts": 51.1,
-    "projPf": 1545,
-    "strength": 40.7,
-    "banked": {
-     "pts": 0,
-     "w": 0,
-     "d": 0,
-     "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
+     "pf": 52,
+     "played": 1,
+     "rank": 2
     }
    },
    {
     "leagueEntryId": 30728,
     "name": "Seoul Shire",
-    "titlePct": 5.3,
-    "topHalfPct": 36.4,
-    "lastPct": 18,
-    "avgFinish": 5.23,
-    "projPts": 51,
-    "projPf": 1542,
-    "strength": 40.5,
+    "titlePct": 7.1,
+    "topHalfPct": 46.6,
+    "lastPct": 9.2,
+    "avgFinish": 4.66,
+    "projPts": 55.6,
+    "projPf": 1580,
+    "strength": 41.4,
+    "banked": {
+     "pts": 3,
+     "w": 1,
+     "d": 0,
+     "l": 0,
+     "pf": 47,
+     "played": 1,
+     "rank": 4
+    }
+   },
+   {
+    "leagueEntryId": 4898,
+    "name": "Toronto Gimli",
+    "titlePct": 6.2,
+    "topHalfPct": 43.2,
+    "lastPct": 10.8,
+    "avgFinish": 4.84,
+    "projPts": 54,
+    "projPf": 1585,
+    "strength": 41.9,
     "banked": {
      "pts": 0,
      "w": 0,
      "d": 0,
-     "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
+     "l": 1,
+     "pf": 39,
+     "played": 1,
+     "rank": 5
+    }
+   },
+   {
+    "leagueEntryId": 10173,
+    "name": "Hackney Rohirrim",
+    "titlePct": 5.5,
+    "topHalfPct": 40.9,
+    "lastPct": 11.3,
+    "avgFinish": 4.94,
+    "projPts": 53.2,
+    "projPf": 1578,
+    "strength": 41.7,
+    "banked": {
+     "pts": 0,
+     "w": 0,
+     "d": 0,
+     "l": 1,
+     "pf": 31,
+     "played": 1,
+     "rank": 7
+    }
+   },
+   {
+    "leagueEntryId": 44904,
+    "name": "Brampton Balrogs",
+    "titlePct": 3.3,
+    "topHalfPct": 29.5,
+    "lastPct": 17.1,
+    "avgFinish": 5.5,
+    "projPts": 48.9,
+    "projPf": 1529,
+    "strength": 40.3,
+    "banked": {
+     "pts": 0,
+     "w": 0,
+     "d": 0,
+     "l": 1,
+     "pf": 38,
+     "played": 1,
+     "rank": 6
     }
    },
    {
     "leagueEntryId": 4259,
     "name": "Atlético Bilbo",
-    "titlePct": 3.2,
-    "topHalfPct": 25.3,
-    "lastPct": 27,
-    "avgFinish": 5.84,
-    "projPts": 46.2,
-    "projPf": 1479,
-    "strength": 38.9,
+    "titlePct": 0.6,
+    "topHalfPct": 10.9,
+    "lastPct": 44.7,
+    "avgFinish": 6.74,
+    "projPts": 38.4,
+    "projPf": 1379,
+    "strength": 36.8,
     "banked": {
      "pts": 0,
      "w": 0,
      "d": 0,
-     "l": 0,
-     "pf": 0,
-     "played": 0,
-     "rank": null
+     "l": 1,
+     "pf": 24,
+     "played": 1,
+     "rank": 8
     }
    }
   ]
@@ -339,15 +339,248 @@
      }
     }
    ]
+  },
+  {
+   "asOfGw": 1,
+   "teams": [
+    {
+     "leagueEntryId": 6849,
+     "name": "Rokesly Regorasu",
+     "titlePct": 34.5,
+     "topHalfPct": 83.3,
+     "lastPct": 1.1,
+     "avgFinish": 2.68,
+     "projPts": 71.1,
+     "projPf": 1789,
+     "strength": 46.9,
+     "banked": {
+      "pts": 3,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "pf": 55,
+      "played": 1,
+      "rank": 1
+     }
+    },
+    {
+     "leagueEntryId": 18279,
+     "name": "Mordor S.F.G",
+     "titlePct": 28.5,
+     "topHalfPct": 81.2,
+     "lastPct": 1.4,
+     "avgFinish": 2.85,
+     "projPts": 69.5,
+     "projPf": 1762,
+     "strength": 46.4,
+     "banked": {
+      "pts": 3,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "pf": 51,
+      "played": 1,
+      "rank": 3
+     }
+    },
+    {
+     "leagueEntryId": 5220,
+     "name": "Suffolk Sméagol",
+     "titlePct": 14.4,
+     "topHalfPct": 64.4,
+     "lastPct": 4.4,
+     "avgFinish": 3.79,
+     "projPts": 62,
+     "projPf": 1669,
+     "strength": 43.6,
+     "banked": {
+      "pts": 3,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "pf": 52,
+      "played": 1,
+      "rank": 2
+     }
+    },
+    {
+     "leagueEntryId": 30728,
+     "name": "Seoul Shire",
+     "titlePct": 7.1,
+     "topHalfPct": 46.6,
+     "lastPct": 9.2,
+     "avgFinish": 4.66,
+     "projPts": 55.6,
+     "projPf": 1580,
+     "strength": 41.4,
+     "banked": {
+      "pts": 3,
+      "w": 1,
+      "d": 0,
+      "l": 0,
+      "pf": 47,
+      "played": 1,
+      "rank": 4
+     }
+    },
+    {
+     "leagueEntryId": 4898,
+     "name": "Toronto Gimli",
+     "titlePct": 6.2,
+     "topHalfPct": 43.2,
+     "lastPct": 10.8,
+     "avgFinish": 4.84,
+     "projPts": 54,
+     "projPf": 1585,
+     "strength": 41.9,
+     "banked": {
+      "pts": 0,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "pf": 39,
+      "played": 1,
+      "rank": 5
+     }
+    },
+    {
+     "leagueEntryId": 10173,
+     "name": "Hackney Rohirrim",
+     "titlePct": 5.5,
+     "topHalfPct": 40.9,
+     "lastPct": 11.3,
+     "avgFinish": 4.94,
+     "projPts": 53.2,
+     "projPf": 1578,
+     "strength": 41.7,
+     "banked": {
+      "pts": 0,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "pf": 31,
+      "played": 1,
+      "rank": 7
+     }
+    },
+    {
+     "leagueEntryId": 44904,
+     "name": "Brampton Balrogs",
+     "titlePct": 3.3,
+     "topHalfPct": 29.5,
+     "lastPct": 17.1,
+     "avgFinish": 5.5,
+     "projPts": 48.9,
+     "projPf": 1529,
+     "strength": 40.3,
+     "banked": {
+      "pts": 0,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "pf": 38,
+      "played": 1,
+      "rank": 6
+     }
+    },
+    {
+     "leagueEntryId": 4259,
+     "name": "Atlético Bilbo",
+     "titlePct": 0.6,
+     "topHalfPct": 10.9,
+     "lastPct": 44.7,
+     "avgFinish": 6.74,
+     "projPts": 38.4,
+     "projPf": 1379,
+     "strength": 36.8,
+     "banked": {
+      "pts": 0,
+      "w": 0,
+      "d": 0,
+      "l": 1,
+      "pf": 24,
+      "played": 1,
+      "rank": 8
+     }
+    }
+   ]
   }
  ],
  "modelRecord": {
-  "gameweeks": [],
-  "hits": 0,
-  "misses": 0,
+  "gameweeks": [
+   {
+    "gw": 1,
+    "hits": 3,
+    "misses": 1,
+    "draws": 0,
+    "avgAbsErr": 9.1,
+    "matches": [
+     {
+      "home": 18279,
+      "away": 4259,
+      "homePts": 51,
+      "awayPts": 24,
+      "favorite": 18279,
+      "favoriteSource": "engine",
+      "homeWinPct": 74,
+      "awayWinPct": 24,
+      "predHome": 38.4,
+      "predAway": 30.6,
+      "outcome": "hit"
+     },
+     {
+      "home": 30728,
+      "away": 10173,
+      "homePts": 47,
+      "awayPts": 31,
+      "favorite": 10173,
+      "favoriteSource": "engine",
+      "homeWinPct": 21,
+      "awayWinPct": 77,
+      "predHome": 35.5,
+      "predAway": 45.6,
+      "outcome": "miss"
+     },
+     {
+      "home": 44904,
+      "away": 6849,
+      "homePts": 38,
+      "awayPts": 55,
+      "favorite": 6849,
+      "favoriteSource": "engine",
+      "homeWinPct": 47,
+      "awayWinPct": 50,
+      "predHome": 39.1,
+      "predAway": 39.6,
+      "outcome": "hit"
+     },
+     {
+      "home": 4898,
+      "away": 5220,
+      "homePts": 39,
+      "awayPts": 52,
+      "favorite": 5220,
+      "favoriteSource": "engine",
+      "homeWinPct": 39,
+      "awayWinPct": 58,
+      "predHome": 38.5,
+      "predAway": 41.6,
+      "outcome": "hit"
+     }
+    ]
+   }
+  ],
+  "hits": 3,
+  "misses": 1,
   "draws": 0,
-  "avgAbsErr": null,
-  "scoredTeamWeeks": 0,
-  "biggestMiss": null
+  "avgAbsErr": 9.1,
+  "scoredTeamWeeks": 8,
+  "biggestMiss": {
+   "gw": 1,
+   "teamName": "Rokesly Regorasu",
+   "predicted": 39.6,
+   "actual": 55,
+   "absErr": 15.4
+  }
  }
 }
