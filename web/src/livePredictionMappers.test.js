@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   bootstrapElementToPlayer,
+  enginePlayerFromElement,
   injuryDoubtScoreFromClassicElement,
   pickLikelyClassicXiElements,
   bootstrapTeamToPredictionTeam,
@@ -184,4 +185,18 @@ test('predictedStatsForPickRow returns null when the pick has no GW fixture', ()
   const { ctx, teamsById } = statsCtxFixture();
   ctx.gwFixtures = [];
   assert.equal(predictedStatsForPickRow({ element: 10 }, ctx, teamsById, 3, {}, 0), null);
+});
+
+test('enginePlayerFromElement prefers ctx.playerById over raw bootstrap mapping', () => {
+  const el = stubElement({ id: 42, starts: 1, minutes: 90 });
+  const raw = bootstrapElementToPlayer(el);
+  // Early-season starts/19 crush — the cold-started stand-in has a nailed rate.
+  const enriched = { ...raw, id: 42, recentStartRate: 0.95, startsLast6: 5, minutesLast6: 450 };
+  const fromMap = enginePlayerFromElement(el, { playerById: new Map([[42, enriched]]) });
+  assert.equal(fromMap.recentStartRate, 0.95);
+  assert.equal(fromMap.startsLast6, 5);
+  const fromObj = enginePlayerFromElement(el, { playerById: { 42: enriched } });
+  assert.equal(fromObj.minutesLast6, 450);
+  const fallback = enginePlayerFromElement(el, {});
+  assert.ok(fallback.recentStartRate < 0.1, 'raw early-season start rate stays low');
 });

@@ -85,6 +85,26 @@ export function pickLikelyClassicXiElements(teamId, elementById) {
 }
 
 /**
+ * Resolve an engine Player for a bootstrap element. Prefer `ctx.playerById`
+ * when the caller has pre-enriched players (cold-start priors, Understat
+ * blend, availability overrides) so early-season archives and live sims
+ * match `predictions.json` instead of collapsing on `starts/19 ≈ 0`.
+ *
+ * @param {object} el bootstrap element
+ * @param {{ playerById?: Map<number, object> | Record<number, object> } | null | undefined} ctx
+ */
+export function enginePlayerFromElement(el, ctx) {
+  const id = Number(el?.id);
+  const fromCtx = ctx?.playerById;
+  if (fromCtx && Number.isFinite(id)) {
+    const hit =
+      typeof fromCtx.get === 'function' ? fromCtx.get(id) : fromCtx[id];
+    if (hit) return hit;
+  }
+  return bootstrapElementToPlayer(el);
+}
+
+/**
  * @param {object[]} starters — 11 pick rows (`element` ids)
  * @returns {{ players: object[], bundles: object[] } | null}
  */
@@ -103,7 +123,7 @@ export function buildLineupPlayersAndBundles(
     const pid = Number(row.element);
     const el = ctx.elementById?.[pid];
     if (!el) return null;
-    const player = bootstrapElementToPlayer(el);
+    const player = enginePlayerFromElement(el, ctx);
     const rawFx = pickGwFixtureForTeam(player.teamId, ctx.gwFixtures, gw);
     if (!rawFx) return null;
     const predFx = classicFixtureToPredictionFixture(rawFx, gw);
@@ -221,7 +241,7 @@ export function predictionForPickRow(row, ctx, teamsById, gameweek, config, salt
     if (!Number.isFinite(pid)) return null;
     const el = ctx.elementById?.[pid];
     if (!el) return null;
-    const player = bootstrapElementToPlayer(el);
+    const player = enginePlayerFromElement(el, ctx);
     const gw = Number(gameweek);
     const rawFx = pickGwFixtureForTeam(player.teamId, ctx.gwFixtures, gw);
     if (!rawFx) return null;
@@ -236,8 +256,8 @@ export function predictionForPickRow(row, ctx, teamsById, gameweek, config, salt
         const xiH = pickLikelyClassicXiElements(hId, ctx.elementById);
         const xiA = pickLikelyClassicXiElements(aId, ctx.elementById);
         if (xiH.length === 11 && xiA.length === 11) {
-          const homePlayers = xiH.map(bootstrapElementToPlayer);
-          const awayPlayers = xiA.map(bootstrapElementToPlayer);
+          const homePlayers = xiH.map((e) => enginePlayerFromElement(e, ctx));
+          const awayPlayers = xiA.map((e) => enginePlayerFromElement(e, ctx));
           const iters = config?.simulationIterations ?? 8000;
           const ck = matchFixtureProjectionCacheKey(
             gw,
