@@ -80,10 +80,6 @@
 .weekly-recap__odds-dot--draw {
   background: var(--data-neutral, #9ca3af);
 }
-.weekly-recap__odds-note {
-  font-size: 11.5px;
-  color: var(--text-dim, #8b93a7);
-}
 .weekly-recap__upset {
   margin: 6px 0 0;
   font-size: 11.5px;
@@ -208,25 +204,41 @@
   padding-top: 8px;
   border-top: 1px solid var(--line, rgba(139, 147, 167, 0.18));
 }
+/* Per-team meta: a fixed grid so both sides' columns line up exactly.
+ *   row 1:  avatar | name (+streak) | rank | record | star
+ *   row 2:  avatar |  manager       | title-odds change (right-aligned)
+ * The avatar and identity block span both rows; the title-odds line gets
+ * its own aligned row instead of wrapping under a random column. */
 .weekly-recap-matchup__team-row {
-  display: flex;
+  display: grid;
+  grid-template-columns: 18px minmax(0, 1fr) auto auto minmax(0, auto);
+  grid-template-areas:
+    'avatar identity rank record star'
+    'avatar identity odds  odds   odds';
   align-items: center;
-  flex-wrap: wrap;
-  gap: 4px 8px;
+  column-gap: 8px;
+  row-gap: 1px;
   font-size: 12px;
   color: var(--text-dim, #8b93a7);
 }
 .weekly-recap-matchup__team-row .team-avatar-frame {
+  grid-area: avatar;
   width: 18px;
   height: 18px;
-  flex-shrink: 0;
+  align-self: center;
 }
 .weekly-recap-matchup__team-id {
+  grid-area: identity;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  flex: 1 1 96px;
   gap: 1px;
+}
+.weekly-recap-matchup__team-id-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
 }
 .weekly-recap-matchup__team-name {
   font-weight: 700;
@@ -235,6 +247,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
 }
 .weekly-recap-matchup__team-mgr {
   font-size: 10px;
@@ -245,47 +258,55 @@
   white-space: nowrap;
 }
 .weekly-recap-matchup__team-rank {
+  grid-area: rank;
+  justify-self: end;
   font-weight: 800;
   color: var(--text, #e8ecf4);
   display: inline-flex;
   align-items: center;
   gap: 2px;
-  min-width: 34px;
 }
 .weekly-recap-matchup__rank-move {
   font-size: 9px;
 }
 .weekly-recap-matchup__rank-move--up {
-  color: var(--positive, #4ade80);
+  color: var(--data-positive, #12a15a);
 }
 .weekly-recap-matchup__rank-move--down {
-  color: var(--negative, #f87171);
+  color: var(--data-negative, #ef4444);
 }
 .weekly-recap-matchup__team-record {
-  min-width: 44px;
+  grid-area: record;
+  justify-self: end;
+  color: var(--text, #e8ecf4);
 }
 .weekly-recap-matchup__team-top {
+  grid-area: star;
+  justify-self: end;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   min-width: 0;
 }
 .weekly-recap-matchup__streak {
-  font-size: 10px;
+  flex-shrink: 0;
+  font-size: 9.5px;
   font-weight: 800;
   padding: 1px 6px;
   border-radius: 999px;
   border: 1px solid var(--line, rgba(139, 147, 167, 0.3));
 }
 .weekly-recap-matchup__streak--w {
-  color: var(--positive, #4ade80);
-  border-color: color-mix(in srgb, var(--positive, #4ade80) 45%, transparent);
+  color: var(--data-positive, #12a15a);
+  border-color: color-mix(in srgb, var(--data-positive, #12a15a) 45%, transparent);
 }
 .weekly-recap-matchup__streak--l {
-  color: var(--negative, #f87171);
-  border-color: color-mix(in srgb, var(--negative, #f87171) 40%, transparent);
+  color: var(--data-negative, #ef4444);
+  border-color: color-mix(in srgb, var(--data-negative, #ef4444) 40%, transparent);
 }
 .weekly-recap-matchup__team-odds {
-  margin-left: auto;
+  grid-area: odds;
+  justify-self: end;
   white-space: nowrap;
+  font-size: 11px;
 }
