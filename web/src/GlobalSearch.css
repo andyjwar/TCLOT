@@ -214,14 +214,67 @@ body[data-tclot-theme='dark'] .gsearch__row:hover {
   width: 28px;
   height: 28px;
 }
-.gsearch__pos {
-  flex: 0 0 2.4rem;
-  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+/* ---- Player row: club badge · name · position · owner ----
+ * Typography + geometry mirror the Players tab wire tile
+ * (`.players-wire-tile__*`) so the two surfaces read as one system. */
+.gsearch__row--player {
+  gap: 8px;
+}
+.gsearch__pident {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gsearch__kit {
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+}
+.gsearch__kit .pl-kit-badge,
+.gsearch__kit .pl-kit-shirt,
+.gsearch__kit .pl-kit-fallback {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+.gsearch__pname {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: var(--text-strong, #1a1a1a);
+  line-height: 1.25;
+  min-width: 0;
+  flex: 0 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body[data-tclot-theme='dark'] .gsearch__pname {
+  color: rgba(255, 255, 255, 0.92);
+}
+.gsearch__poschip {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  border: 1px solid color-mix(in srgb, var(--fm-border, #e2e2e2) 80%, transparent);
+  background: color-mix(in srgb, var(--fm-muted, #6b7280) 12%, transparent);
+  color: var(--fm-muted, rgba(0, 0, 0, 0.55));
+  font-family: 'Geist', system-ui, sans-serif;
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  color: var(--brand, #795bfb);
-  text-align: center;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0;
+}
+body[data-tclot-theme='dark'] .gsearch__poschip {
+  border-color: #3a3a40;
+  color: rgba(255, 255, 255, 0.55);
 }
 .gsearch__main {
   flex: 1 1 auto;
