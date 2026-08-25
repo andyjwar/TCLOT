@@ -131,7 +131,12 @@ export function blendPlayer(row, player, mode = 'live') {
   }
 
   const defcon = dcReached ? 2 : phase === 'done' ? 0 : defconFull;
-  const sigma = phase === 'done' ? 0 : rem * sdFull;
+  // Points accrue like a sum of many small random events, so the remaining
+  // VARIANCE scales with time left — i.e. sigma scales with sqrt(rem), not rem.
+  // Linear scaling collapsed uncertainty far too fast late in matches (3x
+  // overconfident with ~10 minutes left), turning small live leads into
+  // near-certain win bars.
+  const sigma = phase === 'done' ? 0 : Math.sqrt(rem) * sdFull;
   const returnProb = banked >= 6 ? 1 : phase === 'done' ? 0 : clamp01(retFull * rem);
 
   return {

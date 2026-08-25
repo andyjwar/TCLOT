@@ -102,6 +102,17 @@ test('live player blends banked + time-scaled remainder', () => {
   assert.ok(b.sigma > 0 && b.sigma < 12 / 2.563) // shrunk but non-zero
 })
 
+test('live sigma shrinks with sqrt of time remaining, not linearly', () => {
+  const sdFull = (12 - 1) / 2.563 // from pred() percentiles p10=1, p90=12
+  const half = blendPlayer(row({ minutes: 45, total_points: 3 }), pred(), 'live')
+  const late = blendPlayer(row({ minutes: 81, total_points: 3 }), pred(), 'live')
+  // 45 mins left → rem = 0.5 → sigma = sqrt(0.5) * sdFull (not 0.5 * sdFull)
+  assert.ok(Math.abs(half.sigma - Math.sqrt(0.5) * sdFull) < 1e-9)
+  // 9 mins left → rem = 0.1 → sqrt scaling keeps meaningfully more uncertainty
+  assert.ok(Math.abs(late.sigma - Math.sqrt(0.1) * sdFull) < 1e-9)
+  assert.ok(late.sigma > 0.1 * sdFull * 2, 'late-match sigma must not collapse linearly')
+})
+
 test('clean sheet rises with time when held, drops to 0 once conceded', () => {
   const def = pred({ position: 'DEF', forecast: { probabilities: { cleanSheetPct: 30, goalLikelihood: 0.05, assistLikelihood: 0.05 } } })
   const early = blendPlayer(row({ minutes: 10, posSingular: 'DEF', goalsConceded: 0 }), def, 'live')
