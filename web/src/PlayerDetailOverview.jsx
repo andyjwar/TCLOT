@@ -8,6 +8,7 @@ import {
 import { PlayerDetailLastFiveCards } from './PlayerDetailLastFiveCards.jsx'
 import { PlayerDetailNextFiveCards } from './PlayerDetailNextFiveCards.jsx'
 import { TeamAvatar } from './TeamAvatar'
+import { ClickableManagerName } from './teamDetailBus.jsx'
 import { useDraftPickForElement } from './useDraftPickForElement.js'
 
 /**
@@ -34,16 +35,22 @@ function PdetailDraftLine({ elementId, logoMap, kitIndexByEntry }) {
       <span className="pdetail-draftline__pick tabular">
         Drafted Round {pick.round} · Pick {pick.pickInRound} by
       </span>
-      {pick.leagueEntryId != null ? (
-        <TeamAvatar
-          entryId={pick.leagueEntryId}
-          name={pick.teamName}
-          size="sm"
-          logoMap={logoMap}
-          kitIndexByEntry={kitIndexByEntry}
-        />
-      ) : null}
-      <span className="pdetail-draftline__team">{pick.teamName}</span>
+      <ClickableManagerName
+        leagueEntryId={pick.leagueEntryId}
+        title={`${pick.teamName} — manager card`}
+        className="pdetail-draftline__owner"
+      >
+        {pick.leagueEntryId != null ? (
+          <TeamAvatar
+            entryId={pick.leagueEntryId}
+            name={pick.teamName}
+            size="sm"
+            logoMap={logoMap}
+            kitIndexByEntry={kitIndexByEntry}
+          />
+        ) : null}
+        <span className="pdetail-draftline__team">{pick.teamName}</span>
+      </ClickableManagerName>
     </div>
   )
 }

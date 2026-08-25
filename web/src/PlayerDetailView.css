@@ -293,6 +293,19 @@ body[data-tclot-theme='light'] .pdetail-xi--absent {
   font-weight: 600;
 }
 .pdetail__hero-owner-status { color: var(--text-muted); }
+/* Manager-name link (owner row + draft line): keep crest + name grouped and
+   inherit the `.tc-team-link` cursor/hover-underline affordance. */
+.pdetail__hero-owner-link,
+.pdetail-draftline__owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  color: inherit;
+}
+.pdetail-draftline__owner {
+  overflow: hidden;
+}
 .pdetail__hero-owner-free-dot {
   width: 8px;
   height: 8px;
