@@ -473,9 +473,32 @@ body[data-tclot-theme='ceefax'] .lfc-cmp__val {
 body[data-tclot-theme='ceefax'] .lfc-cmp__label {
   font-size: 18px !important;
 }
-body[data-tclot-theme='ceefax'] .lfc-fixstrip__ab,
+/* Fixture switcher chips sit in the overlay header — isolate them from the
+ * inflated .lfc-root font-size so they stay compact and fit without scrolling. */
+body[data-tclot-theme='ceefax'] .lfc-fixstrip {
+  font-size: 13px !important;
+  overflow-x: hidden !important;
+  touch-action: none;
+  -webkit-overflow-scrolling: auto;
+  gap: 4px;
+}
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__chip {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 50%;
+  padding: 2px 5px !important;
+  gap: 3px;
+  overflow: hidden;
+}
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__ab {
+  font-size: 9px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 body[data-tclot-theme='ceefax'] .lfc-fixstrip__score {
-  font-size: 1.05em !important;
+  font-size: 11px !important;
+  flex-shrink: 0;
 }
 body[data-tclot-theme='ceefax'] .lfc-team__name {
   font-size: 1.05em !important;
