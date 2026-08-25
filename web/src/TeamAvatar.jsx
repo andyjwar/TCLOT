@@ -6,6 +6,23 @@ import {
   SHIRT_VIEW_BOX,
 } from './shirtSilhouettePaths'
 import { TEAM_KITS, TEAM_KIT_COUNT } from './teamKitStyles'
+import { teamChipAbbr } from './liveScoresDerivations.js'
+import { useIsCeefax } from './useIsCeefax.js'
+
+/**
+ * Teletext replacement for a team crest: the 3-letter abbreviation as text.
+ * Ceefax is text-only, so we swap the logo/shirt badge for the club code.
+ */
+function CeefaxTeamCode({ name, size }) {
+  return (
+    <span
+      className={`team-avatar-code team-avatar-code--${size}`}
+      aria-hidden="true"
+    >
+      {teamChipAbbr(name)}
+    </span>
+  )
+}
 
 const RAW_BASE = `${import.meta.env.BASE_URL}team-logos/`
 const WEB_BASE = `${import.meta.env.BASE_URL}team-logos-web/`
@@ -220,6 +237,7 @@ export function TeamAvatar({
    */
   badgeFallback = false,
 }) {
+  const isCeefax = useIsCeefax()
   const kitIndex = useMemo(
     () => resolveKitIndex(entryId, kitIndexByEntry, name),
     [entryId, kitIndexByEntry, name],
@@ -235,6 +253,12 @@ export function TeamAvatar({
     const n = Number(entryId)
     return Number.isFinite(n) && LOGO_ZOOM_ENTRY_IDS.has(n)
   }, [entryId])
+
+  // Teletext: render the club code as text instead of any crest/kit badge.
+  if (isCeefax) {
+    if (noFallback && entryId == null) return null
+    return <CeefaxTeamCode name={name} size={size} />
+  }
 
   if (entryId == null || showInitials) {
     if (noFallback) return null

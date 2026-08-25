@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchLeagueDataJsonOptional } from './leagueDataFetch.js'
+import { useIsCeefax } from './useIsCeefax.js'
 import './ForbiddenWaivers.css'
 
 /** PL club badge for an FPL team `code`. */
@@ -20,6 +21,7 @@ const POS_RANK = { GKP: 1, GK: 1, DEF: 2, MID: 3, FWD: 4 }
  */
 export function ForbiddenWaivers() {
   const [data, setData] = useState(null)
+  const isCeefax = useIsCeefax()
 
   useEffect(() => {
     let alive = true
@@ -71,7 +73,11 @@ export function ForbiddenWaivers() {
               const badge = plClubBadgeUrl(p.teamCode)
               return (
                 <li key={p.id} className="forbidden-waivers__row">
-                  {badge ? (
+                  {isCeefax ? (
+                    <span className="forbidden-waivers__badge forbidden-waivers__badge--code">
+                      {p.team || ''}
+                    </span>
+                  ) : badge ? (
                     <img
                       className="forbidden-waivers__badge"
                       src={badge}

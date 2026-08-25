@@ -5,6 +5,7 @@ import { DraftQuality } from './DraftQuality'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { compareLeagueEntriesByDraftSlot, minOverallPickByEntryId } from './draftTeamOrder'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import { useIsCeefax } from './useIsCeefax.js'
 
 const POS_OPTIONS = ['GKP', 'DEF', 'MID', 'FWD']
 
@@ -66,8 +67,14 @@ function DraftStatusPill({ pick, compact = false }) {
   )
 }
 
-function ClubBadge({ src, className = 'draft-board-row__club-badge' }) {
+function ClubBadge({ src, short, className = 'draft-board-row__club-badge' }) {
   const [hidden, setHidden] = useState(false)
+  const isCeefax = useIsCeefax()
+  // Teletext: show the PL club's short code as text instead of the crest.
+  if (isCeefax) {
+    if (!short) return null
+    return <span className={`${className} ${className}--code`}>{short}</span>
+  }
   if (!src || hidden) return null
   return (
     <img
@@ -344,7 +351,7 @@ export function DraftBoard({
                               {p.overallPick}
                             </span>
                             <div className="draft-grid__main">
-                              <ClubBadge src={p.badgeUrl} className="draft-grid__club" />
+                              <ClubBadge src={p.badgeUrl} short={p.clubShort} className="draft-grid__club" />
                               <span className="draft-grid__id">
                                 <span className="draft-grid__name-line">
                                   <span className="draft-grid__name">
@@ -392,7 +399,7 @@ export function DraftBoard({
                             key={`${p.overallPick}-${p.entryId}-${p.element}`}
                           >
                             <span className="draft-rlist__pick tabular">{p.overallPick}</span>
-                            <ClubBadge src={p.badgeUrl} className="draft-rlist__club" />
+                            <ClubBadge src={p.badgeUrl} short={p.clubShort} className="draft-rlist__club" />
                             <span className="draft-rlist__id">
                               <span className="draft-rlist__name-line">
                                 <span className="draft-rlist__name">

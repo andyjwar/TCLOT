@@ -206,10 +206,69 @@ body[data-tclot-theme='ceefax'] .fotmob *::after {
   box-shadow: none !important;
 }
 
-/* Team crests / avatars: keep them (they are content), but render nearest-
- * neighbour for a pixelated, low-res teletext feel. */
+/* Remaining images (player photos, etc.) render nearest-neighbour for a
+ * pixelated, low-res teletext feel. */
 body[data-tclot-theme='ceefax'] img {
   image-rendering: pixelated;
+}
+
+/* Team crests / club badges become text initials in Ceefax (handled in JS:
+ * TeamAvatar + club-badge renderers emit the club code). A few decorative
+ * crest images with no code plumbed through are hidden outright. */
+body[data-tclot-theme='ceefax'] .team-avatar-fallback-initials,
+body[data-tclot-theme='ceefax'] .brand-header__crest,
+body[data-tclot-theme='ceefax'] .pdetail-l5__crest,
+body[data-tclot-theme='ceefax'] .pdetail-l5__crest-fallback {
+  display: none !important;
+}
+
+/* Text club/team codes that replace crests. Cyan monospace so they read as
+ * teletext data, sized to sit where the badge used to. */
+body[data-tclot-theme='ceefax'] .team-avatar-code,
+body[data-tclot-theme='ceefax'] .draft-rlist__club--code,
+body[data-tclot-theme='ceefax'] .draft-grid__club--code,
+body[data-tclot-theme='ceefax'] .draft-board-row__club-badge--code,
+body[data-tclot-theme='ceefax'] .forbidden-waivers__badge--code {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--cf-cyan) !important;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  white-space: nowrap;
+}
+body[data-tclot-theme='ceefax'] .team-avatar-code {
+  min-width: 2.4em;
+  font-size: 0.92em;
+}
+body[data-tclot-theme='ceefax'] .team-avatar-code--sm {
+  min-width: 2.2em;
+  font-size: 0.82em;
+}
+body[data-tclot-theme='ceefax'] .draft-rlist__club--code,
+body[data-tclot-theme='ceefax'] .draft-grid__club--code,
+body[data-tclot-theme='ceefax'] .draft-board-row__club-badge--code {
+  width: auto;
+  min-width: 2.4em;
+  font-size: 0.95rem;
+}
+body[data-tclot-theme='ceefax'] .forbidden-waivers__badge--code {
+  min-width: 2.6em;
+  font-size: 1rem;
+}
+
+/* Form guide: green for a win, red for a loss, yellow for a draw — the
+ * Standings `.form-dot--win` otherwise inherits the yellow accent. */
+body[data-tclot-theme='ceefax'] .form-dot--win {
+  background: var(--cf-green) !important;
+}
+body[data-tclot-theme='ceefax'] .form-dot--loss {
+  background: var(--cf-red) !important;
+}
+body[data-tclot-theme='ceefax'] .form-dot--draw {
+  background: var(--cf-yellow) !important;
 }
 
 /* ------------------------------------------------------------------ */
@@ -473,9 +532,32 @@ body[data-tclot-theme='ceefax'] .lfc-cmp__val {
 body[data-tclot-theme='ceefax'] .lfc-cmp__label {
   font-size: 18px !important;
 }
-body[data-tclot-theme='ceefax'] .lfc-fixstrip__ab,
+/* Fixture switcher chips sit in the overlay header — isolate them from the
+ * inflated .lfc-root font-size so they stay compact and fit without scrolling. */
+body[data-tclot-theme='ceefax'] .lfc-fixstrip {
+  font-size: 13px !important;
+  overflow-x: hidden !important;
+  touch-action: none;
+  -webkit-overflow-scrolling: auto;
+  gap: 4px;
+}
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__chip {
+  flex: 1 1 0;
+  min-width: 0;
+  max-width: 50%;
+  padding: 2px 5px !important;
+  gap: 3px;
+  overflow: hidden;
+}
+body[data-tclot-theme='ceefax'] .lfc-fixstrip__ab {
+  font-size: 9px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 body[data-tclot-theme='ceefax'] .lfc-fixstrip__score {
-  font-size: 1.05em !important;
+  font-size: 11px !important;
+  flex-shrink: 0;
 }
 body[data-tclot-theme='ceefax'] .lfc-team__name {
   font-size: 1.05em !important;
@@ -491,8 +573,8 @@ body[data-tclot-theme='ceefax'] .standings-stats-eyebrow {
   font-size: 1.15em !important;
 }
 body[data-tclot-theme='ceefax'] .standings-stats-toggle__btn {
-  font-size: 1em !important;
-  padding: 7px 16px !important;
+  font-size: 18px !important;
+  padding: 5px 14px !important;
 }
 
 /* ------------------------------------------------------------------ */

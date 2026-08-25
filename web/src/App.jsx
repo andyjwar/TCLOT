@@ -489,6 +489,7 @@ import {
   WIN_MARGIN_BUCKET_KEYS,
 } from './useLeagueData'
 import { TeamAvatar } from './TeamAvatar'
+import { useIsCeefax } from './useIsCeefax.js'
 import { useLeagueLeaderFavicon } from './useLeagueLeaderFavicon'
 import { useDraftBootstrapEvents } from './useDraftBootstrapEvents'
 import { useFplFixtureLiveSummary } from './useFplFixtureLiveSummary.js'
@@ -2167,8 +2168,10 @@ function FormCircles({ form }) {
 /** Club crest badge (not a shirt) for a trade leg, with text fallback. */
 function TradeClubBadge({ player }) {
   const [err, setErr] = useState(false)
+  const isCeefax = useIsCeefax()
   const url = player?.badgeUrl
-  if (!url || err) {
+  // Teletext: club code as text rather than the crest image.
+  if (isCeefax || !url || err) {
     return (
       <span className="trade2__badge trade2__badge--text">
         {(player?.teamShort ?? '?').slice(0, 3)}
