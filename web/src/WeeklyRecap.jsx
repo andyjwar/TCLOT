@@ -300,8 +300,26 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
               kitIndexByEntry={kitIndexByEntry}
             />
             <span className="weekly-recap-matchup__team-id">
-              <span className="weekly-recap-matchup__team-name">
-                {standingsMobileTeamName(t.name)}
+              <span className="weekly-recap-matchup__team-id-top">
+                <span className="weekly-recap-matchup__team-name">
+                  {standingsMobileTeamName(t.name)}
+                </span>
+                {t.streak && t.streak.len >= 2 ? (
+                  <span
+                    className={
+                      'weekly-recap-matchup__streak' +
+                      (t.streak.type === 'W'
+                        ? ' weekly-recap-matchup__streak--w'
+                        : t.streak.type === 'L'
+                          ? ' weekly-recap-matchup__streak--l'
+                          : '')
+                    }
+                    title={`${t.streak.len} ${t.streak.type === 'W' ? 'wins' : t.streak.type === 'L' ? 'defeats' : 'draws'} in a row`}
+                  >
+                    {t.streak.type}
+                    {t.streak.len}
+                  </span>
+                ) : null}
               </span>
               {t.manager ? (
                 <span className="weekly-recap-matchup__team-mgr">{t.manager}</span>
@@ -337,22 +355,6 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
               >
                 ★ {t.players.top.name}{' '}
                 <span className="tabular">{t.players.top.pts}</span>
-              </span>
-            ) : null}
-            {t.streak && t.streak.len >= 2 ? (
-              <span
-                className={
-                  'weekly-recap-matchup__streak' +
-                  (t.streak.type === 'W'
-                    ? ' weekly-recap-matchup__streak--w'
-                    : t.streak.type === 'L'
-                      ? ' weekly-recap-matchup__streak--l'
-                      : '')
-                }
-                title={`${t.streak.len} ${t.streak.type === 'W' ? 'wins' : t.streak.type === 'L' ? 'defeats' : 'draws'} in a row`}
-              >
-                {t.streak.type}
-                {t.streak.len}
               </span>
             ) : null}
             {t.titleOdds ? (
