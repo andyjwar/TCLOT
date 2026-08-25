@@ -57,8 +57,8 @@ export function TeamCurrentSquad({
 
       <div className="tc-squad__head" aria-hidden="true">
         <span className="tc-squad__ch tc-squad__ch--name">Player</span>
-        <span className="tc-squad__ch">{gwColLabel}</span>
         <span className="tc-squad__ch">On squad</span>
+        <span className="tc-squad__ch">{gwColLabel}</span>
         <span className="tc-squad__ch">Season</span>
       </div>
 
@@ -86,9 +86,6 @@ export function TeamCurrentSquad({
                     {p.name}
                   </ClickablePlayerName>
                 </div>
-                <span className="tc-squad__cell tc-squad__cell--gw">
-                  {p.lastGwPoints == null ? '–' : p.lastGwPoints}
-                </span>
                 <span
                   className="tc-squad__cell tc-squad__cell--tenure"
                   title={
@@ -100,6 +97,9 @@ export function TeamCurrentSquad({
                   {p.gwsOwned == null
                     ? '–'
                     : `${p.gwsOwned} GW${p.gwsOwned === 1 ? '' : 's'}`}
+                </span>
+                <span className="tc-squad__cell tc-squad__cell--gw">
+                  {p.lastGwPoints == null ? '–' : p.lastGwPoints}
                 </span>
                 <span className="tc-squad__cell tc-squad__cell--season">
                   {p.seasonPoints}

@@ -652,7 +652,7 @@ body[data-tclot-theme='dark'] .tc-card {
 .tc-squad__head,
 .tc-squad__row {
   display: grid;
-  grid-template-columns: 1fr 2.6rem 3.6rem 3rem;
+  grid-template-columns: 1fr 3.6rem 2.6rem 3rem;
   align-items: center;
   gap: 6px;
 }
