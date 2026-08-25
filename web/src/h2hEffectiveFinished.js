@@ -80,3 +80,78 @@ export function normalizeMatchesFinished(matches, fixtures) {
       : m,
   );
 }
+
+/**
+ * Rebuild H2H standings rows from finished matches (same W/D/L + PF/PA order as
+ * `useLeagueData.deriveStandingsFromMatches`). Used at build time so
+ * `details.json` standings are not left as FPL's all-zero / stale snapshot after
+ * we promote `matches[].finished`.
+ *
+ * @param {object[]} leagueEntries
+ * @param {object[]} matches Normalized matches (with effective `finished`).
+ * @returns {object[]}
+ */
+export function deriveStandingsFromFinishedMatches(leagueEntries, matches) {
+  const idSet = new Set();
+  for (const e of leagueEntries || []) {
+    if (e?.id != null) idSet.add(e.id);
+  }
+  for (const m of matches || []) {
+    if (!m?.finished) continue;
+    idSet.add(m.league_entry_1);
+    idSet.add(m.league_entry_2);
+  }
+  const ids = [...idSet].filter((x) => x != null).sort((a, b) => a - b);
+  if (ids.length === 0) return [];
+
+  const st = Object.fromEntries(
+    ids.map((id) => [id, { league_entry: id, w: 0, d: 0, l: 0, pf: 0, pa: 0 }]),
+  );
+  for (const m of matches || []) {
+    if (!m?.finished) continue;
+    const id1 = m.league_entry_1;
+    const id2 = m.league_entry_2;
+    const p1 = m.league_entry_1_points ?? 0;
+    const p2 = m.league_entry_2_points ?? 0;
+    if (!st[id1] || !st[id2]) continue;
+    st[id1].pf += p1;
+    st[id1].pa += p2;
+    st[id2].pf += p2;
+    st[id2].pa += p1;
+    if (p1 > p2) {
+      st[id1].w += 1;
+      st[id2].l += 1;
+    } else if (p2 > p1) {
+      st[id2].w += 1;
+      st[id1].l += 1;
+    } else {
+      st[id1].d += 1;
+      st[id2].d += 1;
+    }
+  }
+  const rows = ids.map((id) => {
+    const s = st[id];
+    const total = s.w * 3 + s.d;
+    return {
+      league_entry: id,
+      rank: 0,
+      total,
+      matches_won: s.w,
+      matches_drawn: s.d,
+      matches_lost: s.l,
+      matches_played: s.w + s.d + s.l,
+      points_for: s.pf,
+      points_against: s.pa,
+    };
+  });
+  rows.sort(
+    (a, b) =>
+      b.total - a.total ||
+      b.points_for - a.points_for ||
+      a.points_against - b.points_against,
+  );
+  rows.forEach((r, i) => {
+    r.rank = i + 1;
+  });
+  return rows;
+}

@@ -2,7 +2,7 @@
 import { existsSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { normalizeMatchesFinished } from '../src/h2hEffectiveFinished.js';
+import { normalizeMatchesFinished, deriveStandingsFromFinishedMatches } from '../src/h2hEffectiveFinished.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dataDir = join(__dirname, '../../data');
@@ -70,12 +70,33 @@ function promoteFinishedMatches() {
     const before = (details.matches || []).filter((m) => m?.finished === true).length;
     const matches = normalizeMatchesFinished(details.matches || [], fixtures);
     const after = matches.filter((m) => m?.finished === true).length;
-    if (after === before) return;
-    details.matches = matches;
+    let changed = after !== before;
+    if (changed) {
+      details.matches = matches;
+    }
+    // FPL's standings array often stays all-zero until "data checked". Once we
+    // have finished H2H rows, rewrite standings so schedule / raw consumers see
+    // real W-L-T without waiting on the client-side derive.
+    if (after > 0) {
+      const derived = deriveStandingsFromFinishedMatches(
+        details.league_entries || [],
+        matches,
+      );
+      if (derived.length) {
+        details.standings = derived;
+        changed = true;
+      }
+    }
+    if (!changed) return;
     writeFileSync(detailsPath, JSON.stringify(details, null, 2));
-    console.log(
-      `Promoted ${after - before} H2H match(es) to finished (PL football complete; FPL finished flag still lagging).`,
-    );
+    if (after !== before) {
+      console.log(
+        `Promoted ${after - before} H2H match(es) to finished (PL football complete; FPL finished flag still lagging).`,
+      );
+    }
+    if (after > 0) {
+      console.log(`Rewrote standings from ${after} finished H2H match(es).`);
+    }
   } catch (e) {
     console.warn('promoteFinishedMatches skip:', e.message);
   }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import { buildSquadFplValueByLeagueEntryId } from './fplSquadValues.js'
+import { fetchLeagueDataJson } from './leagueDataFetch.js'
 import './SeasonPreview.css'
 
 /** Grade chip tone: A-family green, B-family amber, C-family gray. */
@@ -44,8 +45,7 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
 
   useEffect(() => {
     let alive = true
-    fetch(`${import.meta.env.BASE_URL}league-data/season-preview.json`)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(String(r.status)))))
+    fetchLeagueDataJson('season-preview.json')
       .then((json) => {
         if (alive) setData(json)
       })
@@ -53,15 +53,9 @@ export function SeasonPreview({ teamLogoMap = {}, kitIndexByEntry }) {
         if (alive) setFailed(true)
       })
     Promise.allSettled([
-      fetch(`${import.meta.env.BASE_URL}league-data/element_status.json`).then((r) =>
-        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
-      ),
-      fetch(`${import.meta.env.BASE_URL}league-data/bootstrap_fpl.json`).then((r) =>
-        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
-      ),
-      fetch(`${import.meta.env.BASE_URL}league-data/details.json`).then((r) =>
-        r.ok ? r.json() : Promise.reject(new Error(String(r.status))),
-      ),
+      fetchLeagueDataJson('element_status.json'),
+      fetchLeagueDataJson('bootstrap_fpl.json'),
+      fetchLeagueDataJson('details.json'),
     ]).then((results) => {
       if (!alive) return
       const [elementStatus, bootstrapFpl, details] = results
