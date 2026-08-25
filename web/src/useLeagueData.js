@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fplElementWebName } from './fplElementNames.js';
+import { normalizeMatchesFinished } from './h2hEffectiveFinished.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
 import {
@@ -327,7 +328,7 @@ export function useLeagueData() {
             throw fetchErr;
           }
         }
-        const [transactions, fplMini, waiverOutGw, waiverInTenureTop, tradesPanel] =
+        const [transactions, fplMini, waiverOutGw, waiverInTenureTop, tradesPanel, fixtures] =
           await Promise.all([
             fetchJSONOptional('transactions.json', leagueDataV),
             fetchJSONOptional('fpl-mini.json', leagueDataV),
@@ -340,6 +341,7 @@ export function useLeagueData() {
               leagueDataV,
             ),
             fetchJSONOptional('trades-panel.json', leagueDataV),
+            fetchJSONOptional('fixtures.json', leagueDataV),
           ]);
         let teamLogoMap = {};
         try {
@@ -382,6 +384,7 @@ export function useLeagueData() {
               waiverOutGw,
               waiverInTenureTop,
               tradesPanel,
+              fixtures,
               currentSeasonNameByManager,
             }),
             teamLogoMap,
@@ -739,7 +742,10 @@ function processLeagueData(raw, extras = {}) {
     ...e,
     entry_name: displayEntryName(e, extras.currentSeasonNameByManager),
   }));
-  const matches = details.matches || [];
+  // Promote `finished` on H2H rows once that GW's PL football is complete —
+  // FPL's own `matches[].finished` lags by many hours after the games end, and
+  // every results / standings / form path keys off it. See h2hEffectiveFinished.js.
+  const matches = normalizeMatchesFinished(details.matches || [], extras.fixtures);
   let standingsRaw = details.standings || [];
 
   const teams = buildTeamsMap(leagueEntries, extras.currentSeasonNameByManager);
@@ -1147,8 +1153,8 @@ function processLeagueData(raw, extras = {}) {
     leagueEntries,
     /** `league_entry` / `entry_id` → 0–11 shirt kit (standings order). */
     defaultKitIndexByLeagueEntry,
-    /** Raw H2H schedule (pair with `gameweek` for Live tab fixtures). */
-    matches: details.matches || [],
+    /** H2H schedule with `finished` promoted once each GW's PL football is complete. */
+    matches,
     standings: sortedByRank,
     tableRows,
     teamFormStripByEntry,

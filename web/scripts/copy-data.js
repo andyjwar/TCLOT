@@ -2,6 +2,7 @@
 import { existsSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import { normalizeMatchesFinished } from '../src/h2hEffectiveFinished.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dataDir = join(__dirname, '../../data');
@@ -52,6 +53,34 @@ if (existsSync(ingestedDetails)) {
 } else {
   console.warn('No data/details.json and no sample-details.json.');
 }
+
+/**
+ * FPL Draft only flips `matches[].finished` after its lagging "data checked"
+ * step. Promote finished as soon as that GW's PL football is complete so
+ * standings / recaps / form update when the gameweek closes — not a day later.
+ * See web/src/h2hEffectiveFinished.js.
+ */
+function promoteFinishedMatches() {
+  const detailsPath = join(dest, 'details.json');
+  const fixturesPath = join(dest, 'fixtures.json');
+  if (!existsSync(detailsPath) || !existsSync(fixturesPath)) return;
+  try {
+    const details = JSON.parse(readFileSync(detailsPath, 'utf8'));
+    const fixtures = JSON.parse(readFileSync(fixturesPath, 'utf8'));
+    const before = (details.matches || []).filter((m) => m?.finished === true).length;
+    const matches = normalizeMatchesFinished(details.matches || [], fixtures);
+    const after = matches.filter((m) => m?.finished === true).length;
+    if (after === before) return;
+    details.matches = matches;
+    writeFileSync(detailsPath, JSON.stringify(details, null, 2));
+    console.log(
+      `Promoted ${after - before} H2H match(es) to finished (PL football complete; FPL finished flag still lagging).`,
+    );
+  } catch (e) {
+    console.warn('promoteFinishedMatches skip:', e.message);
+  }
+}
+promoteFinishedMatches();
 
 /** Draft bootstrap only — element ids match draft transactions, trades, and Live tab. */
 const bootstrapDraftData = join(dataDir, 'bootstrap_draft.json');

@@ -202,3 +202,24 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+
+      # Live site is on Vercel (tclot.vercel.app); Pages alone does not refresh it.
+      # Optional repo/environment secret VERCEL_DEPLOY_HOOK = Deploy Hook URL from
+      # Vercel → Project → Settings → Git → Deploy Hooks. When set, every successful
+      # scheduled/push Pages deploy also kicks a Vercel rebuild (which re-runs ingest).
+      - name: Trigger Vercel redeploy (optional)
+        env:
+          VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}
+        run: |
+          if [ -z "${VERCEL_DEPLOY_HOOK:-}" ]; then
+            echo "No VERCEL_DEPLOY_HOOK secret — skipping Vercel trigger (Pages deploy still live)."
+            exit 0
+          fi
+          code=$(curl -sS -o /tmp/vercel-hook.out -w '%{http_code}' -X POST "$VERCEL_DEPLOY_HOOK") || true
+          echo "Vercel deploy hook HTTP $code"
+          head -c 400 /tmp/vercel-hook.out 2>/dev/null || true
+          echo
+          case "$code" in
+            200|201|202|204) echo "Vercel redeploy triggered" ;;
+            *) echo "::warning::Vercel deploy hook returned HTTP $code — check the secret URL" ;;
+          esac

@@ -94,7 +94,7 @@ async function main() {
   const postGw = postDeadlineIngestEvent(list, now)
   if (postGw) {
     console.log(
-      `waiver-refresh-gate: GW${postGw.id} finished and past deadline (${postGw.deadline}) — run deploy for league details`,
+      `waiver-refresh-gate: past GW${postGw.id} deadline (${postGw.deadline}) — run deploy for league details`,
     )
     process.exit(0)
   }

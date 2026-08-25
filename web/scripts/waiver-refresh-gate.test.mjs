@@ -6,18 +6,34 @@ import {
 } from './waiver-refresh-gate.mjs'
 import { burstWaiverRefreshEvent } from '../src/waiverRefreshSchedule.js'
 
-test('postDeadlineIngestEvent — allows ingest after finished GW deadline', () => {
+test('postDeadlineIngestEvent — allows ingest after GW deadline (finished not required)', () => {
   const dl = '2026-05-01T17:30:00Z'
   const now = Date.parse(dl) + 3 * 60 * 60 * 1000
   const hit = postDeadlineIngestEvent(
     [
       { id: 34, finished: true, deadline_time: '2026-04-24T17:30:00Z' },
-      { id: 35, finished: true, deadline_time: dl },
+      { id: 35, finished: false, deadline_time: dl },
       { id: 36, finished: false, deadline_time: '2026-05-09T10:00:00Z' },
     ],
     now,
   )
   assert.equal(hit?.id, 35)
+})
+
+test('postDeadlineIngestEvent — prefers latest GW still inside its window', () => {
+  const dl35 = '2026-05-01T17:30:00Z'
+  const dl36 = '2026-05-09T10:00:00Z'
+  // Well after GW36 deadline+2h, before any later stop → prefer 36
+  const now = Date.parse(dl36) + 4 * 60 * 60 * 1000
+  const hit = postDeadlineIngestEvent(
+    [
+      { id: 35, deadline_time: dl35 },
+      { id: 36, deadline_time: dl36 },
+      { id: 37, deadline_time: '2026-05-16T10:00:00Z' },
+    ],
+    now,
+  )
+  assert.equal(hit?.id, 36)
 })
 
 test('postDeadlineIngestEvent — skips before deadline + grace', () => {

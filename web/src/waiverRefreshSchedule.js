@@ -20,7 +20,9 @@ export const WAIVER_BURST_WINDOW_MS = 90 * 60 * 1000
 export const WAIVER_FRESH_WINDOW_MS = 36 * 60 * 60 * 1000
 /**
  * After the PL GW deadline, draft `details.json` H2H rows often flip to `finished` before
- * the next `waivers_time`. Hourly cron must still ingest in that gap.
+ * the next `waivers_time`. Hourly cron must still ingest in that gap — and must not wait
+ * for FPL's lagging event-level `finished` / `data_checked` flags (those can stay false
+ * for a day+ after the football ends while provisional points are already on the matches).
  */
 export const POST_DEADLINE_INGEST_DELAY_MS = 2 * 60 * 60 * 1000
 /** Stop hourly post-deadline ingests once the next GW deadline is this close. */
@@ -48,6 +50,10 @@ export function inDailyCatchAllWindow(now = new Date()) {
 }
 
 /**
+ * GW whose post-deadline ingest window is active: from (deadline + 2h) until
+ * (next deadline − 3h). Does **not** require event `finished` — FPL often leaves
+ * that false long after provisional H2H points are already on `details.json`.
+ *
  * @param {object[]} eventList — bootstrap `events.data`
  * @param {number} nowMs
  * @returns {{ id: number, deadline: string } | null}
@@ -66,7 +72,6 @@ export function postDeadlineIngestEvent(eventList, nowMs) {
       if (!Number.isFinite(dl)) return null
       return {
         id,
-        finished: e?.finished === true,
         deadline,
         dl,
       }
@@ -74,9 +79,11 @@ export function postDeadlineIngestEvent(eventList, nowMs) {
     .filter(Boolean)
     .sort((a, b) => a.id - b.id)
 
+  // Prefer the latest GW still inside its post-deadline window (most relevant for
+  // picking up just-closed H2H scores); fall back to any earlier open window.
+  let best = null
   for (let i = 0; i < rows.length; i++) {
     const cur = rows[i]
-    if (!cur.finished) continue
     const ingestAfter = cur.dl + POST_DEADLINE_INGEST_DELAY_MS
     if (now < ingestAfter) continue
 
@@ -86,9 +93,9 @@ export function postDeadlineIngestEvent(eventList, nowMs) {
       if (now >= stopAt) continue
     }
 
-    return { id: cur.id, deadline: cur.deadline }
+    best = { id: cur.id, deadline: cur.deadline }
   }
-  return null
+  return best
 }
 
 /**
