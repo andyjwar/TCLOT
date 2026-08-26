@@ -11,6 +11,14 @@ against the official FPL Draft results.
 - **Weekly H2H markets** — home / draw / away for every league matchup in the
   next gameweek. Open until the FPL deadline; odds freeze when the market is
   first ingested.
+- **Player specials per matchup** — *anytime goalscorer* (any pooled
+  outfielder from either squad to score, several tickets can win) and *top
+  point scorer* (most draft points across both squads, dead heats all pay).
+  Priced from the per-player forecasts behind the Players tab; the boards
+  print on the first deploy after the previous gameweek banks (the forecast
+  has to target the same GW as the H2H board). Settled from the draft
+  `event/{gw}/live` feed once the gameweek's football finishes; a pooled
+  player who never played (0 minutes) is void — those stakes are refunded.
 - **Outright / Titan / Minnow / last place** — priced from Season Predictions
   (title, top 4, bottom 4, last) and repriced after every banked gameweek.
   Bets lock the odds they were placed at. Titan and Minnow can pay four

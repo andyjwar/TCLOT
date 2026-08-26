@@ -41,6 +41,76 @@ export const TITAN_PLACES = 4
 export const MINNOW_PLACES = 4
 export const SEASON_MARKET_KINDS = ['outright', 'titan', 'minnow', 'last']
 
+/** Per-matchup player specials: anytime goalscorer + top point scorer. */
+export const PLAYER_MARKET_KINDS = ['scorer', 'toppoints']
+
+/**
+ * Grade a player-special market from the draft `event/{gw}/live` feed
+ * (`elements` is an id → `{ stats }` map in the draft id space — the same
+ * space the market's selections were built from).
+ *
+ * Rules, both kinds: a pooled player who never got on the pitch (0 minutes,
+ * or missing from the feed entirely) is VOID — stake refunded, the classic
+ * bookie no-play rule — so getting benched never costs the punter.
+ *
+ *  - `scorer`:    every selection with ≥1 goal wins (own goals don't count —
+ *                 FPL's goals_scored already excludes them). Nobody scoring
+ *                 is a valid result: non-void selections all lose.
+ *  - `toppoints`: highest draft GW points among selections who played; dead
+ *                 heats all pay in full.
+ *
+ * Returns null when the feed looks unusable (no elements at all, or nobody
+ * in a toppoints pool registered minutes) so the caller retries next sync
+ * instead of grading blind.
+ *
+ * @param {'scorer' | 'toppoints'} kind
+ * @param {Array<{ elementId: number }>} selections market payload selections
+ * @param {Record<string, { stats?: object }>} liveElements
+ * @returns {{ winners: Set<string>, voided: Set<string>, topScore?: number } | null}
+ */
+export function playerMarketOutcome(kind, selections, liveElements) {
+  const pool = Array.isArray(selections) ? selections : []
+  if (pool.length === 0) return null
+  if (!liveElements || typeof liveElements !== 'object' || Object.keys(liveElements).length === 0) {
+    return null
+  }
+  const statsOf = (id) => liveElements[String(id)]?.stats ?? null
+  const winners = new Set()
+  const voided = new Set()
+
+  if (kind === 'scorer') {
+    for (const s of pool) {
+      const st = statsOf(s.elementId)
+      const goals = Number(st?.goals_scored) || 0
+      const mins = Number(st?.minutes) || 0
+      if (goals > 0) winners.add(String(s.elementId))
+      else if (mins === 0) voided.add(String(s.elementId))
+    }
+    return { winners, voided }
+  }
+
+  if (kind === 'toppoints') {
+    const played = []
+    let top = -Infinity
+    for (const s of pool) {
+      const st = statsOf(s.elementId)
+      const mins = Number(st?.minutes) || 0
+      if (mins === 0) {
+        voided.add(String(s.elementId))
+        continue
+      }
+      const pts = Number(st?.total_points) || 0
+      played.push([String(s.elementId), pts])
+      if (pts > top) top = pts
+    }
+    if (played.length === 0) return null
+    for (const [id, pts] of played) if (pts === top) winners.add(id)
+    return { winners, voided, topScore: top }
+  }
+
+  return null
+}
+
 /**
  * Final table from finished matches (3/1/0, PF tiebreak), or null while any
  * row is still open. `order[0]` is the champion; `ranks` is entryId → 1-based rank.

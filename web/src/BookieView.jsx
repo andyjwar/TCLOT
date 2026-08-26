@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
-import { standingsMobileTeamName } from './teamNameUtils.js'
-import { describeBet, describeBetCompact, SEASON_PLACE_KINDS } from './bookieBetLabel.js'
+import { lastWordTeamName, standingsMobileTeamName } from './teamNameUtils.js'
+import {
+  describeBet,
+  describeBetCompact,
+  PLAYER_MARKET_KINDS,
+  SEASON_PLACE_KINDS,
+} from './bookieBetLabel.js'
 import {
   bookieEnabled,
   fetchBookieState,
@@ -248,6 +253,10 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
     placeMarkets.find((m) => m.kind === 'outright') ?? placeMarkets[0] ?? null
   const openGw = h2hMarkets.find((m) => m.open)?.gw ?? null
   const weeklyOpen = openGw != null ? h2hMarkets.filter((m) => m.gw === openGw) : []
+  const playerOpen =
+    openGw != null
+      ? markets.filter((m) => PLAYER_MARKET_KINDS.includes(m.kind) && m.gw === openGw && m.open)
+      : []
   const nameByEntry = new Map(
     (state.leaderboard ?? []).map((u) => [Number(u.entryId), u.name]),
   )
@@ -292,6 +301,10 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
             refresh()
           }}
         />
+      ) : null}
+
+      {playerOpen.length > 0 ? (
+        <PlayerSpecials gw={openGw} markets={playerOpen} me={me} slip={slip} onPick={setSlip} />
       ) : null}
 
       {placeMarkets.length > 0 ? (
@@ -339,8 +352,11 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           Clotcoins — the official TCLOT currency: completely fake, worthless, and worth
           fighting over. Odds are set by the same model behind the Season Predictions tab,
           with a small house margin, and quoted as traditional fractions. Weekly matchup
-          markets close at the FPL deadline; Champion, Titan, Minnow and last-place
-          boards reprice after every gameweek but your ticket keeps the odds you took.
+          and player-special markets close at the FPL deadline — player specials pool both
+          squads, pay every scorer (or the top point scorer, dead heats all paying), and
+          refund any pick who never gets on the pitch. Champion, Titan, Minnow and
+          last-place boards reprice after every gameweek but your ticket keeps the odds
+          you took.
           Every ticket is public — the live bets board shows what everyone has riding
           this week. Bets settle as soon as the football finishes, and a{' '}
           {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
@@ -592,6 +608,152 @@ function WeeklyMarkets({ gw, markets, me, slip, onPick, teamLogoMap, kitIndexByE
       </ul>
       {!me ? (
         <p className="bookie__note bookie__note--small">Log in above to back someone.</p>
+      ) : null}
+    </section>
+  )
+}
+
+const PLAYER_BOARD_PREVIEW = 8
+
+const PLAYER_BOARD_META = {
+  scorer: {
+    title: 'Anytime goalscorer',
+    button: 'Scores',
+    slipLabel: (name) => `${name} to score anytime`,
+  },
+  toppoints: {
+    title: 'Top point scorer',
+    button: 'Top',
+    slipLabel: (name) => `${name} top point scorer`,
+  },
+}
+
+/**
+ * One player-special board (anytime goalscorer or top point scorer) inside a
+ * matchup group: every pooled player with a price, longest odds hidden
+ * behind a "full board" toggle so four matchups don't become a scroll cliff.
+ */
+function PlayerBoard({ market, matchLabel, me, slip, onPick }) {
+  const [showAll, setShowAll] = useState(false)
+  const meta = PLAYER_BOARD_META[market.kind]
+  const p = market.payload
+  const selections = p?.selections ?? []
+  const visible = showAll ? selections : selections.slice(0, PLAYER_BOARD_PREVIEW)
+  if (!meta || selections.length === 0) return null
+  return (
+    <div className="bookie-player-board">
+      <h4 className="bookie-player-board__title">{meta.title}</h4>
+      <ul className="bookie-outright bookie-player-board__list">
+        {visible.map((s) => {
+          const owner =
+            Number(s.ownerEntryId) === Number(p.homeEntryId) ? p.homeName : p.awayName
+          const active =
+            slip?.marketId === market.id && slip?.selection === String(s.elementId)
+          return (
+            <li key={s.elementId} className="bookie-outright__row">
+              <span className="bookie-player-board__player">
+                <span className="bookie-player-board__name">{s.name}</span>
+                <span className="bookie-player-board__meta">
+                  {s.club} {s.position} · {lastWordTeamName(owner) || standingsMobileTeamName(owner)}
+                </span>
+              </span>
+              <OddsButton
+                label={meta.button}
+                odds={s.odds}
+                active={active}
+                disabled={!me || !market.open}
+                onClick={() =>
+                  onPick({
+                    marketId: market.id,
+                    selection: String(s.elementId),
+                    label: meta.slipLabel(s.name),
+                    odds: s.odds,
+                    detail: `${matchLabel} · GW${p.gw}`,
+                  })
+                }
+              />
+            </li>
+          )
+        })}
+      </ul>
+      {selections.length > PLAYER_BOARD_PREVIEW ? (
+        <button
+          type="button"
+          className="bookie-player-board__more"
+          onClick={() => setShowAll((v) => !v)}
+        >
+          {showAll ? 'Short board' : `Full board (${selections.length} prices)`}
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+/**
+ * Per-matchup player specials — anytime goalscorer and top point scorer,
+ * pooled from both squads. Grouped behind a collapsible row per matchup,
+ * same pattern as the live-bets board.
+ */
+function PlayerSpecials({ gw, markets, me, slip, onPick }) {
+  const groups = useMemo(() => {
+    const byMatch = new Map()
+    for (const m of markets) {
+      const p = m.payload
+      if (!p) continue
+      const key = `${p.homeEntryId}-${p.awayEntryId}`
+      if (!byMatch.has(key)) byMatch.set(key, { key, payload: p, boards: {} })
+      byMatch.get(key).boards[m.kind] = m
+    }
+    return [...byMatch.values()]
+  }, [markets])
+
+  if (groups.length === 0) return null
+
+  return (
+    <section className="tile tile--compact" aria-label="Player specials">
+      <div className="tile-head-row tile-head-row--tight">
+        <h3 className="bookie__section-title">GW{gw} player specials</h3>
+      </div>
+      <div className="bookie-punters">
+        {groups.map((g) => {
+          const home = standingsMobileTeamName(g.payload.homeName)
+          const away = standingsMobileTeamName(g.payload.awayName)
+          const matchLabel = `${home} v ${away}`
+          const boards = PLAYER_MARKET_KINDS.map((k) => g.boards[k]).filter(Boolean)
+          const prices = boards.reduce(
+            (sum, b) => sum + (b.payload?.selections?.length ?? 0),
+            0,
+          )
+          return (
+            <details key={g.key} className="bookie-punter">
+              <summary className="bookie-punter__summary">
+                <span className="bookie-punter__name">{matchLabel}</span>
+                <span className="bookie-punter__meta tabular">
+                  {boards.length} markets · {prices} prices
+                </span>
+              </summary>
+              {boards.map((b) => (
+                <PlayerBoard
+                  key={b.id}
+                  market={b}
+                  matchLabel={matchLabel}
+                  me={me}
+                  slip={slip}
+                  onPick={onPick}
+                />
+              ))}
+            </details>
+          )
+        })}
+      </div>
+      <p className="bookie__note bookie__note--small">
+        Both squads pooled together. Anytime goalscorer pays on every player who scores —
+        several tickets can win. Top point scorer pays the most draft points across both
+        squads, and dead heats all pay in full. A player who never gets on the pitch is
+        void: stake refunded.
+      </p>
+      {!me ? (
+        <p className="bookie__note bookie__note--small">Log in above to back a player.</p>
       ) : null}
     </section>
   )

@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS markets (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   season      TEXT    NOT NULL,
-  market_key  TEXT    NOT NULL UNIQUE,  -- '2026-27:gw2:4259-4898' | '2026-27:outright'
-  kind        TEXT    NOT NULL,         -- 'h2h' | 'outright' | 'titan' | 'minnow' | 'last'
+  market_key  TEXT    NOT NULL UNIQUE,  -- '2026-27:gw2:4259-4898' | '2026-27:gw2:scorer:4259-4898' | '2026-27:outright'
+  kind        TEXT    NOT NULL,         -- 'h2h' | 'scorer' | 'toppoints' | 'outright' | 'titan' | 'minnow' | 'last'
   gw          INTEGER,                  -- NULL for outright
   closes_at_ms INTEGER NOT NULL,        -- betting deadline (epoch ms)
   status      TEXT    NOT NULL DEFAULT 'open',  -- 'open' | 'settled' | 'void'
@@ -34,7 +34,7 @@ CREATE TABLE IF NOT EXISTS bets (
   season     TEXT    NOT NULL,
   entry_id   INTEGER NOT NULL,
   market_id  INTEGER NOT NULL REFERENCES markets (id),
-  selection  TEXT    NOT NULL,          -- 'home'|'draw'|'away' or an entry id (outright)
+  selection  TEXT    NOT NULL,          -- 'home'|'draw'|'away', an entry id (season) or element id (player specials)
   stake      INTEGER NOT NULL,          -- whole coins
   odds       REAL    NOT NULL,          -- decimal odds locked at bet time
   status     TEXT    NOT NULL DEFAULT 'open',  -- 'open' | 'won' | 'lost' | 'void' | 'cashed_out'

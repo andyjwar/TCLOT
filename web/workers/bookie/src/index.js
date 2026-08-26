@@ -4,9 +4,10 @@
  * Markets are priced by the site's own prediction model: the deploy pipeline
  * writes league-data/bookie-markets.json (build-bookie-markets.mjs) and this
  * Worker ingests it into D1 — weekly H2H (home/draw/away) markets open until
- * the FPL gameweek deadline, plus season-long champion / Titan / Minnow /
- * last-place boards that reprice after every banked gameweek. Bets lock
- * their odds at bet time.
+ * the FPL gameweek deadline, per-matchup player specials (anytime goalscorer
+ * and top point scorer, graded from the draft live feed with the no-play
+ * void rule), plus season-long champion / Titan / Minnow / last-place boards
+ * that reprice after every banked gameweek. Bets lock their odds at bet time.
  *
  * Settlement reads the official FPL Draft league results directly (same
  * "effectively finished" rule as web/src/h2hEffectiveFinished.js: a GW counts
@@ -30,7 +31,7 @@
  * Deploy: cd web/workers/bookie && npm run deploy  (see README.md for setup)
  */
 
-import { footballComplete, h2hResultForMarket, ranksFromMatches, seasonKindWinners, SEASON_MARKET_KINDS } from './settlement.js';
+import { footballComplete, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 
 const STARTING_BALANCE = 1000;
@@ -213,6 +214,34 @@ async function ingestMarkets(env) {
     }
   }
 
+  // Player specials freeze like the weekly board: first print wins, later
+  // rebuilds never reprice an already-open market.
+  if (sheet.players && Array.isArray(sheet.players.markets)) {
+    const closesAtMs = Date.parse(sheet.players.deadline);
+    if (Number.isFinite(closesAtMs) && closesAtMs > nowMs) {
+      for (const m of sheet.players.markets) {
+        if (!PLAYER_MARKET_KINDS.includes(m.kind)) continue;
+        const marketKey = `${season}:${m.key}`;
+        const payload = JSON.stringify({
+          gw: m.gw,
+          homeEntryId: m.homeEntryId,
+          awayEntryId: m.awayEntryId,
+          homeName: m.homeName,
+          awayName: m.awayName,
+          selections: m.selections,
+        });
+        await db
+          .prepare(
+            `INSERT INTO markets (season, market_key, kind, gw, closes_at_ms, status, payload)
+             VALUES (?, ?, ?, ?, ?, 'open', ?)
+             ON CONFLICT(market_key) DO NOTHING`,
+          )
+          .bind(season, marketKey, m.kind, Number(m.gw), closesAtMs, payload)
+          .run();
+      }
+    }
+  }
+
   for (const kind of SEASON_MARKET_KINDS) {
     const block = sheet[kind];
     if (!block || !Array.isArray(block.selections) || block.selections.length === 0) continue;
@@ -243,8 +272,12 @@ async function ingestMarkets(env) {
 /* (pure grading rules live in settlement.js so node:test can cover them) */
 /* ------------------------------------------------------------------ */
 
-/** Grade every open bet on a settled market and credit winners. */
-async function gradeBets(db, market, winningSelection) {
+/**
+ * Grade every open bet on a settled market and credit winners. Selections
+ * in `voidedSelections` (player specials: no minutes played) refund their
+ * stake instead of grading — the bookie no-play rule.
+ */
+async function gradeBets(db, market, winningSelection, voidedSelections = null) {
   const winners =
     winningSelection == null
       ? null
@@ -257,6 +290,17 @@ async function gradeBets(db, market, winningSelection) {
     .all();
   const nowIso = new Date().toISOString();
   for (const bet of bets.results ?? []) {
+    if (voidedSelections?.has(String(bet.selection))) {
+      await db.batch([
+        db
+          .prepare(`UPDATE bets SET status = 'void', payout = ?, settled_at = ? WHERE id = ?`)
+          .bind(bet.stake, nowIso, bet.id),
+        db
+          .prepare(`UPDATE users SET balance = balance + ? WHERE entry_id = ? AND season = ?`)
+          .bind(bet.stake, bet.entry_id, bet.season),
+      ]);
+      continue;
+    }
     const won = winners != null && winners.has(String(bet.selection));
     if (won) {
       const payout = Math.round(bet.stake * bet.odds);
@@ -302,8 +346,9 @@ async function settleDue(env) {
     .all();
   const dueMarkets = due.results ?? [];
   const h2hDue = dueMarkets.filter((m) => m.kind === 'h2h');
+  const playerDue = dueMarkets.filter((m) => PLAYER_MARKET_KINDS.includes(m.kind));
   const seasonDue = dueMarkets.filter((m) => SEASON_MARKET_KINDS.includes(m.kind));
-  if (h2hDue.length === 0 && seasonDue.length === 0) return;
+  if (h2hDue.length === 0 && playerDue.length === 0 && seasonDue.length === 0) return;
 
   const leagueId = String(env.LEAGUE_ID || '').trim();
   if (!leagueId) return;
@@ -316,7 +361,9 @@ async function settleDue(env) {
   const matches = details?.matches ?? [];
   const nowIso = new Date().toISOString();
 
-  const gws = [...new Set(h2hDue.map((m) => Number(m.gw)))].sort((a, b) => a - b);
+  const gws = [...new Set([...h2hDue, ...playerDue].map((m) => Number(m.gw)))].sort(
+    (a, b) => a - b,
+  );
   for (const gw of gws) {
     let fixtures;
     try {
@@ -354,6 +401,43 @@ async function settleDue(env) {
         )
         .run();
       await gradeBets(db, market, outcome.result);
+    }
+
+    // Player specials wait for the whole gameweek's football, then grade
+    // from the draft live feed (per-player minutes, goals and points).
+    const playerMarkets = playerDue.filter((m) => Number(m.gw) === gw);
+    if (complete && playerMarkets.length > 0) {
+      let liveElements = null;
+      try {
+        const live = await fetchJson(`${DRAFT_API}/event/${gw}/live`);
+        liveElements = live?.elements ?? null;
+      } catch {
+        /* live feed down — retry these markets on the next sync */
+      }
+      if (liveElements) {
+        for (const market of playerMarkets) {
+          const payload = JSON.parse(market.payload);
+          const outcome = playerMarketOutcome(market.kind, payload.selections ?? [], liveElements);
+          if (!outcome) continue;
+          await db
+            .prepare(
+              `UPDATE markets SET status = 'settled', result = ?, settled_at = ?,
+                 payload = ? WHERE id = ?`,
+            )
+            .bind(
+              [...outcome.winners].join(','),
+              nowIso,
+              JSON.stringify({
+                ...payload,
+                voided: [...outcome.voided],
+                ...(outcome.topScore != null ? { topScore: outcome.topScore } : {}),
+              }),
+              market.id,
+            )
+            .run();
+          await gradeBets(db, market, outcome.winners, outcome.voided);
+        }
+      }
     }
 
     // Stipend: once per gameweek, after every H2H market for it has settled.
@@ -517,6 +601,9 @@ async function handlePlaceBet(request, env, ch) {
       return errorJson('selection must be home, draw or away', 400, ch);
     }
     odds = Number(payload.odds?.[selection]);
+  } else if (PLAYER_MARKET_KINDS.includes(market.kind)) {
+    const sel = (payload.selections ?? []).find((s) => String(s.elementId) === selection);
+    odds = sel ? Number(sel.odds) : null;
   } else if (SEASON_MARKET_KINDS.includes(market.kind)) {
     const sel = (payload.selections ?? []).find((s) => String(s.entryId) === selection);
     odds = sel ? Number(sel.odds) : null;
@@ -616,6 +703,15 @@ function cashoutQuoteForBet(bet, market, liveCtx, nowMs) {
     const pct = Number(sel?.pct ?? sel?.titlePct);
     if (!Number.isFinite(pct)) return null;
     pNow = pct / 100;
+  } else if (PLAYER_MARKET_KINDS.includes(market.kind)) {
+    // Pre-deadline the opening price stands; once the gameweek is underway
+    // there is no per-player live model, so the offer suspends rather than
+    // pricing blind.
+    if (market.closes_at_ms <= nowMs) return null;
+    const sel = (payload.selections ?? []).find(
+      (s) => String(s.elementId) === String(bet.selection),
+    );
+    pNow = Number(sel?.prob);
   } else if (market.kind === 'h2h') {
     if (market.closes_at_ms > nowMs) {
       pNow = Number(payload.probs?.[bet.selection]);
@@ -760,11 +856,13 @@ async function handleState(request, env, ctx, ch) {
       `SELECT * FROM markets WHERE season = ?
        ORDER BY CASE kind
          WHEN 'h2h' THEN 0
-         WHEN 'outright' THEN 1
-         WHEN 'titan' THEN 2
-         WHEN 'minnow' THEN 3
-         WHEN 'last' THEN 4
-         ELSE 5 END, gw DESC, id ASC`,
+         WHEN 'scorer' THEN 1
+         WHEN 'toppoints' THEN 2
+         WHEN 'outright' THEN 3
+         WHEN 'titan' THEN 4
+         WHEN 'minnow' THEN 5
+         WHEN 'last' THEN 6
+         ELSE 7 END, gw DESC, id ASC`,
     )
     .bind(seasonNow)
     .all();
