@@ -12,15 +12,17 @@ import { useMobileLayout, usePortraitMobile } from './usePortraitMobile.js'
 import { PlayerDetailHero } from './PlayerDetailHero.jsx'
 import { PlayerDetailOverview } from './PlayerDetailOverview.jsx'
 import { PlayerDetailPerformance } from './PlayerDetailPerformance.jsx'
+import { PlayerDetailWaivers } from './PlayerDetailWaivers.jsx'
 import { PlayerCompareView } from './PlayerCompareView.jsx'
 import './PlayersWorkbench.css'
 import './PlayerDetailView.css'
 
-/** @typedef {'overview' | 'performance'} PdetailTabId */
+/** @typedef {'overview' | 'performance' | 'waivers'} PdetailTabId */
 
 const TABS = /** @type {{ id: PdetailTabId, label: string }[]} */ ([
   { id: 'overview',    label: 'Overview' },
   { id: 'performance', label: 'Performance' },
+  { id: 'waivers',     label: 'Waivers' },
 ])
 
 /** Axis lock threshold (px) before a touch drag commits to horizontal/vertical. */
@@ -486,11 +488,20 @@ export function PlayerDetailView({
                     kitIndexByEntry={kitIndexByEntry}
                     onManagerNavigate={onNavigateAway}
                   />
-                ) : (
+                ) : tab === 'performance' ? (
                   <PlayerDetailPerformance
                     el={playerEl}
                     summaryPayload={primaryPayload}
                     teamById={teamById}
+                  />
+                ) : (
+                  <PlayerDetailWaivers
+                    el={playerEl}
+                    summaryPayload={primaryPayload}
+                    portrait={portrait}
+                    logoMap={logoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                    onManagerNavigate={onNavigateAway}
                   />
                 )}
               </div>
