@@ -1,0 +1,787 @@
+/*
+ * "Top of the League" treatment gallery (`?leader=1`) — Scorebook paper,
+ * local preview only. Six ways to differentiate the league leader while
+ * keeping the treatment connected to (or inside) the standings table.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap');
+
+.tolm {
+  --t-bg: #f6f1e2;
+  --t-surface: #fdfaf0;
+  --t-surface-2: #ece5cf;
+  --t-border: #ddd5b8;
+  --t-ink: #1a231a;
+  --t-text: rgba(31, 42, 31, 0.92);
+  --t-muted: #77775f;
+  --t-brand: #1f4a38;
+  --t-deep: #17402f;
+  --t-brand-tint: color-mix(in srgb, #1f4a38 9%, transparent);
+  --t-gold: #a87b24;
+  --t-win: #12a15a;
+  --t-loss: #d64545;
+  --t-draw: #9ca38f;
+  min-height: 100vh;
+  padding: 36px clamp(16px, 3vw, 48px) 64px;
+  background: var(--t-bg);
+  color: var(--t-text);
+  font-family: 'Schibsted Grotesk', Inter, system-ui, sans-serif;
+}
+
+.tolm * {
+  box-sizing: border-box;
+}
+
+/* ----- Page chrome -------------------------------------------------- */
+
+.tolm-top {
+  max-width: 880px;
+  margin: 0 auto 32px;
+}
+
+.tolm-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--t-brand);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tolm-top h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--t-ink);
+}
+
+.tolm-top p {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--t-muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.tolm-top a {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--t-border);
+  border-radius: 8px;
+  background: var(--t-surface);
+  color: var(--t-ink);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tolm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 22px;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+@media (max-width: 460px) {
+  .tolm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tolm-option {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--t-border);
+  border-radius: 14px;
+  background: var(--t-surface);
+  overflow: hidden;
+}
+
+.tolm-option--current {
+  border-style: dashed;
+}
+
+.tolm-option__head {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.tolm-option__id {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-gold);
+  margin-right: 8px;
+}
+
+.tolm-option__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--t-ink);
+  letter-spacing: -0.01em;
+}
+
+.tolm-option__tag {
+  float: right;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tolm-option__tag--loud {
+  color: #8c4a1f;
+  background: color-mix(in srgb, #c05e21 14%, transparent);
+}
+
+.tolm-option__tag--quiet {
+  color: var(--t-muted);
+  background: var(--t-surface-2);
+}
+
+.tolm-option__tag--good {
+  color: var(--t-brand);
+  background: var(--t-brand-tint);
+}
+
+.tolm-option__desc {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--t-muted);
+}
+
+.tolm-option__preview {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 22px 14px 26px;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(31, 74, 56, 0.05), transparent 60%),
+    var(--t-surface-2);
+}
+
+/* ----- Phone frame --------------------------------------------------- */
+
+.tolm-frame {
+  width: 372px;
+  max-width: 100%;
+  padding: 14px 10px 16px;
+  border-radius: 22px;
+  border: 1px solid var(--t-border);
+  background: var(--t-bg);
+  box-shadow: 0 10px 28px rgba(26, 35, 26, 0.12);
+}
+
+/* ----- Shared crest / dots ------------------------------------------- */
+
+.tolm-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-weight: 700;
+  color: #fdfaf0;
+  background:
+    radial-gradient(circle at 32% 28%, hsl(var(--crest-hue, 152) 34% 46%), hsl(var(--crest-hue, 152) 40% 26%));
+  box-shadow: inset 0 0 0 1.5px rgba(253, 250, 240, 0.35);
+}
+
+.tolm-crest--md {
+  width: 28px;
+  height: 28px;
+  font-size: 9.5px;
+}
+
+.tolm-crest--lg {
+  width: 36px;
+  height: 36px;
+  font-size: 11px;
+}
+
+.tolm-crest--xl {
+  width: 52px;
+  height: 52px;
+  font-size: 15px;
+}
+
+.tolm-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.tolm-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Previous production size, kept for the before/after strip. */
+.tolm-dots--old {
+  gap: 1px;
+}
+
+.tolm-dots--old .tolm-dot {
+  width: 5px;
+  height: 5px;
+}
+
+.tolm-dots--lg {
+  gap: 6px;
+}
+
+.tolm-dots--lg .tolm-dot {
+  width: 16px;
+  height: 16px;
+}
+
+.tolm-dot--win {
+  background: var(--t-win);
+}
+
+.tolm-dot--loss {
+  background: var(--t-loss);
+}
+
+.tolm-dot--draw {
+  background: var(--t-draw);
+}
+
+.tolm-dot--none {
+  background: color-mix(in srgb, var(--t-muted) 42%, transparent);
+}
+
+/* ----- Table card ----------------------------------------------------- */
+
+.tolm-tablecard {
+  border: 1px solid var(--t-border);
+  border-radius: 12px;
+  background: var(--t-surface);
+  overflow: hidden;
+}
+
+/* Docked variant (option B): the hero above supplies the top edge. */
+.tolm-tablecard--flush-top {
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.tolm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: var(--t-text);
+}
+
+.tolm-table th {
+  padding: 8px 4px;
+  background: var(--t-surface-2);
+  border-bottom: 1px solid var(--t-border);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-muted);
+  text-align: right;
+}
+
+.tolm-table th.tolm-col-rank,
+.tolm-table th.tolm-col-team {
+  text-align: left;
+}
+
+.tolm-table th.tolm-col-form {
+  text-align: center;
+}
+
+.tolm-table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--t-border) 55%, transparent);
+  vertical-align: middle;
+}
+
+.tolm-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.tolm-table th:first-child,
+.tolm-table td:first-child {
+  padding-left: 10px;
+}
+
+.tolm-table th:last-child,
+.tolm-table td:last-child {
+  padding-right: 8px;
+}
+
+.tolm-col-rank {
+  width: 24px;
+  font-weight: 700;
+}
+
+.tolm-col-team {
+  width: 44%;
+}
+
+.tolm-col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tolm-col-pts strong {
+  font-weight: 800;
+}
+
+.tolm-col-form {
+  text-align: center;
+}
+
+.tolm-col-next {
+  text-align: right;
+}
+
+.tolm-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tolm-team-id {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.tolm-team-name {
+  font-size: 0.9rem;
+  line-height: 1.25;
+  color: var(--t-ink);
+}
+
+.tolm-team-name--jumbo {
+  font-size: 1.02rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.tolm-team-eyebrow {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--t-gold);
+  margin-bottom: 1px;
+  white-space: nowrap;
+}
+
+.tolm-team-eyebrow i {
+  font-style: normal;
+  margin-right: 2px;
+}
+
+.tolm-rank-last {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--t-loss) 16%, transparent);
+  color: var(--t-loss);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.tolm-rank-starred {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.tolm-rank-starred i {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--t-gold);
+  line-height: 1;
+}
+
+/* Minnows divider band, mirroring production. */
+.tolm-divider td {
+  padding: 4px 10px 3px;
+  border-bottom: 1px dashed var(--t-border);
+  border-top: 1px dashed var(--t-border);
+  background: color-mix(in srgb, var(--t-surface-2) 55%, transparent);
+}
+
+.tolm-divider span {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.tolm-row--last td {
+  background: color-mix(in srgb, #d64545 4%, transparent);
+}
+
+/* ----- Leader-in-table modes ------------------------------------------ */
+
+/* C — jumbo row. */
+.tolm-row--leader-jumbo td {
+  padding-top: 13px;
+  padding-bottom: 13px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--t-brand) 9%, transparent), color-mix(in srgb, var(--t-brand) 4%, transparent));
+  border-bottom: 2px solid color-mix(in srgb, var(--t-brand) 32%, transparent);
+}
+
+.tolm-col-pts--jumbo strong {
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+/* D — banded row: normal height, light tint, band supplies the shout. */
+.tolm-row--leader-banded td {
+  background: color-mix(in srgb, var(--t-brand) 6%, transparent);
+}
+
+.tolm-band {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: var(--t-deep);
+  color: #f2ead2;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tolm-band i {
+  font-style: normal;
+  color: #e3b53a;
+}
+
+/* E — rail: accent left border + faint tint only. */
+.tolm-row--leader-rail td {
+  background: color-mix(in srgb, var(--t-brand) 5%, transparent);
+}
+
+.tolm-row--leader-rail td:first-child {
+  box-shadow: inset 3px 0 0 var(--t-brand);
+}
+
+/* ----- Hero cards (A, B) ----------------------------------------------- */
+
+.tolm-hero {
+  padding: 13px 14px 12px;
+}
+
+/* A — current: tinted floating card with its own radius + gap. */
+.tolm-hero--floating {
+  margin: 2px 2px 10px;
+  border: 1px solid color-mix(in srgb, var(--t-brand) 22%, var(--t-border));
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--t-brand) 10%, var(--t-surface)), color-mix(in srgb, var(--t-brand) 3%, var(--t-surface)));
+  box-shadow: 0 1px 6px color-mix(in srgb, var(--t-brand) 14%, transparent);
+}
+
+/* B — docked: table tone, hairline border, square bottom, no gap. */
+.tolm-hero--docked {
+  border: 1px solid var(--t-border);
+  border-bottom: 0;
+  border-radius: 12px 12px 0 0;
+  background: var(--t-surface);
+  padding: 15px 14px 13px;
+}
+
+.tolm-hero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 9px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--t-brand) 13%, transparent);
+  color: var(--t-brand);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Docked variant drops the pill chrome: bare gold eyebrow, matching
+ * the schedule GW-band / draft-round header language. */
+.tolm-hero__eyebrow--bare {
+  padding: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--t-gold);
+}
+
+.tolm-hero__eyebrow i {
+  font-style: normal;
+}
+
+.tolm-hero__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tolm-hero__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--t-ink);
+}
+
+.tolm-hero__pts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+}
+
+.tolm-hero__pts-num {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--t-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.tolm-hero__pts-lbl {
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.tolm-hero__sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding-top: 9px;
+  border-top: 1px solid color-mix(in srgb, var(--t-border) 70%, transparent);
+}
+
+.tolm-hero__meta {
+  font-size: 12px;
+  color: var(--t-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.tolm-hero__meta b {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-brand);
+  margin-right: 2px;
+}
+
+.tolm-hero__meta i {
+  font-style: normal;
+  color: var(--t-muted);
+  opacity: 0.55;
+  margin: 0 4px;
+}
+
+/* ----- F — racing-green hero band -------------------------------------- */
+
+.tolm-greenhero {
+  padding: 14px 14px 12px;
+  background: linear-gradient(160deg, #1c4a37, var(--t-deep));
+  color: #f2ead2;
+}
+
+.tolm-greenhero__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 10px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e3b53a;
+}
+
+.tolm-greenhero__eyebrow i {
+  font-style: normal;
+}
+
+.tolm-greenhero__row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.tolm-greenhero__row .tolm-crest {
+  box-shadow: inset 0 0 0 1.5px rgba(253, 250, 240, 0.55);
+}
+
+.tolm-greenhero__name {
+  flex: 1;
+  min-width: 0;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #fdfaf0;
+}
+
+.tolm-greenhero__pts {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1;
+}
+
+.tolm-greenhero__pts-num {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #fdfaf0;
+}
+
+.tolm-greenhero__pts-lbl {
+  margin-top: 2px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(242, 234, 210, 0.7);
+}
+
+.tolm-greenhero__sub {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 11px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(242, 234, 210, 0.22);
+}
+
+.tolm-greenhero__sub .tolm-dot--none {
+  background: rgba(242, 234, 210, 0.28);
+}
+
+.tolm-greenhero__meta {
+  font-size: 12px;
+  color: #f2ead2;
+  font-variant-numeric: tabular-nums;
+}
+
+.tolm-greenhero__meta b {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #e3b53a;
+  margin-right: 2px;
+}
+
+.tolm-greenhero__meta i {
+  font-style: normal;
+  opacity: 0.55;
+  margin: 0 4px;
+}
+
+/* ----- Form-dot before/after strip -------------------------------------- */
+
+.tolm-dotscompare {
+  max-width: 880px;
+  margin: 40px auto 0;
+  padding: 20px 22px;
+  border: 1px solid var(--t-border);
+  border-radius: 14px;
+  background: var(--t-surface);
+}
+
+.tolm-dotscompare h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--t-ink);
+}
+
+.tolm-dotscompare p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--t-muted);
+  max-width: 64ch;
+}
+
+.tolm-dotscompare__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.tolm-dotscompare__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--t-border);
+  border-radius: 10px;
+  background: var(--t-bg);
+  min-width: 170px;
+}
+
+.tolm-dotscompare__lbl {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.tolm-note {
+  max-width: 880px;
+  margin: 26px auto 0;
+  font-size: 13px;
+  color: var(--t-muted);
+}
+
+.tolm-note code {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  background: var(--t-surface-2);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
