@@ -1,0 +1,30 @@
+# Cloudflare Worker — the TCLOT fake-money bookie (see src/index.js).
+# https://developers.cloudflare.com/workers/wrangler/configuration/
+#
+# One-time setup (see README.md):
+#   npx wrangler d1 create tclot-bookie          → paste database_id below
+#   npx wrangler d1 execute tclot-bookie --remote --file=schema.sql
+#   npx wrangler secret put SESSION_SECRET       → any long random string
+#   npm run deploy
+
+name = "tclot-bookie"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+# Ingest new markets + settle finished gameweeks even when nobody is looking.
+# (The Worker also syncs lazily on traffic, so the cron is belt-and-braces.)
+[triggers]
+crons = ["*/30 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "tclot-bookie"
+database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+
+[vars]
+# Where the deployed site serves league-data/bookie-markets.json from.
+SITE_BASE_URL = "https://tclot.vercel.app"
+# FPL Draft league id — used to settle markets from the official results.
+LEAGUE_ID = "1577"
+# Optional: lock the API to your site origin (recommended for production)
+# ALLOW_ORIGIN = "https://tclot.vercel.app"
