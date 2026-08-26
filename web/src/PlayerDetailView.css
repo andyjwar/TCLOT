@@ -1576,6 +1576,103 @@ body[data-tclot-theme='light'] .pdetail-fdr--5 { color: #7f1d1d; }
 }
 
 /* ------------------------------------------------------------------ */
+/* Waivers section — one card per waiver/free-agent transaction the     */
+/* player was part of (signings with stint length + points; drops with  */
+/* the replacement). Failed claims collapse into a muted footer line.   */
+/* ------------------------------------------------------------------ */
+.pdetail-wv__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pdetail-wv__card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  min-width: 0;
+}
+.pdetail-wv__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.pdetail-wv__gw {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.pdetail-wv__tag {
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.pdetail-wv__tag--in {
+  color: var(--brand);
+  background: color-mix(in srgb, var(--brand) 14%, transparent);
+}
+.pdetail-wv__tag--out {
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--text-muted) 14%, transparent);
+}
+/* Crest + manager name grouped, ellipsizing like the draft line. */
+.pdetail-wv__manager {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  overflow: hidden;
+  color: inherit;
+}
+.pdetail-wv__manager-name {
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+.pdetail-wv__swap {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+.pdetail-wv__swap .pdetail-wv__player {
+  font-weight: 700;
+  color: var(--text);
+}
+.pdetail-wv__stint {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 12.5px;
+  color: var(--text);
+  font-weight: 600;
+}
+.pdetail-wv__pts {
+  color: var(--brand);
+  font-weight: 800;
+}
+.pdetail-wv__failed {
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* ------------------------------------------------------------------ */
 /* Compare flow — port of locked Mockup ComparePortraitStacked + */
 /* CompareDesktop. Replaces the prior toolbar-style legacy compare UI. */
 /*  - `pcompare__*` shared rules (header, chips, picker pills)         */

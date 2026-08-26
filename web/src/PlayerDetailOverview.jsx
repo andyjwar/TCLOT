@@ -7,6 +7,7 @@ import {
 } from './playerDetailDerivations.js'
 import { PlayerDetailLastFiveCards } from './PlayerDetailLastFiveCards.jsx'
 import { PlayerDetailNextFiveCards } from './PlayerDetailNextFiveCards.jsx'
+import { PlayerDetailWaivers } from './PlayerDetailWaivers.jsx'
 import { TeamAvatar } from './TeamAvatar'
 import { ClickableManagerName } from './teamDetailBus.jsx'
 import { useDraftPickForElement } from './useDraftPickForElement.js'
@@ -183,6 +184,18 @@ export function PlayerDetailOverview({
     />
   )
 
+  /* Waiver/free-agent provenance — hidden for players with no moves. */
+  const waiversBlock = (
+    <PlayerDetailWaivers
+      elementId={el?.id}
+      history={Array.isArray(summaryPayload?.history) ? history : null}
+      portrait={portrait}
+      logoMap={logoMap}
+      kitIndexByEntry={kitIndexByEntry}
+      onManagerNavigate={onManagerNavigate}
+    />
+  )
+
   if (portrait) {
     return (
       <div className="pdetail-p__body">
@@ -194,6 +207,7 @@ export function PlayerDetailOverview({
 
         {lastFiveBlock}
         {nextFiveBlock}
+        {waiversBlock}
       </div>
     )
   }
@@ -208,6 +222,7 @@ export function PlayerDetailOverview({
 
       {lastFiveBlock}
       {nextFiveBlock}
+      {waiversBlock}
     </div>
   )
 }
