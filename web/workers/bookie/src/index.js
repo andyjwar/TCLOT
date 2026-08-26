@@ -4,8 +4,9 @@
  * Markets are priced by the site's own prediction model: the deploy pipeline
  * writes league-data/bookie-markets.json (build-bookie-markets.mjs) and this
  * Worker ingests it into D1 — weekly H2H (home/draw/away) markets open until
- * the FPL gameweek deadline, plus a season-long outright champion market that
- * is repriced after every banked gameweek. Bets lock their odds at bet time.
+ * the FPL gameweek deadline, plus season-long champion / Titan / Minnow /
+ * last-place boards that reprice after every banked gameweek. Bets lock
+ * their odds at bet time.
  *
  * Settlement reads the official FPL Draft league results directly (same
  * "effectively finished" rule as web/src/h2hEffectiveFinished.js: a GW counts
@@ -29,7 +30,7 @@
  * Deploy: cd web/workers/bookie && npm run deploy  (see README.md for setup)
  */
 
-import { footballComplete, h2hResultForMarket, championFromMatches } from './settlement.js';
+import { footballComplete, h2hResultForMarket, ranksFromMatches, seasonKindWinners, SEASON_MARKET_KINDS } from './settlement.js';
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 
 const STARTING_BALANCE = 1000;
@@ -212,23 +213,25 @@ async function ingestMarkets(env) {
     }
   }
 
-  if (sheet.outright && Array.isArray(sheet.outright.selections)) {
-    const marketKey = `${season}:outright`;
-    const closesAtMs = Date.parse(sheet.outright.closesAt ?? '') || nowMs + 400 * 24 * 3600 * 1000;
+  for (const kind of SEASON_MARKET_KINDS) {
+    const block = sheet[kind];
+    if (!block || !Array.isArray(block.selections) || block.selections.length === 0) continue;
+    const marketKey = `${season}:${kind}`;
+    const closesAtMs = Date.parse(block.closesAt ?? '') || nowMs + 400 * 24 * 3600 * 1000;
     const payload = JSON.stringify({
-      asOfGw: sheet.outright.asOfGw ?? null,
-      selections: sheet.outright.selections,
+      asOfGw: block.asOfGw ?? null,
+      selections: block.selections,
     });
     await db
       .prepare(
         `INSERT INTO markets (season, market_key, kind, gw, closes_at_ms, status, payload)
-         VALUES (?, ?, 'outright', NULL, ?, 'open', ?)
+         VALUES (?, ?, ?, NULL, ?, 'open', ?)
          ON CONFLICT(market_key) DO UPDATE SET
            payload = excluded.payload,
            closes_at_ms = excluded.closes_at_ms
          WHERE markets.status = 'open'`,
       )
-      .bind(season, marketKey, closesAtMs, payload)
+      .bind(season, marketKey, kind, closesAtMs, payload)
       .run();
   }
 
@@ -242,13 +245,19 @@ async function ingestMarkets(env) {
 
 /** Grade every open bet on a settled market and credit winners. */
 async function gradeBets(db, market, winningSelection) {
+  const winners =
+    winningSelection == null
+      ? null
+      : winningSelection instanceof Set
+        ? winningSelection
+        : new Set([String(winningSelection)]);
   const bets = await db
     .prepare(`SELECT * FROM bets WHERE market_id = ? AND status = 'open'`)
     .bind(market.id)
     .all();
   const nowIso = new Date().toISOString();
   for (const bet of bets.results ?? []) {
-    const won = winningSelection != null && String(bet.selection) === String(winningSelection);
+    const won = winners != null && winners.has(String(bet.selection));
     if (won) {
       const payout = Math.round(bet.stake * bet.odds);
       await db.batch([
@@ -259,7 +268,7 @@ async function gradeBets(db, market, winningSelection) {
           .prepare(`UPDATE users SET balance = balance + ? WHERE entry_id = ? AND season = ?`)
           .bind(payout, bet.entry_id, bet.season),
       ]);
-    } else if (winningSelection != null) {
+    } else if (winners != null) {
       await db
         .prepare(`UPDATE bets SET status = 'lost', payout = 0, settled_at = ? WHERE id = ?`)
         .bind(nowIso, bet.id)
@@ -293,8 +302,8 @@ async function settleDue(env) {
     .all();
   const dueMarkets = due.results ?? [];
   const h2hDue = dueMarkets.filter((m) => m.kind === 'h2h');
-  const outrightDue = dueMarkets.filter((m) => m.kind === 'outright');
-  if (h2hDue.length === 0 && outrightDue.length === 0) return;
+  const seasonDue = dueMarkets.filter((m) => SEASON_MARKET_KINDS.includes(m.kind));
+  if (h2hDue.length === 0 && seasonDue.length === 0) return;
 
   const leagueId = String(env.LEAGUE_ID || '').trim();
   if (!leagueId) return;
@@ -365,14 +374,15 @@ async function settleDue(env) {
     }
   }
 
-  for (const market of outrightDue) {
-    const champion = championFromMatches(matches);
-    if (champion == null) continue;
+  const ranked = ranksFromMatches(matches);
+  for (const market of seasonDue) {
+    const winners = seasonKindWinners(market.kind, ranked);
+    if (!winners || winners.size === 0) continue;
     await db
       .prepare(`UPDATE markets SET status = 'settled', result = ?, settled_at = ? WHERE id = ?`)
-      .bind(String(champion), nowIso, market.id)
+      .bind([...winners].join(','), nowIso, market.id)
       .run();
-    await gradeBets(db, market, String(champion));
+    await gradeBets(db, market, winners);
   }
 }
 
@@ -507,7 +517,7 @@ async function handlePlaceBet(request, env, ch) {
       return errorJson('selection must be home, draw or away', 400, ch);
     }
     odds = Number(payload.odds?.[selection]);
-  } else if (market.kind === 'outright') {
+  } else if (SEASON_MARKET_KINDS.includes(market.kind)) {
     const sel = (payload.selections ?? []).find((s) => String(s.entryId) === selection);
     odds = sel ? Number(sel.odds) : null;
   }
@@ -599,11 +609,11 @@ function cashoutQuoteForBet(bet, market, liveCtx, nowMs) {
   const payload = JSON.parse(market.payload);
 
   let pNow = null;
-  if (market.kind === 'outright') {
+  if (SEASON_MARKET_KINDS.includes(market.kind)) {
     const sel = (payload.selections ?? []).find(
       (s) => String(s.entryId) === String(bet.selection),
     );
-    const pct = Number(sel?.titlePct);
+    const pct = Number(sel?.pct ?? sel?.titlePct);
     if (!Number.isFinite(pct)) return null;
     pNow = pct / 100;
   } else if (market.kind === 'h2h') {
@@ -748,7 +758,13 @@ async function handleState(request, env, ctx, ch) {
   const markets = await db
     .prepare(
       `SELECT * FROM markets WHERE season = ?
-       ORDER BY CASE kind WHEN 'outright' THEN 1 ELSE 0 END, gw DESC, id ASC`,
+       ORDER BY CASE kind
+         WHEN 'h2h' THEN 0
+         WHEN 'outright' THEN 1
+         WHEN 'titan' THEN 2
+         WHEN 'minnow' THEN 3
+         WHEN 'last' THEN 4
+         ELSE 5 END, gw DESC, id ASC`,
     )
     .bind(seasonNow)
     .all();

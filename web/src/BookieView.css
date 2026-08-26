@@ -238,7 +238,11 @@
   font-weight: 700;
 }
 
-/* --- outright --- */
+/* --- outright / titan / minnow / last --- */
+
+.bookie-place-nav {
+  margin-top: 10px;
+}
 
 .bookie-outright {
   list-style: none;
@@ -362,9 +366,8 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* Green glass pills for stake and potential/actual return — same paint
- * recipe as Live Scores winner chips, using pitch green so they read as
- * Clotcoins on the beige bookie card. */
+/* Wager = yellow glass; return = Live Scores winner glass
+ * (`.live-banner-row__score-half--winner` / `--tclot-logo-purple`). */
 .bookie-bet__pill {
   display: inline-flex;
   align-items: center;
@@ -377,11 +380,27 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
-  color: var(--fm-pitch, #12a15a);
-  background: color-mix(in srgb, var(--fm-pitch, #12a15a) 18%, transparent);
-  box-shadow: 0 0 0 0.12em color-mix(in srgb, var(--fm-pitch, #12a15a) 18%, transparent);
   justify-self: stretch;
   text-align: center;
+}
+
+.bookie-bet__pill--wager {
+  color: #92400e;
+  background: color-mix(in srgb, #fbbf24 32%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in srgb, #fbbf24 32%, transparent);
+}
+
+.fotmob[data-theme='light'] .bookie-bet__pill--wager {
+  color: #78350f;
+}
+
+.bookie-bet__pill--return,
+.bookie-bet__pill--open,
+.bookie-bet__pill--won {
+  color: var(--fm-text-strong, inherit);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.15em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
 }
 
 .bookie-bet__pill--lost,

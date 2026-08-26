@@ -9,9 +9,8 @@
  *    still in the future: each matchup is Monte Carlo'd from the two sides'
  *    strength estimates (draft prior updated by xP-blended weekly scores —
  *    identical machinery to build-season-predictions.mjs).
- *  - Outright league champion: taken straight from season-predictions.json
- *    `current.teams[].titlePct` so the bookie board always agrees with the
- *    Predictions tab.
+ *  - Outright / Titan / Minnow / last place: taken from season-predictions.json
+ *    titlePct, topHalfPct (top 4), 100−topHalfPct (bottom 4), and lastPct.
  *
  * Decimal odds carry a bookmaker overround (the book is intentionally not
  * fair — that's half the fun): ~105% on the 3-way weekly markets, ~110% on
@@ -203,29 +202,62 @@ if (nextEvent) {
   }
 }
 
-/* ---- outright: league champion, repriced after every banked GW ---- */
+/* ---- season-long: champion, titan (top 4), minnow (bottom 4), last ---- */
 const finalEvent = events.length > 0 ? events[events.length - 1] : null
-const outrightTeams =
+const placeTeams =
   seasonPredictions?.current?.teams ??
   (preview.teams ?? []).map((t) => ({
     leagueEntryId: Number(t.leagueEntryId),
     name: t.name,
     titlePct: t.sim?.titlePct,
+    topHalfPct: t.sim?.topHalfPct,
+    lastPct: t.sim?.lastPct,
   }))
+
+function placeSelections(pctOf) {
+  return placeTeams
+    .map((t) => {
+      const pct = Number(pctOf(t)) || 0
+      return {
+        entryId: Number(t.leagueEntryId),
+        name: t.name,
+        pct,
+        titlePct: pct,
+        odds: decimalOdds(pct / 100, OUTRIGHT_OVERROUND, { minProb: 0.002 }),
+      }
+    })
+    .sort((a, b) => b.pct - a.pct)
+}
+
+const asOfGw = seasonPredictions?.asOfGw ?? 0
+const closesAt = finalEvent?.deadline_time ?? null
 const outright = {
   key: `outright:${season ?? 'season'}`,
-  asOfGw: seasonPredictions?.asOfGw ?? 0,
-  closesAt: finalEvent?.deadline_time ?? null,
-  selections: outrightTeams
-    .map((t) => ({
-      entryId: Number(t.leagueEntryId),
-      name: t.name,
-      titlePct: Number(t.titlePct) || 0,
-      odds: decimalOdds((Number(t.titlePct) || 0) / 100, OUTRIGHT_OVERROUND, {
-        minProb: 0.002,
-      }),
-    }))
-    .sort((a, b) => b.titlePct - a.titlePct),
+  asOfGw,
+  closesAt,
+  selections: placeSelections((t) => t.titlePct),
+}
+const titan = {
+  key: `titan:${season ?? 'season'}`,
+  asOfGw,
+  closesAt,
+  selections: placeSelections((t) => t.topHalfPct ?? t.titlePct),
+}
+const minnow = {
+  key: `minnow:${season ?? 'season'}`,
+  asOfGw,
+  closesAt,
+  selections: placeSelections((t) => {
+    const top = Number(t.topHalfPct)
+    if (Number.isFinite(top)) return Math.max(0, +(100 - top).toFixed(1))
+    return t.lastPct
+  }),
+}
+const last = {
+  key: `last:${season ?? 'season'}`,
+  asOfGw,
+  closesAt,
+  selections: placeSelections((t) => t.lastPct),
 }
 
 const output = {
@@ -236,12 +268,18 @@ const output = {
   method: {
     weekly: `strength-model Monte Carlo (${H2H_SIMS} sims/matchup), ${Math.round((H2H_OVERROUND - 1) * 100)}% overround`,
     outright: `season-predictions titlePct, ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
+    titan: `season-predictions topHalfPct (top 4), ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
+    minnow: `100 − topHalfPct (bottom 4), ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
+    last: `season-predictions lastPct, ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
   },
   weekly,
   outright,
+  titan,
+  minnow,
+  last,
 }
 
 writeFileSync(join(dataDir, 'bookie-markets.json'), JSON.stringify(output, null, 1))
 console.log(
-  `bookie-markets.json written: weekly=${weekly ? `GW${weekly.gw} (${weekly.matches.length} matchups, closes ${weekly.deadline})` : 'none'}, outright asOfGw=${outright.asOfGw}`,
+  `bookie-markets.json written: weekly=${weekly ? `GW${weekly.gw} (${weekly.matches.length} matchups, closes ${weekly.deadline})` : 'none'}, place asOfGw=${asOfGw}`,
 )

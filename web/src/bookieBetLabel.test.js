@@ -34,14 +34,28 @@ test('describeBetCompact — draw keeps both last words', () => {
   )
 })
 
-test('describeBetCompact — outright uses last word', () => {
+test('describeBetCompact — season places use last word + market tag', () => {
+  const byId = new Map([
+    [99, { id: 99, kind: 'outright' }],
+    [100, { id: 100, kind: 'titan' }],
+    [101, { id: 101, kind: 'minnow' }],
+    [102, { id: 102, kind: 'last' }],
+  ])
   assert.equal(
-    describeBetCompact({ market_id: 99, kind: 'outright', selection: '1' }, marketById, names),
+    describeBetCompact({ market_id: 99, kind: 'outright', selection: '1' }, byId, names),
     'Gimli — outright',
   )
   assert.equal(
-    describeBetCompact({ market_id: 99, kind: 'outright', selection: '2' }, marketById, names),
-    'Mordor — outright',
+    describeBetCompact({ market_id: 100, kind: 'titan', selection: '1' }, byId, names),
+    'Gimli — titan',
+  )
+  assert.equal(
+    describeBetCompact({ market_id: 101, kind: 'minnow', selection: '2' }, byId, names),
+    'Mordor — minnow',
+  )
+  assert.equal(
+    describeBetCompact({ market_id: 102, kind: 'last', selection: '1' }, byId, names),
+    'Gimli — last',
   )
 })
 
