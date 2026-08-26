@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
+import { describeBet, describeBetCompact } from './bookieBetLabel.js'
 import {
   bookieEnabled,
   fetchBookieState,
@@ -61,6 +62,52 @@ function fmtOdds(odds) {
 function fmtNet(n) {
   const v = Number(n) || 0
   return `${v > 0 ? '+' : ''}${v.toLocaleString()}`
+}
+
+function betReturnTone(status) {
+  if (status === 'won') return 'won'
+  if (status === 'lost') return 'lost'
+  if (status === 'cashed_out') return 'cashed'
+  if (status === 'void') return 'void'
+  return 'open'
+}
+
+function betReturnLabel(bet) {
+  if (bet.status === 'open' || bet.status == null) {
+    return fmtCoins(Math.round(Number(bet.stake) * Number(bet.odds)))
+  }
+  if (bet.status === 'won' || bet.status === 'cashed_out') return fmtCoins(bet.payout)
+  if (bet.status === 'void') return fmtCoins(bet.stake)
+  return '—'
+}
+
+function BetColHead() {
+  return (
+    <li className="bookie-bet bookie-bet--head" aria-hidden="true">
+      <span className="bookie-bet__desc" />
+      <span className="bookie-bet__col">Odds</span>
+      <span className="bookie-bet__col">Wager</span>
+      <span className="bookie-bet__col">Return</span>
+    </li>
+  )
+}
+
+function BetTicketFigures({ bet }) {
+  const tone = betReturnTone(bet.status)
+  return (
+    <>
+      <span
+        className="bookie-bet__col bookie-bet__col--odds tabular"
+        title={`decimal ${Number(bet.odds).toFixed(2)}`}
+      >
+        {fmtOdds(bet.odds)}
+      </span>
+      <span className="bookie-bet__pill tabular">{fmtCoins(bet.stake)}</span>
+      <span className={`bookie-bet__pill bookie-bet__pill--${tone} tabular`}>
+        {betReturnLabel(bet)}
+      </span>
+    </>
+  )
 }
 
 /**
@@ -231,7 +278,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       {me ? (
         <MyBets
           me={me}
-          h2hMarkets={h2hMarkets}
+          markets={markets}
           nameByEntry={nameByEntry}
           cashoutQuotes={cashoutQuotes}
           token={session?.token}
@@ -242,7 +289,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       <LiveBets
         state={state}
         me={me}
-        h2hMarkets={h2hMarkets}
+        markets={markets}
         nameByEntry={nameByEntry}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
@@ -651,21 +698,6 @@ function BetSlip({ slip, me, minStake, token, onClose, onPlaced }) {
   )
 }
 
-/** Human label for one bet, from its market + selection. */
-function describeBet(bet, marketById, nameByEntry) {
-  const market = marketById.get(Number(bet.market_id))
-  if (bet.kind === 'outright' || market?.kind === 'outright') {
-    const name = nameByEntry.get(Number(bet.selection)) ?? `Entry ${bet.selection}`
-    return `${standingsMobileTeamName(name)} — outright champion`
-  }
-  const p = market?.payload
-  if (!p) return `GW${bet.gw ?? '?'} matchup — ${bet.selection}`
-  const home = standingsMobileTeamName(p.homeName)
-  const away = standingsMobileTeamName(p.awayName)
-  const pick = bet.selection === 'home' ? home : bet.selection === 'away' ? away : 'Draw'
-  return `${pick} (${home} v ${away}, GW${p.gw})`
-}
-
 /**
  * The tempter's button: shows the standing offer, arms on the first tap
  * ("sure?"), pays on the second. If the board moves between quote and
@@ -716,12 +748,12 @@ function CashoutButton({ bet, value, token, onCashedOut }) {
   )
 }
 
-function MyBets({ me, h2hMarkets, nameByEntry, cashoutQuotes, token, onCashedOut }) {
+function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut }) {
   const marketById = useMemo(() => {
     const map = new Map()
-    for (const m of h2hMarkets) map.set(Number(m.id), m)
+    for (const m of markets) map.set(Number(m.id), m)
     return map
-  }, [h2hMarkets])
+  }, [markets])
   const bets = me.bets ?? []
   if (bets.length === 0) {
     return (
@@ -735,25 +767,16 @@ function MyBets({ me, h2hMarkets, nameByEntry, cashoutQuotes, token, onCashedOut
     <section className="tile tile--compact" aria-label="My bets">
       <h3 className="bookie__section-title">My bets</h3>
       <ul className="bookie-bets">
+        <BetColHead />
         {bets.map((b) => {
           const quote = b.status === 'open' ? cashoutQuotes.get(Number(b.id)) : undefined
+          const full = describeBet(b, marketById, nameByEntry)
           return (
             <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
-              <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
-              <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
-                {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
+              <span className="bookie-bet__desc" title={full}>
+                {describeBetCompact(b, marketById, nameByEntry)}
               </span>
-              <span className={`bookie-bet__status bookie-bet__status--${b.status}`}>
-                {b.status === 'open'
-                  ? `to return ${fmtCoins(Math.round(b.stake * b.odds))}`
-                  : b.status === 'won'
-                    ? `won ${fmtCoins(b.payout)}`
-                    : b.status === 'cashed_out'
-                      ? `cashed out for ${fmtCoins(b.payout)}`
-                      : b.status === 'void'
-                        ? 'void — refunded'
-                        : 'lost'}
-              </span>
+              <BetTicketFigures bet={b} />
               {quote != null && token ? (
                 <CashoutButton
                   key={`${b.id}:${quote}`}
@@ -777,12 +800,12 @@ function MyBets({ me, h2hMarkets, nameByEntry, cashoutQuotes, token, onCashedOut
  * per team behind a collapsible row so eight busy punters don't turn the
  * board into a scroll marathon.
  */
-function LiveBets({ state, me, h2hMarkets, nameByEntry, teamLogoMap, kitIndexByEntry }) {
+function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntry }) {
   const marketById = useMemo(() => {
     const map = new Map()
-    for (const m of h2hMarkets) map.set(Number(m.id), m)
+    for (const m of markets) map.set(Number(m.id), m)
     return map
-  }, [h2hMarkets])
+  }, [markets])
 
   const bets = state.openBets ?? []
   const byEntry = new Map()
@@ -833,17 +856,18 @@ function LiveBets({ state, me, h2hMarkets, nameByEntry, teamLogoMap, kitIndexByE
                   </span>
                 </summary>
                 <ul className="bookie-bets bookie-punter__bets">
-                  {g.rows.map((b) => (
-                    <li key={b.id} className="bookie-bet">
-                      <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
-                      <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
-                        {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
-                      </span>
-                      <span className="bookie-bet__status bookie-bet__status--open">
-                        to return {fmtCoins(Math.round(b.stake * b.odds))}
-                      </span>
-                    </li>
-                  ))}
+                  <BetColHead />
+                  {g.rows.map((b) => {
+                    const full = describeBet(b, marketById, nameByEntry)
+                    return (
+                      <li key={b.id} className="bookie-bet">
+                        <span className="bookie-bet__desc" title={full}>
+                          {describeBetCompact(b, marketById, nameByEntry)}
+                        </span>
+                        <BetTicketFigures bet={b} />
+                      </li>
+                    )
+                  })}
                 </ul>
               </details>
             )
