@@ -359,6 +359,55 @@
   color: var(--fm-muted);
 }
 
+.bookie-bet__status--cashed_out {
+  color: #d97706;
+  font-weight: 700;
+}
+
+/* The tempter's button — amber like every "are you sure you want your
+ * winnings early?" pitch ever made. Sits on its own line under the ticket. */
+.bookie-bet__cashout {
+  grid-column: 1 / -1;
+  justify-self: start;
+  border: 1px solid color-mix(in srgb, #d97706 45%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  color: #fbbf24;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 12px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.bookie-bet__cashout:hover:not(:disabled) {
+  background: color-mix(in srgb, #f59e0b 22%, transparent);
+}
+
+.bookie-bet__cashout--armed {
+  background: #d97706;
+  border-color: #d97706;
+  color: #fff;
+}
+
+.bookie-bet__cashout--armed:hover:not(:disabled) {
+  background: #b45309;
+}
+
+.bookie-bet__cashout:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.fotmob[data-theme='light'] .bookie-bet__cashout {
+  color: #b45309;
+}
+
+.fotmob[data-theme='light'] .bookie-bet__cashout--armed {
+  color: #fff;
+}
+
 /* Live board: one collapsible row per punter, tickets tucked inside. Own
  * team gets the same green wash as the leaderboard "me" row. */
 .bookie-punters {

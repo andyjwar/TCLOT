@@ -23,11 +23,14 @@
  *   POST /api/register     — { entryId, pin }
  *   POST /api/login        — { entryId, pin }
  *   POST /api/bets         — { marketId, selection, stake } (Bearer auth)
+ *   GET  /api/cashout      — live cash-out quotes for my open bets (auth)
+ *   POST /api/cashout      — { betId, quote? } take the money (auth)
  *
  * Deploy: cd web/workers/bookie && npm run deploy  (see README.md for setup)
  */
 
 import { footballComplete, h2hResultForMarket, championFromMatches } from './settlement.js';
+import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 
 const STARTING_BALANCE = 1000;
 const WEEKLY_STIPEND = 50;
@@ -546,6 +549,190 @@ async function handlePlaceBet(request, env, ch) {
   );
 }
 
+/* ------------------------------------------------------------------ */
+/* Cash-out — tempt them off their own tickets                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Live inputs for pricing H2H bets whose gameweek is underway: current
+ * league match scores plus, per gameweek, how much football is left.
+ * Returns null when the live feeds are unreachable — those quotes are
+ * simply suspended rather than priced blind.
+ */
+async function liveCashoutContext(env, gws) {
+  const leagueId = String(env.LEAGUE_ID || '').trim();
+  if (!leagueId) return null;
+  let details;
+  try {
+    details = await fetchJson(`${DRAFT_API}/league/${leagueId}/details`, {
+      cf: { cacheTtl: 60 },
+    });
+  } catch {
+    return null;
+  }
+  const remByGw = new Map();
+  for (const gw of gws) {
+    try {
+      const fixtures = await fetchJson(`${CLASSIC_API}/fixtures/?event=${gw}`, {
+        cf: { cacheTtl: 60 },
+      });
+      remByGw.set(gw, remainingFraction(fixtures, gw));
+    } catch {
+      /* no fixtures feed → quotes for this GW stay suspended */
+    }
+  }
+  return { matches: details?.matches ?? [], remByGw };
+}
+
+/**
+ * Cash-out offer in Clotcoins for one open bet, or null when no offer
+ * stands (market settled, live feeds down, or the position is worthless).
+ *
+ * Pre-deadline the bet is priced off the market's own opening probabilities
+ * (an exit costs the vig plus the cash-out margin). Once the gameweek is
+ * underway, H2H bets re-price live from the actual score margin — which is
+ * exactly when the offer gets tempting. The outright prices off the latest
+ * weekly model sheet, since its payload reprices on every sync.
+ */
+function cashoutQuoteForBet(bet, market, liveCtx, nowMs) {
+  if (!market || bet.status !== 'open' || market.status !== 'open') return null;
+  const payload = JSON.parse(market.payload);
+
+  let pNow = null;
+  if (market.kind === 'outright') {
+    const sel = (payload.selections ?? []).find(
+      (s) => String(s.entryId) === String(bet.selection),
+    );
+    const pct = Number(sel?.titlePct);
+    if (!Number.isFinite(pct)) return null;
+    pNow = pct / 100;
+  } else if (market.kind === 'h2h') {
+    if (market.closes_at_ms > nowMs) {
+      pNow = Number(payload.probs?.[bet.selection]);
+    } else {
+      if (!liveCtx || !liveCtx.remByGw.has(Number(market.gw))) return null;
+      const gw = Number(market.gw);
+      const match = liveCtx.matches.find(
+        (m) =>
+          Number(m.event) === gw &&
+          ((Number(m.league_entry_1) === Number(payload.homeEntryId) &&
+            Number(m.league_entry_2) === Number(payload.awayEntryId)) ||
+            (Number(m.league_entry_1) === Number(payload.awayEntryId) &&
+              Number(m.league_entry_2) === Number(payload.homeEntryId))),
+      );
+      if (!match) return null;
+      const oriented = Number(match.league_entry_1) === Number(payload.homeEntryId);
+      const p1 = Number(match.league_entry_1_points) || 0;
+      const p2 = Number(match.league_entry_2_points) || 0;
+      const probs = liveH2hProbs(
+        payload.probs,
+        oriented ? p1 : p2,
+        oriented ? p2 : p1,
+        liveCtx.remByGw.get(gw),
+      );
+      pNow = probs[bet.selection];
+    }
+  }
+  if (!Number.isFinite(pNow)) return null;
+  const value = cashoutValue({ stake: bet.stake, odds: bet.odds, pNow });
+  return value >= 1 ? value : null;
+}
+
+/** My open bets joined to their market rows, plus quotes for each. */
+async function quotedOpenBets(env, session) {
+  const db = env.DB;
+  const rows = await db
+    .prepare(
+      `SELECT b.id, b.selection, b.stake, b.odds, b.status,
+              m.id AS m_id, m.kind, m.gw, m.status AS m_status,
+              m.closes_at_ms, m.payload
+       FROM bets b JOIN markets m ON m.id = b.market_id
+       WHERE b.season = ? AND b.entry_id = ? AND b.status = 'open'`,
+    )
+    .bind(session.season, session.entryId)
+    .all();
+  const bets = rows.results ?? [];
+  const nowMs = Date.now();
+  const liveGws = [
+    ...new Set(
+      bets
+        .filter((b) => b.kind === 'h2h' && b.m_status === 'open' && b.closes_at_ms <= nowMs)
+        .map((b) => Number(b.gw)),
+    ),
+  ];
+  const liveCtx = liveGws.length > 0 ? await liveCashoutContext(env, liveGws) : { matches: [], remByGw: new Map() };
+  return bets.map((b) => ({
+    betId: b.id,
+    value: cashoutQuoteForBet(
+      { selection: b.selection, stake: b.stake, odds: b.odds, status: b.status },
+      { id: b.m_id, kind: b.kind, gw: b.gw, status: b.m_status, closes_at_ms: b.closes_at_ms, payload: b.payload },
+      liveCtx,
+      nowMs,
+    ),
+  }));
+}
+
+async function handleCashoutQuotes(request, env, ch) {
+  const session = await sessionFromRequest(request, env);
+  if (!session) return errorJson('login required', 401, ch);
+  const quotes = await quotedOpenBets(env, session);
+  return json(
+    { margin: CASHOUT_MARGIN, quotes: quotes.filter((q) => q.value != null) },
+    200,
+    ch,
+  );
+}
+
+async function handleCashoutTake(request, env, ch) {
+  const session = await sessionFromRequest(request, env);
+  if (!session) return errorJson('login required', 401, ch);
+  const body = await request.json().catch(() => null);
+  const betId = Number(body?.betId);
+  const expected = Number(body?.quote);
+  if (!Number.isFinite(betId)) return errorJson('betId is required', 400, ch);
+
+  const db = env.DB;
+  const bet = await db
+    .prepare(`SELECT * FROM bets WHERE id = ? AND entry_id = ? AND season = ?`)
+    .bind(betId, session.entryId, session.season)
+    .first();
+  if (!bet) return errorJson('unknown bet', 404, ch);
+  if (bet.status !== 'open') return errorJson('bet already settled', 409, ch);
+  const market = await db.prepare(`SELECT * FROM markets WHERE id = ?`).bind(bet.market_id).first();
+
+  const nowMs = Date.now();
+  let liveCtx = { matches: [], remByGw: new Map() };
+  if (market?.kind === 'h2h' && market.status === 'open' && market.closes_at_ms <= nowMs) {
+    liveCtx = await liveCashoutContext(env, [Number(market.gw)]);
+  }
+  const value = cashoutQuoteForBet(bet, market, liveCtx, nowMs);
+  if (value == null) return errorJson('no cash-out offer on this bet right now', 409, ch);
+  // The board moved against them since the quote they accepted — never pay
+  // less than they agreed to without showing the new number first.
+  if (Number.isFinite(expected) && value < expected) {
+    return json({ error: 'the offer has moved', cashOut: value }, 409, ch);
+  }
+
+  const nowIso = new Date().toISOString();
+  const closed = await db
+    .prepare(
+      `UPDATE bets SET status = 'cashed_out', payout = ?, settled_at = ?
+       WHERE id = ? AND status = 'open'`,
+    )
+    .bind(value, nowIso, betId)
+    .run();
+  if ((closed.meta?.changes ?? 0) === 0) return errorJson('bet already settled', 409, ch);
+  await db
+    .prepare(`UPDATE users SET balance = balance + ? WHERE entry_id = ? AND season = ?`)
+    .bind(value, session.entryId, session.season)
+    .run();
+  const user = await db
+    .prepare(`SELECT balance FROM users WHERE entry_id = ? AND season = ?`)
+    .bind(session.entryId, session.season)
+    .first();
+  return json({ ok: true, payout: value, balance: user?.balance ?? null }, 200, ch);
+}
+
 async function handleState(request, env, ctx, ch) {
   const db = env.DB;
   ctx.waitUntil(syncNow(env));
@@ -587,10 +774,11 @@ async function handleState(request, env, ctx, ch) {
     .prepare(
       `SELECT b.entry_id, m.gw,
               SUM(CASE b.status WHEN 'won' THEN b.payout - b.stake
+                                WHEN 'cashed_out' THEN b.payout - b.stake
                                 WHEN 'lost' THEN -b.stake ELSE 0 END) AS net,
               COUNT(*) AS bets
        FROM bets b JOIN markets m ON m.id = b.market_id
-       WHERE b.season = ? AND m.kind = 'h2h' AND b.status IN ('won', 'lost')
+       WHERE b.season = ? AND m.kind = 'h2h' AND b.status IN ('won', 'lost', 'cashed_out')
        GROUP BY b.entry_id, m.gw`,
     )
     .bind(seasonNow)
@@ -688,6 +876,12 @@ export default {
       }
       if (path === '/api/bets' && request.method === 'POST') {
         return await handlePlaceBet(request, env, ch);
+      }
+      if (path === '/api/cashout' && request.method === 'GET') {
+        return await handleCashoutQuotes(request, env, ch);
+      }
+      if (path === '/api/cashout' && request.method === 'POST') {
+        return await handleCashoutTake(request, env, ch);
       }
       return errorJson('not found', 404, ch);
     } catch (e) {

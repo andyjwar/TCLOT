@@ -20,6 +20,13 @@ against the official FPL Draft results.
 - **Bankroll** — everyone starts a season with 1,000 Clotcoins (the TCLOT
   currency); a 50-Clotcoin stipend
   lands after each settled gameweek so going bust is never terminal.
+- **Cash out** — every open ticket carries a live offer: current win
+  probability × potential payout, minus an 8% house margin (`src/cashout.js`).
+  Pre-deadline that probability is the market's own opening price; once the
+  gameweek kicks off, H2H bets re-price from the live score margin blended
+  with the opening price (the blend fades as fixtures finish), and the
+  outright re-prices off the latest weekly model sheet. Offers suspend when
+  the FPL feeds are unreachable rather than pricing blind.
 - **Identity** — each manager claims their team once with a 4–8 digit PIN
   (PBKDF2-hashed). Sessions are HMAC-signed bearer tokens.
 
@@ -80,3 +87,5 @@ production.
 | POST   | `/api/register` | `{ entryId, pin }`                | one claim per team          |
 | POST   | `/api/login`    | `{ entryId, pin }`                |                             |
 | POST   | `/api/bets`     | `{ marketId, selection, stake }`  | Bearer auth required        |
+| GET    | `/api/cashout`  |                                   | offers for my open bets (auth) |
+| POST   | `/api/cashout`  | `{ betId, quote? }`               | pays ≥ `quote` or 409s with the new offer |

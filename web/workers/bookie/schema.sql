@@ -37,8 +37,8 @@ CREATE TABLE IF NOT EXISTS bets (
   selection  TEXT    NOT NULL,          -- 'home'|'draw'|'away' or an entry id (outright)
   stake      INTEGER NOT NULL,          -- whole coins
   odds       REAL    NOT NULL,          -- decimal odds locked at bet time
-  status     TEXT    NOT NULL DEFAULT 'open',  -- 'open' | 'won' | 'lost' | 'void'
-  payout     INTEGER,                   -- whole coins credited (stake × odds, rounded)
+  status     TEXT    NOT NULL DEFAULT 'open',  -- 'open' | 'won' | 'lost' | 'void' | 'cashed_out'
+  payout     INTEGER,                   -- whole coins credited (stake × odds, or the cash-out taken)
   placed_at  TEXT    NOT NULL,
   settled_at TEXT
 );

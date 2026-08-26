@@ -10,6 +10,8 @@ import {
   registerBookie,
   loginBookie,
   placeBookieBet,
+  fetchCashoutQuotes,
+  cashoutBookieBet,
 } from './bookieApi.js'
 import { decimalOddsToFraction } from './oddsFormat.js'
 import './BookieView.css'
@@ -78,6 +80,8 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
   const [refreshNonce, setRefreshNonce] = useState(0)
   /** { marketId, selection, label, odds } while the slip is open. */
   const [slip, setSlip] = useState(null)
+  /** betId → current cash-out offer in Clotcoins (open bets only). */
+  const [cashoutQuotes, setCashoutQuotes] = useState(() => new Map())
 
   const refresh = useCallback(() => setRefreshNonce((n) => n + 1), [])
 
@@ -99,6 +103,22 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       .catch(() => {
         if (alive) setFailed(true)
       })
+    // Cash-out offers ride along with every state refresh; a failure just
+    // means no buttons this round, never a broken tab.
+    if (session?.token) {
+      fetchCashoutQuotes(session.token)
+        .then((json) => {
+          if (!alive) return
+          setCashoutQuotes(
+            new Map((json?.quotes ?? []).map((q) => [Number(q.betId), Number(q.value)])),
+          )
+        })
+        .catch(() => {
+          if (alive) setCashoutQuotes(new Map())
+        })
+    } else {
+      setCashoutQuotes(new Map())
+    }
     return () => {
       alive = false
     }
@@ -208,7 +228,16 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         />
       ) : null}
 
-      {me ? <MyBets me={me} h2hMarkets={h2hMarkets} nameByEntry={nameByEntry} /> : null}
+      {me ? (
+        <MyBets
+          me={me}
+          h2hMarkets={h2hMarkets}
+          nameByEntry={nameByEntry}
+          cashoutQuotes={cashoutQuotes}
+          token={session?.token}
+          onCashedOut={refresh}
+        />
+      ) : null}
 
       <LiveBets
         state={state}
@@ -238,7 +267,11 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           your ticket keeps the odds you took. Every ticket is public — the live bets board
           shows what everyone has riding this week. Bets settle as soon as the football
           finishes, and a {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
-          each gameweek so going bust is embarrassing, not terminal.
+          each gameweek so going bust is embarrassing, not terminal. Open tickets carry a
+          cash-out offer — what your position is worth right now, minus the house's cut.
+          Once the gameweek kicks off the offer tracks the live scores, so when your long
+          shot is 20 points up the bookie will dangle a tidy guaranteed profit in front of
+          you and quietly hope you take it.
         </p>
       </section>
     </div>
@@ -637,7 +670,57 @@ function describeBet(bet, marketById, nameByEntry) {
   return `${pick} (${home} v ${away}, GW${p.gw})`
 }
 
-function MyBets({ me, h2hMarkets, nameByEntry }) {
+/**
+ * The tempter's button: shows the standing offer, arms on the first tap
+ * ("sure?"), pays on the second. If the board moves between quote and
+ * acceptance the Worker refuses with a fresh number, which is shown
+ * instead of silently paying less.
+ */
+function CashoutButton({ bet, value, token, onCashedOut }) {
+  // Parent keys this component by bet id + quoted value, so a fresh quote
+  // remounts it — offer/armed/moved never go stale against the prop.
+  const [offer, setOffer] = useState(value)
+  const [armed, setArmed] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [moved, setMoved] = useState(false)
+
+  const take = async () => {
+    setBusy(true)
+    try {
+      await cashoutBookieBet(token, { betId: bet.id, quote: offer })
+      onCashedOut()
+    } catch (e) {
+      const fresh = Number(e?.data?.cashOut)
+      if (Number.isFinite(fresh) && fresh >= 1) {
+        setOffer(fresh)
+        setMoved(true)
+        setArmed(false)
+        setBusy(false)
+      } else {
+        // Offer gone entirely (settled, suspended) — refresh the whole board.
+        onCashedOut()
+      }
+    }
+  }
+
+  return (
+    <button
+      type="button"
+      className={'bookie-bet__cashout' + (armed ? ' bookie-bet__cashout--armed' : '')}
+      disabled={busy}
+      title="Take the bookie's offer now and settle this ticket early"
+      onClick={() => (armed ? take() : setArmed(true))}
+    >
+      {busy
+        ? 'Cashing out…'
+        : armed
+          ? `Sure? Take ${fmtCoins(offer)}`
+          : `${moved ? 'Offer moved — cash' : 'Cash'} out ${fmtCoins(offer)}`}
+    </button>
+  )
+}
+
+function MyBets({ me, h2hMarkets, nameByEntry, cashoutQuotes, token, onCashedOut }) {
   const marketById = useMemo(() => {
     const map = new Map()
     for (const m of h2hMarkets) map.set(Number(m.id), m)
@@ -656,23 +739,37 @@ function MyBets({ me, h2hMarkets, nameByEntry }) {
     <section className="tile tile--compact" aria-label="My bets">
       <h3 className="bookie__section-title">My bets</h3>
       <ul className="bookie-bets">
-        {bets.map((b) => (
-          <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
-            <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
-            <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
-              {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
-            </span>
-            <span className={`bookie-bet__status bookie-bet__status--${b.status}`}>
-              {b.status === 'open'
-                ? `to return ${fmtCoins(Math.round(b.stake * b.odds))}`
-                : b.status === 'won'
-                  ? `won ${fmtCoins(b.payout)}`
-                  : b.status === 'void'
-                    ? 'void — refunded'
-                    : 'lost'}
-            </span>
-          </li>
-        ))}
+        {bets.map((b) => {
+          const quote = b.status === 'open' ? cashoutQuotes.get(Number(b.id)) : undefined
+          return (
+            <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
+              <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
+              <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
+                {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
+              </span>
+              <span className={`bookie-bet__status bookie-bet__status--${b.status}`}>
+                {b.status === 'open'
+                  ? `to return ${fmtCoins(Math.round(b.stake * b.odds))}`
+                  : b.status === 'won'
+                    ? `won ${fmtCoins(b.payout)}`
+                    : b.status === 'cashed_out'
+                      ? `cashed out for ${fmtCoins(b.payout)}`
+                      : b.status === 'void'
+                        ? 'void — refunded'
+                        : 'lost'}
+              </span>
+              {quote != null && token ? (
+                <CashoutButton
+                  key={`${b.id}:${quote}`}
+                  bet={b}
+                  value={quote}
+                  token={token}
+                  onCashedOut={onCashedOut}
+                />
+              ) : null}
+            </li>
+          )
+        })}
       </ul>
     </section>
   )

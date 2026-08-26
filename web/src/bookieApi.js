@@ -70,6 +70,8 @@ async function request(path, { method = 'GET', token = null, body = null } = {})
   if (!res.ok) {
     const err = new Error(data?.error || `bookie API ${res.status}`)
     err.status = res.status
+    // e.g. a moved cash-out offer rides along on the 409 body
+    err.data = data
     throw err
   }
   return data
@@ -89,4 +91,15 @@ export function loginBookie(entryId, pin) {
 
 export function placeBookieBet(token, { marketId, selection, stake }) {
   return request('/api/bets', { method: 'POST', token, body: { marketId, selection, stake } })
+}
+
+/** Current cash-out offers for my open bets: { margin, quotes: [{betId, value}] }. */
+export function fetchCashoutQuotes(token) {
+  return request('/api/cashout', { token })
+}
+
+/** Take the money. `quote` is the offer the punter saw — the Worker refuses
+ * to pay less than it without re-quoting (409 with the new value). */
+export function cashoutBookieBet(token, { betId, quote }) {
+  return request('/api/cashout', { method: 'POST', token, body: { betId, quote } })
 }
