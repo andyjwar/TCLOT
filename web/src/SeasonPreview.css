@@ -103,6 +103,17 @@
   min-width: 42px;
 }
 
+/* Traditional fractional price next to the raw %, e.g. "5/2" — same fair
+ * ladder the live fixture Odds tab quotes (oddsFormat.js). */
+.season-preview__odds-frac {
+  font-size: 0.72rem;
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 35%, transparent);
+  color: var(--fm-text);
+  white-space: nowrap;
+}
+
 .season-preview__grade {
   display: inline-flex;
   align-items: center;
@@ -269,8 +280,14 @@ body[data-tclot-theme='dark'] .season-preview__grade--b {
 }
 
 @media (max-width: 560px) {
+  /* Phone widths: the decorative bar goes, the numbers (% + fractional
+   * price) stay — odds are the content, the track is chrome. */
   .season-preview__odds-track {
-    width: 40px;
+    display: none;
+  }
+
+  .season-preview__odds {
+    gap: 5px;
   }
 
   .season-preview__odds-num {

@@ -3,6 +3,7 @@ import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import { buildSquadFplValueByLeagueEntryId } from './fplSquadValues.js'
 import { fetchLeagueDataJson } from './leagueDataFetch.js'
+import { probToFractionalOdds } from './oddsFormat.js'
 import './SeasonPreview.css'
 
 /** Grade chip tone: A-family green, B-family amber, C-family gray. */
@@ -19,6 +20,7 @@ function fmtRecord(sim) {
 }
 
 function OddsBar({ pct }) {
+  const frac = probToFractionalOdds(pct)
   return (
     <span className="season-preview__odds">
       <span className="season-preview__odds-track" aria-hidden>
@@ -28,6 +30,14 @@ function OddsBar({ pct }) {
         />
       </span>
       <span className="season-preview__odds-num tabular">{pct}%</span>
+      {frac ? (
+        <span
+          className="season-preview__odds-frac tabular"
+          title={`Fair bookmaker price for ${pct}%`}
+        >
+          {frac}
+        </span>
+      ) : null}
     </span>
   )
 }

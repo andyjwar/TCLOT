@@ -1,0 +1,17 @@
+{
+  "name": "tclot-bookie-worker",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "db:create": "wrangler d1 create tclot-bookie",
+    "db:migrate": "wrangler d1 execute tclot-bookie --remote --file=schema.sql",
+    "db:migrate:local": "wrangler d1 execute tclot-bookie --local --file=schema.sql",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^3.99.0"
+  }
+}

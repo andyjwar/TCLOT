@@ -4,6 +4,7 @@ import { SeasonPreview } from './SeasonPreview'
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import { buildSquadFplValueByLeagueEntryId } from './fplSquadValues.js'
 import { fetchLeagueDataJson } from './leagueDataFetch.js'
+import { probToFractionalOdds } from './oddsFormat.js'
 import './SeasonPreview.css'
 import './SeasonPredictions.css'
 
@@ -20,6 +21,7 @@ const CHART_COLORS = [
 ]
 
 function OddsBar({ pct }) {
+  const frac = probToFractionalOdds(pct)
   return (
     <span className="season-preview__odds">
       <span className="season-preview__odds-track" aria-hidden>
@@ -29,6 +31,14 @@ function OddsBar({ pct }) {
         />
       </span>
       <span className="season-preview__odds-num tabular">{pct}%</span>
+      {frac ? (
+        <span
+          className="season-preview__odds-frac tabular"
+          title={`Fair bookmaker price for ${pct}%`}
+        >
+          {frac}
+        </span>
+      ) : null}
     </span>
   )
 }

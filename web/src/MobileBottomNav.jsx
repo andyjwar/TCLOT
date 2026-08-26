@@ -26,7 +26,8 @@
  *     FPL Live landing on the weekly Recap.
  *
  * Heritage ('hall') and Settings ('settings') live behind More (the existing
- * `'more'` dashboardView page / DashboardMorePanel).
+ * `'more'` dashboardView page / DashboardMorePanel). The Bookie is an FPL
+ * Live sub-tab next to Predictions, not a nav destination.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
  * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses the

@@ -183,8 +183,9 @@ export function DashboardMorePanel({
 }) {
   // The persistent mobile bottom tab bar (MobileBottomNav.jsx) now surfaces
   // Table (Standings), Moves, Players, and a contextual centre (FPL Live)
-  // at the top level. That leaves only Heritage and Settings to reach
-  // through More, so this panel lists exactly those two.
+  // at the top level. That leaves Heritage and Settings to reach through
+  // More, so this panel lists exactly those two. (The Bookie lives inside
+  // FPL Live next to Predictions — no nav slot needed.)
   // ('more' is effectively mobile-only — the desktop top nav filters it out.)
   const rows = [
     { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },
