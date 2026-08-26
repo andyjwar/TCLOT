@@ -448,12 +448,6 @@ body[data-tclot-theme='ceefax'] table:not(.standings-table) tbody tr:nth-child(e
   color: var(--cf-white) !important;
 }
 
-/* Hero leader card is suppressed in App.jsx for Ceefax; belt-and-braces
- * hide if anything still renders it. */
-body[data-tclot-theme='ceefax'] .standings-hero-card {
-  display: none !important;
-}
-
 /* ------------------------------------------------------------------ */
 /* Nav — desktop tabs + mobile "fastext" bottom bar                    */
 /* ------------------------------------------------------------------ */

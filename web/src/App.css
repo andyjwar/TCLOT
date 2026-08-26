@@ -10639,6 +10639,25 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   background: var(--fm-table-head, #f2f5fb);
 }
 
+/* Rank-1 row on the Standings table — option B ("green wash") from the
+ * `?leader=1` gallery, replacing the old floating hero card. A soft
+ * brand-green wash over the row with the rank and team name picked out
+ * in brand green; paired in JSX with `standings-row--divider-below`, the
+ * same dashed cut used above 8th place. Scorebook paint resolves
+ * `--brand` to racing green (light #1f4a38 / dark #8fc9a8), so the wash
+ * follows the theme. The later `.is-selected` rules (brand 14% + rail)
+ * still win when the row is toggled. */
+.standings-table tbody tr.standings-row--leader td {
+  background: color-mix(in srgb, var(--brand, #795bfb) 10%, transparent);
+}
+.standings-table tbody tr.standings-row--leader td.col-rank {
+  color: var(--brand, #795bfb);
+}
+.standings-table tbody tr.standings-row--leader .team-name {
+  color: var(--brand, #795bfb);
+  font-weight: 600;
+}
+
 /* 8th place: soft red tint (same “faded” idea as leader blue) */
 .standings-table tbody tr.standings-row--8th td {
   background: var(--fm-standings-8th-bg);
@@ -13536,220 +13555,13 @@ button.live-xp__player-name:focus-visible {
 /* (matching mobile + hero), and the desktop slice is last-7 vs the    */
 /* mobile/hero last-5.                                                  */
 /*                                                                     */
-/* Hero card: rank #1 leader. Brand-tinted gradient + radial top-right */
-/* highlight. Inline form circles + 'Played / For' stat row below the  */
-/* big PTS.                                                            */
+/* Rank-1 leader renders in-table with the `standings-row--leader`      */
+/* green wash + a dashed `standings-row--divider-below` cut (option B   */
+/* from the ?leader=1 gallery — the old floating hero card is gone).    */
 /*                                                                     */
 /* A `MINNOWS` divider tr renders between league-rank 4 and 5 on both  */
 /* breakpoints, mirroring the existing 🧩 divider above rank-8.       */
 /* ================================================================== */
-
-/* ----- Hero leader card -------------------------------------------- */
-
-.standings-hero-card {
-  position: relative;
-  display: block;
-  width: calc(100% - 24px);
-  margin: 12px;
-  padding: 14px;
-  box-sizing: border-box;
-  /* Stacked: radial top-right brand-highlight over diagonal tint. */
-  background:
-    radial-gradient(
-      120% 80% at 100% 0%,
-      color-mix(in srgb, var(--brand) 22%, transparent),
-      transparent 60%
-    ),
-    linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--brand) 18%, transparent),
-      color-mix(in srgb, var(--brand) 6%, transparent)
-    );
-  border: 1px solid color-mix(in srgb, var(--brand) 35%, var(--fm-border));
-  border-radius: 14px;
-  box-shadow: 0 1px 6px color-mix(in srgb, var(--brand) 20%, transparent);
-  text-align: left;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
-  overflow: hidden;
-  transition: box-shadow 120ms ease, border-color 120ms ease;
-}
-
-.standings-hero-card:hover {
-  box-shadow: 0 2px 10px color-mix(in srgb, var(--brand) 28%, transparent);
-}
-
-.standings-hero-card:focus-visible {
-  outline: 2px solid var(--brand, #795bfb);
-  outline-offset: 2px;
-}
-
-.standings-hero-card.is-selected {
-  border-color: var(--brand, #795bfb);
-  box-shadow:
-    0 0 0 2px color-mix(in srgb, var(--brand) 32%, transparent),
-    0 1px 6px color-mix(in srgb, var(--brand) 22%, transparent);
-}
-
-.standings-hero-card__eyebrow {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--brand, #795bfb);
-  background: color-mix(in srgb, var(--brand) 18%, transparent);
-  padding: 4px 8px;
-  border-radius: 999px;
-  margin-bottom: 10px;
-}
-/* Season over → champion pill trades brand purple for a gold tint (same
-   pill shape language; mockup option B). */
-.standings-hero-card__eyebrow--champion {
-  color: #a87b0b;
-  background: color-mix(in srgb, #d4a017 16%, transparent);
-}
-.fotmob:not([data-theme='light']) .standings-hero-card__eyebrow--champion {
-  color: #e3b53a;
-  background: color-mix(in srgb, #d4a017 24%, transparent);
-}
-
-.standings-hero-card__row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Hero crest — promote the inner avatar frame to 56px regardless of
- * the TeamAvatar `size="sm"` default (28px). Scope tight so we don't
- * affect crests elsewhere on the page. */
-.standings-hero-card__crest .team-avatar-frame {
-  width: 56px;
-  height: 56px;
-  border-width: 2px;
-}
-
-.standings-hero-card__id {
-  flex: 1 1 auto;
-  min-width: 0;
-}
-
-.standings-hero-card__name {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-strong, var(--fm-text-strong));
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.standings-hero-card__mgr {
-  font-size: 11px;
-  font-weight: 500;
-  color: var(--text-muted, var(--fm-muted));
-  line-height: 1.2;
-  margin-top: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.standings-hero-card__pts {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.standings-hero-card__pts-num {
-  font-size: 32px;
-  font-weight: 800;
-  color: var(--text-strong, var(--fm-text-strong));
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
-}
-
-.standings-hero-card__pts-lbl {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--brand, #795bfb);
-  margin-top: 2px;
-}
-
-.standings-hero-card__sub {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 12px;
-  padding-top: 10px;
-  border-top: 1px solid
-    color-mix(in srgb, var(--brand) 22%, var(--fm-border));
-}
-
-/* Form dots inside the hero — plain colored circles matching the
- * condensed-row palette (W = green, D = grey, L = red). Sized large
- * enough that the colour reads clearly at a glance (small 8–11px
- * dots tended to mute the red/green into "muddy / black-ish"
- * smears); no W/L letter inside and `border-radius: 50%` for a true
- * circle (the base `.form-dot` defaults to a rounded-square chip
- * with the result glyph inside). */
-.standings-hero-card__sub .form-circles {
-  gap: 6px;
-}
-.standings-hero-card__sub .form-dot {
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  font-size: 0;
-  line-height: 0;
-  color: transparent;
-}
-
-/* Inline stats at the end of the form row — `Played 38 · For 1842`.
- * Lighter weight than the big PTS (per round-3 spec), labels in
- * muted brand-tinted uppercase, values regular-weight tabular-nums. */
-.standings-hero-card__inline-stats {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-shrink: 0;
-  font-size: 12px;
-  line-height: 1;
-}
-.standings-hero-card__inline-stat {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 4px;
-}
-.standings-hero-card__inline-stat-lbl {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--brand, #795bfb);
-}
-.standings-hero-card__inline-stat-num {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-strong, var(--fm-text-strong));
-  font-variant-numeric: tabular-nums;
-}
-.standings-hero-card__inline-sep {
-  color: var(--text-muted, var(--fm-muted));
-  opacity: 0.55;
-  font-weight: 500;
-}
 
 /* ----- Condensed table — shared (mobile + desktop variants) -------- */
 
@@ -14001,23 +13813,6 @@ button.live-xp__player-name:focus-visible {
   text-align: right;
 }
 
-/* Hero card sizing on mobile — keep current 56px crest defaults from
- * the base rules; tighten vertical margin/padding so the full table fits
- * without scrolling on a phone. */
-@media (max-width: 767px) {
-  .standings-hero-card {
-    margin: 6px 12px 8px;
-    padding: 11px 14px;
-  }
-  .standings-hero-card__eyebrow {
-    margin-bottom: 7px;
-  }
-  .standings-hero-card__sub {
-    margin-top: 9px;
-    padding-top: 8px;
-  }
-}
-
 /* ----- Desktop (≥768px): full 12-column sortable table ------------ */
 
 @media (min-width: 768px) {
@@ -14032,29 +13827,6 @@ button.live-xp__player-name:focus-visible {
   .standings-table--variant-c .col-form,
   .standings-table--variant-c .col-next {
     display: table-cell;
-  }
-
-  /* Hero card scales up: bigger crest, slightly larger type. */
-  .standings-hero-card {
-    width: calc(100% - 32px);
-    margin: 16px;
-    padding: 18px;
-  }
-  .standings-hero-card__crest .team-avatar-frame {
-    width: 72px;
-    height: 72px;
-  }
-  .standings-hero-card__name {
-    font-size: 18px;
-  }
-  .standings-hero-card__mgr {
-    font-size: 12px;
-  }
-  .standings-hero-card__pts-num {
-    font-size: 36px;
-  }
-  .standings-hero-card__inline-stat-num {
-    font-size: 14px;
   }
 
   /* Numeric column typography — normalize so PL / W / D / L / For /

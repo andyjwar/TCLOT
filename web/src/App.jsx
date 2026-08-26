@@ -3099,8 +3099,8 @@ function App() {
   }, [])
 
   /** Manager display name keyed by `league_entry` — used under each team
-   * name in the hero card and the condensed rows. Mirrors the lookup
-   * `BrandHeader` already does on the same `leagueEntries` array. */
+   * name in the desktop standings rows. Mirrors the lookup `BrandHeader`
+   * already does on the same `leagueEntries` array. */
   const managerByEntry = useMemo(() => {
     const m = new Map()
     for (const e of leagueEntries ?? []) {
@@ -3128,33 +3128,14 @@ function App() {
     return out
   }, [tableRows, standingsSort])
 
-  /** Rank-1 row always renders in the hero card at the top — independent
-   * of the current sort. The condensed table below renders the other 7
-   * rows in whatever order the user sorted (or league order if unsorted),
-   * with rank-1 removed. Preserves the "first-place row highlight
-   * tradition" by making the hero card the visual celebration of #1. */
-  const leaderStandingsRow = useMemo(() => {
-    return (tableRows ?? []).find((r) => r.rank === 1) ?? null
-  }, [tableRows])
-
-  /** Ceefax skin keeps the whole table teletext-style: the leader stays
-   * IN the table (no hero card) and a red rule separates leader / titans /
-   * minnows, like a real Ceefax league page. Other themes pull rank-1 out
-   * into the hero card as before. */
-  const nonLeaderStandingsRows = useMemo(() => {
-    return colorTheme === 'ceefax'
-      ? sortedStandingsRows
-      : sortedStandingsRows.filter((r) => r.rank !== 1)
-  }, [sortedStandingsRows, colorTheme])
-
-  /** Mobile always renders PTS-desc — which is league order
-   * (`tableRows` is already sorted by total desc with tiebreakers).
-   * We just drop the leader (rendered in the hero card) — except in the
-   * Ceefax skin, where the leader stays in the table. */
-  const mobileNonLeaderStandingsRows = useMemo(() => {
-    const rows = tableRows ?? []
-    return colorTheme === 'ceefax' ? rows : rows.filter((r) => r.rank !== 1)
-  }, [tableRows, colorTheme])
+  /** The leader stays IN the table on every theme (the old hero card is
+   * gone — replaced by the `standings-row--leader` green-wash flourish,
+   * option B from the `?leader=1` gallery). Desktop renders whatever
+   * order the user sorted (league order if unsorted); mobile always
+   * renders PTS-desc, which is league order (`tableRows` is already
+   * sorted by total desc with tiebreakers). */
+  const desktopStandingsRows = sortedStandingsRows ?? []
+  const mobileStandingsRows = tableRows ?? []
 
   /** Next-GW H2H fixtures for the full-width "Next gameweek" tile below the
    * standings table. Hidden entirely when the season is complete. */
@@ -3517,109 +3498,12 @@ function App() {
                     className="tile tile--standings tile--standings-c"
                     aria-label="Standings"
                   >
-                {colorTheme !== 'ceefax' && leaderStandingsRow && (() => {
-                  const leader = leaderStandingsRow
-                  const leaderMgr = managerByEntry.get(leader.league_entry) ?? ''
-                  const isSelected = selectedStandingsEntry === leader.league_entry
-                  const leaderDisplayName = isMobileStandings
-                    ? standingsMobileTeamName(leader.teamName)
-                    : leader.teamName
-                  const leaderForm = (leader.form ?? []).slice(-5)
-                  const seasonEnded = nextGwForFixtureTile == null && (leader.pl ?? 0) > 0
-                  return (
-                    /* Focusable div, not a <button>: the card contains an
-                       interactive ClickableTeamName, and nested interactive
-                       controls are invalid ARIA. Mirrors the standings <tr>
-                       highlight-toggle pattern below. */
-                    <div
-                      className={`standings-hero-card${isSelected ? ' is-selected' : ''}`}
-                      tabIndex={0}
-                      aria-label={`${leaderDisplayName}${!isMobileStandings && leaderMgr ? ' — ' + leaderMgr : ''}, ${leader.total} points, ${seasonEnded ? 'champion' : 'top of the league'}`}
-                      onClick={() => toggleStandingsHighlight(leader.league_entry)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' || e.key === ' ') {
-                          e.preventDefault()
-                          toggleStandingsHighlight(leader.league_entry)
-                        }
-                      }}
-                    >
-                      <span className={`standings-hero-card__eyebrow${seasonEnded ? ' standings-hero-card__eyebrow--champion' : ''}`}>
-                        {seasonEnded ? (
-                          <>
-                            <svg
-                              aria-hidden="true"
-                              width="14"
-                              height="14"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                              focusable="false"
-                            >
-                              <path d="M19 4h-2V3a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v1H5a2 2 0 0 0-2 2v2a4 4 0 0 0 4 4h.36A6 6 0 0 0 11 14.91V17H9a1 1 0 0 0 0 2h6a1 1 0 0 0 0-2h-2v-2.09A6 6 0 0 0 16.64 11H17a4 4 0 0 0 4-4V6a2 2 0 0 0-2-2ZM5 6h2v3a4 4 0 0 0 .07.74A2 2 0 0 1 5 8Zm14 2a2 2 0 0 1-2.07 2A4 4 0 0 0 17 9V6h2Z" />
-                            </svg>
-                            Champion
-                          </>
-                        ) : (
-                          <>
-                            <span aria-hidden>★</span>
-                            Top of the league
-                          </>
-                        )}
-                      </span>
-                      <div className="standings-hero-card__row">
-                        <span className="standings-hero-card__crest">
-                          <TeamAvatar
-                            entryId={leader.league_entry}
-                            name={leader.teamName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
-                          />
-                        </span>
-                        <div className="standings-hero-card__id">
-                          <div className="standings-hero-card__name">
-                            <ClickableTeamName
-                              leagueEntryId={leader.league_entry}
-                              title={leader.teamName}
-                            >
-                              {leaderDisplayName}
-                            </ClickableTeamName>
-                          </div>
-                          {!isMobileStandings && leaderMgr ? (
-                            <div className="standings-hero-card__mgr">{leaderMgr}</div>
-                          ) : null}
-                        </div>
-                        <div className="standings-hero-card__pts">
-                          <div className="standings-hero-card__pts-num tabular">{leader.total}</div>
-                          <div className="standings-hero-card__pts-lbl">PTS</div>
-                        </div>
-                      </div>
-                      <div className="standings-hero-card__sub">
-                        <FormCircles form={leaderForm} />
-                        <div className="standings-hero-card__inline-stats">
-                          <span className="standings-hero-card__inline-stat">
-                            <span className="standings-hero-card__inline-stat-lbl">Played</span>
-                            <span className="standings-hero-card__inline-stat-num tabular">{leader.pl}</span>
-                          </span>
-                          <span className="standings-hero-card__inline-sep" aria-hidden>·</span>
-                          <span className="standings-hero-card__inline-stat">
-                            <span className="standings-hero-card__inline-stat-lbl">For</span>
-                            <span className="standings-hero-card__inline-stat-num tabular">{leader.gf}</span>
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  )
-                })()}
                 {isMobileStandings ? (
                   <div className="table-scroll table-scroll--standings-open">
                     <table
                       className="standings-table standings-table--variant-c standings-table--variant-c-mobile"
                       role="table"
-                      aria-label={
-                        colorTheme === 'ceefax'
-                          ? 'Standings — ranks 1 through 8 (sorted by points descending)'
-                          : 'Standings — ranks 2 through 8 (sorted by points descending)'
-                      }
+                      aria-label="Standings — ranks 1 through 8 (sorted by points descending)"
                     >
                       <thead>
                         <tr>
@@ -3632,9 +3516,12 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {mobileNonLeaderStandingsRows.map((row, rowIdx) => {
+                        {mobileStandingsRows.map((row, rowIdx) => {
                           const isSelected = selectedStandingsEntry === row.league_entry
                           const rowClass = [
+                            colorTheme !== 'ceefax' && row.rank === 1
+                              ? 'standings-row--leader standings-row--divider-below'
+                              : '',
                             row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
                             isSelected ? 'is-selected' : '',
                             ceefaxStandingsZebraClass(rowIdx, colorTheme),
@@ -3709,18 +3596,6 @@ function App() {
                                 )}
                               </td>
                             </tr>
-                            {colorTheme !== 'ceefax' && row.rank === 1 ? (
-                              <tr
-                                className="standings-divider standings-divider--minnows standings-divider--ceefax"
-                                aria-hidden="true"
-                              >
-                                <td colSpan={6}>
-                                  <span className="standings-divider__label">
-                                    Titans
-                                  </span>
-                                </td>
-                              </tr>
-                            ) : null}
                             {colorTheme !== 'ceefax' && row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
@@ -3792,10 +3667,13 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {nonLeaderStandingsRows.map((row, rowIdx) => {
+                        {desktopStandingsRows.map((row, rowIdx) => {
                           const isSelected = selectedStandingsEntry === row.league_entry
                           const mgr = managerByEntry.get(row.league_entry) ?? ''
                           const rowClass = [
+                            colorTheme !== 'ceefax' && row.rank === 1
+                              ? 'standings-row--leader standings-row--divider-below'
+                              : '',
                             row.rank === 8 ? 'standings-row--divider-above standings-row--8th' : '',
                             isSelected ? 'is-selected' : '',
                             ceefaxStandingsZebraClass(rowIdx, colorTheme),
@@ -3880,18 +3758,6 @@ function App() {
                                 )}
                               </td>
                             </tr>
-                            {colorTheme !== 'ceefax' && row.rank === 1 ? (
-                              <tr
-                                className="standings-divider standings-divider--minnows standings-divider--ceefax"
-                                aria-hidden="true"
-                              >
-                                <td colSpan={12}>
-                                  <span className="standings-divider__label">
-                                    Titans
-                                  </span>
-                                </td>
-                              </tr>
-                            ) : null}
                             {colorTheme !== 'ceefax' && row.rank === 4 ? (
                               <tr
                                 className="standings-divider standings-divider--minnows"
