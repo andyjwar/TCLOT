@@ -13971,19 +13971,20 @@ button.live-xp__player-name:focus-visible {
   text-align: right;
 }
 
-/* Form: 5px circles, 1px gap → ≈ 31px content + 8px padding ≈ 39px.
+/* Form: 8px circles, 2px gap → ≈ 48px content + 8px padding ≈ 56px.
+ * (Was 5px/1px ≈ 39px — too small to read the W/L colour on a phone.)
  * Mobile table doesn't have `--sidebar` so no need to fight its
  * `.form-circles { gap: 5px }` rule. */
 .standings-table--variant-c-mobile .col-form {
   text-align: center;
 }
 .standings-table--variant-c-mobile .form-circles {
-  gap: 1px;
+  gap: 2px;
   justify-content: center;
 }
 .standings-table--variant-c-mobile .form-dot {
-  width: 5px;
-  height: 5px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   font-size: 0;
   line-height: 0;
