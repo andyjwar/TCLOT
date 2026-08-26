@@ -8,7 +8,7 @@
 import { mkdirSync, readFileSync, writeFileSync, existsSync, unlinkSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { reconstructDraftPicks } from '../src/draftBoardPicks.js'
+import { reconstructDraftPicks, rewindSquadsToDraft } from '../src/draftBoardPicks.js'
 import { draftIdFromDetails, picksFromDraftChoices } from '../src/draftChoicesPicks.js'
 import { readLeagueId } from './readLeagueId.mjs'
 
@@ -26,6 +26,30 @@ async function fetchJson(url) {
   const r = await fetch(url)
   if (!r.ok) throw new Error(`${url} → ${r.status}`)
   return r.json()
+}
+
+/** The existing draft_picks.json iff it is for this league and was built from the /choices pick log. */
+function readExistingChoicesBuiltPicks(path, leagueId) {
+  if (!existsSync(path)) return null
+  try {
+    const j = JSON.parse(readFileSync(path, 'utf8'))
+    const sameLeague = Number(j?._meta?.leagueId) === Number(leagueId)
+    const fromChoices = /\/choices \(true pick order\)/.test(String(j?._meta?.note ?? ''))
+    return sameLeague && fromChoices && Array.isArray(j?.picks) && j.picks.length ? j : null
+  } catch {
+    return null
+  }
+}
+
+/** League transactions from the file fetch-league-if-needed wrote earlier in this build. */
+function readLocalTransactions(path) {
+  if (!existsSync(path)) return []
+  try {
+    const j = JSON.parse(readFileSync(path, 'utf8'))
+    return Array.isArray(j?.transactions) ? j.transactions : []
+  } catch {
+    return []
+  }
 }
 
 try {
@@ -88,13 +112,30 @@ try {
   }
 
   if (!picks) {
-    const picksByFpl = new Map()
+    // Draft picks are immutable after draft day: a previously committed file
+    // built from the true /choices pick log always beats a fresh
+    // reconstruction (which back-fills waiver pickups into draft slots).
+    const existing = readExistingChoicesBuiltPicks(join(webPublic, 'draft_picks.json'), leagueId)
+    if (existing) {
+      console.log(
+        'build-draft-picks: /choices unavailable — keeping existing choices-built draft_picks.json unchanged.',
+      )
+      process.exit(0)
+    }
+
+    let picksByFpl = new Map()
     for (const le of leagueEntries) {
       const j = await fetchJson(`${DRAFT}/entry/${le.entry_id}/event/${startGw}`)
       picksByFpl.set(
         le.entry_id,
         (j.picks || []).map((p) => p.element).filter((x) => x != null),
       )
+    }
+    // GW-startGw squads already include pre-deadline waivers/free agents —
+    // undo them so reconstruction attributes draft slots to the drafted players.
+    const transactions = readLocalTransactions(join(webPublic, 'transactions.json'))
+    if (transactions.length) {
+      picksByFpl = rewindSquadsToDraft(picksByFpl, transactions, startGw)
     }
     picks = reconstructDraftPicks(leagueEntries, picksByFpl, elementById, teamById, 15, {
       round1FplEntryIds,

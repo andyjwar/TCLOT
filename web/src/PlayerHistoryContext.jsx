@@ -91,7 +91,15 @@ function useOpenPlayerHistoryOptional() {
 }
 
 /**
- * Renders player text as a button when an FPL element id is valid and the provider is present.
+ * Renders player text as a button when an FPL element id is valid and an
+ * opener is reachable.
+ *
+ * `PlayerHistoryProvider` wraps the main app subtree, but the player detail
+ * overlay renders in a portal that is a *sibling* of that subtree — only the
+ * overlay's own context crosses the portal. So player names rendered inside
+ * the player card (e.g. the Waivers section's swapped-player links) fall back
+ * to `openPlayerDetail` directly, which swaps the open card to that player.
+ *
  * @param {{ element: number | string | null | undefined, displayName?: string, web_name?: string, teamShort?: string, leagueEntryId?: number | null, className?: string, title?: string, children: import('react').ReactNode }} props
  */
 export function ClickablePlayerName({
@@ -104,7 +112,11 @@ export function ClickablePlayerName({
   title: titleProp,
   children,
 }) {
-  const openHistory = useOpenPlayerHistoryOptional();
+  const openHistoryCtx = useOpenPlayerHistoryOptional();
+  const overlay = usePlayerDetailOverlayOptional();
+  const openHistory =
+    openHistoryCtx ??
+    (overlay ? (row) => overlay.openPlayerDetail(row) : null);
   const id = Number(element);
   const canOpen = Boolean(openHistory) && Number.isFinite(id);
 

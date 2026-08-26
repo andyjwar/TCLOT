@@ -33,6 +33,51 @@ function orderEntriesByRound1Ids(leagueEntries, fplEntryIds) {
 const POS_SHORT = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' }
 
 /**
+ * Undo waiver/free-agent moves from GW-`startGw` squads so reconstruction sees
+ * the squads as drafted. Without this, a player waived in before the first
+ * deadline (e.g. Schade in for M.Fernandes, GW1) is attributed a draft slot he
+ * never held. Each accepted transaction with `event <= startGw` is reversed
+ * newest-first: drop `element_in`, restore `element_out`.
+ *
+ * Trades are not handled here (a pre-GW1 trade would still swap draft
+ * attribution) — acceptable because the true `/choices` pick log is preferred
+ * and this fallback only runs when that log is unavailable.
+ *
+ * @param {Map<number, number[]>} picksByFplEntryId element ids per FPL entry (mutated copy returned)
+ * @param {object[]} transactions draft API league transactions (kind w/f rows)
+ * @param {number} startGw the GW whose squads were fetched
+ * @returns {Map<number, number[]>}
+ */
+export function rewindSquadsToDraft(picksByFplEntryId, transactions, startGw) {
+  const out = new Map(
+    [...picksByFplEntryId.entries()].map(([k, v]) => [Number(k), [...(v || [])]]),
+  )
+  const applied = (transactions || [])
+    .filter(
+      (t) =>
+        t?.result === 'a' &&
+        Number(t?.event) >= 1 &&
+        Number(t.event) <= Number(startGw) &&
+        t.element_in != null,
+    )
+    // Newest first so chained moves (A→B then B→C) unwind correctly.
+    .sort((a, b) => {
+      const ta = Date.parse(a?.added ?? '') || 0
+      const tb = Date.parse(b?.added ?? '') || 0
+      return tb - ta || Number(b?.id ?? 0) - Number(a?.id ?? 0)
+    })
+  for (const t of applied) {
+    const squad = out.get(Number(t.entry))
+    if (!squad) continue
+    const i = squad.indexOf(Number(t.element_in))
+    if (i < 0) continue
+    if (t.element_out != null) squad.splice(i, 1, Number(t.element_out))
+    else squad.splice(i, 1)
+  }
+  return out
+}
+
+/**
  * @param {object[]} leagueEntries from details.json
  * @param {Map<number, number[]>} picksByFplEntryId element ids per FPL entry (GW1 squad order irrelevant)
  * @param {Map<number, object>} elementById bootstrap_draft.elements by id
