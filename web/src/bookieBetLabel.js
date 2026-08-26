@@ -13,6 +13,38 @@ const COMPACT_LABEL_BUDGET = 20
 
 export const SEASON_PLACE_KINDS = ['outright', 'titan', 'minnow', 'last']
 
+/** Per-matchup player specials (selection = a draft element id). */
+export const PLAYER_MARKET_KINDS = ['scorer', 'toppoints']
+
+const PLAYER_SHORT = {
+  scorer: '— to score',
+  toppoints: '— top pts',
+}
+
+/* Tightest form for long player names ("Calvert-Lewin (goal)"). */
+const PLAYER_TINY = {
+  scorer: '(goal)',
+  toppoints: '(top)',
+}
+
+const PLAYER_FULL = {
+  scorer: 'to score anytime',
+  toppoints: 'top point scorer',
+}
+
+function playerKindOf(bet, market) {
+  const kind = bet.kind || market?.kind
+  return PLAYER_MARKET_KINDS.includes(kind) ? kind : null
+}
+
+/** Selection's player name from the market payload, else the raw element id. */
+function playerName(bet, market) {
+  const sel = (market?.payload?.selections ?? []).find(
+    (s) => String(s.elementId) === String(bet.selection),
+  )
+  return sel?.name ?? String(bet.selection)
+}
+
 const PLACE_SHORT = {
   outright: 'outright',
   titan: 'titan',
@@ -60,6 +92,14 @@ export function describeBetCompact(bet, marketById, nameByEntry) {
     const tag = `— ${PLACE_SHORT[place]}`
     return fit({ pick: short, detail: tag }, { pick: code, detail: tag })
   }
+  const playerKind = playerKindOf(bet, market)
+  if (playerKind) {
+    const pick = playerName(bet, market)
+    return fit(
+      { pick, detail: PLAYER_SHORT[playerKind] },
+      { pick, detail: PLAYER_TINY[playerKind] },
+    )
+  }
   const p = market?.payload
   if (!p) return { pick: String(bet.selection), detail: '' }
 
@@ -96,6 +136,14 @@ export function describeBet(bet, marketById, nameByEntry) {
   if (place) {
     const { full } = pickName(bet, nameByEntry)
     return `${full} — ${PLACE_FULL[place]}`
+  }
+  const playerKind = playerKindOf(bet, market)
+  if (playerKind) {
+    const p = market?.payload
+    const where = p
+      ? ` (${standingsMobileTeamName(p.homeName)} v ${standingsMobileTeamName(p.awayName)}, GW${p.gw})`
+      : ''
+    return `${playerName(bet, market)} ${PLAYER_FULL[playerKind]}${where}`
   }
   const p = market?.payload
   if (!p) return `GW${bet.gw ?? '?'} matchup — ${bet.selection}`

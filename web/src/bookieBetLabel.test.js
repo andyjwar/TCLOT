@@ -88,3 +88,78 @@ test('describeBet — full names for title text', () => {
     'Toronto Gimli (Atlético Bilbo v Toronto Gimli, GW2)',
   )
 })
+
+/* player specials — selection is a draft element id, name from the payload */
+
+const playerMarkets = new Map([
+  [
+    20,
+    {
+      id: 20,
+      kind: 'scorer',
+      payload: {
+        homeName: 'Atlético Bilbo',
+        awayName: 'Toronto Gimli',
+        gw: 2,
+        selections: [
+          { elementId: 401, name: 'Haaland' },
+          { elementId: 402, name: 'Calvert-Lewin' },
+        ],
+      },
+    },
+  ],
+  [
+    21,
+    {
+      id: 21,
+      kind: 'toppoints',
+      payload: {
+        homeName: 'Atlético Bilbo',
+        awayName: 'Toronto Gimli',
+        gw: 2,
+        selections: [{ elementId: 401, name: 'Haaland' }],
+      },
+    },
+  ],
+])
+
+test('describeBetCompact — player specials show the player + market tag', () => {
+  assert.deepEqual(
+    describeBetCompact({ market_id: 20, kind: 'scorer', selection: '401' }, playerMarkets, names),
+    { pick: 'Haaland', detail: '— to score' },
+  )
+  assert.deepEqual(
+    describeBetCompact(
+      { market_id: 21, kind: 'toppoints', selection: '401' },
+      playerMarkets,
+      names,
+    ),
+    { pick: 'Haaland', detail: '— top pts' },
+  )
+})
+
+test('describeBetCompact — a long player name drops to the tiny tag', () => {
+  // 'Calvert-Lewin — to score' is over budget; the tiny form still names him.
+  assert.deepEqual(
+    describeBetCompact({ market_id: 20, kind: 'scorer', selection: '402' }, playerMarkets, names),
+    { pick: 'Calvert-Lewin', detail: '(goal)' },
+  )
+})
+
+test('describeBet — player specials in full', () => {
+  assert.equal(
+    describeBet({ market_id: 20, kind: 'scorer', selection: '401' }, playerMarkets, names),
+    'Haaland to score anytime (Atlético Bilbo v Toronto Gimli, GW2)',
+  )
+  assert.equal(
+    describeBet({ market_id: 21, kind: 'toppoints', selection: '401' }, playerMarkets, names),
+    'Haaland top point scorer (Atlético Bilbo v Toronto Gimli, GW2)',
+  )
+})
+
+test('describeBet — player special with a vanished market falls back to the id', () => {
+  assert.equal(
+    describeBet({ market_id: 77, kind: 'scorer', selection: '401' }, playerMarkets, names),
+    '401 to score anytime',
+  )
+})

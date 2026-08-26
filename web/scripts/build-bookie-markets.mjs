@@ -11,6 +11,12 @@
  *    identical machinery to build-season-predictions.mjs).
  *  - Outright / Titan / Minnow / last place: taken from season-predictions.json
  *    titlePct, topHalfPct (top 4), 100−topHalfPct (bottom 4), and lastPct.
+ *  - Player specials per matchup — "anytime goalscorer" (from each pooled
+ *    player's forecast goalLikelihood in predictions.json) and "top point
+ *    scorer" (Monte Carlo over each player's forecast percentiles). Only
+ *    printed when predictions.json targets the same gameweek as the weekly
+ *    board — mid-gameweek deploys still forecast the running GW, so the
+ *    player boards open on the first deploy after the previous GW banks.
  *
  * Decimal odds carry a bookmaker overround (the book is intentionally not
  * fair — that's half the fun): ~105% on the 3-way weekly markets, ~110% on
@@ -35,6 +41,7 @@ import {
   blendedWeeklyScoresByEntry,
 } from '../src/seasonPredictionsModel.js'
 import { snapDecimalOdds } from '../src/oddsFormat.js'
+import { anytimeScorerProb, topPointsWinProbs } from '../src/bookiePlayerMarkets.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -44,6 +51,13 @@ const read = (f) => JSON.parse(readFileSync(join(dataDir, f), 'utf8'))
 const H2H_OVERROUND = 1.05
 const OUTRIGHT_OVERROUND = 1.1
 const H2H_SIMS = 20000
+/* Player specials: scorer margin applies per yes/no selection; top point
+ * scorer is a many-runner board like the outright. Prices cap at 200/1 so
+ * the bottom of a 30-man board still reads like a bookie sheet. */
+const SCORER_OVERROUND = 1.08
+const TOPPOINTS_OVERROUND = 1.1
+const TOPPOINTS_SIMS = 10000
+const PLAYER_MAX_ODDS = 201
 
 /* Fail soft: forks / other leagues may lack the model inputs, and a broken
  * deploy is worse than a missing bookie sheet (the Worker just keeps the
@@ -202,6 +216,115 @@ if (nextEvent) {
   }
 }
 
+/* ---- player specials: anytime scorer + top point scorer per matchup ---- */
+let players = null
+if (weekly) {
+  let predictions = null
+  let elementStatus = null
+  try {
+    predictions = read('predictions.json')
+    elementStatus = read('element_status.json')
+  } catch (err) {
+    console.warn('build-bookie-markets: player markets skipped —', err.message)
+  }
+  const predGw = Number(predictions?.gameweek)
+  if (predictions && elementStatus && predGw !== weekly.gw) {
+    console.warn(
+      `build-bookie-markets: player markets skipped — predictions target GW${predGw}, weekly board is GW${weekly.gw}`,
+    )
+  } else if (predictions && elementStatus) {
+    // element_status.owner is the FPL *entry* id; markets key on league_entry ids.
+    const leagueEntryByEntry = new Map(
+      (details.league_entries ?? []).map((e) => [Number(e.entry_id), Number(e.id)]),
+    )
+    const ownedByLeagueEntry = new Map()
+    for (const row of elementStatus.element_status ?? []) {
+      const owner = leagueEntryByEntry.get(Number(row.owner))
+      if (owner == null) continue
+      if (!ownedByLeagueEntry.has(owner)) ownedByLeagueEntry.set(owner, [])
+      ownedByLeagueEntry.get(owner).push(Number(row.element))
+    }
+    const predById = new Map((predictions.players ?? []).map((p) => [Number(p.id), p]))
+    const webNameById = new Map(
+      (Array.isArray(bootstrap?.elements) ? bootstrap.elements : []).map((e) => [
+        Number(e.id),
+        e.web_name,
+      ]),
+    )
+
+    /* A squad's priceable players: those with a forecast row that projects
+     * any football at all (p90 > 0). No forecast → no price → off the board. */
+    const poolFor = (leagueEntryId) =>
+      (ownedByLeagueEntry.get(leagueEntryId) ?? [])
+        .map((elementId) => {
+          const pred = predById.get(elementId)
+          const pct = pred?.forecast?.percentiles
+          if (!pred || !(Number(pct?.p90) > 0)) return null
+          return {
+            elementId,
+            name: webNameById.get(elementId) ?? pred.name ?? String(elementId),
+            club: pred.teamShortName ?? '',
+            position: pred.position ?? '',
+            ownerEntryId: leagueEntryId,
+            goalProb: Number(pred.forecast?.probabilities?.goalLikelihood) || 0,
+            percentiles: pct,
+          }
+        })
+        .filter(Boolean)
+
+    const selectionBase = (p, prob, overround, minProb) => ({
+      elementId: p.elementId,
+      name: p.name,
+      club: p.club,
+      position: p.position,
+      ownerEntryId: p.ownerEntryId,
+      prob: +prob.toFixed(4),
+      odds: decimalOdds(prob, overround, { minProb, maxOdds: PLAYER_MAX_ODDS }),
+    })
+
+    const playerRows = []
+    for (const row of weekly.matches) {
+      const pool = [...poolFor(row.homeEntryId), ...poolFor(row.awayEntryId)]
+      if (pool.length < 4) continue
+      const matchupOf = (kind) => ({
+        key: `gw${weekly.gw}:${kind}:${row.homeEntryId}-${row.awayEntryId}`,
+        kind,
+        gw: weekly.gw,
+        homeEntryId: row.homeEntryId,
+        awayEntryId: row.awayEntryId,
+        homeName: row.homeName,
+        awayName: row.awayName,
+      })
+
+      // Anytime goalscorer: outfielders only (bookie convention — no keepers).
+      const scorerSelections = pool
+        .filter((p) => p.position !== 'GK' && p.position !== 'GKP')
+        .map((p) => selectionBase(p, anytimeScorerProb(p.goalProb), SCORER_OVERROUND, 0.005))
+        .sort((a, b) => b.prob - a.prob)
+      if (scorerSelections.length >= 4) {
+        playerRows.push({ ...matchupOf('scorer'), selections: scorerSelections })
+      }
+
+      // Top point scorer of the pool: keepers included, ties all pay.
+      const winProbs = topPointsWinProbs(pool, {
+        sims: TOPPOINTS_SIMS,
+        seed: 91_000 + weekly.gw * 101 + row.homeEntryId,
+      })
+      const topSelections = pool
+        .map((p) =>
+          selectionBase(p, winProbs.get(p.elementId) ?? 0, TOPPOINTS_OVERROUND, 0.002),
+        )
+        .sort((a, b) => b.prob - a.prob)
+      if (topSelections.length >= 4) {
+        playerRows.push({ ...matchupOf('toppoints'), selections: topSelections })
+      }
+    }
+    if (playerRows.length > 0) {
+      players = { gw: weekly.gw, deadline: weekly.deadline, markets: playerRows }
+    }
+  }
+}
+
 /* ---- season-long: champion, titan (top 4), minnow (bottom 4), last ---- */
 const finalEvent = events.length > 0 ? events[events.length - 1] : null
 const placeTeams =
@@ -267,12 +390,15 @@ const output = {
   asOfGw: lastFinishedGw,
   method: {
     weekly: `strength-model Monte Carlo (${H2H_SIMS} sims/matchup), ${Math.round((H2H_OVERROUND - 1) * 100)}% overround`,
+    scorer: `forecast goalLikelihood per pooled outfielder, ${Math.round((SCORER_OVERROUND - 1) * 100)}% margin per selection; no play = void`,
+    toppoints: `forecast-percentile Monte Carlo (${TOPPOINTS_SIMS} sims/matchup pool), ${Math.round((TOPPOINTS_OVERROUND - 1) * 100)}% overround; ties all pay, no play = void`,
     outright: `season-predictions titlePct, ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
     titan: `season-predictions topHalfPct (top 4), ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
     minnow: `100 − topHalfPct (bottom 4), ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
     last: `season-predictions lastPct, ${Math.round((OUTRIGHT_OVERROUND - 1) * 100)}% overround`,
   },
   weekly,
+  players,
   outright,
   titan,
   minnow,
@@ -281,5 +407,5 @@ const output = {
 
 writeFileSync(join(dataDir, 'bookie-markets.json'), JSON.stringify(output, null, 1))
 console.log(
-  `bookie-markets.json written: weekly=${weekly ? `GW${weekly.gw} (${weekly.matches.length} matchups, closes ${weekly.deadline})` : 'none'}, place asOfGw=${asOfGw}`,
+  `bookie-markets.json written: weekly=${weekly ? `GW${weekly.gw} (${weekly.matches.length} matchups, closes ${weekly.deadline})` : 'none'}, players=${players ? `${players.markets.length} boards` : 'none'}, place asOfGw=${asOfGw}`,
 )

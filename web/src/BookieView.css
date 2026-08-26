@@ -270,6 +270,63 @@
   margin-left: 4px;
 }
 
+/* --- player specials (anytime goalscorer / top point scorer) --- */
+
+.bookie-player-board {
+  padding: 0 12px 10px;
+}
+
+.bookie-player-board__title {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--fm-muted);
+}
+
+.bookie-player-board__list {
+  margin-top: 8px;
+}
+
+.bookie-player-board__player {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 1px;
+}
+
+.bookie-player-board__name {
+  font-weight: 600;
+  font-size: 0.86rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookie-player-board__meta {
+  font-size: 0.74rem;
+  color: var(--fm-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookie-player-board__more {
+  margin-top: 8px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+  border: 1px solid var(--fm-line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--fm-muted);
+  cursor: pointer;
+}
+
+.bookie-player-board__more:hover {
+  color: inherit;
+}
+
 /* --- bet slip --- */
 
 .bookie-slip {

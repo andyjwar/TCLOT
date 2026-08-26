@@ -4,6 +4,7 @@ import {
   footballComplete,
   h2hResultForMarket,
   championFromMatches,
+  playerMarketOutcome,
   ranksFromMatches,
   seasonKindWinners,
 } from './settlement.js'
@@ -122,6 +123,69 @@ test('championFromMatches: null while any match is unfinished', () => {
   const matches = [m(10, 20, 50, 40), m(10, 20, 0, 0, false)]
   assert.equal(championFromMatches(matches), null)
   assert.equal(championFromMatches([]), null)
+})
+
+/* playerMarketOutcome — player specials graded from draft event/{gw}/live */
+
+const sels = (...ids) => ids.map((elementId) => ({ elementId }))
+
+const live = (byId) =>
+  Object.fromEntries(Object.entries(byId).map(([id, stats]) => [id, { stats }]))
+
+test('playerMarketOutcome scorer: every scorer wins, no-shows void, the rest lose', () => {
+  const elements = live({
+    1: { minutes: 90, goals_scored: 2, total_points: 13 },
+    2: { minutes: 78, goals_scored: 1, total_points: 7 },
+    3: { minutes: 90, goals_scored: 0, total_points: 2 },
+    4: { minutes: 0, goals_scored: 0, total_points: 0 }, // benched → void
+    // element 5 missing from the feed entirely (left the league) → void
+  })
+  const out = playerMarketOutcome('scorer', sels(1, 2, 3, 4, 5), elements)
+  assert.deepEqual([...out.winners].sort(), ['1', '2'])
+  assert.deepEqual([...out.voided].sort(), ['4', '5'])
+})
+
+test('playerMarketOutcome scorer: nobody scoring is a valid all-lose result', () => {
+  const elements = live({
+    1: { minutes: 90, goals_scored: 0 },
+    2: { minutes: 45, goals_scored: 0 },
+  })
+  const out = playerMarketOutcome('scorer', sels(1, 2), elements)
+  assert.equal(out.winners.size, 0)
+  assert.equal(out.voided.size, 0)
+})
+
+test('playerMarketOutcome toppoints: highest points wins, dead heats all pay', () => {
+  const elements = live({
+    1: { minutes: 90, total_points: 12 },
+    2: { minutes: 90, total_points: 12 },
+    3: { minutes: 90, total_points: 9 },
+    4: { minutes: 0, total_points: 0 },
+  })
+  const out = playerMarketOutcome('toppoints', sels(1, 2, 3, 4), elements)
+  assert.deepEqual([...out.winners].sort(), ['1', '2'])
+  assert.deepEqual([...out.voided], ['4'])
+  assert.equal(out.topScore, 12)
+})
+
+test('playerMarketOutcome toppoints: negative points can still top a grim pool', () => {
+  const elements = live({
+    1: { minutes: 90, total_points: -1 },
+    2: { minutes: 90, total_points: -3 },
+  })
+  const out = playerMarketOutcome('toppoints', sels(1, 2), elements)
+  assert.deepEqual([...out.winners], ['1'])
+  assert.equal(out.topScore, -1)
+})
+
+test('playerMarketOutcome: unusable feed or empty pool returns null (retry later)', () => {
+  assert.equal(playerMarketOutcome('scorer', sels(1, 2), {}), null)
+  assert.equal(playerMarketOutcome('scorer', sels(1, 2), null), null)
+  assert.equal(playerMarketOutcome('scorer', [], live({ 1: { minutes: 1 } })), null)
+  // toppoints where nobody in the pool played: no result can be derived yet.
+  const nobodyPlayed = live({ 1: { minutes: 0 }, 2: { minutes: 0 } })
+  assert.equal(playerMarketOutcome('toppoints', sels(1, 2), nobodyPlayed), null)
+  assert.equal(playerMarketOutcome('h2h', sels(1), live({ 1: { minutes: 1 } })), null)
 })
 
 test('ranksFromMatches: 1st / last / titan / minnow on an 8-team table', () => {
