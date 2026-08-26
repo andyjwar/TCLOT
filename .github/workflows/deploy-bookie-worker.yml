@@ -99,22 +99,31 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID || vars.CLOUDFLARE_ACCOUNT_ID }}
         run: npx wrangler deploy
 
-      # The Worker opens markets lazily on traffic; this first request makes the
-      # new season boards appear without waiting for the half-hourly cron.
+      # The Worker opens markets on /api/state. The site sheet can lag the
+      # Worker deploy by a minute (Vercel vs this job), so retry until the
+      # weekly player specials appear rather than declaring victory on the
+      # first H2H-only response.
       - name: Warm the Worker so new markets open
         run: |
-          for i in 1 2 3; do
+          code=""
+          for i in 1 2 3 4 5 6 7 8; do
             code=$(curl -sS -o /tmp/state.json -w '%{http_code}' --max-time 30 \
-              https://tclot-bookie.tclot.workers.dev/api/state) && break || sleep 5
+              https://tclot-bookie.tclot.workers.dev/api/state) || code=""
+            echo "attempt $i: GET /api/state → HTTP ${code:-none}"
+            if [ "${code:-}" = "200" ]; then
+              kinds=$(node -e "const s=require('/tmp/state.json'); process.stdout.write((s.markets||[]).map(m=>m.kind).join(','))")
+              echo "  markets: ${kinds:-'(none)'}"
+              echo "$kinds" | grep -q 'scorer' && echo "$kinds" | grep -q 'toppoints' && break
+            fi
+            sleep 15
           done
-          echo "GET /api/state → HTTP ${code:-none}"
           if [ "${code:-}" = "200" ]; then
             node -e "
               const s = require('/tmp/state.json');
               const kinds = (s.markets || []).map((m) => m.kind);
               console.log('markets open:', kinds.join(', ') || '(none)');
-              for (const k of ['outright', 'titan', 'minnow', 'last']) {
-                if (!kinds.includes(k)) console.log('::warning::no ' + k + ' market yet — the next sync should open it');
+              for (const k of ['outright', 'titan', 'minnow', 'last', 'scorer', 'toppoints']) {
+                if (!kinds.includes(k)) console.log('::warning::no ' + k + ' market yet — the next /api/state should open it');
               }
             "
           else

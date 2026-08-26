@@ -470,8 +470,22 @@ async function settleDue(env) {
   }
 }
 
-/** Throttled ingest + settle, shared by the cron and lazy request-time sync. */
-async function syncNow(env, { force = false } = {}) {
+/**
+ * Ingest is cheap (one JSON fetch + a handful of INSERTs) and must run on
+ * the request that would otherwise serve a stale board — the deploy warm
+ * at #79 printed H2H before Vercel had written the player sheet, then the
+ * 5-minute throttle hid the specials until someone waited out the cron.
+ * Settlement still talks to FPL, so that stays throttled.
+ */
+async function ingestNow(env) {
+  try {
+    await ingestMarkets(env);
+  } catch (e) {
+    console.warn('bookie: ingest failed', e.message);
+  }
+}
+
+async function settleNow(env, { force = false } = {}) {
   const db = env.DB;
   if (!force) {
     const last = Number(await metaGet(db, 'lastSyncAtMs')) || 0;
@@ -479,15 +493,16 @@ async function syncNow(env, { force = false } = {}) {
   }
   await metaSet(db, 'lastSyncAtMs', Date.now());
   try {
-    await ingestMarkets(env);
-  } catch (e) {
-    console.warn('bookie: ingest failed', e.message);
-  }
-  try {
     await settleDue(env);
   } catch (e) {
     console.warn('bookie: settle failed', e.message);
   }
+}
+
+/** Cron / first-boot: ingest then settle. */
+async function syncNow(env, { force = false } = {}) {
+  await ingestNow(env);
+  await settleNow(env, { force });
 }
 
 /* ------------------------------------------------------------------ */
@@ -841,10 +856,14 @@ async function handleCashoutTake(request, env, ch) {
 
 async function handleState(request, env, ctx, ch) {
   const db = env.DB;
-  ctx.waitUntil(syncNow(env));
+  // Ingest inline so this response includes boards printed since the last
+  // load (player specials missed the first warm because the sheet lagged
+  // the Worker by ~15s). Settlement can stay in the background.
+  await ingestNow(env);
+  ctx.waitUntil(settleNow(env));
   const season = await currentSeason(db);
   if (!season) {
-    // First hit ever: sync inline so the tab isn't empty on day one.
+    // First hit ever: settle inline too so the tab isn't empty on day one.
     await syncNow(env, { force: true });
   }
   const seasonNow = season ?? (await currentSeason(db));

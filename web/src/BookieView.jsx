@@ -586,6 +586,11 @@ function WeeklyMarkets({
           const away = standingsMobileTeamName(p.awayName)
           const matchLabel = `${home} v ${away}`
           const boards = boardsByMatch.get(`${p.homeEntryId}-${p.awayEntryId}`) ?? []
+          const specialBits = boards.map((b) =>
+            b.kind === 'scorer'
+              ? `${b.payload?.selections?.length ?? 0} scorers`
+              : `${b.payload?.selections?.length ?? 0} top pts`,
+          )
           const pickFor = (selection, label, odds) => () =>
             onPick({
               marketId: m.id,
@@ -621,6 +626,9 @@ function WeeklyMarkets({
                     />
                   </span>
                 </span>
+                {specialBits.length > 0 ? (
+                  <span className="bookie-punter__meta tabular">{specialBits.join(' · ')}</span>
+                ) : null}
               </summary>
               <div className="bookie-fixture__body">
                 <div className="bookie-market__odds" role="group" aria-label="Match odds">
@@ -668,7 +676,13 @@ function WeeklyMarkets({
           across both squads, dead heats all paying. A pick who never gets on the pitch is
           void: stake refunded.
         </p>
-      ) : null}
+      ) : (
+        <p className="bookie__note bookie__note--small">
+          Player specials (anytime goalscorer and top point scorer) open under each
+          fixture once the bookie has pulled this week's sheet. Refresh if they are
+          missing.
+        </p>
+      )}
       {!me ? (
         <p className="bookie__note bookie__note--small">Log in above to back someone.</p>
       ) : null}
