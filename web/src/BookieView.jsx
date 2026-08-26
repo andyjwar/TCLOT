@@ -510,13 +510,13 @@ function OddsButton({ label, odds, active, disabled, onClick }) {
 }
 
 /**
- * A tile whose whole body folds behind its title row — every board section
- * loads collapsed so the tab reads as a menu, not a scroll marathon.
+ * A tile whose whole body folds behind its title row. Pass `open` for a
+ * section that should start expanded (fixtures inside still load collapsed).
  */
-function FoldTile({ ariaLabel, title, meta, children }) {
+function FoldTile({ ariaLabel, title, meta, open = false, children }) {
   return (
     <section className="tile tile--compact" aria-label={ariaLabel}>
-      <details className="bookie-fold">
+      <details className="bookie-fold" open={open || undefined}>
         <summary className="bookie-fold__summary">
           <h3 className="bookie__section-title bookie-fold__title">{title}</h3>
           {meta ? <span className="bookie__deadline tabular">{meta}</span> : null}
@@ -578,6 +578,7 @@ function WeeklyMarkets({
       ariaLabel="Weekly markets"
       title={`GW${gw} matchups`}
       meta={countdown ? `closes in ${countdown}` : `closes ${fmtDeadline(deadline) ?? 'soon'}`}
+      open
     >
       <div className="bookie-punters">
         {markets.map((m) => {
@@ -770,7 +771,7 @@ const PLACE_TABS = [
   {
     kind: 'outright',
     tab: 'Champion',
-    title: 'Outright — league champion',
+    title: 'League Champion',
     verb: 'Champion',
     crown: 'Champion',
     slipLabel: (name) => `${name} to win the league`,
@@ -780,7 +781,7 @@ const PLACE_TABS = [
   {
     kind: 'titan',
     tab: 'Titan',
-    title: 'Titan — finish top 4',
+    title: 'Titans',
     verb: 'Titan',
     crown: 'Titan',
     slipLabel: (name) => `${name} to finish Titan (top 4)`,
@@ -790,7 +791,7 @@ const PLACE_TABS = [
   {
     kind: 'minnow',
     tab: 'Minnow',
-    title: 'Minnow — finish bottom 4',
+    title: 'Minnows',
     verb: 'Minnow',
     crown: 'Minnow',
     slipLabel: (name) => `${name} to finish Minnow (bottom 4)`,
@@ -800,7 +801,7 @@ const PLACE_TABS = [
   {
     kind: 'last',
     tab: 'Last',
-    title: 'Last place',
+    title: 'Last',
     verb: 'Last',
     crown: 'Last',
     slipLabel: (name) => `${name} to finish last`,
