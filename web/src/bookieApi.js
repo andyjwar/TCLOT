@@ -1,0 +1,92 @@
+/**
+ * Client for the bookie Worker (web/workers/bookie/) — fake-money betting.
+ *
+ * The Worker URL comes from `VITE_BOOKIE_API_URL` (same deploy-time pattern
+ * as `VITE_FPL_PROXY_URL`); when unset the Bookie tab renders its setup note
+ * instead of a dead board. The session token is a Worker-signed bearer token
+ * kept in localStorage — losing it just means logging in with the PIN again.
+ */
+
+const SESSION_STORAGE_KEY = 'tclotBookieSession.v1'
+
+export function bookieApiBase() {
+  const raw = import.meta.env.VITE_BOOKIE_API_URL
+  const trimmed = typeof raw === 'string' ? raw.trim().replace(/\/+$/, '') : ''
+  return trimmed || null
+}
+
+export function bookieEnabled() {
+  return bookieApiBase() != null
+}
+
+/** @returns {{ token: string, entryId: number, name: string } | null} */
+export function loadBookieSession() {
+  try {
+    const raw = window.localStorage.getItem(SESSION_STORAGE_KEY)
+    if (!raw) return null
+    const parsed = JSON.parse(raw)
+    if (typeof parsed?.token !== 'string' || !Number.isFinite(Number(parsed?.entryId))) {
+      return null
+    }
+    return { token: parsed.token, entryId: Number(parsed.entryId), name: String(parsed.name ?? '') }
+  } catch {
+    return null
+  }
+}
+
+export function saveBookieSession(session) {
+  try {
+    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session))
+  } catch {
+    /* private mode — session just won't survive a reload */
+  }
+}
+
+export function clearBookieSession() {
+  try {
+    window.localStorage.removeItem(SESSION_STORAGE_KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+async function request(path, { method = 'GET', token = null, body = null } = {}) {
+  const base = bookieApiBase()
+  if (!base) throw new Error('bookie API not configured')
+  const headers = {}
+  if (body != null) headers['Content-Type'] = 'application/json'
+  if (token) headers.Authorization = `Bearer ${token}`
+  const res = await fetch(`${base}${path}`, {
+    method,
+    headers,
+    body: body != null ? JSON.stringify(body) : undefined,
+  })
+  let data = null
+  try {
+    data = await res.json()
+  } catch {
+    /* non-JSON error body */
+  }
+  if (!res.ok) {
+    const err = new Error(data?.error || `bookie API ${res.status}`)
+    err.status = res.status
+    throw err
+  }
+  return data
+}
+
+export function fetchBookieState(token) {
+  return request('/api/state', { token })
+}
+
+export function registerBookie(entryId, pin) {
+  return request('/api/register', { method: 'POST', body: { entryId, pin } })
+}
+
+export function loginBookie(entryId, pin) {
+  return request('/api/login', { method: 'POST', body: { entryId, pin } })
+}
+
+export function placeBookieBet(token, { marketId, selection, stake }) {
+  return request('/api/bets', { method: 'POST', token, body: { marketId, selection, stake } })
+}

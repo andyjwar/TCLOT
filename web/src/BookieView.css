@@ -1,0 +1,436 @@
+/* Bookie tab — betting board, slip, and ledgers. Scoped under .bookie*. */
+
+.bookie__note {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--fm-muted);
+  line-height: 1.5;
+}
+
+.bookie__note--small {
+  font-size: 0.78rem;
+  margin-top: 8px;
+}
+
+.bookie__error {
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: #ef4444;
+}
+
+.bookie__section-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.bookie__section-title--sub {
+  margin-top: 16px;
+}
+
+.bookie__method-title {
+  margin: 0 0 6px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.bookie__deadline {
+  font-size: 0.75rem;
+  color: var(--fm-muted);
+  white-space: nowrap;
+}
+
+.bookie__btn {
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 40%, transparent);
+  background: transparent;
+  color: var(--fm-text);
+  font: inherit;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.bookie__btn--primary {
+  background: var(--fm-pitch);
+  border-color: var(--fm-pitch);
+  color: #fff;
+  font-weight: 600;
+}
+
+.bookie__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* --- header / account --- */
+
+.bookie-header__season {
+  font-size: 0.75rem;
+  color: var(--fm-muted);
+}
+
+.bookie-header__account {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.bookie-header__who {
+  font-size: 0.85rem;
+}
+
+.bookie-header__balance {
+  font-size: 0.9rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--fm-pitch) 16%, transparent);
+}
+
+.bookie-header__logout {
+  border: none;
+  background: none;
+  color: var(--fm-muted);
+  font: inherit;
+  font-size: 0.78rem;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+}
+
+/* --- login / claim --- */
+
+.bookie-login__roster {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.bookie-login__team {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 30%, transparent);
+  background: transparent;
+  color: var(--fm-text);
+  font: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.bookie-login__team--active {
+  border-color: var(--fm-pitch);
+  background: color-mix(in srgb, var(--fm-pitch) 12%, transparent);
+}
+
+.bookie-login__pin-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.bookie-login__pin {
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 40%, transparent);
+  background: transparent;
+  color: var(--fm-text);
+  font: inherit;
+  font-size: 0.9rem;
+  padding: 7px 10px;
+  border-radius: 8px;
+  width: 150px;
+}
+
+/* --- weekly market board --- */
+
+.bookie-market-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 12px;
+}
+
+.bookie-market {
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 22%, transparent);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.bookie-market__teams {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.bookie-market__team {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bookie-market__team > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookie-market__vs {
+  color: var(--fm-muted);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+}
+
+.bookie-market__odds {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.bookie-odds-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 32%, transparent);
+  background: transparent;
+  color: var(--fm-text);
+  font: inherit;
+  cursor: pointer;
+  min-width: 74px;
+}
+
+.bookie-odds-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.bookie-odds-btn--active {
+  border-color: var(--fm-pitch);
+  background: color-mix(in srgb, var(--fm-pitch) 14%, transparent);
+}
+
+.bookie-odds-btn__label {
+  font-size: 0.68rem;
+  color: var(--fm-muted);
+  max-width: 110px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookie-odds-btn__odds {
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+/* --- outright --- */
+
+.bookie-outright {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.bookie-outright__row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.bookie-outright__row--won {
+  background: color-mix(in srgb, var(--fm-pitch) 10%, transparent);
+  border-radius: 8px;
+  padding: 4px 8px;
+}
+
+.bookie-outright__pct {
+  font-size: 0.8rem;
+  color: var(--fm-muted);
+}
+
+.bookie-outright__crown {
+  margin-left: 4px;
+}
+
+/* --- bet slip --- */
+
+.bookie-slip {
+  border-color: var(--fm-pitch);
+}
+
+.bookie-slip__pick {
+  margin: 0 0 10px;
+  font-size: 0.88rem;
+}
+
+.bookie-slip__detail {
+  color: var(--fm-muted);
+}
+
+.bookie-slip__odds {
+  font-weight: 700;
+}
+
+.bookie-slip__row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.bookie-slip__stake-label {
+  font-size: 0.82rem;
+  color: var(--fm-muted);
+}
+
+.bookie-slip__stake {
+  width: 110px;
+}
+
+.bookie-slip__payout {
+  font-size: 0.82rem;
+  color: var(--fm-muted);
+}
+
+/* --- my bets --- */
+
+.bookie-bets {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.bookie-bet {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.84rem;
+  padding: 6px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-muted) 14%, transparent);
+}
+
+.bookie-bet:last-child {
+  border-bottom: none;
+}
+
+.bookie-bet__nums {
+  color: var(--fm-muted);
+  white-space: nowrap;
+}
+
+.bookie-bet__status {
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.bookie-bet__status--won {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.bookie-bet__status--lost {
+  color: #ef4444;
+}
+
+.bookie-bet__status--open,
+.bookie-bet__status--void {
+  color: var(--fm-muted);
+}
+
+/* --- leaderboards --- */
+
+.bookie-lb {
+  list-style: none;
+  margin: 10px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.bookie-lb__row {
+  display: grid;
+  grid-template-columns: 24px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  border-radius: 8px;
+  font-size: 0.86rem;
+}
+
+.bookie-lb__row--me {
+  background: color-mix(in srgb, var(--fm-pitch) 10%, transparent);
+}
+
+.bookie-lb__rank {
+  color: var(--fm-muted);
+  font-size: 0.78rem;
+}
+
+.bookie-lb__balance {
+  font-weight: 700;
+}
+
+.bookie-winners {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.bookie-winners__row {
+  display: grid;
+  grid-template-columns: 56px 1fr auto;
+  gap: 10px;
+  font-size: 0.84rem;
+  padding: 3px 0;
+}
+
+.bookie-winners__gw {
+  color: var(--fm-muted);
+}
+
+.bookie-winners__net--up {
+  color: #16a34a;
+  font-weight: 700;
+}
+
+.bookie-winners__net--down {
+  color: #ef4444;
+}
+
+@media (max-width: 560px) {
+  .bookie-login__roster {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .bookie-market__odds {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+
+  .bookie-odds-btn {
+    min-width: 0;
+  }
+}

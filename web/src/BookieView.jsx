@@ -1,0 +1,729 @@
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import { TeamAvatar } from './TeamAvatar'
+import { standingsMobileTeamName } from './teamNameUtils.js'
+import {
+  bookieEnabled,
+  fetchBookieState,
+  loadBookieSession,
+  saveBookieSession,
+  clearBookieSession,
+  registerBookie,
+  loginBookie,
+  placeBookieBet,
+} from './bookieApi.js'
+import './BookieView.css'
+
+/** "Fri 28 Aug, 18:30" in the viewer's locale. */
+function fmtDeadline(iso) {
+  const t = Date.parse(iso ?? '')
+  if (!Number.isFinite(t)) return null
+  return new Date(t).toLocaleString(undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+/** Coarse countdown for an open market: "2d 4h", "3h 10m", "12m". */
+function fmtCountdown(iso, nowMs) {
+  const t = Date.parse(iso ?? '')
+  if (!Number.isFinite(t)) return null
+  const ms = t - nowMs
+  if (ms <= 0) return null
+  const mins = Math.floor(ms / 60000)
+  const days = Math.floor(mins / 1440)
+  const hours = Math.floor((mins % 1440) / 60)
+  if (days > 0) return `${days}d ${hours}h`
+  if (hours > 0) return `${hours}h ${mins % 60}m`
+  return `${mins}m`
+}
+
+function fmtCoins(n) {
+  const v = Number(n)
+  if (!Number.isFinite(v)) return '—'
+  return v.toLocaleString()
+}
+
+function fmtNet(n) {
+  const v = Number(n) || 0
+  return `${v > 0 ? '+' : ''}${v.toLocaleString()}`
+}
+
+/**
+ * The Bookie tab — fake-money betting against the site's own model.
+ *
+ * Everything financial lives in the bookie Worker (web/workers/bookie/);
+ * this view is a thin client: pick your team + PIN once, then back weekly
+ * H2H matchups and the outright champion with coins. Odds shown are the
+ * decimal prices frozen into each market, so stake × odds is exactly what
+ * a winning ticket pays.
+ */
+export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
+  const enabled = bookieEnabled()
+  const [session, setSession] = useState(() => (enabled ? loadBookieSession() : null))
+  const [state, setState] = useState(null)
+  const [failed, setFailed] = useState(false)
+  const [refreshNonce, setRefreshNonce] = useState(0)
+  /** { marketId, selection, label, odds } while the slip is open. */
+  const [slip, setSlip] = useState(null)
+
+  const refresh = useCallback(() => setRefreshNonce((n) => n + 1), [])
+
+  useEffect(() => {
+    if (!enabled) return undefined
+    let alive = true
+    setFailed(false)
+    fetchBookieState(session?.token ?? null)
+      .then((json) => {
+        if (!alive) return
+        setState(json)
+        // A token the Worker no longer honors (season rolled, secret rotated)
+        // comes back without `me` — drop it so the login card reappears.
+        if (session && !json?.me) {
+          clearBookieSession()
+          setSession(null)
+        }
+      })
+      .catch(() => {
+        if (alive) setFailed(true)
+      })
+    return () => {
+      alive = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [enabled, session?.token, refreshNonce])
+
+  const onLoggedIn = useCallback((auth) => {
+    const next = { token: auth.token, entryId: auth.entryId, name: auth.name }
+    saveBookieSession(next)
+    setSession(next)
+  }, [])
+
+  const onLogout = useCallback(() => {
+    clearBookieSession()
+    setSession(null)
+    setSlip(null)
+  }, [])
+
+  if (!enabled) {
+    return (
+      <section className="tile tile--compact" aria-label="Bookie">
+        <h2 className="tile-title tile-title--sm">TCLOT Bookie</h2>
+        <p className="bookie__note">
+          The bookie backend is not configured for this deploy. Deploy the Worker in{' '}
+          <code>web/workers/bookie/</code> and set <code>VITE_BOOKIE_API_URL</code> to its
+          URL at build time (see <code>DEPLOY.md</code>).
+        </p>
+      </section>
+    )
+  }
+
+  if (failed) {
+    return (
+      <section className="tile tile--compact" aria-label="Bookie">
+        <h2 className="tile-title tile-title--sm">TCLOT Bookie</h2>
+        <p className="bookie__note">The bookie is unreachable right now — try again shortly.</p>
+      </section>
+    )
+  }
+
+  if (!state) {
+    return (
+      <section className="tile tile--compact" aria-label="Bookie">
+        <h2 className="tile-title tile-title--sm">TCLOT Bookie</h2>
+        <p className="bookie__note">Opening the book…</p>
+      </section>
+    )
+  }
+
+  const me = state.me ?? null
+  const markets = Array.isArray(state.markets) ? state.markets : []
+  const h2hMarkets = markets.filter((m) => m.kind === 'h2h')
+  const outright = markets.find((m) => m.kind === 'outright') ?? null
+  const openGw = h2hMarkets.find((m) => m.open)?.gw ?? null
+  const weeklyOpen = openGw != null ? h2hMarkets.filter((m) => m.gw === openGw) : []
+  const nameByEntry = new Map(
+    (state.leaderboard ?? []).map((u) => [Number(u.entryId), u.name]),
+  )
+  for (const s of outright?.payload?.selections ?? []) {
+    if (!nameByEntry.has(Number(s.entryId))) nameByEntry.set(Number(s.entryId), s.name)
+  }
+
+  return (
+    <div className="dashboard-stack">
+      <BookieHeader me={me} state={state} onLogout={onLogout} />
+
+      {!me ? (
+        <BookieLogin
+          roster={outright?.payload?.selections ?? []}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+          onLoggedIn={onLoggedIn}
+        />
+      ) : null}
+
+      <WeeklyMarkets
+        gw={openGw}
+        markets={weeklyOpen}
+        me={me}
+        slip={slip}
+        onPick={setSlip}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+
+      {slip && me ? (
+        <BetSlip
+          slip={slip}
+          me={me}
+          minStake={state.minStake ?? 10}
+          token={session?.token}
+          onClose={() => setSlip(null)}
+          onPlaced={() => {
+            setSlip(null)
+            refresh()
+          }}
+        />
+      ) : null}
+
+      {outright ? (
+        <OutrightMarket
+          market={outright}
+          me={me}
+          onPick={setSlip}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      ) : null}
+
+      {me ? <MyBets me={me} h2hMarkets={h2hMarkets} nameByEntry={nameByEntry} /> : null}
+
+      <BookieLeaderboards
+        state={state}
+        me={me}
+        nameByEntry={nameByEntry}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+
+      <section className="tile tile--compact" aria-label="How the bookie works">
+        <h3 className="bookie__method-title">House rules</h3>
+        <p className="bookie__note">
+          Every manager starts the season with {fmtCoins(state.startingBalance ?? 1000)} coins
+          — completely fake, worthless, and worth fighting over. Odds are set by the same
+          model behind the Season Predictions tab, with a small house margin. Weekly matchup
+          markets close at the FPL deadline; the outright reprices after every gameweek but
+          your ticket keeps the odds you took. Bets settle as soon as the football finishes,
+          and a {fmtCoins(state.weeklyStipend ?? 50)}-coin stipend lands after each gameweek
+          so going bust is embarrassing, not terminal.
+        </p>
+      </section>
+    </div>
+  )
+}
+
+function BookieHeader({ me, state, onLogout }) {
+  return (
+    <section className="tile tile--compact bookie-header" aria-label="Bookie account">
+      <div className="tile-head-row tile-head-row--tight">
+        <h2 className="tile-title tile-title--sm">TCLOT Bookie</h2>
+        {state.season ? <span className="bookie-header__season tabular">{state.season}</span> : null}
+      </div>
+      {me ? (
+        <div className="bookie-header__account">
+          <span className="bookie-header__who">
+            Betting as <strong>{standingsMobileTeamName(me.name)}</strong>
+          </span>
+          <span className="bookie-header__balance tabular" title="Coin balance">
+            {fmtCoins(me.balance)} coins
+          </span>
+          <button type="button" className="bookie-header__logout" onClick={onLogout}>
+            Log out
+          </button>
+        </div>
+      ) : (
+        <p className="bookie__note">
+          Fake coins, real bragging rights. Claim your team below to start betting.
+        </p>
+      )}
+    </section>
+  )
+}
+
+function BookieLogin({ roster, teamLogoMap, kitIndexByEntry, onLoggedIn }) {
+  const [entryId, setEntryId] = useState(null)
+  const [pin, setPin] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  const submit = async (mode) => {
+    if (entryId == null || !/^\d{4,8}$/.test(pin)) {
+      setError('Pick your team and enter a 4–8 digit PIN.')
+      return
+    }
+    setBusy(true)
+    setError(null)
+    try {
+      const auth =
+        mode === 'register' ? await registerBookie(entryId, pin) : await loginBookie(entryId, pin)
+      onLoggedIn(auth)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="tile tile--compact bookie-login" aria-label="Claim your team">
+      <h3 className="bookie__section-title">Who are you?</h3>
+      {roster.length === 0 ? (
+        <p className="bookie__note">
+          The book has no roster yet — markets open once the site deploys with the next
+          gameweek's sheet.
+        </p>
+      ) : (
+        <>
+          <div className="bookie-login__roster" role="radiogroup" aria-label="Your team">
+            {roster.map((t) => (
+              <button
+                key={t.entryId}
+                type="button"
+                role="radio"
+                aria-checked={entryId === Number(t.entryId)}
+                className={
+                  'bookie-login__team' +
+                  (entryId === Number(t.entryId) ? ' bookie-login__team--active' : '')
+                }
+                onClick={() => setEntryId(Number(t.entryId))}
+              >
+                <TeamAvatar
+                  entryId={Number(t.entryId)}
+                  name={t.name}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span>{standingsMobileTeamName(t.name)}</span>
+              </button>
+            ))}
+          </div>
+          <div className="bookie-login__pin-row">
+            <input
+              className="bookie-login__pin"
+              type="password"
+              inputMode="numeric"
+              autoComplete="off"
+              placeholder="PIN (4–8 digits)"
+              maxLength={8}
+              value={pin}
+              onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+              aria-label="PIN"
+            />
+            <button
+              type="button"
+              className="bookie__btn bookie__btn--primary"
+              disabled={busy}
+              onClick={() => submit('login')}
+            >
+              Log in
+            </button>
+            <button
+              type="button"
+              className="bookie__btn"
+              disabled={busy}
+              onClick={() => submit('register')}
+            >
+              First time — claim team
+            </button>
+          </div>
+          <p className="bookie__note bookie__note--small">
+            First visit: pick your team, choose a PIN, hit “claim team”. The PIN stops your
+            rivals betting your bankroll on last place — it is honor-system security, not
+            banking security.
+          </p>
+          {error ? <p className="bookie__error" role="alert">{error}</p> : null}
+        </>
+      )}
+    </section>
+  )
+}
+
+function OddsButton({ label, odds, active, disabled, onClick }) {
+  return (
+    <button
+      type="button"
+      className={'bookie-odds-btn' + (active ? ' bookie-odds-btn--active' : '')}
+      disabled={disabled}
+      onClick={onClick}
+    >
+      <span className="bookie-odds-btn__label">{label}</span>
+      <span className="bookie-odds-btn__odds tabular">{Number(odds).toFixed(2)}</span>
+    </button>
+  )
+}
+
+function WeeklyMarkets({ gw, markets, me, slip, onPick, teamLogoMap, kitIndexByEntry }) {
+  const [nowMs, setNowMs] = useState(() => Date.now())
+  useEffect(() => {
+    const t = setInterval(() => setNowMs(Date.now()), 30_000)
+    return () => clearInterval(t)
+  }, [])
+
+  if (gw == null || markets.length === 0) {
+    return (
+      <section className="tile tile--compact" aria-label="Weekly markets">
+        <h3 className="bookie__section-title">This week's matchups</h3>
+        <p className="bookie__note">
+          No open weekly market right now — the next gameweek's board opens when the site
+          rebuilds after results are banked.
+        </p>
+      </section>
+    )
+  }
+
+  const deadline = markets[0]?.closesAt
+  const countdown = fmtCountdown(deadline, nowMs)
+
+  return (
+    <section className="tile tile--compact" aria-label="Weekly markets">
+      <div className="tile-head-row tile-head-row--tight">
+        <h3 className="bookie__section-title">GW{gw} matchups</h3>
+        <span className="bookie__deadline tabular">
+          {countdown ? `closes in ${countdown}` : `closes ${fmtDeadline(deadline) ?? 'soon'}`}
+        </span>
+      </div>
+      <ul className="bookie-market-list">
+        {markets.map((m) => {
+          const p = m.payload
+          const pickFor = (selection, label, odds) => () =>
+            onPick({
+              marketId: m.id,
+              selection,
+              label,
+              odds,
+              detail: `${standingsMobileTeamName(p.homeName)} v ${standingsMobileTeamName(p.awayName)} · GW${gw}`,
+            })
+          const isActive = (selection) => slip?.marketId === m.id && slip?.selection === selection
+          return (
+            <li key={m.id} className="bookie-market">
+              <div className="bookie-market__teams">
+                <span className="bookie-market__team">
+                  <TeamAvatar
+                    entryId={p.homeEntryId}
+                    name={p.homeName}
+                    size="sm"
+                    logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                  <span>{standingsMobileTeamName(p.homeName)}</span>
+                </span>
+                <span className="bookie-market__vs" aria-hidden>v</span>
+                <span className="bookie-market__team bookie-market__team--away">
+                  <span>{standingsMobileTeamName(p.awayName)}</span>
+                  <TeamAvatar
+                    entryId={p.awayEntryId}
+                    name={p.awayName}
+                    size="sm"
+                    logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                </span>
+              </div>
+              <div className="bookie-market__odds" role="group" aria-label="Match odds">
+                <OddsButton
+                  label={standingsMobileTeamName(p.homeName)}
+                  odds={p.odds.home}
+                  active={isActive('home')}
+                  disabled={!me || !m.open}
+                  onClick={pickFor('home', `${standingsMobileTeamName(p.homeName)} to win`, p.odds.home)}
+                />
+                <OddsButton
+                  label="Draw"
+                  odds={p.odds.draw}
+                  active={isActive('draw')}
+                  disabled={!me || !m.open}
+                  onClick={pickFor('draw', 'Draw', p.odds.draw)}
+                />
+                <OddsButton
+                  label={standingsMobileTeamName(p.awayName)}
+                  odds={p.odds.away}
+                  active={isActive('away')}
+                  disabled={!me || !m.open}
+                  onClick={pickFor('away', `${standingsMobileTeamName(p.awayName)} to win`, p.odds.away)}
+                />
+              </div>
+            </li>
+          )
+        })}
+      </ul>
+      {!me ? (
+        <p className="bookie__note bookie__note--small">Log in above to back someone.</p>
+      ) : null}
+    </section>
+  )
+}
+
+function OutrightMarket({ market, me, onPick, teamLogoMap, kitIndexByEntry }) {
+  const selections = market.payload?.selections ?? []
+  const settled = market.status === 'settled'
+  return (
+    <section className="tile tile--compact" aria-label="Outright market">
+      <div className="tile-head-row tile-head-row--tight">
+        <h3 className="bookie__section-title">Outright — league champion</h3>
+        <span className="bookie__deadline tabular">
+          {settled
+            ? 'settled'
+            : market.payload?.asOfGw
+              ? `priced after GW${market.payload.asOfGw}`
+              : 'pre-season prices'}
+        </span>
+      </div>
+      <ul className="bookie-outright">
+        {selections.map((s) => {
+          const won = settled && String(market.result) === String(s.entryId)
+          return (
+            <li key={s.entryId} className={'bookie-outright__row' + (won ? ' bookie-outright__row--won' : '')}>
+              <span className="bookie-market__team">
+                <TeamAvatar
+                  entryId={Number(s.entryId)}
+                  name={s.name}
+                  size="sm"
+                  logoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+                <span>{standingsMobileTeamName(s.name)}</span>
+                {won ? <span className="bookie-outright__crown" aria-label="Champion">👑</span> : null}
+              </span>
+              <span className="bookie-outright__pct tabular">{s.titlePct}%</span>
+              <OddsButton
+                label="Champion"
+                odds={s.odds}
+                active={false}
+                disabled={!me || settled || !market.open}
+                onClick={() =>
+                  onPick({
+                    marketId: market.id,
+                    selection: String(s.entryId),
+                    label: `${standingsMobileTeamName(s.name)} to win the league`,
+                    odds: s.odds,
+                    detail: 'Outright champion',
+                  })
+                }
+              />
+            </li>
+          )
+        })}
+      </ul>
+      <p className="bookie__note bookie__note--small">
+        Outright odds track the Season Predictions model and reprice weekly — your ticket
+        locks the price you took.
+      </p>
+    </section>
+  )
+}
+
+function BetSlip({ slip, me, minStake, token, onClose, onPlaced }) {
+  const [stake, setStake] = useState(String(minStake))
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+  const stakeNum = Number(stake)
+  const valid = Number.isInteger(stakeNum) && stakeNum >= minStake && stakeNum <= me.balance
+  const payout = valid ? Math.round(stakeNum * slip.odds) : null
+
+  const place = async () => {
+    if (!valid) return
+    setBusy(true)
+    setError(null)
+    try {
+      await placeBookieBet(token, {
+        marketId: slip.marketId,
+        selection: slip.selection,
+        stake: stakeNum,
+      })
+      onPlaced()
+    } catch (e) {
+      setError(e.message)
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="tile tile--compact bookie-slip" aria-label="Bet slip">
+      <div className="tile-head-row tile-head-row--tight">
+        <h3 className="bookie__section-title">Bet slip</h3>
+        <button type="button" className="bookie-header__logout" onClick={onClose}>
+          Cancel
+        </button>
+      </div>
+      <p className="bookie-slip__pick">
+        <strong>{slip.label}</strong>
+        <span className="bookie-slip__detail"> · {slip.detail}</span>
+        <span className="bookie-slip__odds tabular"> @ {Number(slip.odds).toFixed(2)}</span>
+      </p>
+      <div className="bookie-slip__row">
+        <label className="bookie-slip__stake-label" htmlFor="bookie-stake">
+          Stake
+        </label>
+        <input
+          id="bookie-stake"
+          className="bookie-login__pin bookie-slip__stake"
+          type="number"
+          inputMode="numeric"
+          min={minStake}
+          max={me.balance}
+          step={1}
+          value={stake}
+          onChange={(e) => setStake(e.target.value)}
+        />
+        <span className="bookie-slip__payout tabular">
+          {payout != null ? `returns ${fmtCoins(payout)}` : `min ${minStake}, max ${fmtCoins(me.balance)}`}
+        </span>
+        <button
+          type="button"
+          className="bookie__btn bookie__btn--primary"
+          disabled={!valid || busy}
+          onClick={place}
+        >
+          {busy ? 'Placing…' : 'Place bet'}
+        </button>
+      </div>
+      {error ? <p className="bookie__error" role="alert">{error}</p> : null}
+    </section>
+  )
+}
+
+/** Human label for one bet, from its market + selection. */
+function describeBet(bet, marketById, nameByEntry) {
+  const market = marketById.get(Number(bet.market_id))
+  if (bet.kind === 'outright' || market?.kind === 'outright') {
+    const name = nameByEntry.get(Number(bet.selection)) ?? `Entry ${bet.selection}`
+    return `${standingsMobileTeamName(name)} — outright champion`
+  }
+  const p = market?.payload
+  if (!p) return `GW${bet.gw ?? '?'} matchup — ${bet.selection}`
+  const home = standingsMobileTeamName(p.homeName)
+  const away = standingsMobileTeamName(p.awayName)
+  const pick = bet.selection === 'home' ? home : bet.selection === 'away' ? away : 'Draw'
+  return `${pick} (${home} v ${away}, GW${p.gw})`
+}
+
+function MyBets({ me, h2hMarkets, nameByEntry }) {
+  const marketById = useMemo(() => {
+    const map = new Map()
+    for (const m of h2hMarkets) map.set(Number(m.id), m)
+    return map
+  }, [h2hMarkets])
+  const bets = me.bets ?? []
+  if (bets.length === 0) {
+    return (
+      <section className="tile tile--compact" aria-label="My bets">
+        <h3 className="bookie__section-title">My bets</h3>
+        <p className="bookie__note">No tickets yet. Fortune favours the brave.</p>
+      </section>
+    )
+  }
+  return (
+    <section className="tile tile--compact" aria-label="My bets">
+      <h3 className="bookie__section-title">My bets</h3>
+      <ul className="bookie-bets">
+        {bets.map((b) => (
+          <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
+            <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
+            <span className="bookie-bet__nums tabular">
+              {fmtCoins(b.stake)} @ {Number(b.odds).toFixed(2)}
+            </span>
+            <span className={`bookie-bet__status bookie-bet__status--${b.status}`}>
+              {b.status === 'open'
+                ? `to return ${fmtCoins(Math.round(b.stake * b.odds))}`
+                : b.status === 'won'
+                  ? `won ${fmtCoins(b.payout)}`
+                  : b.status === 'void'
+                    ? 'void — refunded'
+                    : 'lost'}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}
+
+function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEntry }) {
+  const leaderboard = state.leaderboard ?? []
+
+  /** gw → biggest weekly winner (net P/L across that GW's settled bets). */
+  const weeklyWinners = useMemo(() => {
+    const byGw = new Map()
+    for (const row of state.weeklyNet ?? []) {
+      const cur = byGw.get(row.gw)
+      if (!cur || Number(row.net) > Number(cur.net)) byGw.set(row.gw, row)
+    }
+    return [...byGw.entries()]
+      .sort((a, b) => b[0] - a[0])
+      .map(([gw, row]) => ({ gw, ...row }))
+  }, [state.weeklyNet])
+
+  if (leaderboard.length === 0) {
+    return (
+      <section className="tile tile--compact" aria-label="Leaderboards">
+        <h3 className="bookie__section-title">Bankroll leaderboard</h3>
+        <p className="bookie__note">Nobody has claimed a team yet — be the first in the book.</p>
+      </section>
+    )
+  }
+
+  return (
+    <section className="tile tile--compact" aria-label="Leaderboards">
+      <h3 className="bookie__section-title">Bankroll leaderboard</h3>
+      <ol className="bookie-lb">
+        {leaderboard.map((u, i) => (
+          <li
+            key={u.entryId}
+            className={
+              'bookie-lb__row' + (me && Number(u.entryId) === Number(me.entryId) ? ' bookie-lb__row--me' : '')
+            }
+          >
+            <span className="bookie-lb__rank tabular">{i + 1}</span>
+            <span className="bookie-market__team">
+              <TeamAvatar
+                entryId={Number(u.entryId)}
+                name={u.name}
+                size="sm"
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+              <span>{standingsMobileTeamName(u.name)}</span>
+            </span>
+            <span className="bookie-lb__balance tabular">{fmtCoins(u.balance)}</span>
+          </li>
+        ))}
+      </ol>
+      {weeklyWinners.length > 0 ? (
+        <>
+          <h3 className="bookie__section-title bookie__section-title--sub">Weekly winners</h3>
+          <ul className="bookie-winners">
+            {weeklyWinners.map((w) => (
+              <li key={w.gw} className="bookie-winners__row">
+                <span className="bookie-winners__gw tabular">GW{w.gw}</span>
+                <span>
+                  {standingsMobileTeamName(nameByEntry.get(Number(w.entryId)) ?? String(w.entryId))}
+                </span>
+                <span
+                  className={
+                    'bookie-winners__net tabular ' +
+                    (Number(w.net) >= 0 ? 'bookie-winners__net--up' : 'bookie-winners__net--down')
+                  }
+                >
+                  {fmtNet(w.net)}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      ) : null}
+    </section>
+  )
+}

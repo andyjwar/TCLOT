@@ -508,6 +508,7 @@ import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryConte
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
 import { SeasonPredictions } from './SeasonPredictions'
+import { BookieView } from './BookieView'
 import { WeeklyRecap } from './WeeklyRecap'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
@@ -2608,7 +2609,7 @@ function App() {
     leagueDataBuiltAt = null,
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | bookie | fplLive | players | more | settings
   const [teamSelectionTab, setTeamSelectionTab] = useState(
     /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
   )
@@ -3846,6 +3847,13 @@ function App() {
 
           {dashboardView === 'hall' ? (
             <HallOfChampions tableRows={tableRows} />
+          ) : null}
+
+          {dashboardView === 'bookie' ? (
+            <BookieView
+              teamLogoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
           ) : null}
 
           {dashboardView === 'players' ? (
