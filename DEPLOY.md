@@ -90,6 +90,46 @@ Optional: in `web/workers/fpl-proxy/wrangler.toml`, set `[vars] ALLOW_ORIGIN = "
 
 ---
 
+## 1c. Bookie — fake-money betting (Cloudflare Worker + D1)
+
+The **Bookie** tab needs a second Worker with a **D1 database** (both on Cloudflare's free tier) for shared balances and bets. Full details in [`web/workers/bookie/README.md`](web/workers/bookie/README.md); the short version:
+
+1. Create the database and paste its id into the worker config:
+
+   ```bash
+   cd web/workers/bookie
+   npm install
+   npx wrangler login
+   npm run db:create              # prints a database_id
+   ```
+
+   Put that id in `wrangler.toml` under `[[d1_databases]] database_id`.
+
+2. Apply the schema and set the session-signing secret:
+
+   ```bash
+   npm run db:migrate             # runs schema.sql against remote D1
+   npx wrangler secret put SESSION_SECRET   # any long random string
+   ```
+
+3. Check `[vars]` in `wrangler.toml`:
+
+   - **`SITE_BASE_URL`** — the deployed site the Worker pulls `league-data/bookie-markets.json` from (default `https://tclot.vercel.app`). The odds sheet is built by `build-bookie-markets.mjs` on every site deploy; the Worker's `*/30` cron ingests it, opens markets, and settles finished gameweeks against the official FPL APIs.
+   - **`LEAGUE_ID`** — must match the committed `league-id` file. **Update it at every season rollover**, same as section 1.
+   - Optional **`ALLOW_ORIGIN`** — lock CORS to your site origin.
+
+4. Deploy and copy the URL Wrangler prints:
+
+   ```bash
+   npm run deploy                 # e.g. https://tclot-bookie.yourname.workers.dev
+   ```
+
+5. Add **`VITE_BOOKIE_API_URL`** (no trailing slash) exactly like `VITE_FPL_PROXY_URL` in section 1b — repository secret or variable, plus the `github-pages` Environment if needed — then **re-run the deploy workflow**. Without it the Bookie tab shows setup instructions instead of markets. There is **no CI gate** for this one: a missing `VITE_BOOKIE_API_URL` degrades gracefully.
+
+Sanity check after deploy: `curl https://YOUR-WORKER.workers.dev/api/health` → `{"ok":true,...}`, and `/api/state` should list the open markets once the cron (or first `/api/state` hit) has ingested the sheet.
+
+---
+
 ## 2. Team logos (PNG)
 
 Logos are **not** fetched from FPL. They only exist if **you** put files in the repo.
