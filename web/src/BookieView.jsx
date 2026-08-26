@@ -704,7 +704,6 @@ function SeasonPlaceBoard({ markets, me, onPick, teamLogoMap, kitIndexByEntry })
       <ul className="bookie-outright">
         {selections.map((s) => {
           const won = settled && winners.has(String(s.entryId))
-          const pct = s.pct ?? s.titlePct
           return (
             <li key={s.entryId} className={'bookie-outright__row' + (won ? ' bookie-outright__row--won' : '')}>
               <span className="bookie-market__team">
@@ -718,7 +717,6 @@ function SeasonPlaceBoard({ markets, me, onPick, teamLogoMap, kitIndexByEntry })
                 <span>{standingsMobileTeamName(s.name)}</span>
                 {won ? <span className="bookie-outright__crown" aria-label={meta.crown}>👑</span> : null}
               </span>
-              <span className="bookie-outright__pct tabular">{pct}%</span>
               <OddsButton
                 label={meta.verb}
                 odds={s.odds}

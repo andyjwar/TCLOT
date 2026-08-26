@@ -254,7 +254,7 @@
 
 .bookie-outright__row {
   display: grid;
-  grid-template-columns: 1fr auto auto;
+  grid-template-columns: 1fr auto;
   align-items: center;
   gap: 10px;
   padding: 4px 0;
@@ -264,11 +264,6 @@
   background: color-mix(in srgb, var(--fm-pitch) 10%, transparent);
   border-radius: 8px;
   padding: 4px 8px;
-}
-
-.bookie-outright__pct {
-  font-size: 0.8rem;
-  color: var(--fm-muted);
 }
 
 .bookie-outright__crown {
