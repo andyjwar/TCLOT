@@ -872,6 +872,13 @@ body[data-tclot-theme='ceefax'] [role='dialog'] {
   --fm-border: var(--cf-grid);
   --tclot-header-grad: var(--cf-blue-band);
   --tclot-header-solid: var(--cf-blue-band);
+  /* Body-portalled dialogs (e.g. the ⌘K search palette) sit outside
+   * `.fotmob`, so the app-shell token remap above never reaches them.
+   * Without these, `.gsearch__pname` falls back to its light-theme
+   * near-black default (invisible on the black panel) and accents fall
+   * back to the purple brand default instead of teletext yellow. */
+  --text-strong: var(--cf-white);
+  --brand: var(--cf-yellow);
 }
 
 /* ------------------------------------------------------------------ */
