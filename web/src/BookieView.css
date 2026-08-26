@@ -348,6 +348,20 @@
   color: var(--fm-muted);
 }
 
+.bookie-bet--total {
+  border-bottom: none;
+  border-top: 1px solid color-mix(in srgb, var(--fm-muted) 30%, transparent);
+  padding-top: 8px;
+}
+
+.bookie-bet--total .bookie-bet__desc {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
 .bookie-bet__desc {
   min-width: 0;
   overflow: hidden;

@@ -72,13 +72,22 @@ function betReturnTone(status) {
   return 'open'
 }
 
-function betReturnLabel(bet) {
+/**
+ * What a ticket is worth in the Return column: still running means the
+ * potential payout, settled means whatever it actually paid.
+ */
+function betReturnValue(bet) {
   if (bet.status === 'open' || bet.status == null) {
-    return fmtCoins(Math.round(Number(bet.stake) * Number(bet.odds)))
+    return Math.round(Number(bet.stake) * Number(bet.odds))
   }
-  if (bet.status === 'won' || bet.status === 'cashed_out') return fmtCoins(bet.payout)
-  if (bet.status === 'void') return fmtCoins(bet.stake)
-  return '—'
+  if (bet.status === 'won' || bet.status === 'cashed_out') return Number(bet.payout) || 0
+  if (bet.status === 'void') return Number(bet.stake) || 0
+  return 0
+}
+
+function betReturnLabel(bet) {
+  if (bet.status === 'lost') return '—'
+  return fmtCoins(betReturnValue(bet))
 }
 
 function BetColHead() {
@@ -88,6 +97,22 @@ function BetColHead() {
       <span className="bookie-bet__col">Odds</span>
       <span className="bookie-bet__col">Wager</span>
       <span className="bookie-bet__col">Return</span>
+    </li>
+  )
+}
+
+/** Footer row totalling the wager and return columns for a list of tickets. */
+function BetTotals({ bets }) {
+  const staked = bets.reduce((sum, b) => sum + (Number(b.stake) || 0), 0)
+  const returns = bets.reduce((sum, b) => sum + betReturnValue(b), 0)
+  return (
+    <li className="bookie-bet bookie-bet--total">
+      <span className="bookie-bet__desc">Total</span>
+      <span className="bookie-bet__col" />
+      <span className="bookie-bet__pill bookie-bet__pill--wager tabular">{fmtCoins(staked)}</span>
+      <span className="bookie-bet__pill bookie-bet__pill--return bookie-bet__pill--open tabular">
+        {fmtCoins(returns)}
+      </span>
     </li>
   )
 }
@@ -891,6 +916,7 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
             </li>
           )
         })}
+        <BetTotals bets={bets} />
       </ul>
     </section>
   )
@@ -965,6 +991,7 @@ function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntr
                       <BetTicketFigures bet={b} />
                     </li>
                   ))}
+                  <BetTotals bets={g.rows} />
                 </ul>
               </details>
             )
