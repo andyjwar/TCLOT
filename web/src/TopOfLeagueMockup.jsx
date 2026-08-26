@@ -1,23 +1,19 @@
 import './TopOfLeagueMockup.css'
 
 /**
- * Local-only "Top of the League" treatment gallery (`?leader=1`).
+ * Local-only "Top of the League" treatment gallery (`?leader=1`) — round 2.
  *
- * Feedback: the floating leader card feels disconnected from the standings
- * table — different tone, its own island, and because the leader lives
- * outside the rows it can't take part in table sorting (form, for, etc.).
+ * Round-1 feedback: no card at all. The leader should be a normal row in
+ * the full 8-row table — same height, same column grid, sortable with
+ * everything else — differentiated only by a flourish on the row itself.
  *
- * Six options below, each rendered in the same portrait-phone frame with
- * the same league state so they compare like-for-like. Options C, D and E
- * put the leader back into the table as a real row (sortable); B and F
- * keep a header treatment but dock it flush to the table.
- *
- * All frames also preview the bigger portrait-mobile form dots (8px, was
- * 5px) shipping alongside this gallery.
+ * Six in-table flourishes below, loud → quiet, rendered like-for-like in
+ * the same portrait phone frame. All previews use the bigger 8px mobile
+ * form dots (production bumps 5px → 8px in this same PR).
  */
 
 const TEAMS = [
-  { rank: 1, name: 'Rokesly Regorasu', short: 'RR', hue: 152, gf: 55, pts: 3, form: [null, null, null, null, 'W'], next: 'SE', played: 1 },
+  { rank: 1, name: 'Rokesly Regorasu', short: 'RR', hue: 152, gf: 55, pts: 3, form: [null, null, null, null, 'W'], next: 'SE' },
   { rank: 2, name: 'Suffolk Sméagol', short: 'SG', hue: 218, gf: 52, pts: 3, form: [null, null, null, null, 'W'], next: 'BB' },
   { rank: 3, name: 'Mordor SFG', short: 'MO', hue: 24, gf: 51, pts: 3, form: [null, null, null, null, 'W'], next: 'RO' },
   { rank: 4, name: 'Seoul Shire', short: 'SE', hue: 4, gf: 47, pts: 3, form: [null, null, null, null, 'W'], next: 'RR' },
@@ -27,16 +23,11 @@ const TEAMS = [
   { rank: 8, name: 'Atlético Bilbo', short: 'AB', hue: 42, gf: 24, pts: 0, form: [null, null, null, null, 'L'], next: 'GI' },
 ]
 
-const LEADER = TEAMS[0]
 const BY_SHORT = Object.fromEntries(TEAMS.map((t) => [t.short, t]))
 
-function Crest({ team, size = 'md' }) {
+function Crest({ team }) {
   return (
-    <span
-      className={`tolm-crest tolm-crest--${size}`}
-      style={{ '--crest-hue': team.hue }}
-      aria-hidden="true"
-    >
+    <span className="tolm-crest" style={{ '--crest-hue': team.hue }} aria-hidden="true">
       {team.short}
     </span>
   )
@@ -74,34 +65,50 @@ function HeadRow() {
 }
 
 /**
- * Shared standings rows. `rows` decides which teams appear (with or
- * without the leader); `leaderMode` styles rank 1 when present:
- *   - 'jumbo'  — oversized leader row (option C)
- *   - 'banded' — normal-height leader row under an eyebrow band (option D)
- *   - 'rail'   — accent left rail + star only (option E)
+ * One full 8-row standings table; `leaderMode` picks the rank-1 flourish:
+ *   'solid' — full racing-green row, cream text
+ *   'wash'  — soft green tint wash
+ *   'rail'  — green left rail + faint tint
+ *   'rule'  — gold star + double gold hairline under the row (no fill)
+ *   'chip'  — rank digit inside a filled green chip
+ *   'pts'   — PTS value inside a filled green pill
  */
-function Rows({ rows, leaderMode }) {
+function StandingsTable({ leaderMode }) {
   return (
-    <tbody>
-      {rows.map((t) => {
-        const isLeader = t.rank === 1
-        const cls = [
-          isLeader && leaderMode ? `tolm-row--leader-${leaderMode}` : '',
-          t.rank === 5 ? 'tolm-row--divider-above' : '',
-          t.rank === 8 ? 'tolm-row--last' : '',
-        ]
-          .filter(Boolean)
-          .join(' ')
-        return (
-          <Row key={t.short} t={t} className={cls} jumbo={isLeader && leaderMode === 'jumbo'} rail={isLeader && leaderMode === 'rail'} banded={isLeader && leaderMode === 'banded'} />
-        )
-      })}
-    </tbody>
+    <div className="tolm-frame">
+      <div className="tolm-tablecard">
+        <table className="tolm-table">
+          <HeadRow />
+          <tbody>
+            {TEAMS.map((t) => {
+              const isLeader = t.rank === 1
+              return (
+                <Row
+                  key={t.short}
+                  t={t}
+                  mode={isLeader ? leaderMode : null}
+                />
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
   )
 }
 
-function Row({ t, className, jumbo, rail, banded }) {
+function Row({ t, mode }) {
   const next = BY_SHORT[t.next]
+  const rowClass = [
+    mode ? `tolm-row--leader-${mode}` : '',
+    t.rank === 8 ? 'tolm-row--last' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
+
+  const star = mode === 'rail' || mode === 'rule'
+  const chip = mode === 'chip'
+
   return (
     <>
       {t.rank === 5 ? (
@@ -111,9 +118,13 @@ function Row({ t, className, jumbo, rail, banded }) {
           </td>
         </tr>
       ) : null}
-      <tr className={className || undefined}>
+      <tr className={rowClass || undefined}>
         <td className="tolm-col-rank">
-          {t.rank === 8 ? <span className="tolm-rank-last">L</span> : rail ? (
+          {t.rank === 8 ? (
+            <span className="tolm-rank-last">L</span>
+          ) : chip ? (
+            <span className="tolm-rank-chip">{t.rank}</span>
+          ) : star ? (
             <span className="tolm-rank-starred">
               {t.rank}
               <i aria-hidden>★</i>
@@ -124,20 +135,13 @@ function Row({ t, className, jumbo, rail, banded }) {
         </td>
         <td className="tolm-col-team">
           <span className="tolm-team-cell">
-            <Crest team={t} size={jumbo ? 'lg' : 'md'} />
-            <span className="tolm-team-id">
-              {jumbo || banded ? (
-                <span className="tolm-team-eyebrow">
-                  <i aria-hidden>★</i> Top of the league
-                </span>
-              ) : null}
-              <span className={'tolm-team-name' + (jumbo ? ' tolm-team-name--jumbo' : '')}>{t.name}</span>
-            </span>
+            <Crest team={t} />
+            <span className="tolm-team-name">{t.name}</span>
           </span>
         </td>
         <td className="tolm-col-num">{t.gf}</td>
-        <td className={'tolm-col-num tolm-col-pts' + (jumbo ? ' tolm-col-pts--jumbo' : '')}>
-          <strong>{t.pts}</strong>
+        <td className="tolm-col-num tolm-col-pts">
+          {mode === 'pts' ? <span className="tolm-pts-pill">{t.pts}</span> : <strong>{t.pts}</strong>}
         </td>
         <td className="tolm-col-form">
           <Dots form={t.form} />
@@ -148,218 +152,62 @@ function Row({ t, className, jumbo, rail, banded }) {
   )
 }
 
-function Frame({ children }) {
-  return <div className="tolm-frame">{children}</div>
-}
-
-function TableCard({ children, flushTop }) {
-  return <div className={'tolm-tablecard' + (flushTop ? ' tolm-tablecard--flush-top' : '')}>{children}</div>
-}
-
-/* ------------------------------------------------------------------ */
-/* Option renderers                                                    */
-/* ------------------------------------------------------------------ */
-
-// A — current production: floating tinted card, gap, table shows ranks 2–8.
-function OptionA() {
-  return (
-    <Frame>
-      <div className="tolm-hero tolm-hero--floating">
-        <span className="tolm-hero__eyebrow">
-          <i aria-hidden>★</i> Top of the league
-        </span>
-        <div className="tolm-hero__row">
-          <Crest team={LEADER} size="xl" />
-          <div className="tolm-hero__name">{LEADER.name}</div>
-          <div className="tolm-hero__pts">
-            <span className="tolm-hero__pts-num">{LEADER.pts}</span>
-            <span className="tolm-hero__pts-lbl">PTS</span>
-          </div>
-        </div>
-        <div className="tolm-hero__sub">
-          <Dots form={LEADER.form} size="lg" />
-          <span className="tolm-hero__meta">
-            <b>Played</b> {LEADER.played} <i>·</i> <b>For</b> {LEADER.gf}
-          </span>
-        </div>
-      </div>
-      <TableCard>
-        <table className="tolm-table">
-          <HeadRow />
-          <Rows rows={TEAMS.slice(1)} />
-        </table>
-      </TableCard>
-    </Frame>
-  )
-}
-
-// B — same hero content, but paper tone + docked flush onto the table.
-function OptionB() {
-  return (
-    <Frame>
-      <div className="tolm-hero tolm-hero--docked">
-        <span className="tolm-hero__eyebrow tolm-hero__eyebrow--bare">
-          <i aria-hidden>★</i> Top of the league
-        </span>
-        <div className="tolm-hero__row">
-          <Crest team={LEADER} size="xl" />
-          <div className="tolm-hero__name">{LEADER.name}</div>
-          <div className="tolm-hero__pts">
-            <span className="tolm-hero__pts-num">{LEADER.pts}</span>
-            <span className="tolm-hero__pts-lbl">PTS</span>
-          </div>
-        </div>
-        <div className="tolm-hero__sub">
-          <Dots form={LEADER.form} size="lg" />
-          <span className="tolm-hero__meta">
-            <b>Played</b> {LEADER.played} <i>·</i> <b>For</b> {LEADER.gf}
-          </span>
-        </div>
-      </div>
-      <TableCard flushTop>
-        <table className="tolm-table">
-          <HeadRow />
-          <Rows rows={TEAMS.slice(1)} />
-        </table>
-      </TableCard>
-    </Frame>
-  )
-}
-
-// C — leader inside the table as an oversized row 1.
-function OptionC() {
-  return (
-    <Frame>
-      <TableCard>
-        <table className="tolm-table">
-          <HeadRow />
-          <Rows rows={TEAMS} leaderMode="jumbo" />
-        </table>
-      </TableCard>
-    </Frame>
-  )
-}
-
-// D — slim eyebrow band above a full table; leader is a normal row 1.
-function OptionD() {
-  return (
-    <Frame>
-      <TableCard>
-        <div className="tolm-band">
-          <i aria-hidden>★</i> Top of the league
-        </div>
-        <table className="tolm-table">
-          <HeadRow />
-          <Rows rows={TEAMS} leaderMode="banded" />
-        </table>
-      </TableCard>
-    </Frame>
-  )
-}
-
-// E — flat table, leader gets a rail + star + tint only.
-function OptionE() {
-  return (
-    <Frame>
-      <TableCard>
-        <table className="tolm-table">
-          <HeadRow />
-          <Rows rows={TEAMS} leaderMode="rail" />
-        </table>
-      </TableCard>
-    </Frame>
-  )
-}
-
-// F — full-bleed racing-green hero band inside the table card.
-function OptionF() {
-  return (
-    <Frame>
-      <TableCard>
-        <div className="tolm-greenhero">
-          <span className="tolm-greenhero__eyebrow">
-            <i aria-hidden>★</i> Top of the league
-          </span>
-          <div className="tolm-greenhero__row">
-            <Crest team={LEADER} size="xl" />
-            <div className="tolm-greenhero__name">{LEADER.name}</div>
-            <div className="tolm-greenhero__pts">
-              <span className="tolm-greenhero__pts-num">{LEADER.pts}</span>
-              <span className="tolm-greenhero__pts-lbl">PTS</span>
-            </div>
-          </div>
-          <div className="tolm-greenhero__sub">
-            <Dots form={LEADER.form} size="lg" />
-            <span className="tolm-greenhero__meta">
-              <b>Played</b> {LEADER.played} <i>·</i> <b>For</b> {LEADER.gf}
-            </span>
-          </div>
-        </div>
-        <table className="tolm-table">
-          <HeadRow />
-          <Rows rows={TEAMS.slice(1)} />
-        </table>
-      </TableCard>
-    </Frame>
-  )
-}
-
 /* ------------------------------------------------------------------ */
 
 const OPTIONS = [
   {
     id: 'A',
-    title: 'Current — floating card',
-    tag: 'Current',
+    mode: 'solid',
+    title: 'Racing-green row',
+    tag: 'Loudest',
     tagTone: 'loud',
     desc:
-      'Production today: tinted card floating above the table with its own gap, radius and green wash. The feedback target — reads as a separate widget, and the leader is missing from the rows so it never takes part in sorting.',
-    render: OptionA,
+      'The suggested treatment: rank 1 painted in the app-header racing green with cream text and a gold star on the rank. Unmissable, still exactly one row tall and on the shared column grid.',
   },
   {
     id: 'B',
-    title: 'Docked card, table tone',
-    tag: 'User suggestion',
-    tagTone: 'quiet',
+    mode: 'wash',
+    title: 'Green wash',
+    tag: 'Mid',
+    tagTone: 'good',
     desc:
-      'Same card, restyled: paper surface and hairline border matching the table, tint removed, docked flush so card + table read as one component. Still a header (leader stays out of the rows), so sorting by form still excludes the leader.',
-    render: OptionB,
+      'A softer take on the same idea — the row keeps normal ink but sits on a green tint wash, with the rank and name picked out in brand green. Reads as "highlighted", not "different component".',
   },
   {
     id: 'C',
-    title: 'Jumbo first row',
-    tag: 'Sortable',
+    mode: 'rail',
+    title: 'Left rail + tint',
+    tag: 'Quiet',
     tagTone: 'good',
     desc:
-      'No card. The leader returns to the table as a real row 1, just bigger — 40px crest, "Top of the league" micro-eyebrow, heavier PTS, soft green tint. Every cell sits on the shared column grid, so form/for/pts sorting includes the leader.',
-    render: OptionC,
+      'A 3px green rail on the left edge, a faint tint and a small gold star beside the rank. The flourish lives on the table edge, so the row content stays visually identical to its neighbours.',
   },
   {
     id: 'D',
-    title: 'Eyebrow band + full table',
-    tag: 'Sortable',
+    mode: 'rule',
+    title: 'Scorebook double rule',
+    tag: 'Quiet · no fill',
     tagTone: 'good',
     desc:
-      'A slim green band caps the table ("★ Top of the league") and the leader sits directly beneath it as a lightly tinted, normal-height row. All 8 rows are real rows; the band is pure chrome bound to whoever is rank 1.',
-    render: OptionD,
+      'No background at all. A gold star beside the rank and a double gold hairline under the row — the printed-ledger flourish: the leader is literally "above the line". Cheapest visual budget after E/F.',
   },
   {
     id: 'E',
-    title: 'Accent rail only',
-    tag: 'Sortable · quietest',
+    mode: 'chip',
+    title: 'Green rank chip',
+    tag: 'Quietest · scoped',
     tagTone: 'good',
     desc:
-      'Flat table, all rows equal height. Rank 1 is differentiated only by a green left rail, a gold star beside the rank and a faint tint. Smallest visual budget; the whole table stays uniform and sortable.',
-    render: OptionE,
+      'The flourish is scoped to a single cell: the rank digit sits in a filled racing-green chip (cream "1"). Everything else is a completely standard row. Scales naturally if you ever mark other zones.',
   },
   {
     id: 'F',
-    title: 'Racing-green hero band',
-    tag: 'Loud · connected',
-    tagTone: 'loud',
+    mode: 'pts',
+    title: 'Green PTS pill',
+    tag: 'Quietest · scoped',
+    tagTone: 'good',
     desc:
-      'The opposite pole: a full-bleed deep-green leader band inside the table card (same tone as the app header), square-cornered and flush with the thead below. Maximum celebration while still physically part of the table — but like A/B the leader is out of the sortable rows.',
-    render: OptionF,
+      'Same single-cell idea, but celebrating the number that makes them leader: the PTS value sits in a green pill. Draws the eye to the points column, where the leading margin actually lives.',
   },
 ]
 
@@ -367,28 +215,31 @@ export function TopOfLeagueMockup() {
   return (
     <div className="tolm">
       <header className="tolm-top">
-        <span className="tolm-kicker">Standings · top-of-the-league treatment</span>
-        <h1>Connecting the leader to the table</h1>
+        <span className="tolm-kicker">Standings · top-of-the-league treatment · round 2</span>
+        <h1>Leader as a normal row, with a flourish</h1>
         <p>
-          The floating leader card reads as its own island — different tone,
-          detached from the table, and the leader can&apos;t join table
-          sorting. Six treatments below, like-for-like in a portrait phone
-          frame. All previews use the bigger 8px mobile form dots (production
-          bumps 5px → 8px in this same PR).
+          No card this time. In every option the leader is an ordinary row in
+          the full 8-team table — same height, same columns, sorts and
+          filters with everything else. The only thing that changes is the
+          flourish on the row, loudest to quietest. All previews use the
+          bigger 8px mobile form dots (production bumps 5px → 8px in this
+          same PR).
         </p>
         <a href="/">← Back to app</a>
       </header>
 
       <div className="tolm-grid">
         {OPTIONS.map((opt) => (
-          <article key={opt.id} className={'tolm-option' + (opt.id === 'A' ? ' tolm-option--current' : '')}>
+          <article key={opt.id} className="tolm-option">
             <div className="tolm-option__head">
               <span className="tolm-option__id">Option {opt.id}</span>
               <span className="tolm-option__title">{opt.title}</span>
               <span className={'tolm-option__tag tolm-option__tag--' + opt.tagTone}>{opt.tag}</span>
               <p className="tolm-option__desc">{opt.desc}</p>
             </div>
-            <div className="tolm-option__preview">{opt.render()}</div>
+            <div className="tolm-option__preview">
+              <StandingsTable leaderMode={opt.mode} />
+            </div>
           </article>
         ))}
       </div>
