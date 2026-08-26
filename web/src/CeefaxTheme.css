@@ -1045,6 +1045,254 @@ body[data-tclot-theme='ceefax'] .pcompare-d__stat-up {
 }
 
 /* ------------------------------------------------------------------ */
+/* Mobile type pass — reading copy / player + team names               */
+/* ------------------------------------------------------------------ */
+/* Surfaces whose type is hard-coded in small px tuned for Inter read
+ * illegibly small in VT323 (weekly recap, season predictions, live
+ * odds, team detail overlay, search palette); token-based surfaces
+ * inherit the inflated ceefax ramp and can run oversized (waiver
+ * glance list). Bring both toward the same target scale: captions
+ * 12-15px, secondary 16px, names 18px, reading copy 20px. */
+
+/* Weekly recap (Preview tab) — bump the reading font + names. */
+body[data-tclot-theme='ceefax'] .weekly-recap__note {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap__empty {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap__select {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap__odds-label,
+body[data-tclot-theme='ceefax'] .weekly-recap__superlative-label {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap__odds-value,
+body[data-tclot-theme='ceefax'] .weekly-recap__superlative,
+body[data-tclot-theme='ceefax'] .weekly-recap__upset {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__side-name {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__side-mgr {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__score {
+  font-size: 24px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__precall {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__prose {
+  font-size: 20px !important;
+}
+/* The teams grid sizes its rank/record tracks in ch, which resolve
+ * against the container font — left at the inflated 36px body size the
+ * fixed tracks swallow the row and crush the team-name column. */
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__teams {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__team-row {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__team-mgr {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__rank-move {
+  font-size: 11px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__streak {
+  font-size: 12px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__team-odds {
+  font-size: 14px !important;
+}
+
+/* Waiver glance list (Moves tab) — token-sized text runs a notch too
+ * big in the ceefax ramp; pull names back so fewer truncate. */
+body[data-tclot-theme='ceefax'] .waivers-player__name {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .waivers-swap .waivers-player__name {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .waivers-glance__team,
+body[data-tclot-theme='ceefax'] .waivers-table__team {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .waivers-glance__none,
+body[data-tclot-theme='ceefax'] .waivers-weekly-tile__team {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .waivers-pos-chip,
+body[data-tclot-theme='ceefax'] .waivers-fa-tag {
+  font-size: 12px !important;
+}
+
+/* Season predictions (Preview tab, predictions subview). */
+body[data-tclot-theme='ceefax'] .season-predictions__asof {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .season-predictions__record-label {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .season-predictions__record-value {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .season-predictions__record-note {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .season-predictions__delta,
+body[data-tclot-theme='ceefax'] .season-predictions-chart__tick {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .season-predictions-chart__legend-item {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .season-predictions-chart__legend-pct {
+  font-size: 14px !important;
+}
+
+/* Live odds strips. */
+body[data-tclot-theme='ceefax'] .lo-gwcap {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .lo-sub {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .lo-meta {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .lo-hdr__name {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .lo-hdr__pending {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .lo-pcts__side {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .lo-pcts__w,
+body[data-tclot-theme='ceefax'] .lo-pcts__draw,
+body[data-tclot-theme='ceefax'] .lo-gauge__label {
+  font-size: 12px !important;
+}
+
+/* Team detail overlay (manager card). */
+body[data-tclot-theme='ceefax'] .tc-hero__meta {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-rankpill {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-recpill {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-sec__h {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-box__k {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-box__v {
+  font-size: 26px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-box__v small {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-box__sub {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-hv__k {
+  font-size: 12px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-hv__v {
+  font-size: 26px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-margin__lbl {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-margin__n {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-toggle button {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .h2h-c__name {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .h2h-c__rec {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .h2h-c__diff {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-l5__gw {
+  font-size: 12px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-l5__res {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-l5__pts {
+  font-size: 19px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-foot {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-tab {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__note {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__caption {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__total-pill {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__total small,
+body[data-tclot-theme='ceefax'] .tc-squad__ch {
+  font-size: 12px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__pos {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__player {
+  font-size: 17px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__cell {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .tc-squad__cell--tenure {
+  font-size: 14px !important;
+}
+
+/* Global search palette. */
+body[data-tclot-theme='ceefax'] .gsearch__input {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .gsearch__title,
+body[data-tclot-theme='ceefax'] .gsearch__pname {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .gsearch__sub,
+body[data-tclot-theme='ceefax'] .gsearch__owner-name,
+body[data-tclot-theme='ceefax'] .gsearch__grouphead {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .gsearch__hint {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .gsearch__poschip,
+body[data-tclot-theme='ceefax'] .gsearch__tag,
+body[data-tclot-theme='ceefax'] .gsearch__esc {
+  font-size: 12px !important;
+}
+
+/* ------------------------------------------------------------------ */
 /* CRT scanline overlay — very subtle, non-interactive                 */
 /* ------------------------------------------------------------------ */
 body[data-tclot-theme='ceefax']::after {
