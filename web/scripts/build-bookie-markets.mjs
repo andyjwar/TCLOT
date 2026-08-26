@@ -15,7 +15,8 @@
  *
  * Decimal odds carry a bookmaker overround (the book is intentionally not
  * fair — that's half the fun): ~105% on the 3-way weekly markets, ~110% on
- * the 8-runner outright.
+ * the 8-runner outright. Prices are then snapped to the traditional
+ * fractional ladder, so every quote reads like a real board ("6/4", "11/2").
  *
  * The Cloudflare bookie Worker (web/workers/bookie/) ingests this file from
  * the deployed site to open markets in D1; bets lock the odds at bet time,
@@ -34,6 +35,7 @@ import {
   STRENGTH_PRIOR_WEIGHT,
   blendedWeeklyScoresByEntry,
 } from '../src/seasonPredictionsModel.js'
+import { snapDecimalOdds } from '../src/oddsFormat.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -148,11 +150,15 @@ function h2hProbs(homeId, awayId, seed) {
   }
 }
 
-/** Decimal odds for a probability under a market-wide overround. */
+/**
+ * Decimal odds for a probability under a market-wide overround, snapped to
+ * the traditional fractional ladder (oddsFormat.js) so the board quotes real
+ * bookie prices — "6/4", "11/2" — and the UI's fractional display is exact.
+ */
 function decimalOdds(prob, overround, { minProb = 0.005, maxOdds = 500 } = {}) {
   const p = Math.max(minProb, Math.min(0.995, Number(prob) || 0))
   const dec = 1 / (p * overround)
-  return Math.min(maxOdds, Math.max(1.01, Math.round(dec * 100) / 100))
+  return snapDecimalOdds(Math.min(maxOdds, Math.max(1.01, dec)))
 }
 
 /* ---- weekly market: first gameweek whose deadline is still ahead ---- */

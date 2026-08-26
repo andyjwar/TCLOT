@@ -18,7 +18,8 @@
  *
  * Endpoints (JSON):
  *   GET  /api/health
- *   GET  /api/state        — markets, leaderboard, weekly P/L (+ me with auth)
+ *   GET  /api/state        — markets, leaderboard, weekly P/L, everyone's
+ *                            open + settled bets (+ me with auth)
  *   POST /api/register     — { entryId, pin }
  *   POST /api/login        — { entryId, pin }
  *   POST /api/bets         — { marketId, selection, stake } (Bearer auth)
@@ -595,18 +596,21 @@ async function handleState(request, env, ctx, ch) {
     .bind(seasonNow)
     .all();
 
-  // Everyone's tickets become public once their market closes — bragging
-  // rights without letting anyone copy a live board.
-  const closedBets = await db
+  // Every ticket is public — the whole point is watching your rivals sweat.
+  // Open (live) bets and settled ones alike, with the punter's name attached.
+  const allBets = await db
     .prepare(
-      `SELECT b.entry_id, b.market_id, b.selection, b.stake, b.odds, b.status, b.payout,
-              m.gw, m.kind
-       FROM bets b JOIN markets m ON m.id = b.market_id
-       WHERE b.season = ? AND m.closes_at_ms <= ?
+      `SELECT b.id, b.entry_id, u.name, b.market_id, b.selection, b.stake, b.odds,
+              b.status, b.payout, b.placed_at, m.gw, m.kind
+       FROM bets b
+       JOIN markets m ON m.id = b.market_id
+       JOIN users u ON u.entry_id = b.entry_id AND u.season = b.season
+       WHERE b.season = ?
        ORDER BY b.id DESC LIMIT 400`,
     )
-    .bind(seasonNow, nowMs)
+    .bind(seasonNow)
     .all();
+  const betRows = allBets.results ?? [];
 
   const out = {
     season: seasonNow,
@@ -625,7 +629,8 @@ async function handleState(request, env, ctx, ch) {
       net: r.net,
       bets: r.bets,
     })),
-    closedBets: closedBets.results ?? [],
+    openBets: betRows.filter((b) => b.status === 'open'),
+    closedBets: betRows.filter((b) => b.status !== 'open'),
   };
 
   const session = await sessionFromRequest(request, env);

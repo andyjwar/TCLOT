@@ -17,7 +17,8 @@ against the official FPL Draft results.
 - **Settlement** — a gameweek counts as final once every Premier League fixture
   for it is finished or provisionally finished (same rule the site uses), so
   payouts land hours before FPL's own "data checked" flag.
-- **Bankroll** — everyone starts a season with 1,000 coins; a 50-coin stipend
+- **Bankroll** — everyone starts a season with 1,000 Clotcoins (the TCLOT
+  currency); a 50-Clotcoin stipend
   lands after each settled gameweek so going bust is never terminal.
 - **Identity** — each manager claims their team once with a 4–8 digit PIN
   (PBKDF2-hashed). Sessions are HMAC-signed bearer tokens.

@@ -102,31 +102,31 @@
 
 /* --- login / claim --- */
 
-.bookie-login__roster {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-  gap: 8px;
+.bookie-login__pick-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   margin-top: 10px;
 }
 
-.bookie-login__team {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 10px;
-  border: 1px solid color-mix(in srgb, var(--fm-muted) 30%, transparent);
+.bookie-login__select {
+  flex: 1;
+  max-width: 320px;
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 40%, transparent);
   background: transparent;
   color: var(--fm-text);
   font: inherit;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
+  padding: 8px 10px;
+  border-radius: 8px;
   cursor: pointer;
-  text-align: left;
 }
 
-.bookie-login__team--active {
-  border-color: var(--fm-pitch);
-  background: color-mix(in srgb, var(--fm-pitch) 12%, transparent);
+.bookie-login__select option {
+  /* Native dropdown lists inherit page colors inconsistently — force a
+   * readable pairing in both themes. */
+  color: initial;
+  background: initial;
 }
 
 .bookie-login__pin-row {
@@ -311,7 +311,7 @@
   color: var(--fm-muted);
 }
 
-/* --- my bets --- */
+/* --- my bets + league-wide live board --- */
 
 .bookie-bets {
   list-style: none;
@@ -357,6 +357,26 @@
 .bookie-bet__status--open,
 .bookie-bet__status--void {
   color: var(--fm-muted);
+}
+
+/* Live board rows lead with the punter's name; own tickets get the same
+ * green wash as the leaderboard "me" row. */
+.bookie-bet__punter {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.bookie-bet--board {
+  grid-template-columns: auto 1fr auto auto;
+}
+
+.bookie-bet--mine {
+  background: color-mix(in srgb, var(--fm-pitch) 10%, transparent);
+  border-radius: 8px;
+  padding: 6px 8px;
 }
 
 /* --- leaderboards --- */
@@ -422,15 +442,18 @@
 }
 
 @media (max-width: 560px) {
-  .bookie-login__roster {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .bookie-market__odds {
     grid-template-columns: 1fr 1fr 1fr;
   }
 
   .bookie-odds-btn {
     min-width: 0;
+  }
+
+  /* Four board cells won't fit a phone row — let them wrap naturally. */
+  .bookie-bet--board {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 10px;
   }
 }

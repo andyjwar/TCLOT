@@ -11,6 +11,7 @@ import {
   loginBookie,
   placeBookieBet,
 } from './bookieApi.js'
+import { decimalOddsToFraction } from './oddsFormat.js'
 import './BookieView.css'
 
 /** "Fri 28 Aug, 18:30" in the viewer's locale. */
@@ -44,6 +45,15 @@ function fmtCoins(n) {
   const v = Number(n)
   if (!Number.isFinite(v)) return '—'
   return v.toLocaleString()
+}
+
+/**
+ * Traditional fractional price for display — markets are generated on the
+ * fractional ladder (build-bookie-markets.mjs snaps them), so this is exact.
+ * Decimal is kept as a tooltip for anyone who thinks in multipliers.
+ */
+function fmtOdds(odds) {
+  return decimalOddsToFraction(odds) ?? Number(odds).toFixed(2)
 }
 
 function fmtNet(n) {
@@ -200,6 +210,8 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
 
       {me ? <MyBets me={me} h2hMarkets={h2hMarkets} nameByEntry={nameByEntry} /> : null}
 
+      <LiveBets state={state} me={me} h2hMarkets={h2hMarkets} nameByEntry={nameByEntry} />
+
       <BookieLeaderboards
         state={state}
         me={me}
@@ -211,13 +223,15 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       <section className="tile tile--compact" aria-label="How the bookie works">
         <h3 className="bookie__method-title">House rules</h3>
         <p className="bookie__note">
-          Every manager starts the season with {fmtCoins(state.startingBalance ?? 1000)} coins
-          — completely fake, worthless, and worth fighting over. Odds are set by the same
-          model behind the Season Predictions tab, with a small house margin. Weekly matchup
+          Every manager starts the season with {fmtCoins(state.startingBalance ?? 1000)}{' '}
+          Clotcoins — the official TCLOT currency: completely fake, worthless, and worth
+          fighting over. Odds are set by the same model behind the Season Predictions tab,
+          with a small house margin, and quoted as traditional fractions. Weekly matchup
           markets close at the FPL deadline; the outright reprices after every gameweek but
-          your ticket keeps the odds you took. Bets settle as soon as the football finishes,
-          and a {fmtCoins(state.weeklyStipend ?? 50)}-coin stipend lands after each gameweek
-          so going bust is embarrassing, not terminal.
+          your ticket keeps the odds you took. Every ticket is public — the live bets board
+          shows what everyone has riding this week. Bets settle as soon as the football
+          finishes, and a {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
+          each gameweek so going bust is embarrassing, not terminal.
         </p>
       </section>
     </div>
@@ -236,8 +250,8 @@ function BookieHeader({ me, state, onLogout }) {
           <span className="bookie-header__who">
             Betting as <strong>{standingsMobileTeamName(me.name)}</strong>
           </span>
-          <span className="bookie-header__balance tabular" title="Coin balance">
-            {fmtCoins(me.balance)} coins
+          <span className="bookie-header__balance tabular" title="Clotcoin balance">
+            {fmtCoins(me.balance)} Clotcoins
           </span>
           <button type="button" className="bookie-header__logout" onClick={onLogout}>
             Log out
@@ -245,7 +259,7 @@ function BookieHeader({ me, state, onLogout }) {
         </div>
       ) : (
         <p className="bookie__note">
-          Fake coins, real bragging rights. Claim your team below to start betting.
+          Fake Clotcoins, real bragging rights. Claim your team below to start betting.
         </p>
       )}
     </section>
@@ -286,29 +300,31 @@ function BookieLogin({ roster, teamLogoMap, kitIndexByEntry, onLoggedIn }) {
         </p>
       ) : (
         <>
-          <div className="bookie-login__roster" role="radiogroup" aria-label="Your team">
-            {roster.map((t) => (
-              <button
-                key={t.entryId}
-                type="button"
-                role="radio"
-                aria-checked={entryId === Number(t.entryId)}
-                className={
-                  'bookie-login__team' +
-                  (entryId === Number(t.entryId) ? ' bookie-login__team--active' : '')
-                }
-                onClick={() => setEntryId(Number(t.entryId))}
-              >
-                <TeamAvatar
-                  entryId={Number(t.entryId)}
-                  name={t.name}
-                  size="sm"
-                  logoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-                <span>{standingsMobileTeamName(t.name)}</span>
-              </button>
-            ))}
+          <div className="bookie-login__pick-row">
+            {entryId != null ? (
+              <TeamAvatar
+                entryId={entryId}
+                name={roster.find((t) => Number(t.entryId) === entryId)?.name ?? ''}
+                size="sm"
+                logoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
+            ) : null}
+            <select
+              className="bookie-login__select"
+              value={entryId ?? ''}
+              onChange={(e) => setEntryId(e.target.value ? Number(e.target.value) : null)}
+              aria-label="Your team"
+            >
+              <option value="" disabled>
+                Pick your team…
+              </option>
+              {roster.map((t) => (
+                <option key={t.entryId} value={t.entryId}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="bookie-login__pin-row">
             <input
@@ -360,7 +376,9 @@ function OddsButton({ label, odds, active, disabled, onClick }) {
       onClick={onClick}
     >
       <span className="bookie-odds-btn__label">{label}</span>
-      <span className="bookie-odds-btn__odds tabular">{Number(odds).toFixed(2)}</span>
+      <span className="bookie-odds-btn__odds tabular" title={`decimal ${Number(odds).toFixed(2)}`}>
+        {fmtOdds(odds)}
+      </span>
     </button>
   )
 }
@@ -561,7 +579,9 @@ function BetSlip({ slip, me, minStake, token, onClose, onPlaced }) {
       <p className="bookie-slip__pick">
         <strong>{slip.label}</strong>
         <span className="bookie-slip__detail"> · {slip.detail}</span>
-        <span className="bookie-slip__odds tabular"> @ {Number(slip.odds).toFixed(2)}</span>
+        <span className="bookie-slip__odds tabular" title={`decimal ${Number(slip.odds).toFixed(2)}`}>
+          {' '}@ {fmtOdds(slip.odds)}
+        </span>
       </p>
       <div className="bookie-slip__row">
         <label className="bookie-slip__stake-label" htmlFor="bookie-stake">
@@ -632,8 +652,8 @@ function MyBets({ me, h2hMarkets, nameByEntry }) {
         {bets.map((b) => (
           <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
             <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
-            <span className="bookie-bet__nums tabular">
-              {fmtCoins(b.stake)} @ {Number(b.odds).toFixed(2)}
+            <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
+              {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
             </span>
             <span className={`bookie-bet__status bookie-bet__status--${b.status}`}>
               {b.status === 'open'
@@ -647,6 +667,54 @@ function MyBets({ me, h2hMarkets, nameByEntry }) {
           </li>
         ))}
       </ul>
+    </section>
+  )
+}
+
+/**
+ * Everyone's open tickets — the league-wide live board. Tickets were never
+ * secret ballots: seeing what your rivals have riding is the point.
+ */
+function LiveBets({ state, me, h2hMarkets, nameByEntry }) {
+  const marketById = useMemo(() => {
+    const map = new Map()
+    for (const m of h2hMarkets) map.set(Number(m.id), m)
+    return map
+  }, [h2hMarkets])
+  const bets = state.openBets ?? []
+  return (
+    <section className="tile tile--compact" aria-label="Live bets">
+      <h3 className="bookie__section-title">Live bets — the whole league</h3>
+      {bets.length === 0 ? (
+        <p className="bookie__note">
+          Nothing riding right now. Someone put their Clotcoins where their mouth is.
+        </p>
+      ) : (
+        <ul className="bookie-bets">
+          {bets.map((b) => {
+            const mine = me && Number(b.entry_id) === Number(me.entryId)
+            const punter = b.name ?? nameByEntry.get(Number(b.entry_id)) ?? String(b.entry_id)
+            return (
+              <li
+                key={b.id}
+                className={'bookie-bet bookie-bet--board' + (mine ? ' bookie-bet--mine' : '')}
+              >
+                <span className="bookie-bet__punter">
+                  {standingsMobileTeamName(punter)}
+                  {mine ? ' (you)' : ''}
+                </span>
+                <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
+                <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
+                  {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
+                </span>
+                <span className="bookie-bet__status bookie-bet__status--open">
+                  to return {fmtCoins(Math.round(b.stake * b.odds))}
+                </span>
+              </li>
+            )
+          })}
+        </ul>
+      )}
     </section>
   )
 }

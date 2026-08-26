@@ -23,6 +23,49 @@ const LADDER = [
   [200, 1], [250, 1], [500, 1], [1000, 1],
 ];
 
+/** Nearest ladder rung `[num, den]` for decimal odds. */
+function nearestRung(dec) {
+  let best = LADDER[0];
+  let bestDiff = Infinity;
+  for (const [n, d] of LADDER) {
+    const diff = Math.abs(n / d + 1 - dec);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = [n, d];
+    }
+  }
+  return best;
+}
+
+/**
+ * Snap decimal odds to the nearest rung of the traditional ladder, returning
+ * the rung's exact decimal price (num/den + 1). Used by the bookie market
+ * builder so every quoted price sits on the ladder — the fractional display
+ * is then exact, not an approximation.
+ *
+ * @param {number} dec — decimal odds (> 1)
+ * @returns {number} ladder decimal odds, e.g. 2.47 → 2.5 (6/4)
+ */
+export function snapDecimalOdds(dec) {
+  const v = Number(dec);
+  if (!Number.isFinite(v) || v <= 1) return 1.01;
+  const [n, d] = nearestRung(v);
+  return Math.round((n / d + 1) * 10000) / 10000;
+}
+
+/**
+ * Traditional fractional display for decimal odds.
+ *
+ * @param {number} dec — decimal odds (> 1)
+ * @returns {string | null} e.g. 3.5 → `"5/2"`, 2 → `"Evs"` — null if invalid.
+ */
+export function decimalOddsToFraction(dec) {
+  const v = Number(dec);
+  if (!Number.isFinite(v) || v <= 1) return null;
+  const [n, d] = nearestRung(v);
+  return n === 1 && d === 1 ? 'Evs' : `${n}/${d}`;
+}
+
 /**
  * Fair fractional odds for a win probability, as display text.
  *
@@ -34,15 +77,5 @@ export function probToFractionalOdds(pct) {
   const p = Number(pct);
   if (!Number.isFinite(p) || p <= 0) return null;
   if (p >= 99.5) return '1/100';
-  const dec = 100 / p;
-  let best = LADDER[0];
-  let bestDiff = Infinity;
-  for (const [n, d] of LADDER) {
-    const diff = Math.abs(n / d + 1 - dec);
-    if (diff < bestDiff) {
-      bestDiff = diff;
-      best = [n, d];
-    }
-  }
-  return best[0] === 1 && best[1] === 1 ? 'Evs' : `${best[0]}/${best[1]}`;
+  return decimalOddsToFraction(100 / p);
 }
