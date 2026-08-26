@@ -13,24 +13,24 @@ const names = new Map([
   [2, 'Mordor SFG'],
 ])
 
-test('describeBetCompact — home pick is (v opponent last word, GW)', () => {
-  assert.equal(
+test('describeBetCompact — home pick is bold home + (v opponent, GW)', () => {
+  assert.deepEqual(
     describeBetCompact({ market_id: 10, selection: 'home' }, marketById, names),
-    '(v Gimli, GW2)',
+    { pick: 'Bilbo', detail: '(v Gimli, GW2)' },
   )
 })
 
-test('describeBetCompact — away pick is (v opponent last word, GW)', () => {
-  assert.equal(
+test('describeBetCompact — away pick is bold away + (v opponent, GW)', () => {
+  assert.deepEqual(
     describeBetCompact({ market_id: 10, selection: 'away' }, marketById, names),
-    '(v Bilbo, GW2)',
+    { pick: 'Gimli', detail: '(v Bilbo, GW2)' },
   )
 })
 
-test('describeBetCompact — draw keeps both last words', () => {
-  assert.equal(
+test('describeBetCompact — draw keeps both last words in the detail', () => {
+  assert.deepEqual(
     describeBetCompact({ market_id: 10, selection: 'draw' }, marketById, names),
-    'Draw (Bilbo v Gimli, GW2)',
+    { pick: 'Draw', detail: '(Bilbo v Gimli, GW2)' },
   )
 })
 
@@ -41,21 +41,21 @@ test('describeBetCompact — season places use last word + market tag', () => {
     [101, { id: 101, kind: 'minnow' }],
     [102, { id: 102, kind: 'last' }],
   ])
-  assert.equal(
+  assert.deepEqual(
     describeBetCompact({ market_id: 99, kind: 'outright', selection: '1' }, byId, names),
-    'Gimli — outright',
+    { pick: 'Gimli', detail: '— outright' },
   )
-  assert.equal(
+  assert.deepEqual(
     describeBetCompact({ market_id: 100, kind: 'titan', selection: '1' }, byId, names),
-    'Gimli — titan',
+    { pick: 'Gimli', detail: '— titan' },
   )
-  assert.equal(
+  assert.deepEqual(
     describeBetCompact({ market_id: 101, kind: 'minnow', selection: '2' }, byId, names),
-    'Mordor — minnow',
+    { pick: 'Mordor', detail: '— minnow' },
   )
-  assert.equal(
+  assert.deepEqual(
     describeBetCompact({ market_id: 102, kind: 'last', selection: '1' }, byId, names),
-    'Gimli — last',
+    { pick: 'Gimli', detail: '— last' },
   )
 })
 

@@ -355,6 +355,10 @@
   white-space: nowrap;
 }
 
+.bookie-bet__pick {
+  font-weight: 700;
+}
+
 .bookie-bet__col {
   text-align: center;
   white-space: nowrap;

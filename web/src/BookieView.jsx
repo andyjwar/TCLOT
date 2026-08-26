@@ -840,6 +840,19 @@ function CashoutButton({ bet, value, token, onCashedOut }) {
   )
 }
 
+/**
+ * One ticket's compact description: the pick in bold, then the context —
+ * `Gimli (v Bilbo, GW2)`. Full club names live in the hover title.
+ */
+function BetDesc({ bet, marketById, nameByEntry }) {
+  const { pick, detail } = describeBetCompact(bet, marketById, nameByEntry)
+  return (
+    <span className="bookie-bet__desc" title={describeBet(bet, marketById, nameByEntry)}>
+      <strong className="bookie-bet__pick">{pick}</strong> {detail}
+    </span>
+  )
+}
+
 function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut }) {
   const marketById = useMemo(() => {
     const map = new Map()
@@ -862,12 +875,9 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
         <BetColHead />
         {bets.map((b) => {
           const quote = b.status === 'open' ? cashoutQuotes.get(Number(b.id)) : undefined
-          const full = describeBet(b, marketById, nameByEntry)
           return (
             <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
-              <span className="bookie-bet__desc" title={full}>
-                {describeBetCompact(b, marketById, nameByEntry)}
-              </span>
+              <BetDesc bet={b} marketById={marketById} nameByEntry={nameByEntry} />
               <BetTicketFigures bet={b} />
               {quote != null && token ? (
                 <CashoutButton
@@ -949,17 +959,12 @@ function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntr
                 </summary>
                 <ul className="bookie-bets bookie-punter__bets">
                   <BetColHead />
-                  {g.rows.map((b) => {
-                    const full = describeBet(b, marketById, nameByEntry)
-                    return (
-                      <li key={b.id} className="bookie-bet">
-                        <span className="bookie-bet__desc" title={full}>
-                          {describeBetCompact(b, marketById, nameByEntry)}
-                        </span>
-                        <BetTicketFigures bet={b} />
-                      </li>
-                    )
-                  })}
+                  {g.rows.map((b) => (
+                    <li key={b.id} className="bookie-bet">
+                      <BetDesc bet={b} marketById={marketById} nameByEntry={nameByEntry} />
+                      <BetTicketFigures bet={b} />
+                    </li>
+                  ))}
                 </ul>
               </details>
             )
