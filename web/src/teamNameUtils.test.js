@@ -5,6 +5,7 @@ import {
   isMsfgTeamName,
   lastWordTeamName,
   standingsMobileTeamName,
+  threeLetterTeamName,
 } from './teamNameUtils.js';
 
 test('firstWord — multi-word names collapse to leading token', () => {
@@ -76,6 +77,43 @@ test('lastWordTeamName — last word of the club name, MSFG reads Mordor', () =>
   assert.equal(lastWordTeamName('Mr Mordorlicious School for Girls'), 'Mordor');
   assert.equal(lastWordTeamName(null), '');
   assert.equal(lastWordTeamName('  '), '');
+});
+
+test('threeLetterTeamName — ASCII code from the last word, MSFG reads MOR', () => {
+  assert.equal(threeLetterTeamName('Toronto Gimli'), 'GIM');
+  assert.equal(threeLetterTeamName('Atlético Bilbo'), 'BIL');
+  assert.equal(threeLetterTeamName('Hackney Rohirrim'), 'ROH');
+  assert.equal(threeLetterTeamName('Rokesly Regorasu'), 'REG');
+  assert.equal(threeLetterTeamName('Brampton Balrogs'), 'BAL');
+  assert.equal(threeLetterTeamName('Seoul Shire'), 'SHI');
+  assert.equal(threeLetterTeamName('Mordor SFG'), 'MOR');
+  assert.equal(threeLetterTeamName('Mr Mordorlicious School for Girls'), 'MOR');
+});
+
+test('threeLetterTeamName — accents fold to plain ASCII', () => {
+  assert.equal(threeLetterTeamName('Suffolk Sméagol'), 'SME');
+  assert.equal(threeLetterTeamName('Café'), 'CAF');
+});
+
+test('threeLetterTeamName — short and empty names degrade gracefully', () => {
+  assert.equal(threeLetterTeamName('FC'), 'FC');
+  assert.equal(threeLetterTeamName(null), '');
+  assert.equal(threeLetterTeamName('   '), '');
+});
+
+test('threeLetterTeamName — the 2026-27 league has no colliding codes', () => {
+  const clubs = [
+    'Atlético Bilbo',
+    'Toronto Gimli',
+    'Suffolk Sméagol',
+    'Rokesly Regorasu',
+    'Hackney Rohirrim',
+    'Mordor SFG',
+    'Seoul Shire',
+    'Brampton Balrogs',
+  ];
+  const codes = clubs.map(threeLetterTeamName);
+  assert.equal(new Set(codes).size, clubs.length, `collision in ${codes.join(', ')}`);
 });
 
 test('standingsMobileTeamName — full names, MSFG renders as Mordor SFG', () => {
