@@ -17,7 +17,7 @@ CREATE TABLE IF NOT EXISTS markets (
   id          INTEGER PRIMARY KEY AUTOINCREMENT,
   season      TEXT    NOT NULL,
   market_key  TEXT    NOT NULL UNIQUE,  -- '2026-27:gw2:4259-4898' | '2026-27:outright'
-  kind        TEXT    NOT NULL,         -- 'h2h' | 'outright'
+  kind        TEXT    NOT NULL,         -- 'h2h' | 'outright' | 'titan' | 'minnow' | 'last'
   gw          INTEGER,                  -- NULL for outright
   closes_at_ms INTEGER NOT NULL,        -- betting deadline (epoch ms)
   status      TEXT    NOT NULL DEFAULT 'open',  -- 'open' | 'settled' | 'void'

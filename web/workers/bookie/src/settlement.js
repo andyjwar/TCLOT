@@ -36,8 +36,16 @@ export function h2hResultForMarket(payload, match) {
   return { result: 'draw', home, away };
 }
 
-/** Final league champion from finished matches (3/1/0, PF tiebreak), or null. */
-export function championFromMatches(matches) {
+/** Titan = top 4; Minnow = bottom 4 (8-team TCLOT table). */
+export const TITAN_PLACES = 4
+export const MINNOW_PLACES = 4
+export const SEASON_MARKET_KINDS = ['outright', 'titan', 'minnow', 'last']
+
+/**
+ * Final table from finished matches (3/1/0, PF tiebreak), or null while any
+ * row is still open. `order[0]` is the champion; `ranks` is entryId → 1-based rank.
+ */
+export function ranksFromMatches(matches) {
   const all = Array.isArray(matches) ? matches : [];
   if (all.length === 0 || !all.every((m) => m.finished === true)) return null;
   const table = new Map();
@@ -59,8 +67,39 @@ export function championFromMatches(matches) {
       b.pts += 1;
     }
   }
-  const order = [...table.entries()].sort(
-    (x, y) => y[1].pts - x[1].pts || y[1].pf - x[1].pf,
-  );
-  return order.length > 0 ? order[0][0] : null;
+  const order = [...table.entries()]
+    .sort((x, y) => y[1].pts - x[1].pts || y[1].pf - x[1].pf)
+    .map(([id]) => id);
+  if (order.length === 0) return null;
+  const ranks = new Map();
+  order.forEach((id, i) => ranks.set(id, i + 1));
+  return { order, ranks };
+}
+
+/** Final league champion from finished matches (3/1/0, PF tiebreak), or null. */
+export function championFromMatches(matches) {
+  const table = ranksFromMatches(matches);
+  return table ? table.order[0] : null;
+}
+
+/**
+ * Winning selections (entry-id strings) for a season-long place market.
+ * Titan pays the top four; Minnow the bottom four; last pays only 8th.
+ *
+ * @param {'outright' | 'titan' | 'minnow' | 'last'} kind
+ * @param {{ order: number[] } | null} ranked
+ * @returns {Set<string> | null}
+ */
+export function seasonKindWinners(kind, ranked) {
+  if (!ranked?.order?.length) return null;
+  const n = ranked.order.length;
+  if (kind === 'outright') return new Set([String(ranked.order[0])]);
+  if (kind === 'last') return new Set([String(ranked.order[n - 1])]);
+  if (kind === 'titan') {
+    return new Set(ranked.order.slice(0, Math.min(TITAN_PLACES, n)).map(String));
+  }
+  if (kind === 'minnow') {
+    return new Set(ranked.order.slice(Math.max(0, n - MINNOW_PLACES)).map(String));
+  }
+  return null;
 }
