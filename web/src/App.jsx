@@ -2609,7 +2609,7 @@ function App() {
     leagueDataBuiltAt = null,
   } = data ?? {}
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
-  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | bookie | fplLive | players | more | settings
+  const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
   const [teamSelectionTab, setTeamSelectionTab] = useState(
     /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
   )
@@ -2621,7 +2621,7 @@ function App() {
    * moved to the Preseason hub) and `'forecast'` (player forecast leaderboard,
    * hidden — the forecast data still powers the fixture Odds tab). */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions'} */ (null),
+    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} */ (null),
   )
   const setFplLiveTab = useCallback((next) => {
     setFplLiveTabRaw(next === 'vibes' || next === 'forecast' ? 'live' : next)
@@ -3849,13 +3849,6 @@ function App() {
             <HallOfChampions tableRows={tableRows} />
           ) : null}
 
-          {dashboardView === 'bookie' ? (
-            <BookieView
-              teamLogoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          ) : null}
-
           {dashboardView === 'players' ? (
             <div className="dashboard-stack">
               <PlayersWorkbench
@@ -4157,6 +4150,19 @@ function App() {
                 >
                   Predictions
                 </button>
+                <button
+                  type="button"
+                  role="tab"
+                  id="tab-fpl-live-bookie"
+                  aria-selected={fplLiveTab === 'bookie'}
+                  className={
+                    'subnav__tab' +
+                    (fplLiveTab === 'bookie' ? ' subnav__tab--active' : '')
+                  }
+                  onClick={() => setFplLiveTab('bookie')}
+                >
+                  Bookie
+                </button>
               </div>
               </div>
               <div className="section-body">
@@ -4202,6 +4208,12 @@ function App() {
                     kitIndexByEntry={kitIndexByEntry}
                   />
                 </div>
+              ) : null}
+              {fplLiveTab === 'bookie' ? (
+                <BookieView
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
               ) : null}
               </div>
             </section>

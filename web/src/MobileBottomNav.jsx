@@ -25,8 +25,9 @@
  *     number is unavailable. No pulse; label "Preview" (muted). Routes to
  *     FPL Live landing on the weekly Recap.
  *
- * Heritage ('hall'), the Bookie ('bookie') and Settings ('settings') live
- * behind More (the existing `'more'` dashboardView page / DashboardMorePanel).
+ * Heritage ('hall') and Settings ('settings') live behind More (the existing
+ * `'more'` dashboardView page / DashboardMorePanel). The Bookie is an FPL
+ * Live sub-tab next to Predictions, not a nav destination.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
  * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses the
@@ -93,11 +94,10 @@ export function MobileBottomNav({
     : null
 
   // "More" stays lit while the user is on any destination reached through it
-  // (the More page itself, Heritage, the Bookie, or Settings).
+  // (the More page itself, Heritage, or Settings).
   const moreActive =
     dashboardView === 'more' ||
     dashboardView === 'hall' ||
-    dashboardView === 'bookie' ||
     dashboardView === 'settings'
 
   if (navLocked) {

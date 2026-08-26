@@ -1,9 +1,9 @@
 import { TeamAvatar } from './TeamAvatar'
 import { NavIcon } from './NavIcon'
 
-/** @typedef {'preseason' | 'standings' | 'teamSelection' | 'players' | 'hall' | 'bookie' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
+/** @typedef {'preseason' | 'standings' | 'teamSelection' | 'players' | 'hall' | 'fplLive' | 'more' | 'settings'} DashboardViewId */
 
-/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'coins' | 'more' | 'settings'} NavIconName */
+/** @typedef {'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'more' | 'settings'} NavIconName */
 
 /**
  * Note: the view ID for the Moves tab stays `teamSelection` to keep
@@ -113,12 +113,6 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
       icon: /** @type {const} */ ('column'),
     },
     {
-      id: /** @type {const} */ ('bookie'),
-      label: 'Bookie',
-      shortLabel: 'Bookie',
-      icon: /** @type {const} */ ('coins'),
-    },
-    {
       id: /** @type {const} */ ('more'),
       label: 'More',
       shortLabel: 'More',
@@ -189,12 +183,12 @@ export function DashboardMorePanel({
 }) {
   // The persistent mobile bottom tab bar (MobileBottomNav.jsx) now surfaces
   // Table (Standings), Moves, Players, and a contextual centre (FPL Live)
-  // at the top level. That leaves Heritage, the Bookie and Settings to
-  // reach through More, so this panel lists exactly those three.
+  // at the top level. That leaves Heritage and Settings to reach through
+  // More, so this panel lists exactly those two. (The Bookie lives inside
+  // FPL Live next to Predictions — no nav slot needed.)
   // ('more' is effectively mobile-only — the desktop top nav filters it out.)
   const rows = [
     { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },
-    { id: /** @type {const} */ ('bookie'),   label: 'Bookie',   emoji: '🪙' },
     { id: /** @type {const} */ ('settings'), label: 'Settings', emoji: '⚙️' },
   ]
 

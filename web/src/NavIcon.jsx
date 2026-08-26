@@ -19,7 +19,6 @@
  *   - close        : X — expanded-state trigger for the mobile FAB nav
  *   - film         : Clapperboard/film strip — the "26/27" preseason hub, used by
  *                    the contextual centre slot in the mobile bottom tab bar
- *   - coins        : Two stacked coins — the fake-money Bookie tab
  *
  * Stroke color is `currentColor` so the icon inherits CSS color from its
  * surrounding button (active vs. idle). pulsing-dot is the lone exception:
@@ -28,7 +27,7 @@
 
 /**
  * @param {{
- *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close' | 'film' | 'coins',
+ *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close' | 'film',
  *   className?: string,
  *   size?: number,
  * }} props
@@ -155,17 +154,6 @@ export function NavIcon({ name, className, size = 20 }) {
         <svg {...common}>
           <path d="M18 6 6 18" />
           <path d="m6 6 12 12" />
-        </svg>
-      )
-    case 'coins':
-      // Lucide "coins": one full coin overlapping a second, partially
-      // hidden coin — reads as a stack of chips at nav sizes.
-      return (
-        <svg {...common}>
-          <circle cx="8" cy="8" r="6" />
-          <path d="M18.09 10.37A6 6 0 1 1 10.34 18" />
-          <path d="M7 6h1v4" />
-          <path d="m16.71 13.88.7.71-2.82 2.82" />
         </svg>
       )
     case 'film':
