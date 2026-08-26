@@ -297,11 +297,7 @@ function BookieHeader({ me, state, onLogout }) {
             Log out
           </button>
         </div>
-      ) : (
-        <p className="bookie__note">
-          Fake Clotcoins, real bragging rights. Claim your team below to start betting.
-        </p>
-      )}
+      ) : null}
     </section>
   )
 }
