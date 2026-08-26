@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
+import { describeBet, describeBetCompact, SEASON_PLACE_KINDS } from './bookieBetLabel.js'
 import {
   bookieEnabled,
   fetchBookieState,
@@ -61,6 +62,52 @@ function fmtOdds(odds) {
 function fmtNet(n) {
   const v = Number(n) || 0
   return `${v > 0 ? '+' : ''}${v.toLocaleString()}`
+}
+
+function betReturnTone(status) {
+  if (status === 'won') return 'won'
+  if (status === 'lost') return 'lost'
+  if (status === 'cashed_out') return 'cashed'
+  if (status === 'void') return 'void'
+  return 'open'
+}
+
+function betReturnLabel(bet) {
+  if (bet.status === 'open' || bet.status == null) {
+    return fmtCoins(Math.round(Number(bet.stake) * Number(bet.odds)))
+  }
+  if (bet.status === 'won' || bet.status === 'cashed_out') return fmtCoins(bet.payout)
+  if (bet.status === 'void') return fmtCoins(bet.stake)
+  return '—'
+}
+
+function BetColHead() {
+  return (
+    <li className="bookie-bet bookie-bet--head" aria-hidden="true">
+      <span className="bookie-bet__desc" />
+      <span className="bookie-bet__col">Odds</span>
+      <span className="bookie-bet__col">Wager</span>
+      <span className="bookie-bet__col">Return</span>
+    </li>
+  )
+}
+
+function BetTicketFigures({ bet }) {
+  const tone = betReturnTone(bet.status)
+  return (
+    <>
+      <span
+        className="bookie-bet__col bookie-bet__col--odds tabular"
+        title={`decimal ${Number(bet.odds).toFixed(2)}`}
+      >
+        {fmtOdds(bet.odds)}
+      </span>
+      <span className="bookie-bet__pill bookie-bet__pill--wager tabular">{fmtCoins(bet.stake)}</span>
+      <span className={`bookie-bet__pill bookie-bet__pill--return bookie-bet__pill--${tone} tabular`}>
+        {betReturnLabel(bet)}
+      </span>
+    </>
+  )
 }
 
 /**
@@ -171,14 +218,18 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
   const me = state.me ?? null
   const markets = Array.isArray(state.markets) ? state.markets : []
   const h2hMarkets = markets.filter((m) => m.kind === 'h2h')
-  const outright = markets.find((m) => m.kind === 'outright') ?? null
+  const placeMarkets = markets.filter((m) => SEASON_PLACE_KINDS.includes(m.kind))
+  const rosterMarket =
+    placeMarkets.find((m) => m.kind === 'outright') ?? placeMarkets[0] ?? null
   const openGw = h2hMarkets.find((m) => m.open)?.gw ?? null
   const weeklyOpen = openGw != null ? h2hMarkets.filter((m) => m.gw === openGw) : []
   const nameByEntry = new Map(
     (state.leaderboard ?? []).map((u) => [Number(u.entryId), u.name]),
   )
-  for (const s of outright?.payload?.selections ?? []) {
-    if (!nameByEntry.has(Number(s.entryId))) nameByEntry.set(Number(s.entryId), s.name)
+  for (const m of placeMarkets) {
+    for (const s of m.payload?.selections ?? []) {
+      if (!nameByEntry.has(Number(s.entryId))) nameByEntry.set(Number(s.entryId), s.name)
+    }
   }
 
   return (
@@ -187,7 +238,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
 
       {!me ? (
         <BookieLogin
-          roster={outright?.payload?.selections ?? []}
+          roster={rosterMarket?.payload?.selections ?? []}
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
           onLoggedIn={onLoggedIn}
@@ -218,9 +269,9 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
         />
       ) : null}
 
-      {outright ? (
-        <OutrightMarket
-          market={outright}
+      {placeMarkets.length > 0 ? (
+        <SeasonPlaceBoard
+          markets={placeMarkets}
           me={me}
           onPick={setSlip}
           teamLogoMap={teamLogoMap}
@@ -231,7 +282,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       {me ? (
         <MyBets
           me={me}
-          h2hMarkets={h2hMarkets}
+          markets={markets}
           nameByEntry={nameByEntry}
           cashoutQuotes={cashoutQuotes}
           token={session?.token}
@@ -242,7 +293,7 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
       <LiveBets
         state={state}
         me={me}
-        h2hMarkets={h2hMarkets}
+        markets={markets}
         nameByEntry={nameByEntry}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
@@ -263,10 +314,11 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           Clotcoins — the official TCLOT currency: completely fake, worthless, and worth
           fighting over. Odds are set by the same model behind the Season Predictions tab,
           with a small house margin, and quoted as traditional fractions. Weekly matchup
-          markets close at the FPL deadline; the outright reprices after every gameweek but
-          your ticket keeps the odds you took. Every ticket is public — the live bets board
-          shows what everyone has riding this week. Bets settle as soon as the football
-          finishes, and a {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
+          markets close at the FPL deadline; Champion, Titan, Minnow and last-place
+          boards reprice after every gameweek but your ticket keeps the odds you took.
+          Every ticket is public — the live bets board shows what everyone has riding
+          this week. Bets settle as soon as the football finishes, and a{' '}
+          {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
           each gameweek so going bust is embarrassing, not terminal. Open tickets carry a
           cash-out offer — what your position is worth right now, minus the house's cut.
           Once the gameweek kicks off the offer tracks the live scores, so when your long
@@ -297,11 +349,7 @@ function BookieHeader({ me, state, onLogout }) {
             Log out
           </button>
         </div>
-      ) : (
-        <p className="bookie__note">
-          Fake Clotcoins, real bragging rights. Claim your team below to start betting.
-        </p>
-      )}
+      ) : null}
     </section>
   )
 }
@@ -524,13 +572,86 @@ function WeeklyMarkets({ gw, markets, me, slip, onPick, teamLogoMap, kitIndexByE
   )
 }
 
-function OutrightMarket({ market, me, onPick, teamLogoMap, kitIndexByEntry }) {
+const PLACE_TABS = [
+  {
+    kind: 'outright',
+    tab: 'Champion',
+    title: 'Outright — league champion',
+    verb: 'Champion',
+    crown: 'Champion',
+    slipLabel: (name) => `${name} to win the league`,
+    detail: 'Outright champion',
+    note: 'Pays if they win the league. Odds track Season Predictions and reprice weekly — your ticket locks the price you took.',
+  },
+  {
+    kind: 'titan',
+    tab: 'Titan',
+    title: 'Titan — finish top 4',
+    verb: 'Titan',
+    crown: 'Titan',
+    slipLabel: (name) => `${name} to finish Titan (top 4)`,
+    detail: 'Titan (top 4)',
+    note: 'Pays if they finish 1st–4th. Four tickets can win this market.',
+  },
+  {
+    kind: 'minnow',
+    tab: 'Minnow',
+    title: 'Minnow — finish bottom 4',
+    verb: 'Minnow',
+    crown: 'Minnow',
+    slipLabel: (name) => `${name} to finish Minnow (bottom 4)`,
+    detail: 'Minnow (bottom 4)',
+    note: 'Pays if they finish 5th–8th. Four tickets can win this market.',
+  },
+  {
+    kind: 'last',
+    tab: 'Last',
+    title: 'Last place',
+    verb: 'Last',
+    crown: 'Last',
+    slipLabel: (name) => `${name} to finish last`,
+    detail: 'Last place',
+    note: 'Pays only if they finish 8th.',
+  },
+]
+
+const PLACE_TAB_STORAGE = 'tclotBookiePlaceTab.v1'
+
+function SeasonPlaceBoard({ markets, me, onPick, teamLogoMap, kitIndexByEntry }) {
+  const available = PLACE_TABS.filter((t) => markets.some((m) => m.kind === t.kind))
+  const [tab, setTab] = useState(() => {
+    try {
+      const stored = sessionStorage.getItem(PLACE_TAB_STORAGE)
+      if (PLACE_TABS.some((t) => t.kind === stored)) return stored
+    } catch {
+      /* private mode */
+    }
+    return 'outright'
+  })
+
+  const resolvedKind = available.some((t) => t.kind === tab) ? tab : available[0]?.kind
+  const meta = PLACE_TABS.find((t) => t.kind === resolvedKind)
+  const market = markets.find((m) => m.kind === resolvedKind) ?? null
+
+  const selectTab = (kind) => {
+    setTab(kind)
+    try {
+      sessionStorage.setItem(PLACE_TAB_STORAGE, kind)
+    } catch {
+      /* ignore */
+    }
+  }
+
+  if (!meta || !market) return null
+
   const selections = market.payload?.selections ?? []
   const settled = market.status === 'settled'
+  const winners = new Set(String(market.result ?? '').split(',').filter(Boolean))
+
   return (
-    <section className="tile tile--compact" aria-label="Outright market">
+    <section className="tile tile--compact" aria-label="Season markets">
       <div className="tile-head-row tile-head-row--tight">
-        <h3 className="bookie__section-title">Outright — league champion</h3>
+        <h3 className="bookie__section-title">{meta.title}</h3>
         <span className="bookie__deadline tabular">
           {settled
             ? 'settled'
@@ -539,9 +660,26 @@ function OutrightMarket({ market, me, onPick, teamLogoMap, kitIndexByEntry }) {
               : 'pre-season prices'}
         </span>
       </div>
+      {available.length > 1 ? (
+        <div className="subnav bookie-place-nav" role="tablist" aria-label="Season markets">
+          {available.map((t) => (
+            <button
+              key={t.kind}
+              type="button"
+              role="tab"
+              aria-selected={t.kind === resolvedKind}
+              className={'subnav__tab' + (t.kind === resolvedKind ? ' subnav__tab--active' : '')}
+              onClick={() => selectTab(t.kind)}
+            >
+              {t.tab}
+            </button>
+          ))}
+        </div>
+      ) : null}
       <ul className="bookie-outright">
         {selections.map((s) => {
-          const won = settled && String(market.result) === String(s.entryId)
+          const won = settled && winners.has(String(s.entryId))
+          const pct = s.pct ?? s.titlePct
           return (
             <li key={s.entryId} className={'bookie-outright__row' + (won ? ' bookie-outright__row--won' : '')}>
               <span className="bookie-market__team">
@@ -553,11 +691,11 @@ function OutrightMarket({ market, me, onPick, teamLogoMap, kitIndexByEntry }) {
                   kitIndexByEntry={kitIndexByEntry}
                 />
                 <span>{standingsMobileTeamName(s.name)}</span>
-                {won ? <span className="bookie-outright__crown" aria-label="Champion">👑</span> : null}
+                {won ? <span className="bookie-outright__crown" aria-label={meta.crown}>👑</span> : null}
               </span>
-              <span className="bookie-outright__pct tabular">{s.titlePct}%</span>
+              <span className="bookie-outright__pct tabular">{pct}%</span>
               <OddsButton
-                label="Champion"
+                label={meta.verb}
                 odds={s.odds}
                 active={false}
                 disabled={!me || settled || !market.open}
@@ -565,9 +703,9 @@ function OutrightMarket({ market, me, onPick, teamLogoMap, kitIndexByEntry }) {
                   onPick({
                     marketId: market.id,
                     selection: String(s.entryId),
-                    label: `${standingsMobileTeamName(s.name)} to win the league`,
+                    label: meta.slipLabel(standingsMobileTeamName(s.name)),
                     odds: s.odds,
-                    detail: 'Outright champion',
+                    detail: meta.detail,
                   })
                 }
               />
@@ -575,10 +713,7 @@ function OutrightMarket({ market, me, onPick, teamLogoMap, kitIndexByEntry }) {
           )
         })}
       </ul>
-      <p className="bookie__note bookie__note--small">
-        Outright odds track the Season Predictions model and reprice weekly — your ticket
-        locks the price you took.
-      </p>
+      <p className="bookie__note bookie__note--small">{meta.note}</p>
     </section>
   )
 }
@@ -655,21 +790,6 @@ function BetSlip({ slip, me, minStake, token, onClose, onPlaced }) {
   )
 }
 
-/** Human label for one bet, from its market + selection. */
-function describeBet(bet, marketById, nameByEntry) {
-  const market = marketById.get(Number(bet.market_id))
-  if (bet.kind === 'outright' || market?.kind === 'outright') {
-    const name = nameByEntry.get(Number(bet.selection)) ?? `Entry ${bet.selection}`
-    return `${standingsMobileTeamName(name)} — outright champion`
-  }
-  const p = market?.payload
-  if (!p) return `GW${bet.gw ?? '?'} matchup — ${bet.selection}`
-  const home = standingsMobileTeamName(p.homeName)
-  const away = standingsMobileTeamName(p.awayName)
-  const pick = bet.selection === 'home' ? home : bet.selection === 'away' ? away : 'Draw'
-  return `${pick} (${home} v ${away}, GW${p.gw})`
-}
-
 /**
  * The tempter's button: shows the standing offer, arms on the first tap
  * ("sure?"), pays on the second. If the board moves between quote and
@@ -720,12 +840,12 @@ function CashoutButton({ bet, value, token, onCashedOut }) {
   )
 }
 
-function MyBets({ me, h2hMarkets, nameByEntry, cashoutQuotes, token, onCashedOut }) {
+function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut }) {
   const marketById = useMemo(() => {
     const map = new Map()
-    for (const m of h2hMarkets) map.set(Number(m.id), m)
+    for (const m of markets) map.set(Number(m.id), m)
     return map
-  }, [h2hMarkets])
+  }, [markets])
   const bets = me.bets ?? []
   if (bets.length === 0) {
     return (
@@ -739,25 +859,16 @@ function MyBets({ me, h2hMarkets, nameByEntry, cashoutQuotes, token, onCashedOut
     <section className="tile tile--compact" aria-label="My bets">
       <h3 className="bookie__section-title">My bets</h3>
       <ul className="bookie-bets">
+        <BetColHead />
         {bets.map((b) => {
           const quote = b.status === 'open' ? cashoutQuotes.get(Number(b.id)) : undefined
+          const full = describeBet(b, marketById, nameByEntry)
           return (
             <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
-              <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
-              <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
-                {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
+              <span className="bookie-bet__desc" title={full}>
+                {describeBetCompact(b, marketById, nameByEntry)}
               </span>
-              <span className={`bookie-bet__status bookie-bet__status--${b.status}`}>
-                {b.status === 'open'
-                  ? `to return ${fmtCoins(Math.round(b.stake * b.odds))}`
-                  : b.status === 'won'
-                    ? `won ${fmtCoins(b.payout)}`
-                    : b.status === 'cashed_out'
-                      ? `cashed out for ${fmtCoins(b.payout)}`
-                      : b.status === 'void'
-                        ? 'void — refunded'
-                        : 'lost'}
-              </span>
+              <BetTicketFigures bet={b} />
               {quote != null && token ? (
                 <CashoutButton
                   key={`${b.id}:${quote}`}
@@ -781,12 +892,12 @@ function MyBets({ me, h2hMarkets, nameByEntry, cashoutQuotes, token, onCashedOut
  * per team behind a collapsible row so eight busy punters don't turn the
  * board into a scroll marathon.
  */
-function LiveBets({ state, me, h2hMarkets, nameByEntry, teamLogoMap, kitIndexByEntry }) {
+function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntry }) {
   const marketById = useMemo(() => {
     const map = new Map()
-    for (const m of h2hMarkets) map.set(Number(m.id), m)
+    for (const m of markets) map.set(Number(m.id), m)
     return map
-  }, [h2hMarkets])
+  }, [markets])
 
   const bets = state.openBets ?? []
   const byEntry = new Map()
@@ -837,17 +948,18 @@ function LiveBets({ state, me, h2hMarkets, nameByEntry, teamLogoMap, kitIndexByE
                   </span>
                 </summary>
                 <ul className="bookie-bets bookie-punter__bets">
-                  {g.rows.map((b) => (
-                    <li key={b.id} className="bookie-bet">
-                      <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
-                      <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
-                        {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
-                      </span>
-                      <span className="bookie-bet__status bookie-bet__status--open">
-                        to return {fmtCoins(Math.round(b.stake * b.odds))}
-                      </span>
-                    </li>
-                  ))}
+                  <BetColHead />
+                  {g.rows.map((b) => {
+                    const full = describeBet(b, marketById, nameByEntry)
+                    return (
+                      <li key={b.id} className="bookie-bet">
+                        <span className="bookie-bet__desc" title={full}>
+                          {describeBetCompact(b, marketById, nameByEntry)}
+                        </span>
+                        <BetTicketFigures bet={b} />
+                      </li>
+                    )
+                  })}
                 </ul>
               </details>
             )

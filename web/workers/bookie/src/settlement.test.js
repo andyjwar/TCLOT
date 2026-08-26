@@ -4,6 +4,8 @@ import {
   footballComplete,
   h2hResultForMarket,
   championFromMatches,
+  ranksFromMatches,
+  seasonKindWinners,
 } from './settlement.js'
 
 /* footballComplete — effective-finish rule for a Premier League gameweek */
@@ -120,4 +122,21 @@ test('championFromMatches: null while any match is unfinished', () => {
   const matches = [m(10, 20, 50, 40), m(10, 20, 0, 0, false)]
   assert.equal(championFromMatches(matches), null)
   assert.equal(championFromMatches([]), null)
+})
+
+test('ranksFromMatches: 1st / last / titan / minnow on an 8-team table', () => {
+  // Eight teams, one pairing each: 1 beats 8 … 4 beats 5 on PF so the
+  // order is 1..8. Titan is 1–4, Minnow 5–8, last is 8.
+  const matches = [
+    m(1, 8, 80, 10),
+    m(2, 7, 70, 20),
+    m(3, 6, 60, 30),
+    m(4, 5, 50, 40),
+  ]
+  const ranked = ranksFromMatches(matches)
+  assert.deepEqual(ranked.order, [1, 2, 3, 4, 5, 6, 7, 8])
+  assert.deepEqual([...seasonKindWinners('outright', ranked)], ['1'])
+  assert.deepEqual([...seasonKindWinners('last', ranked)], ['8'])
+  assert.deepEqual([...seasonKindWinners('titan', ranked)].sort(), ['1', '2', '3', '4'])
+  assert.deepEqual([...seasonKindWinners('minnow', ranked)].sort(), ['5', '6', '7', '8'])
 })

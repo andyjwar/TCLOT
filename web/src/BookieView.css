@@ -238,7 +238,11 @@
   font-weight: 700;
 }
 
-/* --- outright --- */
+/* --- outright / titan / minnow / last --- */
+
+.bookie-place-nav {
+  margin-top: 10px;
+}
 
 .bookie-outright {
   list-style: none;
@@ -318,16 +322,16 @@
   margin: 10px 0 0;
   padding: 0;
   display: grid;
-  gap: 8px;
+  gap: 0;
 }
 
 .bookie-bet {
   display: grid;
-  grid-template-columns: 1fr auto auto;
-  align-items: baseline;
-  gap: 10px;
+  grid-template-columns: minmax(0, 1fr) 2.85rem 3.2rem 3.95rem;
+  align-items: center;
+  column-gap: 8px;
   font-size: 0.84rem;
-  padding: 6px 0;
+  padding: 7px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--fm-muted) 14%, transparent);
 }
 
@@ -335,33 +339,86 @@
   border-bottom: none;
 }
 
-.bookie-bet__nums {
+.bookie-bet--head {
+  padding: 0 0 2px;
+  border-bottom: none;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
   color: var(--fm-muted);
+}
+
+.bookie-bet__desc {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.bookie-bet__status {
-  font-size: 0.78rem;
+.bookie-bet__col {
+  text-align: center;
   white-space: nowrap;
+  justify-self: stretch;
 }
 
-.bookie-bet__status--won {
-  color: #16a34a;
+.bookie-bet__col--odds {
+  color: var(--fm-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Wager = yellow glass; return = Live Scores winner glass
+ * (`.live-banner-row__score-half--winner` / `--tclot-logo-purple`). */
+.bookie-bet__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 1.35em;
+  padding: 0 0.2em;
+  border-radius: 999px;
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  justify-self: stretch;
+  text-align: center;
 }
 
-.bookie-bet__status--lost {
-  color: #ef4444;
+.bookie-bet__pill--wager {
+  color: #92400e;
+  background: color-mix(in srgb, #fbbf24 32%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in srgb, #fbbf24 32%, transparent);
 }
 
-.bookie-bet__status--open,
-.bookie-bet__status--void {
+.fotmob[data-theme='light'] .bookie-bet__pill--wager {
+  color: #78350f;
+}
+
+.bookie-bet__pill--return,
+.bookie-bet__pill--open,
+.bookie-bet__pill--won {
+  color: var(--fm-text-strong, inherit);
+  background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+  box-shadow: 0 0 0 0.15em
+    color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
+}
+
+.bookie-bet__pill--lost,
+.bookie-bet__pill--void {
   color: var(--fm-muted);
+  background: color-mix(in srgb, var(--fm-muted) 12%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in srgb, var(--fm-muted) 12%, transparent);
+  font-weight: 600;
 }
 
-.bookie-bet__status--cashed_out {
+.bookie-bet__pill--cashed {
   color: #d97706;
-  font-weight: 700;
+  background: color-mix(in srgb, #f59e0b 16%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in srgb, #f59e0b 16%, transparent);
+}
+
+.bookie-bet__pill--won {
+  font-weight: 800;
 }
 
 /* The tempter's button — amber like every "are you sure you want your

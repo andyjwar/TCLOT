@@ -11,9 +11,10 @@ against the official FPL Draft results.
 - **Weekly H2H markets** — home / draw / away for every league matchup in the
   next gameweek. Open until the FPL deadline; odds freeze when the market is
   first ingested.
-- **Outright champion market** — priced from the Season Predictions title odds
-  and repriced after every banked gameweek. Bets lock the odds they were
-  placed at.
+- **Outright / Titan / Minnow / last place** — priced from Season Predictions
+  (title, top 4, bottom 4, last) and repriced after every banked gameweek.
+  Bets lock the odds they were placed at. Titan and Minnow can pay four
+  tickets; last place pays only 8th.
 - **Settlement** — a gameweek counts as final once every Premier League fixture
   for it is finished or provisionally finished (same rule the site uses), so
   payouts land hours before FPL's own "data checked" flag.
