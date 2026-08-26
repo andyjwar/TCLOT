@@ -19,7 +19,7 @@ crons = ["*/30 * * * *"]
 [[d1_databases]]
 binding = "DB"
 database_name = "tclot-bookie"
-database_id = "REPLACE_WITH_YOUR_D1_DATABASE_ID"
+database_id = "b997ce9e-30e0-4494-9452-bb3623618899"
 
 [vars]
 # Where the deployed site serves league-data/bookie-markets.json from.
