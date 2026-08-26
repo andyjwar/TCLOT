@@ -13,25 +13,48 @@ const names = new Map([
   [2, 'Mordor SFG'],
 ])
 
-test('describeBetCompact — home pick is bold home + (v opponent, GW)', () => {
+test('describeBetCompact — home pick is bold home + (v opponent), no gameweek', () => {
   assert.deepEqual(
     describeBetCompact({ market_id: 10, selection: 'home' }, marketById, names),
-    { pick: 'Bilbo', detail: '(v Gimli, GW2)' },
+    { pick: 'Bilbo', detail: '(v Gimli)' },
   )
 })
 
-test('describeBetCompact — away pick is bold away + (v opponent, GW)', () => {
+test('describeBetCompact — away pick is bold away + (v opponent)', () => {
   assert.deepEqual(
     describeBetCompact({ market_id: 10, selection: 'away' }, marketById, names),
-    { pick: 'Gimli', detail: '(v Bilbo, GW2)' },
+    { pick: 'Gimli', detail: '(v Bilbo)' },
   )
 })
 
 test('describeBetCompact — draw keeps both last words in the detail', () => {
   assert.deepEqual(
     describeBetCompact({ market_id: 10, selection: 'draw' }, marketById, names),
-    { pick: 'Draw', detail: '(Bilbo v Gimli, GW2)' },
+    { pick: 'Draw', detail: '(Bilbo v Gimli)' },
   )
+})
+
+test('describeBetCompact — a label too wide for the column drops to 3-letter codes', () => {
+  const wide = new Map([
+    [
+      11,
+      {
+        id: 11,
+        kind: 'h2h',
+        payload: { homeName: 'Rokesly Regorasu', awayName: 'Seoul Shire', gw: 2 },
+      },
+    ],
+  ])
+  // 'Draw (Regorasu v Shire)' is 23 chars — over budget, so codes win.
+  assert.deepEqual(describeBetCompact({ market_id: 11, selection: 'draw' }, wide, names), {
+    pick: 'Draw',
+    detail: '(REG v SHI)',
+  })
+  // The single-team backs still fit, so they keep the readable names.
+  assert.deepEqual(describeBetCompact({ market_id: 11, selection: 'home' }, wide, names), {
+    pick: 'Regorasu',
+    detail: '(v Shire)',
+  })
 })
 
 test('describeBetCompact — season places use last word + market tag', () => {

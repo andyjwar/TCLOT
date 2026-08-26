@@ -63,6 +63,23 @@ export function lastWordTeamName(name) {
 }
 
 /**
+ * Three-letter code for the tightest slots, built from the same last word as
+ * {@link lastWordTeamName} so the two labels stay recognisably related:
+ * `'Toronto Gimli'` → `'GIM'`, `'Suffolk Sméagol'` → `'SME'`. Accents are
+ * folded so the code is plain ASCII. Pure helper — no DOM access.
+ *
+ * @param {string | null | undefined} name
+ * @returns {string}
+ */
+export function threeLetterTeamName(name) {
+  const word = lastWordTeamName(name)
+  if (!word) return ''
+  const ascii = word.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const letters = ascii.replace(/[^A-Za-z0-9]/g, '')
+  return (letters || ascii).slice(0, 3).toUpperCase()
+}
+
+/**
  * Whether a team name is the MSFG club (long form, "Mr. MSFG", or "MSFG").
  *
  * @param {string | null | undefined} name
