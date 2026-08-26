@@ -3528,7 +3528,13 @@ function App() {
                           ]
                             .filter(Boolean)
                             .join(' ')
-                          const displayName = standingsMobileTeamName(row.teamName)
+                          /* Ceefax bumps the name type well past what full
+                           * club names can fit at 390px — use the curated
+                           * short labels so rows stay single-line. */
+                          const displayName =
+                            colorTheme === 'ceefax'
+                              ? firstWord(row.teamName)
+                              : standingsMobileTeamName(row.teamName)
                           const form5 = (row.form ?? []).slice(-5)
                           return (
                             <Fragment key={row.league_entry}>

@@ -555,6 +555,14 @@ body[data-tclot-theme='ceefax'] .standings-table--variant-c-mobile thead th,
 body[data-tclot-theme='ceefax'] .standings-table--live-mobile thead th {
   font-size: 18px !important;
 }
+/* Team names in the standings tables — the mobile variant locks these
+ * to 0.9rem (14.4px; rem tracks the 16px root, not the inflated ceefax
+ * body), which reads too small in VT323. */
+body[data-tclot-theme='ceefax'] .standings-table .team-name,
+body[data-tclot-theme='ceefax'] .standings-table .team-name--sidebar,
+body[data-tclot-theme='ceefax'] .gw-fixture-name-cell .team-name--sidebar {
+  font-size: 22px !important;
+}
 /* Manager subtitle under team names. */
 body[data-tclot-theme='ceefax'] .standings-team-mgr {
   font-size: 20px !important;
@@ -721,26 +729,46 @@ body[data-tclot-theme='ceefax'] .standings-schedule__fixture {
   padding: 12px 14px !important;
 }
 body[data-tclot-theme='ceefax'] .standings-schedule__fixture-name {
-  font-size: 1.1rem !important;
+  font-size: 22px !important;
+  /* justify-self'd grid items size to their content and can spill over
+   * the narrow name tracks at phone widths — clamp to the track. */
+  max-width: 100%;
+}
+/* On phones the club-code chips duplicate the (text) team names while
+ * eating a third of the row; collapse them so the names fit at 22px.
+ * Must stay width-0 grid items (not display:none) — removing them from
+ * the grid would shift the names/score into the wrong columns. */
+@media (max-width: 767px) {
+  body[data-tclot-theme='ceefax'] .standings-schedule__fixture-avatar {
+    width: 0 !important;
+    min-width: 0 !important;
+    overflow: hidden !important;
+  }
+  body[data-tclot-theme='ceefax'] .standings-schedule__fixture-avatar .team-avatar-code {
+    display: none !important;
+  }
 }
 body[data-tclot-theme='ceefax'] .standings-schedule__fixture-mid {
-  font-size: 1.05rem !important;
+  font-size: 19px !important;
+  /* The auto grid track can collapse under the bumped type and let the
+   * centred scores paint over both team names — pin it to content. */
+  min-width: max-content;
 }
 body[data-tclot-theme='ceefax'] .standings-schedule__fixture-vs {
-  font-size: 0.95rem !important;
+  font-size: 16px !important;
 }
 body[data-tclot-theme='ceefax'] .standings-schedule__gw-num {
-  font-size: 1.05rem !important;
+  font-size: 19px !important;
 }
 body[data-tclot-theme='ceefax'] .standings-schedule__gw-status {
-  font-size: 0.95rem !important;
+  font-size: 16px !important;
 }
 body[data-tclot-theme='ceefax'] .standings-schedule__gw-band {
   padding: 10px 14px !important;
 }
 body[data-tclot-theme='ceefax'] .standings-schedule__seg-btn,
 body[data-tclot-theme='ceefax'] .standings-schedule__picker-select {
-  font-size: 1rem !important;
+  font-size: 18px !important;
   padding: 10px 12px !important;
 }
 body[data-tclot-theme='ceefax'] .gw-fixture-teams {
