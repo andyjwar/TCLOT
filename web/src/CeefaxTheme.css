@@ -875,6 +875,176 @@ body[data-tclot-theme='ceefax'] [role='dialog'] {
 }
 
 /* ------------------------------------------------------------------ */
+/* Player detail overlay (pdetail / pperf / pcompare) — type bumps     */
+/* ------------------------------------------------------------------ */
+/* PlayerDetailView.css sizes its type in small px values tuned for
+ * Inter; VT323 reads illegibly small at those sizes. Lift the host's
+ * local type tokens once (covers every var()-based size), then bump
+ * the hard-coded px sizes explicitly. */
+body[data-tclot-theme='ceefax'] .pdetail-host {
+  --pdetail-text-xs: 18px;
+  --pdetail-text-sm: 20px;
+  --pdetail-text-md: 24px;
+  --pdetail-text-lg: 27px;
+  --pdetail-text-xl: 30px;
+}
+/* Topbar / tabs / action buttons. */
+body[data-tclot-theme='ceefax'] .pdetail__topbar-title {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail__tab {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail__btn,
+body[data-tclot-theme='ceefax'] .pdetail-p__btn {
+  font-size: 18px !important;
+}
+/* Hero secondary lines (name is already large enough). */
+body[data-tclot-theme='ceefax'] .pdetail__hero-pos,
+body[data-tclot-theme='ceefax'] .pdetail-p__hero-pos {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail__hero-xi,
+body[data-tclot-theme='ceefax'] .pdetail-p__hero-xi {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-p__hero-meta,
+body[data-tclot-theme='ceefax'] .pdetail-p__owner,
+body[data-tclot-theme='ceefax'] .pdetail-p__hero-fant .pdetail-p__owner-name {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-p__owner-crest,
+body[data-tclot-theme='ceefax'] .pdetail__hero-owner-crest {
+  font-size: 12px !important;
+}
+/* Draft provenance line + portrait section headings (desktop headings
+ * ride --pdetail-text-xs). */
+body[data-tclot-theme='ceefax'] .pdetail-draftline {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-p__section-h {
+  font-size: 18px !important;
+}
+/* Season summary stat tiles (portrait re-declares both sizes). */
+body[data-tclot-theme='ceefax'] .pdetail-tile__v,
+body[data-tclot-theme='ceefax'] .pdetail-p__tiles .pdetail-tile__v {
+  font-size: 30px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-tile__k,
+body[data-tclot-theme='ceefax'] .pdetail-p__tiles .pdetail-tile__k {
+  font-size: 15px !important;
+}
+/* Last 5 / Next 5 fixture cards (a 480px media query shrinks these). */
+body[data-tclot-theme='ceefax'] .pdetail-l5__gw {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-l5__opp {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-l5__pts {
+  font-size: 26px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-l5__dnp {
+  font-size: 15px !important;
+}
+/* FDR pips + chart captions (Performance tab). */
+body[data-tclot-theme='ceefax'] .pdetail-fdr {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-fdr__opp {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-fdr__ha {
+  font-size: 12px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail-bars__label {
+  font-size: 13px !important;
+}
+body[data-tclot-theme='ceefax'] .pdetail__chart-meta {
+  font-size: 15px !important;
+}
+/* Performance table (a 480px media query shrinks these too). */
+body[data-tclot-theme='ceefax'] .pperf__table {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf__th {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf__th--pts {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf__cell--gw {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf__cell--num {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf__cell--pts {
+  font-size: 24px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf__opp-short {
+  font-size: 17px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf__opp-extra {
+  font-size: 14px !important;
+}
+/* Performance columns picker pills + popover. */
+body[data-tclot-theme='ceefax'] .pperf-pill {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf-popover__opt,
+body[data-tclot-theme='ceefax'] .pperf-popover__opt-desc {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf-popover__opt-code {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .pperf-popover__btn {
+  font-size: 16px !important;
+}
+/* Compare view. */
+body[data-tclot-theme='ceefax'] .pcompare__h-title {
+  font-size: 22px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare__h-meta {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare__pos {
+  font-size: 12px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__hero-name {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__hero-meta {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__empty {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__th {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__k,
+body[data-tclot-theme='ceefax'] .pcompare-p__d {
+  font-size: 16px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__v {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__section-h {
+  font-size: 15px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-p__form-letter {
+  font-size: 14px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-d__stat-v {
+  font-size: 22px !important;
+}
+body[data-tclot-theme='ceefax'] .pcompare-d__stat-up {
+  font-size: 14px !important;
+}
+
+/* ------------------------------------------------------------------ */
 /* CRT scanline overlay — very subtle, non-interactive                 */
 /* ------------------------------------------------------------------ */
 body[data-tclot-theme='ceefax']::after {
