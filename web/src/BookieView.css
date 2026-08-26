@@ -150,20 +150,6 @@
 
 /* --- weekly market board --- */
 
-.bookie-market-list {
-  list-style: none;
-  margin: 12px 0 0;
-  padding: 0;
-  display: grid;
-  gap: 12px;
-}
-
-.bookie-market {
-  border: 1px solid color-mix(in srgb, var(--fm-muted) 22%, transparent);
-  border-radius: 12px;
-  padding: 10px 12px;
-}
-
 .bookie-market__teams {
   display: flex;
   align-items: center;
@@ -240,10 +226,6 @@
 
 /* --- outright / titan / minnow / last --- */
 
-.bookie-place-nav {
-  margin-top: 10px;
-}
-
 .bookie-outright {
   list-style: none;
   margin: 12px 0 0;
@@ -270,10 +252,65 @@
   margin-left: 4px;
 }
 
+/* --- collapsible board sections --- */
+
+/* Tile-level fold: the whole section body hides behind its title row. */
+.bookie-fold__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.bookie-fold__summary::-webkit-details-marker {
+  display: none;
+}
+
+.bookie-fold__summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--fm-muted);
+  border-bottom: 2px solid var(--fm-muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.bookie-fold[open] > .bookie-fold__summary::after {
+  transform: rotate(-135deg);
+}
+
+.bookie-fold__title {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+}
+
+/* A fixture's teams strip fills the summary row ahead of the chevron. */
+.bookie-fixture__teams {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Body of an expanded fixture / season fold: match odds, then specials. */
+.bookie-fixture__body {
+  display: grid;
+  gap: 4px;
+  padding: 0 12px 12px;
+}
+
+.bookie-outright--folded {
+  margin-top: 2px;
+}
+
 /* --- player specials (anytime goalscorer / top point scorer) --- */
 
 .bookie-player-board {
-  padding: 0 12px 10px;
+  padding: 0;
 }
 
 .bookie-player-board__title {
@@ -329,8 +366,54 @@
 
 /* --- bet slip --- */
 
+/* Bottom sheet: slides up over the page content, parked just above the
+ * floating bottom-nav pill on mobile (nav height + safe area + gap) and a
+ * plain viewport inset on desktop where the pill hides (≥1081px). Tapping
+ * another price simply re-fills the open sheet. */
 .bookie-slip {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--mobile-bottom-nav-h, 56px) + env(safe-area-inset-bottom, 0px) + 24px);
+  z-index: 120;
+  margin: 0 auto;
+  max-width: 640px;
   border-color: var(--fm-pitch);
+  box-shadow:
+    0 12px 36px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+  animation: bookie-slip-up 0.18s ease-out;
+}
+
+@media (min-width: 1081px) {
+  .bookie-slip {
+    bottom: 24px;
+  }
+}
+
+@keyframes bookie-slip-up {
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.bookie-slip__close {
+  border: none;
+  background: transparent;
+  color: var(--fm-muted);
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0 4px;
+  cursor: pointer;
+}
+
+.bookie-slip__close:hover {
+  color: inherit;
 }
 
 .bookie-slip__pick {
