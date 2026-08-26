@@ -210,7 +210,14 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
 
       {me ? <MyBets me={me} h2hMarkets={h2hMarkets} nameByEntry={nameByEntry} /> : null}
 
-      <LiveBets state={state} me={me} h2hMarkets={h2hMarkets} nameByEntry={nameByEntry} />
+      <LiveBets
+        state={state}
+        me={me}
+        h2hMarkets={h2hMarkets}
+        nameByEntry={nameByEntry}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
 
       <BookieLeaderboards
         state={state}
@@ -673,47 +680,82 @@ function MyBets({ me, h2hMarkets, nameByEntry }) {
 
 /**
  * Everyone's open tickets — the league-wide live board. Tickets were never
- * secret ballots: seeing what your rivals have riding is the point.
+ * secret ballots: seeing what your rivals have riding is the point. Grouped
+ * per team behind a collapsible row so eight busy punters don't turn the
+ * board into a scroll marathon.
  */
-function LiveBets({ state, me, h2hMarkets, nameByEntry }) {
+function LiveBets({ state, me, h2hMarkets, nameByEntry, teamLogoMap, kitIndexByEntry }) {
   const marketById = useMemo(() => {
     const map = new Map()
     for (const m of h2hMarkets) map.set(Number(m.id), m)
     return map
   }, [h2hMarkets])
+
   const bets = state.openBets ?? []
+  const byEntry = new Map()
+  for (const b of bets) {
+    const key = Number(b.entry_id)
+    if (!byEntry.has(key)) byEntry.set(key, [])
+    byEntry.get(key).push(b)
+  }
+  const groups = [...byEntry.entries()]
+    .map(([entryId, rows]) => ({
+      entryId,
+      name: rows[0]?.name ?? nameByEntry.get(entryId) ?? String(entryId),
+      rows,
+      staked: rows.reduce((sum, r) => sum + Number(r.stake), 0),
+    }))
+    .sort((a, b) => b.staked - a.staked)
+
   return (
     <section className="tile tile--compact" aria-label="Live bets">
       <h3 className="bookie__section-title">Live bets — the whole league</h3>
-      {bets.length === 0 ? (
+      {groups.length === 0 ? (
         <p className="bookie__note">
           Nothing riding right now. Someone put their Clotcoins where their mouth is.
         </p>
       ) : (
-        <ul className="bookie-bets">
-          {bets.map((b) => {
-            const mine = me && Number(b.entry_id) === Number(me.entryId)
-            const punter = b.name ?? nameByEntry.get(Number(b.entry_id)) ?? String(b.entry_id)
+        <div className="bookie-punters">
+          {groups.map((g) => {
+            const mine = me && g.entryId === Number(me.entryId)
             return (
-              <li
-                key={b.id}
-                className={'bookie-bet bookie-bet--board' + (mine ? ' bookie-bet--mine' : '')}
+              <details
+                key={g.entryId}
+                className={'bookie-punter' + (mine ? ' bookie-punter--mine' : '')}
               >
-                <span className="bookie-bet__punter">
-                  {standingsMobileTeamName(punter)}
-                  {mine ? ' (you)' : ''}
-                </span>
-                <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
-                <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
-                  {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
-                </span>
-                <span className="bookie-bet__status bookie-bet__status--open">
-                  to return {fmtCoins(Math.round(b.stake * b.odds))}
-                </span>
-              </li>
+                <summary className="bookie-punter__summary">
+                  <TeamAvatar
+                    entryId={g.entryId}
+                    name={g.name}
+                    size="sm"
+                    logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                  <span className="bookie-punter__name">
+                    {standingsMobileTeamName(g.name)}
+                    {mine ? ' (you)' : ''}
+                  </span>
+                  <span className="bookie-punter__meta tabular">
+                    {g.rows.length} {g.rows.length === 1 ? 'bet' : 'bets'} · {fmtCoins(g.staked)} riding
+                  </span>
+                </summary>
+                <ul className="bookie-bets bookie-punter__bets">
+                  {g.rows.map((b) => (
+                    <li key={b.id} className="bookie-bet">
+                      <span className="bookie-bet__desc">{describeBet(b, marketById, nameByEntry)}</span>
+                      <span className="bookie-bet__nums tabular" title={`decimal ${Number(b.odds).toFixed(2)}`}>
+                        {fmtCoins(b.stake)} @ {fmtOdds(b.odds)}
+                      </span>
+                      <span className="bookie-bet__status bookie-bet__status--open">
+                        to return {fmtCoins(Math.round(b.stake * b.odds))}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </details>
             )
           })}
-        </ul>
+        </div>
       )}
     </section>
   )

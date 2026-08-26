@@ -359,24 +359,73 @@
   color: var(--fm-muted);
 }
 
-/* Live board rows lead with the punter's name; own tickets get the same
- * green wash as the leaderboard "me" row. */
-.bookie-bet__punter {
+/* Live board: one collapsible row per punter, tickets tucked inside. Own
+ * team gets the same green wash as the leaderboard "me" row. */
+.bookie-punters {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.bookie-punter {
+  border: 1px solid color-mix(in srgb, var(--fm-muted) 22%, transparent);
+  border-radius: 12px;
+}
+
+.bookie-punter--mine {
+  background: color-mix(in srgb, var(--fm-pitch) 8%, transparent);
+}
+
+.bookie-punter__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.bookie-punter__summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Roll-your-own chevron so the marker matches both themes. */
+.bookie-punter__summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--fm-muted);
+  border-bottom: 2px solid var(--fm-muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  margin-left: 2px;
+}
+
+.bookie-punter[open] > .bookie-punter__summary::after {
+  transform: rotate(-135deg);
+}
+
+.bookie-punter__name {
   font-weight: 700;
-  white-space: nowrap;
+  font-size: 0.86rem;
+  flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 160px;
+  white-space: nowrap;
 }
 
-.bookie-bet--board {
-  grid-template-columns: auto 1fr auto auto;
+.bookie-punter__meta {
+  font-size: 0.76rem;
+  color: var(--fm-muted);
+  white-space: nowrap;
 }
 
-.bookie-bet--mine {
-  background: color-mix(in srgb, var(--fm-pitch) 10%, transparent);
-  border-radius: 8px;
-  padding: 6px 8px;
+.bookie-punter__bets {
+  margin: 0;
+  padding: 0 12px 8px;
 }
 
 /* --- leaderboards --- */
@@ -448,12 +497,5 @@
 
   .bookie-odds-btn {
     min-width: 0;
-  }
-
-  /* Four board cells won't fit a phone row — let them wrap naturally. */
-  .bookie-bet--board {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px 10px;
   }
 }
