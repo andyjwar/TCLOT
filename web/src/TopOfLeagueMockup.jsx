@@ -168,10 +168,10 @@ const OPTIONS = [
     id: 'B',
     mode: 'wash',
     title: 'Green wash',
-    tag: 'Mid',
-    tagTone: 'good',
+    tag: 'Picked · shipped',
+    tagTone: 'loud',
     desc:
-      'A softer take on the same idea — the row keeps normal ink but sits on a green tint wash, with the rank and name picked out in brand green. Reads as "highlighted", not "different component".',
+      'SHIPPED: the row keeps normal ink but sits on a green tint wash, with the rank and name picked out in brand green, plus a dashed divider between 1 and 2 in the same style as the cut above 8th. Live as `.standings-row--leader`.',
   },
   {
     id: 'C',
@@ -268,9 +268,11 @@ export function TopOfLeagueMockup() {
       </section>
 
       <p className="tolm-note">
-        Local preview only — open via <code>?leader=1</code>. Nothing here is
-        wired into production; the winning option gets implemented on the real
-        standings view in a follow-up.
+        <strong>Locked:</strong> Option B shipped to production
+        (<code>.standings-row--leader</code> + a dashed
+        <code>standings-row--divider-below</code> cut between 1 and 2, same
+        style as above 8th). Gallery kept for reference — open via{' '}
+        <code>?leader=1</code>.
       </p>
     </div>
   )

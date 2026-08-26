@@ -422,10 +422,11 @@
   background: rgba(242, 234, 210, 0.3);
 }
 
-/* B — green wash: tinted row, brand-green rank + name. */
+/* B — green wash: tinted row, brand-green rank + name, dashed cut below
+ * (same style as the divider above 8th place in production). */
 .tolm-row--leader-wash td {
   background: color-mix(in srgb, var(--t-brand) 10%, transparent);
-  border-bottom-color: color-mix(in srgb, var(--t-brand) 26%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--t-muted) 65%, transparent);
 }
 
 .tolm-row--leader-wash .tolm-col-rank {
