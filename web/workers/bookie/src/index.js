@@ -26,6 +26,8 @@
  * Deploy: cd web/workers/bookie && npm run deploy  (see README.md for setup)
  */
 
+import { footballComplete, h2hResultForMarket, championFromMatches } from './settlement.js';
+
 const STARTING_BALANCE = 1000;
 const WEEKLY_STIPEND = 50;
 const MIN_STAKE = 10;
@@ -231,30 +233,8 @@ async function ingestMarkets(env) {
 
 /* ------------------------------------------------------------------ */
 /* Settlement — official FPL results → graded bets                      */
+/* (pure grading rules live in settlement.js so node:test can cover them) */
 /* ------------------------------------------------------------------ */
-
-/**
- * Whether every Premier League fixture for `gw` is finished (or provisionally
- * finished) — the same effective-finish rule as web/src/h2hEffectiveFinished.js,
- * bridging FPL Draft's slow post-GW "data checked" lag.
- */
-function footballComplete(fixtures, gw) {
-  const rows = (Array.isArray(fixtures) ? fixtures : []).filter((f) => Number(f?.event) === gw);
-  if (rows.length === 0) return false;
-  return rows.every((f) => f?.finished === true || f?.finished_provisional === true);
-}
-
-function h2hResultForMarket(payload, match) {
-  const oriented = Number(match.league_entry_1) === Number(payload.homeEntryId);
-  const p1 = Number(match.league_entry_1_points);
-  const p2 = Number(match.league_entry_2_points);
-  const home = oriented ? p1 : p2;
-  const away = oriented ? p2 : p1;
-  if (!Number.isFinite(home) || !Number.isFinite(away)) return null;
-  if (home > away) return { result: 'home', home, away };
-  if (away > home) return { result: 'away', home, away };
-  return { result: 'draw', home, away };
-}
 
 /** Grade every open bet on a settled market and credit winners. */
 async function gradeBets(db, market, winningSelection) {
@@ -292,35 +272,6 @@ async function gradeBets(db, market, winningSelection) {
       ]);
     }
   }
-}
-
-/** Final league champion from finished matches (3/1/0, PF tiebreak), or null. */
-function championFromMatches(matches) {
-  const all = Array.isArray(matches) ? matches : [];
-  if (all.length === 0 || !all.every((m) => m.finished === true)) return null;
-  const table = new Map();
-  const row = (id) => {
-    if (!table.has(id)) table.set(id, { pts: 0, pf: 0 });
-    return table.get(id);
-  };
-  for (const m of all) {
-    const a = row(Number(m.league_entry_1));
-    const b = row(Number(m.league_entry_2));
-    const pa = Number(m.league_entry_1_points) || 0;
-    const pb = Number(m.league_entry_2_points) || 0;
-    a.pf += pa;
-    b.pf += pb;
-    if (pa > pb) a.pts += 3;
-    else if (pb > pa) b.pts += 3;
-    else {
-      a.pts += 1;
-      b.pts += 1;
-    }
-  }
-  const order = [...table.entries()].sort(
-    (x, y) => y[1].pts - x[1].pts || y[1].pf - x[1].pf,
-  );
-  return order.length > 0 ? order[0][0] : null;
 }
 
 /**
