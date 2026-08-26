@@ -323,9 +323,9 @@
 
 .bookie-bet {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 3.6rem 3.35rem 3.7rem;
+  grid-template-columns: minmax(0, 1fr) 2.85rem 3.2rem 3.95rem;
   align-items: center;
-  column-gap: 6px;
+  column-gap: 8px;
   font-size: 0.84rem;
   padding: 7px 0;
   border-bottom: 1px solid color-mix(in srgb, var(--fm-muted) 14%, transparent);
@@ -354,6 +354,7 @@
 .bookie-bet__col {
   text-align: center;
   white-space: nowrap;
+  justify-self: stretch;
 }
 
 .bookie-bet__col--odds {
@@ -368,8 +369,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
   min-height: 1.35em;
-  padding: 0 0.45em;
+  padding: 0 0.2em;
   border-radius: 999px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
