@@ -72,13 +72,22 @@ function betReturnTone(status) {
   return 'open'
 }
 
-function betReturnLabel(bet) {
+/**
+ * What a ticket is worth in the Return column: still running means the
+ * potential payout, settled means whatever it actually paid.
+ */
+function betReturnValue(bet) {
   if (bet.status === 'open' || bet.status == null) {
-    return fmtCoins(Math.round(Number(bet.stake) * Number(bet.odds)))
+    return Math.round(Number(bet.stake) * Number(bet.odds))
   }
-  if (bet.status === 'won' || bet.status === 'cashed_out') return fmtCoins(bet.payout)
-  if (bet.status === 'void') return fmtCoins(bet.stake)
-  return '—'
+  if (bet.status === 'won' || bet.status === 'cashed_out') return Number(bet.payout) || 0
+  if (bet.status === 'void') return Number(bet.stake) || 0
+  return 0
+}
+
+function betReturnLabel(bet) {
+  if (bet.status === 'lost') return '—'
+  return fmtCoins(betReturnValue(bet))
 }
 
 function BetColHead() {
@@ -88,6 +97,22 @@ function BetColHead() {
       <span className="bookie-bet__col">Odds</span>
       <span className="bookie-bet__col">Wager</span>
       <span className="bookie-bet__col">Return</span>
+    </li>
+  )
+}
+
+/** Footer row totalling the wager and return columns for a list of tickets. */
+function BetTotals({ bets }) {
+  const staked = bets.reduce((sum, b) => sum + (Number(b.stake) || 0), 0)
+  const returns = bets.reduce((sum, b) => sum + betReturnValue(b), 0)
+  return (
+    <li className="bookie-bet bookie-bet--total">
+      <span className="bookie-bet__desc">Total</span>
+      <span className="bookie-bet__col" />
+      <span className="bookie-bet__pill bookie-bet__pill--wager tabular">{fmtCoins(staked)}</span>
+      <span className="bookie-bet__pill bookie-bet__pill--return bookie-bet__pill--open tabular">
+        {fmtCoins(returns)}
+      </span>
     </li>
   )
 }
@@ -679,7 +704,6 @@ function SeasonPlaceBoard({ markets, me, onPick, teamLogoMap, kitIndexByEntry })
       <ul className="bookie-outright">
         {selections.map((s) => {
           const won = settled && winners.has(String(s.entryId))
-          const pct = s.pct ?? s.titlePct
           return (
             <li key={s.entryId} className={'bookie-outright__row' + (won ? ' bookie-outright__row--won' : '')}>
               <span className="bookie-market__team">
@@ -693,7 +717,6 @@ function SeasonPlaceBoard({ markets, me, onPick, teamLogoMap, kitIndexByEntry })
                 <span>{standingsMobileTeamName(s.name)}</span>
                 {won ? <span className="bookie-outright__crown" aria-label={meta.crown}>👑</span> : null}
               </span>
-              <span className="bookie-outright__pct tabular">{pct}%</span>
               <OddsButton
                 label={meta.verb}
                 odds={s.odds}
@@ -840,6 +863,19 @@ function CashoutButton({ bet, value, token, onCashedOut }) {
   )
 }
 
+/**
+ * One ticket's compact description: the pick in bold, then the context —
+ * `Gimli (v Bilbo, GW2)`. Full club names live in the hover title.
+ */
+function BetDesc({ bet, marketById, nameByEntry }) {
+  const { pick, detail } = describeBetCompact(bet, marketById, nameByEntry)
+  return (
+    <span className="bookie-bet__desc" title={describeBet(bet, marketById, nameByEntry)}>
+      <strong className="bookie-bet__pick">{pick}</strong> {detail}
+    </span>
+  )
+}
+
 function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut }) {
   const marketById = useMemo(() => {
     const map = new Map()
@@ -862,12 +898,9 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
         <BetColHead />
         {bets.map((b) => {
           const quote = b.status === 'open' ? cashoutQuotes.get(Number(b.id)) : undefined
-          const full = describeBet(b, marketById, nameByEntry)
           return (
             <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
-              <span className="bookie-bet__desc" title={full}>
-                {describeBetCompact(b, marketById, nameByEntry)}
-              </span>
+              <BetDesc bet={b} marketById={marketById} nameByEntry={nameByEntry} />
               <BetTicketFigures bet={b} />
               {quote != null && token ? (
                 <CashoutButton
@@ -881,6 +914,7 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
             </li>
           )
         })}
+        <BetTotals bets={bets} />
       </ul>
     </section>
   )
@@ -949,17 +983,13 @@ function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntr
                 </summary>
                 <ul className="bookie-bets bookie-punter__bets">
                   <BetColHead />
-                  {g.rows.map((b) => {
-                    const full = describeBet(b, marketById, nameByEntry)
-                    return (
-                      <li key={b.id} className="bookie-bet">
-                        <span className="bookie-bet__desc" title={full}>
-                          {describeBetCompact(b, marketById, nameByEntry)}
-                        </span>
-                        <BetTicketFigures bet={b} />
-                      </li>
-                    )
-                  })}
+                  {g.rows.map((b) => (
+                    <li key={b.id} className="bookie-bet">
+                      <BetDesc bet={b} marketById={marketById} nameByEntry={nameByEntry} />
+                      <BetTicketFigures bet={b} />
+                    </li>
+                  ))}
+                  <BetTotals bets={g.rows} />
                 </ul>
               </details>
             )

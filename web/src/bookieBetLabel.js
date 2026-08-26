@@ -30,26 +30,27 @@ function pickName(bet, nameByEntry) {
 }
 
 /**
- * Compact live-board / ticket label for portrait width.
- * H2H backs name the opponent only (`(v Bilbo, GW2)`); season-place tickets
- * use the last word of the club (`Gimli — titan`).
+ * Compact live-board / ticket label for portrait width, split so the UI can
+ * bold the pick: `{ pick: 'Gimli', detail: '(v Bilbo, GW2)' }`. Both teams
+ * appear exactly once — the pick up front, the opponent in the detail.
+ * Season-place tickets use the last word of the club (`Gimli — titan`).
  */
 export function describeBetCompact(bet, marketById, nameByEntry) {
   const market = marketById.get(Number(bet.market_id))
   const place = seasonKindOf(bet, market)
   if (place) {
     const { short } = pickName(bet, nameByEntry)
-    return `${short} — ${PLACE_SHORT[place]}`
+    return { pick: short, detail: `— ${PLACE_SHORT[place]}` }
   }
   const p = market?.payload
   const gw = p?.gw ?? bet.gw ?? '?'
-  if (!p) return `GW${gw} · ${bet.selection}`
+  if (!p) return { pick: String(bet.selection), detail: `(GW${gw})` }
   const home = lastWordTeamName(p.homeName) || standingsMobileTeamName(p.homeName)
   const away = lastWordTeamName(p.awayName) || standingsMobileTeamName(p.awayName)
-  if (bet.selection === 'home') return `(v ${away}, GW${gw})`
-  if (bet.selection === 'away') return `(v ${home}, GW${gw})`
-  if (bet.selection === 'draw') return `Draw (${home} v ${away}, GW${gw})`
-  return `${bet.selection} (GW${gw})`
+  if (bet.selection === 'home') return { pick: home, detail: `(v ${away}, GW${gw})` }
+  if (bet.selection === 'away') return { pick: away, detail: `(v ${home}, GW${gw})` }
+  if (bet.selection === 'draw') return { pick: 'Draw', detail: `(${home} v ${away}, GW${gw})` }
+  return { pick: String(bet.selection), detail: `(GW${gw})` }
 }
 
 /** Longer label for titles / desktop context (full club names). */
