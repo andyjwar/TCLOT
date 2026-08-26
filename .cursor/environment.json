@@ -1,0 +1,10 @@
+{
+  "name": "TCLOT",
+  "install": "pip install -r requirements.txt && (cd fpl-predictions && npm ci) && (cd web && npm ci)",
+  "terminals": [
+    {
+      "name": "web",
+      "command": "cd web && npm run dev:vite"
+    }
+  ]
+}
