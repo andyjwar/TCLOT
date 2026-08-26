@@ -302,7 +302,8 @@ body[data-tclot-theme='ceefax'] .tile--brand-header {
 /* A synthetic teletext status line above the masthead:
  *   P300  TCLOT  FOOTBALL
  * Pure decoration via ::before, so no DOM/behaviour change.
- * Right padding leaves room for the search icon on this same row. */
+ * Right padding leaves room for the search icon when it falls back to
+ * this row (views without a status strip, e.g. archive seasons). */
 body[data-tclot-theme='ceefax'] .tile--brand-header::before {
   content: 'P300  TCLOT  FOOTBALL';
   display: block;
@@ -317,8 +318,9 @@ body[data-tclot-theme='ceefax'] .tile--brand-header::before {
   text-overflow: clip;
 }
 
-/* Search sits on the masthead row (top-right), not on the status strip —
- * shortens the header by a full control row of vertical space. */
+/* Search: absolute so it never adds a control row of vertical space.
+ * Default (no status strip, e.g. archive seasons) parks it on the
+ * masthead row, top-right. */
 body[data-tclot-theme='ceefax'] .brand-header__search {
   position: absolute;
   top: 2px;
@@ -331,6 +333,15 @@ body[data-tclot-theme='ceefax'] .brand-header__search {
   color: var(--cf-cyan) !important;
   opacity: 1;
   background: transparent !important;
+}
+/* With a status strip present, the icon rides the strip's far right,
+ * pinned to the bottom edge so it shares the last wrapped line of the
+ * status copy (the "Waivers in …" / deadline row). */
+body[data-tclot-theme='ceefax'] .brand-header__status-strip .brand-header__search {
+  top: auto;
+  bottom: 1px;
+  width: 30px;
+  height: 30px;
 }
 body[data-tclot-theme='ceefax'] .brand-header__search:hover,
 body[data-tclot-theme='ceefax'] .brand-header__search:focus-visible {
@@ -369,9 +380,11 @@ body[data-tclot-theme='ceefax'] .tile-title {
 /* Live status strip dots/monospace bits keep their semantic colours via the
  * tokens above; make the whole strip read on black. */
 body[data-tclot-theme='ceefax'] .brand-header__status-strip {
+  position: relative;
   background: var(--cf-black) !important;
   color: var(--cf-cyan) !important;
-  padding: 4px 8px !important;
+  /* Right padding reserves a column for the absolutely-anchored search icon. */
+  padding: 4px 40px 4px 8px !important;
   min-height: 0;
 }
 body[data-tclot-theme='ceefax'] .brand-header__status-strong {
