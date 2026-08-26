@@ -1,0 +1,554 @@
+/*
+ * "Top of the League" treatment gallery (`?leader=1`) — Scorebook paper,
+ * local preview only. Round 2: the leader is always a normal row in the
+ * full table; the six options vary only the flourish on that row.
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:ital,wght@0,400..900;1,400..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&display=swap');
+
+.tolm {
+  --t-bg: #f6f1e2;
+  --t-surface: #fdfaf0;
+  --t-surface-2: #ece5cf;
+  --t-border: #ddd5b8;
+  --t-ink: #1a231a;
+  --t-text: rgba(31, 42, 31, 0.92);
+  --t-muted: #77775f;
+  --t-brand: #1f4a38;
+  --t-deep: #17402f;
+  --t-cream: #f2ead2;
+  --t-gold: #a87b24;
+  --t-gold-bright: #e3b53a;
+  --t-win: #12a15a;
+  --t-loss: #d64545;
+  --t-draw: #9ca38f;
+  min-height: 100vh;
+  padding: 36px clamp(16px, 3vw, 48px) 64px;
+  background: var(--t-bg);
+  color: var(--t-text);
+  font-family: 'Schibsted Grotesk', Inter, system-ui, sans-serif;
+}
+
+.tolm * {
+  box-sizing: border-box;
+}
+
+/* ----- Page chrome -------------------------------------------------- */
+
+.tolm-top {
+  max-width: 880px;
+  margin: 0 auto 32px;
+}
+
+.tolm-kicker {
+  display: inline-block;
+  margin-bottom: 8px;
+  color: var(--t-brand);
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.tolm-top h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: var(--t-ink);
+}
+
+.tolm-top p {
+  margin: 0;
+  max-width: 64ch;
+  color: var(--t-muted);
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.tolm-top a {
+  display: inline-block;
+  margin-top: 14px;
+  padding: 8px 12px;
+  border: 1px solid var(--t-border);
+  border-radius: 8px;
+  background: var(--t-surface);
+  color: var(--t-ink);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.tolm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 22px;
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+@media (max-width: 460px) {
+  .tolm-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tolm-option {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--t-border);
+  border-radius: 14px;
+  background: var(--t-surface);
+  overflow: hidden;
+}
+
+.tolm-option__head {
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid var(--t-border);
+}
+
+.tolm-option__id {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-gold);
+  margin-right: 8px;
+}
+
+.tolm-option__title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--t-ink);
+  letter-spacing: -0.01em;
+}
+
+.tolm-option__tag {
+  float: right;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tolm-option__tag--loud {
+  color: #8c4a1f;
+  background: color-mix(in srgb, #c05e21 14%, transparent);
+}
+
+.tolm-option__tag--good {
+  color: var(--t-brand);
+  background: color-mix(in srgb, var(--t-brand) 9%, transparent);
+}
+
+.tolm-option__desc {
+  margin: 8px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--t-muted);
+}
+
+.tolm-option__preview {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  padding: 22px 14px 26px;
+  background:
+    radial-gradient(circle at 30% 0%, rgba(31, 74, 56, 0.05), transparent 60%),
+    var(--t-surface-2);
+}
+
+/* ----- Phone frame --------------------------------------------------- */
+
+.tolm-frame {
+  width: 372px;
+  max-width: 100%;
+  padding: 14px 10px 16px;
+  border-radius: 22px;
+  border: 1px solid var(--t-border);
+  background: var(--t-bg);
+  box-shadow: 0 10px 28px rgba(26, 35, 26, 0.12);
+}
+
+/* ----- Shared crest / dots ------------------------------------------- */
+
+.tolm-crest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #fdfaf0;
+  background:
+    radial-gradient(circle at 32% 28%, hsl(var(--crest-hue, 152) 34% 46%), hsl(var(--crest-hue, 152) 40% 26%));
+  box-shadow: inset 0 0 0 1.5px rgba(253, 250, 240, 0.35);
+}
+
+.tolm-dots {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+
+.tolm-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+/* Previous production size, kept for the before/after strip. */
+.tolm-dots--old {
+  gap: 1px;
+}
+
+.tolm-dots--old .tolm-dot {
+  width: 5px;
+  height: 5px;
+}
+
+.tolm-dots--lg {
+  gap: 6px;
+}
+
+.tolm-dots--lg .tolm-dot {
+  width: 16px;
+  height: 16px;
+}
+
+.tolm-dot--win {
+  background: var(--t-win);
+}
+
+.tolm-dot--loss {
+  background: var(--t-loss);
+}
+
+.tolm-dot--draw {
+  background: var(--t-draw);
+}
+
+.tolm-dot--none {
+  background: color-mix(in srgb, var(--t-muted) 42%, transparent);
+}
+
+/* ----- Table card ----------------------------------------------------- */
+
+.tolm-tablecard {
+  border: 1px solid var(--t-border);
+  border-radius: 12px;
+  background: var(--t-surface);
+  overflow: hidden;
+}
+
+.tolm-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  color: var(--t-text);
+}
+
+.tolm-table th {
+  padding: 8px 4px;
+  background: var(--t-surface-2);
+  border-bottom: 1px solid var(--t-border);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--t-muted);
+  text-align: right;
+}
+
+.tolm-table th.tolm-col-rank,
+.tolm-table th.tolm-col-team {
+  text-align: left;
+}
+
+.tolm-table th.tolm-col-form {
+  text-align: center;
+}
+
+.tolm-table td {
+  padding: 8px 4px;
+  border-bottom: 1px solid color-mix(in srgb, var(--t-border) 55%, transparent);
+  vertical-align: middle;
+}
+
+.tolm-table tr:last-child td {
+  border-bottom: 0;
+}
+
+.tolm-table th:first-child,
+.tolm-table td:first-child {
+  padding-left: 10px;
+}
+
+.tolm-table th:last-child,
+.tolm-table td:last-child {
+  padding-right: 8px;
+}
+
+.tolm-col-rank {
+  width: 24px;
+  font-weight: 700;
+}
+
+.tolm-col-team {
+  width: 44%;
+}
+
+.tolm-col-num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.tolm-col-pts strong {
+  font-weight: 800;
+}
+
+.tolm-col-form {
+  text-align: center;
+}
+
+.tolm-col-next {
+  text-align: right;
+}
+
+.tolm-team-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tolm-team-name {
+  font-size: 0.9rem;
+  line-height: 1.25;
+  color: var(--t-ink);
+}
+
+.tolm-rank-last {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 15px;
+  height: 15px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--t-loss) 16%, transparent);
+  color: var(--t-loss);
+  font-size: 0.62rem;
+  font-weight: 800;
+}
+
+.tolm-rank-starred {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.tolm-rank-starred i {
+  font-style: normal;
+  font-size: 0.72rem;
+  color: var(--t-gold);
+  line-height: 1;
+}
+
+/* Minnows divider band, mirroring production. */
+.tolm-divider td {
+  padding: 4px 10px 3px;
+  border-bottom: 1px dashed var(--t-border);
+  border-top: 1px dashed var(--t-border);
+  background: color-mix(in srgb, var(--t-surface-2) 55%, transparent);
+}
+
+.tolm-divider span {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.tolm-row--last td {
+  background: color-mix(in srgb, #d64545 4%, transparent);
+}
+
+/* ----- Leader row flourishes ------------------------------------------ */
+
+/* A — solid racing-green row, cream text, gold star on the rank. */
+.tolm-row--leader-solid td {
+  background: linear-gradient(160deg, #1c4a37, var(--t-deep));
+  border-bottom-color: var(--t-deep);
+  color: var(--t-cream);
+}
+
+.tolm-row--leader-solid .tolm-col-rank {
+  color: var(--t-gold-bright);
+}
+
+.tolm-row--leader-solid .tolm-col-rank::after {
+  content: ' ★';
+  font-size: 0.68rem;
+}
+
+.tolm-row--leader-solid .tolm-team-name {
+  color: #fdfaf0;
+  font-weight: 600;
+}
+
+.tolm-row--leader-solid .tolm-col-pts strong {
+  color: #fdfaf0;
+}
+
+.tolm-row--leader-solid .tolm-crest {
+  box-shadow: inset 0 0 0 1.5px rgba(253, 250, 240, 0.55);
+}
+
+.tolm-row--leader-solid .tolm-dot--none {
+  background: rgba(242, 234, 210, 0.3);
+}
+
+/* B — green wash: tinted row, brand-green rank + name, dashed cut below
+ * (same style as the divider above 8th place in production). */
+.tolm-row--leader-wash td {
+  background: color-mix(in srgb, var(--t-brand) 10%, transparent);
+  border-bottom: 1px dashed color-mix(in srgb, var(--t-muted) 65%, transparent);
+}
+
+.tolm-row--leader-wash .tolm-col-rank {
+  color: var(--t-brand);
+}
+
+.tolm-row--leader-wash .tolm-team-name {
+  color: var(--t-brand);
+  font-weight: 600;
+}
+
+/* C — left rail + faint tint + gold star beside the rank. */
+.tolm-row--leader-rail td {
+  background: color-mix(in srgb, var(--t-brand) 5%, transparent);
+}
+
+.tolm-row--leader-rail td:first-child {
+  box-shadow: inset 3px 0 0 var(--t-brand);
+}
+
+/* D — scorebook double rule: no fill, gold star, double hairline below. */
+.tolm-row--leader-rule td {
+  border-bottom: 3px double var(--t-gold);
+}
+
+.tolm-row--leader-rule .tolm-team-name {
+  font-weight: 600;
+}
+
+/* E — rank digit in a filled green chip; row otherwise standard. */
+.tolm-rank-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--t-brand);
+  color: var(--t-cream);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+/* F — PTS value in a filled green pill; row otherwise standard. */
+.tolm-pts-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 19px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--t-brand);
+  color: var(--t-cream);
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----- Form-dot before/after strip -------------------------------------- */
+
+.tolm-dotscompare {
+  max-width: 880px;
+  margin: 40px auto 0;
+  padding: 20px 22px;
+  border: 1px solid var(--t-border);
+  border-radius: 14px;
+  background: var(--t-surface);
+}
+
+.tolm-dotscompare h2 {
+  margin: 0 0 6px;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--t-ink);
+}
+
+.tolm-dotscompare p {
+  margin: 0 0 16px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--t-muted);
+  max-width: 64ch;
+}
+
+.tolm-dotscompare__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.tolm-dotscompare__cell {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--t-border);
+  border-radius: 10px;
+  background: var(--t-bg);
+  min-width: 170px;
+}
+
+.tolm-dotscompare__lbl {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--t-muted);
+}
+
+.tolm-note {
+  max-width: 880px;
+  margin: 26px auto 0;
+  font-size: 13px;
+  color: var(--t-muted);
+}
+
+.tolm-note code {
+  font-family: 'Geist Mono', ui-monospace, monospace;
+  background: var(--t-surface-2);
+  padding: 1px 5px;
+  border-radius: 5px;
+}
