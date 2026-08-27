@@ -16619,7 +16619,7 @@
   flex: 1 1 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: 18px 22px 28px minmax(0, 1fr) 12px minmax(0, 1fr) 20px;
+  grid-template-columns: 18px 22px 28px minmax(0, 1fr) 12px minmax(0, 1fr) max-content;
   align-items: center;
   gap: 5px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
@@ -16657,21 +16657,23 @@
   gap: 5px;
   min-width: 0;
 }
-.mockup-wv-share__club-id {
+.mockup-wv-share__owner {
   display: inline-flex;
   align-items: center;
   gap: 3px;
-  flex: 0 0 auto;
+  justify-self: end;
+  min-width: 0;
 }
-.mockup-wv-share__club {
-  flex: 0 0 2.15em;
-  width: 2.15em;
+.mockup-wv-share__owner-abbr {
+  flex: 0 0 3ch;
+  width: 3ch;
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: var(--text-muted);
   text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 .mockup-wv-share__crest {
   display: inline-flex;
@@ -16701,11 +16703,11 @@
 .mockup-wv-share--airy .mockup-wv-share__rank { font-size: var(--text-md); }
 .mockup-wv-share--dense { font-size: var(--text-xs); }
 .mockup-wv-share--dense .mockup-wv-share__row {
-  grid-template-columns: 16px 18px 24px minmax(0, 1fr) 10px minmax(0, 1fr) 16px;
+  grid-template-columns: 16px 18px 24px minmax(0, 1fr) 10px minmax(0, 1fr) max-content;
   gap: 4px;
 }
 .mockup-wv-share--dense .mockup-wv-share__player { gap: 4px; }
-.mockup-wv-share--dense .mockup-wv-share__club { font-size: 8px; }
+.mockup-wv-share--dense .mockup-wv-share__owner-abbr { font-size: 8px; }
 .mockup-wv-share--dense .mockup-wv-share__tag { padding: 1px 3px; }
 .mockup-wv-share--dense .mockup-wv-share__name { font-size: var(--text-xs); }
 

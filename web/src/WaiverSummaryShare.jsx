@@ -4,13 +4,8 @@ import { PlayerKit } from './PlayerKit.jsx'
 import { gameWeekSelectLabel } from './gwLabel.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import { teamChipAbbr } from './liveScoresDerivations.js'
 import './WaiversPanel.css'
-
-function teamFirstToken(teamName) {
-  const t = (teamName ?? '').trim()
-  if (!t) return '?'
-  return t.split(/\s+/)[0]
-}
 
 /** Plain-text line for one move — no `W` prefix for waivers; FA lines keep `FA`. */
 function moveLineForCopy(r) {
@@ -36,8 +31,7 @@ function buildWaiverShareText({ gw, flatRows, leagueTitleAbbr, leagueTitle }) {
   lines.push(leagueTitle)
   lines.push('')
   for (const r of flatRows) {
-    const who = teamFirstToken(r.teamName)
-    lines.push(`${moveLineForCopy(r)}  |  ${who}`)
+    lines.push(`${moveLineForCopy(r)}  |  ${teamChipAbbr(r.teamName)}`)
   }
   return lines.join('\n').trimEnd()
 }
@@ -67,21 +61,11 @@ function SharePos({ pos }) {
   )
 }
 
-function shareClubCode(teamShort) {
-  const t = String(teamShort ?? '').trim().toUpperCase()
-  if (!t || t === '—' || t === '?') return ''
-  return t.slice(0, 3)
-}
-
 function SharePlayer({ badgeUrl, teamShort, name, out = false }) {
-  const club = shareClubCode(teamShort)
   return (
     <span className={out ? 'waivers-share__player waivers-share__player--out' : 'waivers-share__player'}>
-      <span className="waivers-share__club-id">
-        <span className={out ? 'waivers-share__crest waivers-share__crest--out' : 'waivers-share__crest'}>
-          <PlayerKit badgeUrl={badgeUrl} teamShort={teamShort} />
-        </span>
-        {club ? <span className="waivers-share__club">{club}</span> : null}
+      <span className={out ? 'waivers-share__crest waivers-share__crest--out' : 'waivers-share__crest'}>
+        <PlayerKit badgeUrl={badgeUrl} teamShort={teamShort} />
       </span>
       <span className={out ? 'waivers-share__name waivers-share__name--out' : 'waivers-share__name'}>
         {name ?? '—'}
@@ -90,14 +74,30 @@ function SharePlayer({ badgeUrl, teamShort, name, out = false }) {
   )
 }
 
+function ShareOwner({ row, teamLogoMap, kitIndexByEntry }) {
+  const abbr = teamChipAbbr(row.teamName)
+  return (
+    <span className="waivers-share__owner" title={row.teamName}>
+      <TeamAvatar
+        entryId={row.leagueEntryId}
+        name={row.teamName}
+        size="sm"
+        logoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+      <span className="waivers-share__owner-abbr">{abbr}</span>
+    </span>
+  )
+}
+
 /**
  * Portrait, screenshot-friendly waiver card. Rows stack at a fixed compact
  * height (no flex-grow between rows) so a light week stays tight and
  * 15–20 picks still fit in one phone screenshot. Density scales type/crests
- * to row count. Real GW data: position · IN crest + club code + name ←
- * OUT crest + club code + name, league-wide waiver order (FA = none),
- * manager fantasy crest pinned right. Position is shown once — in and
- * out share it. Club codes sit immediately right of each badge.
+ * to row count. Real GW data: position · IN crest + name ← OUT crest +
+ * name, league-wide waiver order (FA = none), manager fantasy crest +
+ * 3-letter team code pinned right. Position is shown once — in and out
+ * share it.
  */
 function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEntry }) {
   const density = shareCardDensity(rows.length)
@@ -138,15 +138,11 @@ function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEnt
                 name={r.droppedName}
                 out
               />
-              <span className="waivers-share__avatar">
-                <TeamAvatar
-                  entryId={r.leagueEntryId}
-                  name={r.teamName}
-                  size="sm"
-                  logoMap={teamLogoMap}
-                  kitIndexByEntry={kitIndexByEntry}
-                />
-              </span>
+              <ShareOwner
+                row={r}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+              />
             </li>
           )
         })}

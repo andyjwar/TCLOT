@@ -655,8 +655,8 @@
   min-width: 0;
   padding: 2px 0;
   display: grid;
-  /* marker · pos · player in · arrow · player out · avatar */
-  grid-template-columns: 1.35rem max-content minmax(0, 1fr) 0.7rem minmax(0, 1fr) 1.15rem;
+  /* marker · pos · player in · arrow · player out · badge + abbr */
+  grid-template-columns: 1.35rem max-content minmax(0, 1fr) 0.7rem minmax(0, 1fr) max-content;
   align-items: center;
   column-gap: 4px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
@@ -704,25 +704,6 @@
   gap: 5px;
   min-width: 0;
 }
-.waivers-share__club-id {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  flex: 0 0 auto;
-  min-width: 0;
-}
-.waivers-share__club {
-  flex: 0 0 3ch;
-  width: 3ch;
-  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  line-height: 1;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  font-variant-numeric: tabular-nums;
-}
 .waivers-share__crest {
   display: inline-flex;
   align-items: center;
@@ -739,9 +720,7 @@
 .waivers-share__crest .pl-kit-fallback {
   width: 100%; height: 100%;
   display: inline-flex; align-items: center; justify-content: center;
-  /* Club code sits beside the crest — don't double the 3-letter fallback. */
-  font-size: 0;
-  background: var(--surface-2);
+  font-size: 7px; font-weight: 700; color: var(--text-muted);
 }
 .waivers-share__name {
   flex: 1 1 0;
@@ -753,11 +732,29 @@
 }
 .waivers-share__name--out { color: var(--text-muted); font-weight: 500; }
 .waivers-share__arrow { color: var(--text-muted); text-align: center; }
-.waivers-share__avatar { display: inline-flex; align-items: center; justify-self: end; }
+.waivers-share__owner {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  justify-self: end;
+  min-width: 0;
+}
+.waivers-share__owner-abbr {
+  flex: 0 0 3ch;
+  width: 3ch;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
 /* The fantasy-team crest (TeamAvatar) defaults to 28px; pin it to the row's
  * right column so it never overflows / overlaps the row below — even when the
  * record (~30-row) week squeezes each row to a sliver. */
-.waivers-share__avatar .team-avatar-frame {
+.waivers-share__owner .team-avatar-frame {
   width: 18px;
   height: 18px;
 }
@@ -769,12 +766,12 @@
 .waivers-share--compact .waivers-share__row {
   min-height: 20px;
   padding: 1px 0;
-  grid-template-columns: 1.25rem max-content minmax(0, 1fr) 0.65rem minmax(0, 1fr) 1.05rem;
+  grid-template-columns: 1.25rem max-content minmax(0, 1fr) 0.65rem minmax(0, 1fr) max-content;
   column-gap: 3px;
 }
 .waivers-share--compact .waivers-share__player { gap: 4px; }
-.waivers-share--compact .waivers-share__club-id { gap: 2px; }
-.waivers-share--compact .waivers-share__club { font-size: 8px; }
+.waivers-share--compact .waivers-share__owner { gap: 2px; }
+.waivers-share--compact .waivers-share__owner-abbr { font-size: 8px; }
 .waivers-share--compact .waivers-pos-chip {
   height: 14px;
   padding: 0 3px;
@@ -785,7 +782,7 @@
 .waivers-share--compact .waivers-share__tag { padding: 1px 3px; }
 .waivers-share--compact .waivers-share__name { font-size: var(--text-xs); }
 .waivers-share--compact .waivers-share__marker { font-size: var(--text-xs); }
-.waivers-share--compact .waivers-share__avatar .team-avatar-frame {
+.waivers-share--compact .waivers-share__owner .team-avatar-frame {
   width: 16px;
   height: 16px;
 }
@@ -793,12 +790,12 @@
 .waivers-share--dense .waivers-share__row {
   min-height: 18px;
   padding: 0;
-  grid-template-columns: 1.15rem max-content minmax(0, 1fr) 0.6rem minmax(0, 1fr) 0.95rem;
+  grid-template-columns: 1.15rem max-content minmax(0, 1fr) 0.6rem minmax(0, 1fr) max-content;
   column-gap: 3px;
 }
 .waivers-share--dense .waivers-share__player { gap: 3px; }
-.waivers-share--dense .waivers-share__club-id { gap: 2px; }
-.waivers-share--dense .waivers-share__club { font-size: 8px; }
+.waivers-share--dense .waivers-share__owner { gap: 2px; }
+.waivers-share--dense .waivers-share__owner-abbr { font-size: 8px; }
 .waivers-share--dense .waivers-pos-chip {
   height: 13px;
   padding: 0 2px;
@@ -809,7 +806,7 @@
 .waivers-share--dense .waivers-share__tag { padding: 0 2px; font-size: 9px; }
 .waivers-share--dense .waivers-share__name { font-size: 11px; line-height: 1.15; }
 .waivers-share--dense .waivers-share__marker { font-size: 11px; }
-.waivers-share--dense .waivers-share__avatar .team-avatar-frame {
+.waivers-share--dense .waivers-share__owner .team-avatar-frame {
   width: 14px;
   height: 14px;
 }

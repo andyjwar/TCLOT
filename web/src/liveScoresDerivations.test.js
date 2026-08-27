@@ -235,6 +235,7 @@ test('teamChipAbbr — three letters from leading word or initials', () => {
   assert.equal(teamChipAbbr('Seoul Shire'), 'SEO')
   assert.equal(teamChipAbbr('Hackney Rohirrim'), 'HAC')
   assert.equal(teamChipAbbr('Toronto Gimli'), 'TOR')
+  assert.equal(teamChipAbbr('Suffolk Sméagol'), 'SUF')
   assert.equal(teamChipAbbr(''), '???')
   assert.equal(teamChipAbbr(null), '???')
 })
