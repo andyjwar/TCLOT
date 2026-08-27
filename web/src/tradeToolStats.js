@@ -193,7 +193,8 @@ export const DEFAULT_TRADE_STAT_IDS = [
 
 export const TRADE_MAX_STATS = 8
 export const TRADE_MIN_STATS = 3
-export const TRADE_MAX_PLAYERS_PER_SIDE = 5
+/** One-for-one compare — FPL Draft trades are same-position swaps. */
+export const TRADE_MAX_PLAYERS_PER_SIDE = 1
 
 /** "2026-27" → "26/27" */
 export function seasonShortLabel(label) {
@@ -461,6 +462,85 @@ export function formatTradeStat(statId, value) {
   if (def?.format === 'decimal') return n.toFixed(1)
   if (Number.isInteger(n)) return String(n)
   return String(Math.round(n * 10) / 10)
+}
+
+/**
+ * Position lock for same-position trades. The first selected player on
+ * either side sets the position the other side may pick.
+ *
+ * @param {{ positionType?: number }[] | null | undefined} pickedA
+ * @param {{ positionType?: number }[] | null | undefined} pickedB
+ * @returns {number | null}
+ */
+export function lockedTradePosition(pickedA, pickedB) {
+  const a = Array.isArray(pickedA) ? pickedA[0] : null
+  const b = Array.isArray(pickedB) ? pickedB[0] : null
+  const type = a?.positionType ?? b?.positionType
+  const n = Number(type)
+  return Number.isFinite(n) ? n : null
+}
+
+/**
+ * Squad list for one trade side. Once a position is locked, both sides
+ * only list that position — FPL Draft trades are same-position swaps.
+ *
+ * @param {object[] | null | undefined} squad
+ * @param {number | null | undefined} lockPosition
+ * @returns {object[]}
+ */
+export function filterSquadForTrade(squad, lockPosition) {
+  const list = Array.isArray(squad) ? squad : []
+  if (lockPosition == null) return list
+  return list.filter((p) => Number(p.positionType) === Number(lockPosition))
+}
+
+/**
+ * Toggle or replace a one-player-per-side pick. A mismatched position is
+ * ignored when the other side already has a player selected.
+ *
+ * @param {{
+ *   idsA?: number[],
+ *   idsB?: number[],
+ *   squadA?: { element: number, positionType: number }[],
+ *   squadB?: { element: number, positionType: number }[],
+ *   side: 'a' | 'b',
+ *   elementId: number,
+ * }} args
+ * @returns {{ idsA: number[], idsB: number[] }}
+ */
+export function applyTradePick({
+  idsA = [],
+  idsB = [],
+  squadA = [],
+  squadB = [],
+  side,
+  elementId,
+}) {
+  const id = Number(elementId)
+  const isA = side === 'a'
+  const squad = isA ? squadA : squadB
+  const player = (squad || []).find((p) => Number(p.element) === id)
+  if (!player) return { idsA: [...idsA], idsB: [...idsB] }
+
+  const current = isA ? idsA : idsB
+  const other = isA ? idsB : idsA
+  const otherSquad = isA ? squadB : squadA
+  const otherPicked = (otherSquad || []).find((p) =>
+    (other || []).includes(Number(p.element)),
+  )
+
+  if ((current || []).includes(id)) {
+    return isA ? { idsA: [], idsB: [...other] } : { idsA: [...other], idsB: [] }
+  }
+
+  if (
+    otherPicked &&
+    Number(otherPicked.positionType) !== Number(player.positionType)
+  ) {
+    return { idsA: [...idsA], idsB: [...idsB] }
+  }
+
+  return isA ? { idsA: [id], idsB: [...other] } : { idsA: [...other], idsB: [id] }
 }
 
 /**

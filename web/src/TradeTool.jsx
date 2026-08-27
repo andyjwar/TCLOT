@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { PlayerKit } from './PlayerKit.jsx'
 import { TeamAvatar } from './TeamAvatar.jsx'
@@ -17,20 +18,23 @@ import {
 import { archivedSeasonLabel } from './seasonArchive.js'
 import {
   DEFAULT_TRADE_STAT_IDS,
-  TRADE_MAX_PLAYERS_PER_SIDE,
   TRADE_MAX_STATS,
   TRADE_MIN_STATS,
   TRADE_STAT_CATALOG,
   TRADE_STAT_GROUPS,
   aggregateSideStats,
+  applyTradePick,
   buildRadarAxes,
+  filterSquadForTrade,
   formatTradeStat,
   indexElementsByCode,
   joinPriorByCode,
+  lockedTradePosition,
   normalizeTradeStatSelection,
   seasonShortLabel,
   toggleTradeStat,
 } from './tradeToolStats.js'
+import { useMobileLayout } from './usePortraitMobile.js'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
 import './TradeTool.css'
 
@@ -188,12 +192,98 @@ function useTradeToolData({
   return state
 }
 
-function TradeStatsPill({ selectedIds, onChange }) {
+function TradeStatsPanel({ selection, onChange, sheet, onClose }) {
+  return (
+    <div
+      className={
+        sheet ? 'trade-tool__stats-sheet' : 'trade-tool__stats-panel'
+      }
+      role="dialog"
+      aria-label="Radar stats"
+    >
+      <div className="trade-tool__stats-head">
+        <span>Radar axes</span>
+        <span className="muted">
+          {selection.length} of {TRADE_MAX_STATS} · min {TRADE_MIN_STATS}
+        </span>
+        {sheet ? (
+          <button
+            type="button"
+            className="trade-tool__stats-close"
+            aria-label="Close stats"
+            onClick={onClose}
+          >
+            ×
+          </button>
+        ) : null}
+      </div>
+      {TRADE_STAT_GROUPS.map((group) => (
+        <section key={group.id} className="trade-tool__stats-group">
+          <h4>{group.label}</h4>
+          <div className="trade-tool__stats-grid">
+            {Object.values(TRADE_STAT_CATALOG)
+              .filter((s) => s.group === group.id)
+              .map((stat) => {
+                const checked = selection.includes(stat.id)
+                const blocked =
+                  (!checked && selection.length >= TRADE_MAX_STATS) ||
+                  (checked && selection.length <= TRADE_MIN_STATS)
+                return (
+                  <label
+                    key={stat.id}
+                    className={
+                      'trade-tool__stats-opt' +
+                      (checked ? ' is-checked' : '') +
+                      (blocked && !checked ? ' is-disabled' : '')
+                    }
+                    title={stat.title}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={checked}
+                      disabled={blocked && !checked}
+                      onChange={() => onChange(toggleTradeStat(selection, stat.id))}
+                    />
+                    {stat.label}
+                  </label>
+                )
+              })}
+          </div>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+function TradeStatsPill({ selectedIds, onChange, sheet }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
   const selection = normalizeTradeStatSelection(selectedIds)
   const dismiss = useCallback(() => setOpen(false), [])
-  usePillMenuDismiss(rootRef, open, dismiss)
+  usePillMenuDismiss(rootRef, open && !sheet, dismiss)
+
+  useEffect(() => {
+    if (!open || !sheet) return undefined
+    const onKey = (ev) => {
+      if (ev.key === 'Escape') dismiss()
+    }
+    const prevOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.body.style.overflow = prevOverflow
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [open, sheet, dismiss])
+
+  const panel = (
+    <TradeStatsPanel
+      selection={selection}
+      onChange={onChange}
+      sheet={sheet}
+      onClose={dismiss}
+    />
+  )
 
   return (
     <div className="trade-tool__stats-pill" ref={rootRef}>
@@ -212,51 +302,27 @@ function TradeStatsPill({ selectedIds, onChange }) {
           {selection.length}/{TRADE_MAX_STATS}
         </span>
       </button>
-      {open ? (
-        <div className="trade-tool__stats-panel" role="dialog" aria-label="Radar stats">
-          <div className="trade-tool__stats-head">
-            <span>Radar axes</span>
-            <span className="muted">
-              {selection.length} of {TRADE_MAX_STATS} · min {TRADE_MIN_STATS}
-            </span>
-          </div>
-          {TRADE_STAT_GROUPS.map((group) => (
-            <section key={group.id} className="trade-tool__stats-group">
-              <h4>{group.label}</h4>
-              <div className="trade-tool__stats-grid">
-                {Object.values(TRADE_STAT_CATALOG)
-                  .filter((s) => s.group === group.id)
-                  .map((stat) => {
-                    const checked = selection.includes(stat.id)
-                    const blocked =
-                      (!checked && selection.length >= TRADE_MAX_STATS) ||
-                      (checked && selection.length <= TRADE_MIN_STATS)
-                    return (
-                      <label
-                        key={stat.id}
-                        className={
-                          'trade-tool__stats-opt' +
-                          (checked ? ' is-checked' : '') +
-                          (blocked && !checked ? ' is-disabled' : '')
-                        }
-                        title={stat.title}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={blocked && !checked}
-                          onChange={() => onChange(toggleTradeStat(selection, stat.id))}
-                        />
-                        {stat.label}
-                        <span className="trade-tool__stats-opt-title">{stat.title}</span>
-                      </label>
-                    )
-                  })}
-              </div>
-            </section>
-          ))}
-        </div>
-      ) : null}
+      {open && !sheet ? panel : null}
+      {open && sheet && typeof document !== 'undefined'
+        ? createPortal(
+            <div
+              className="trade-tool__stats-overlay"
+              data-theme={
+                document.querySelector('.fotmob')?.getAttribute('data-theme') ||
+                undefined
+              }
+            >
+              <button
+                type="button"
+                className="trade-tool__stats-backdrop"
+                aria-label="Close stats"
+                onClick={dismiss}
+              />
+              {panel}
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   )
 }
@@ -364,12 +430,7 @@ export function TradeTool({
     /** @type {'current' | 'prior' | 'combined'} */ ('current'),
   )
   const [statIds, setStatIds] = useState(() => [...DEFAULT_TRADE_STAT_IDS])
-
-  useEffect(() => {
-    if (entryA != null || entryB != null || managers.length < 2) return
-    setEntryA(Number(managers[0].id))
-    setEntryB(Number(managers[1].id))
-  }, [managers, entryA, entryB])
+  const mobileLayout = useMobileLayout()
 
   const pickManager = (side, raw) => {
     const next = Number(raw)
@@ -395,24 +456,21 @@ export function TradeTool({
   const squadB = squadsByEntry.get(Number(entryB)) || []
   const pickedA = squadA.filter((p) => idsA.includes(p.element))
   const pickedB = squadB.filter((p) => idsB.includes(p.element))
+  const lockPosition = lockedTradePosition(pickedA, pickedB)
+  const visibleA = filterSquadForTrade(squadA, lockPosition)
+  const visibleB = filterSquadForTrade(squadB, lockPosition)
 
   const togglePlayer = (side, elementId) => {
-    const id = Number(elementId)
-    if (side === 'a') {
-      setIdsB((prev) => prev.filter((x) => x !== id))
-      setIdsA((prev) => {
-        if (prev.includes(id)) return prev.filter((x) => x !== id)
-        if (prev.length >= TRADE_MAX_PLAYERS_PER_SIDE) return prev
-        return [...prev, id]
-      })
-    } else {
-      setIdsA((prev) => prev.filter((x) => x !== id))
-      setIdsB((prev) => {
-        if (prev.includes(id)) return prev.filter((x) => x !== id)
-        if (prev.length >= TRADE_MAX_PLAYERS_PER_SIDE) return prev
-        return [...prev, id]
-      })
-    }
+    const next = applyTradePick({
+      idsA,
+      idsB,
+      squadA,
+      squadB,
+      side,
+      elementId,
+    })
+    setIdsA(next.idsA)
+    setIdsB(next.idsB)
   }
 
   const sideAStats = useMemo(
@@ -432,45 +490,60 @@ export function TradeTool({
     managers.find((m) => Number(m.id) === Number(entryA))?.entry_name || 'Side A'
   const nameB =
     managers.find((m) => Number(m.id) === Number(entryB))?.entry_name || 'Side B'
+  const compareA = pickedA[0]?.name || nameA
+  const compareB = pickedB[0]?.name || nameB
   const currentShort = seasonShortLabel(currentSeasonLabel) || 'This season'
   const priorShort = seasonShortLabel(priorSeasonLabel) || 'Last season'
   const showRadar = pickedA.length > 0 && pickedB.length > 0
+  const lockPosLabel = lockPosition != null ? POS_LABEL[lockPosition] : null
 
   const renderSquad = (side) => {
     const entryId = side === 'a' ? entryA : entryB
-    const squad = side === 'a' ? squadA : squadB
     const selected = side === 'a' ? idsA : idsB
+    const visible = side === 'a' ? visibleA : visibleB
     const groups = POSITION_ORDER.map((type) => ({
       type,
       label: POS_LABEL[type],
-      players: squad.filter((p) => p.positionType === type),
+      players: visible.filter((p) => p.positionType === type),
     })).filter((g) => g.players.length)
+    const hasTeam = entryId != null
 
     return (
       <div className={`trade-tool__side trade-tool__side--${side}`}>
         <div className="trade-tool__side-head">
-          <TeamAvatar
-            entryId={entryId}
-            name={side === 'a' ? nameA : nameB}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
+          {hasTeam ? (
+            <TeamAvatar
+              entryId={entryId}
+              name={side === 'a' ? nameA : nameB}
+              size="sm"
+              logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+          ) : null}
           <CompactSelectPill
             ariaLabel={side === 'a' ? 'Give manager' : 'Get manager'}
             value={entryId != null ? String(entryId) : ''}
             onChange={(v) => pickManager(side, v)}
             options={managerOptions}
-            placeholder="Pick a manager"
+            placeholder="Pick a team"
             isActive={entryId != null}
           />
         </div>
-        {status === 'loading' ? (
+        {!hasTeam ? (
+          <p className="muted muted--tight">Pick a team to see the squad.</p>
+        ) : status === 'loading' ? (
           <p className="muted muted--tight">Loading squad…</p>
         ) : !groups.length ? (
-          <p className="muted muted--tight">No squad on record yet.</p>
+          <p className="muted muted--tight">
+            {lockPosLabel
+              ? `No ${lockPosLabel} on this squad.`
+              : 'No squad on record yet.'}
+          </p>
         ) : (
           <div className="trade-tool__roster">
+            {lockPosLabel ? (
+              <p className="trade-tool__lock-hint">Same position · {lockPosLabel}</p>
+            ) : null}
             {groups.map((g) => (
               <div key={g.type} className="trade-tool__pos-block">
                 <div className="trade-tool__pos-h">{g.label}</div>
@@ -502,47 +575,9 @@ export function TradeTool({
           </h2>
         </div>
         <p className="tile-hint muted tile-hint--tight">
-          Build a proposed swap and compare season stats. Nothing is sent to FPL
-          Draft — agree the deal, then offer it in the official app.
+          Pick a team, then one player each. Same position only — nothing is
+          sent to FPL Draft. Agree the deal, then offer it in the official app.
         </p>
-
-        <div className="trade-tool__controls">
-          {hasPrior ? (
-            <div className="trade-tool__season" role="group" aria-label="Season">
-              <button
-                type="button"
-                className={
-                  'trade-tool__season-btn' +
-                  (seasonMode === 'current' ? ' is-active' : '')
-                }
-                onClick={() => setSeasonMode('current')}
-              >
-                {currentShort}
-              </button>
-              <button
-                type="button"
-                className={
-                  'trade-tool__season-btn' +
-                  (seasonMode === 'prior' ? ' is-active' : '')
-                }
-                onClick={() => setSeasonMode('prior')}
-              >
-                {priorShort}
-              </button>
-              <button
-                type="button"
-                className={
-                  'trade-tool__season-btn' +
-                  (seasonMode === 'combined' ? ' is-active' : '')
-                }
-                onClick={() => setSeasonMode('combined')}
-              >
-                Both
-              </button>
-            </div>
-          ) : null}
-          <TradeStatsPill selectedIds={statIds} onChange={setStatIds} />
-        </div>
 
         {status === 'error' ? (
           <p className="muted muted--tight" role="alert">
@@ -558,6 +593,7 @@ export function TradeTool({
               {renderSquad('b')}
             </div>
 
+            {(entryA != null || entryB != null) ? (
             <div className="trade-tool__picked" aria-label="Players in the trade">
               <div className="trade-tool__picked-col">
                 {pickedA.length ? (
@@ -570,7 +606,7 @@ export function TradeTool({
                     />
                   ))
                 ) : (
-                  <span className="muted">Tap players to give</span>
+                  <span className="muted">Tap a player to give</span>
                 )}
               </div>
               <span className="trade-tool__picked-swap" aria-hidden>
@@ -587,19 +623,61 @@ export function TradeTool({
                     />
                   ))
                 ) : (
-                  <span className="muted">Tap players to get</span>
+                  <span className="muted">Tap a player to get</span>
                 )}
               </div>
             </div>
+            ) : null}
 
             {showRadar ? (
               <>
-                <TradeRadar axes={axes} labelA={nameA} labelB={nameB} />
+                <div className="trade-tool__controls">
+                  {hasPrior ? (
+                    <div className="trade-tool__season" role="group" aria-label="Season">
+                      <button
+                        type="button"
+                        className={
+                          'trade-tool__season-btn' +
+                          (seasonMode === 'current' ? ' is-active' : '')
+                        }
+                        onClick={() => setSeasonMode('current')}
+                      >
+                        {currentShort}
+                      </button>
+                      <button
+                        type="button"
+                        className={
+                          'trade-tool__season-btn' +
+                          (seasonMode === 'prior' ? ' is-active' : '')
+                        }
+                        onClick={() => setSeasonMode('prior')}
+                      >
+                        {priorShort}
+                      </button>
+                      <button
+                        type="button"
+                        className={
+                          'trade-tool__season-btn' +
+                          (seasonMode === 'combined' ? ' is-active' : '')
+                        }
+                        onClick={() => setSeasonMode('combined')}
+                      >
+                        Both
+                      </button>
+                    </div>
+                  ) : null}
+                  <TradeStatsPill
+                    selectedIds={statIds}
+                    onChange={setStatIds}
+                    sheet={mobileLayout}
+                  />
+                </div>
+                <TradeRadar axes={axes} labelA={compareA} labelB={compareB} />
                 <div className="trade-tool__table" role="table" aria-label="Trade totals">
                   <div className="trade-tool__th" role="row">
                     <span>Stat</span>
-                    <span className="trade-tool__th-a">{nameA}</span>
-                    <span className="trade-tool__th-b">{nameB}</span>
+                    <span className="trade-tool__th-a">{compareA}</span>
+                    <span className="trade-tool__th-b">{compareB}</span>
                     <span>Δ</span>
                   </div>
                   {axes.map((ax) => {
@@ -637,7 +715,7 @@ export function TradeTool({
               </>
             ) : (
               <p className="muted muted--tight trade-tool__empty">
-                Pick at least one player on each side to compare.
+                Pick a team on each side, then one player of the same position.
               </p>
             )}
           </div>
