@@ -734,7 +734,7 @@ export function WaiverPickupsToggle({
   )
 }
 
-/** Explains static-site waiver lag when FPL has processed claims but deploy JSON hasn't caught up. */
+/** Explains waiver lag: live FPL overlay vs waiting on the static ingest deploy. */
 export function WaiverFreshnessBanner({ notice }) {
   if (!notice) return null
   const isStale = notice.kind === 'stale'

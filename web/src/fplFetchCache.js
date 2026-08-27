@@ -7,6 +7,7 @@ function ttlForUrl(url) {
   if (u.includes('/live')) return 45_000;
   if (u.includes('fixtures?')) return 3 * 60_000;
   if (u.includes('/entry/') && u.includes('/event/')) return 45_000;
+  if (u.includes('/transactions')) return 20_000;
   return 30_000;
 }
 
@@ -47,7 +48,8 @@ export function bustFplLiveCache() {
     if (
       key.includes('/live') ||
       key.includes('/entry/') ||
-      key.includes('fixtures?')
+      key.includes('fixtures?') ||
+      key.includes('/transactions')
     ) {
       store.delete(key);
     }
