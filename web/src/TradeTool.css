@@ -90,6 +90,8 @@
   flex-direction: column;
   justify-content: flex-end;
   align-items: stretch;
+  overflow: hidden;
+  overscroll-behavior: none;
   color: var(--fm-text, rgba(255, 255, 255, 0.87));
   --fm-card: #1e1e1e;
   --fm-border: #2f2f2f;
@@ -125,7 +127,7 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
   z-index: 1;
   width: min(100%, 360px);
   margin: 0 auto calc(var(--mobile-bottom-nav-h, 56px) + env(safe-area-inset-bottom, 0px));
-  max-height: min(34svh, 240px);
+  max-height: min(28svh, 200px);
   overflow-x: hidden;
   overflow-y: auto;
   padding: 10px 12px 12px;
@@ -181,6 +183,10 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
+}
+
+.trade-tool__stats-sheet .trade-tool__stats-grid {
+  grid-template-columns: 1fr 1fr 1fr;
 }
 
 .trade-tool__stats-opt {
@@ -648,7 +654,7 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
   }
 
   .trade-tool__stats-sheet {
-    max-height: min(34svh, 240px);
+    max-height: min(28svh, 200px);
     padding-bottom: 12px;
   }
 }
