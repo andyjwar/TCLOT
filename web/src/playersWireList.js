@@ -44,7 +44,7 @@ export const WIRE_POSITION_PILLS = [
   { id: '3', label: 'MID' },
   { id: '4', label: 'FWD' },
 ]
-/** @typedef {'total_points' | 'goals' | 'assists' | 'games_played' | 'sixty_plus' | 'clean_sheets' | 'def_con' | 'bonus' | 'xg' | 'xa' | 'starts' | 'form' | 'ppg' | 'goals_conceded' | 'bps' | 'yellow_cards' | 'red_cards' | 'own_goals' | 'saves' | 'save_pts' | 'xgc' | 'player' | 'pos' | 'next3'} WireSortKey */
+/** @typedef {'total_points' | 'goals' | 'assists' | 'games_played' | 'sixty_plus' | 'clean_sheets' | 'def_con' | 'def_con_total' | 'bonus' | 'xg' | 'xa' | 'starts' | 'form' | 'ppg' | 'goals_conceded' | 'bps' | 'yellow_cards' | 'red_cards' | 'own_goals' | 'saves' | 'save_pts' | 'xgc' | 'player' | 'pos' | 'next3'} WireSortKey */
 /** @typedef {'asc' | 'desc'} WireSortDir */
 /** @typedef {'playing' | 'returns' | 'expected' | 'defensive' | 'form' | 'discipline'} WireStatGroupId */
 
@@ -198,11 +198,20 @@ export const WIRE_STAT_CATALOG = {
   },
   defConHits: {
     id: 'defConHits',
-    label: 'DC',
+    label: 'DC (FPL)',
     title: 'Gameweeks with DefCon fantasy points (2 pts)',
     group: 'defensive',
     sortKey: 'def_con',
     format: 'summary_dc',
+  },
+  defConTotal: {
+    id: 'defConTotal',
+    label: 'DC (total)',
+    title: 'Defensive contributions — raw season total of qualifying actions',
+    group: 'defensive',
+    sortKey: 'def_con_total',
+    format: 'int',
+    field: 'defensive_contribution',
   },
   cs: {
     id: 'cs',
@@ -313,7 +322,8 @@ export const SORT_LABELS = {
   games_played: 'Games played',
   sixty_plus: '60+ mins',
   clean_sheets: 'Clean sheets',
-  def_con: 'DefCon GWs',
+  def_con: 'DefCon GWs (FPL pts)',
+  def_con_total: 'DefCon total',
   bonus: 'Bonus',
   xg: 'xG',
   xa: 'xA',
@@ -685,6 +695,7 @@ export function sortKeysForPositionFilter(positionFilter) {
     'sixty_plus',
     'starts',
     'def_con',
+    'def_con_total',
     'bonus',
     'xg',
     'xa',
@@ -1087,6 +1098,8 @@ export function elementSortValue(el, key, extra = {}) {
       return parseElementStat(el.clean_sheets)
     case 'def_con':
       return extra.defConHits != null ? extra.defConHits : elementDefCon(el)
+    case 'def_con_total':
+      return elementDefCon(el)
     case 'bonus':
       return parseElementStat(el.bonus)
     case 'xg':
