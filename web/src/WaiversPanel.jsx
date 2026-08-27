@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { PlayerKit } from './PlayerKit.jsx'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
-import { firstWord } from './teamNameUtils.js'
+import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
 import './WaiversPanel.css'
@@ -172,7 +172,9 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
                         logoMap={teamLogoMap}
                         kitIndexByEntry={kitIndexByEntry}
                       />
-                      <span className="waivers-table__team-name">{firstWord(r.teamName)}</span>
+                      <span className="waivers-table__team-name" title={r.teamName}>
+                        {standingsMobileTeamName(r.teamName)}
+                      </span>
                     </span>
                   </td>
                   <td>
@@ -246,7 +248,9 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
                 logoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
-              <span className="waivers-glance__team">{firstWord(m.teamName)}</span>
+              <span className="waivers-glance__team" title={m.teamName}>
+                {standingsMobileTeamName(m.teamName)}
+              </span>
               <span className="waivers-glance__counts">
                 {order != null ? (
                   <span
@@ -355,7 +359,9 @@ function WeeklyWaiversTiles({
                 logoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
-              <span className="waivers-weekly-tile__team">{g.teamName}</span>
+              <span className="waivers-weekly-tile__team" title={g.teamName}>
+                {standingsMobileTeamName(g.teamName)}
+              </span>
               <span className="waivers-weekly-tile__count muted">
                 {(g.moves || []).length}
               </span>
