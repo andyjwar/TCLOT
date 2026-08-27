@@ -17506,6 +17506,39 @@ button.live-xp__player-name:focus-visible {
   transform: rotate(180deg);
 }
 
+.cpsp--clearable .cpsp__btn {
+  padding-right: 34px;
+}
+
+.cpsp__clear {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: color-mix(in srgb, var(--fm-text-strong) 58%, var(--fm-muted));
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cpsp__clear:hover {
+  background: color-mix(in srgb, var(--fm-muted) 22%, transparent);
+  color: var(--fm-text-strong);
+}
+
 .cpsp__menu {
   position: absolute;
   top: calc(100% + 6px);
@@ -17672,12 +17705,13 @@ button.live-xp__player-name:focus-visible {
 }
 
 /* Subtle GKP / DEF / MID / FWD wash — pale fill, matching border + ink.
- * Draft, Waivers, and player-detail heroes only. Players list chips stay
+ * Draft, Waivers, player-detail, and Trade Tool. Players list chips stay
  * the uncoloured letter box. Double-class so it beats local cream chips. */
 .draft-pos.draft-pos--GKP,
 .waivers-pos-chip.waivers-pos-chip--GKP,
 .pdetail__hero-pos.pdetail__hero-pos--GKP,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--GKP {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--GKP,
+.trade-tool__pos.trade-tool__pos--GKP {
   color: #8a6a24;
   border-color: color-mix(in srgb, #c4a35a 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #c4a35a 14%, var(--surface, #fffdf6));
@@ -17685,7 +17719,8 @@ button.live-xp__player-name:focus-visible {
 .draft-pos.draft-pos--DEF,
 .waivers-pos-chip.waivers-pos-chip--DEF,
 .pdetail__hero-pos.pdetail__hero-pos--DEF,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--DEF {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--DEF,
+.trade-tool__pos.trade-tool__pos--DEF {
   color: #2f6b5c;
   border-color: color-mix(in srgb, #3f8a74 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #3f8a74 13%, var(--surface, #fffdf6));
@@ -17693,7 +17728,8 @@ button.live-xp__player-name:focus-visible {
 .draft-pos.draft-pos--MID,
 .waivers-pos-chip.waivers-pos-chip--MID,
 .pdetail__hero-pos.pdetail__hero-pos--MID,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--MID {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--MID,
+.trade-tool__pos.trade-tool__pos--MID {
   color: #5a4878;
   border-color: color-mix(in srgb, #7a6a9a 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #7a6a9a 13%, var(--surface, #fffdf6));
@@ -17701,7 +17737,8 @@ button.live-xp__player-name:focus-visible {
 .draft-pos.draft-pos--FWD,
 .waivers-pos-chip.waivers-pos-chip--FWD,
 .pdetail__hero-pos.pdetail__hero-pos--FWD,
-.pdetail-p__hero-pos.pdetail-p__hero-pos--FWD {
+.pdetail-p__hero-pos.pdetail-p__hero-pos--FWD,
+.trade-tool__pos.trade-tool__pos--FWD {
   color: #8a4a3a;
   border-color: color-mix(in srgb, #c47a6a 48%, var(--border, #ddd5b8));
   background: color-mix(in srgb, #c47a6a 13%, var(--surface, #fffdf6));
@@ -17710,7 +17747,8 @@ button.live-xp__player-name:focus-visible {
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--GKP,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--GKP,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--GKP,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--GKP {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--GKP,
+.fotmob:not([data-theme='light']) .trade-tool__pos.trade-tool__pos--GKP {
   color: #e0c57a;
   border-color: color-mix(in srgb, #c4a35a 40%, var(--border));
   background: color-mix(in srgb, #c4a35a 16%, transparent);
@@ -17718,7 +17756,8 @@ button.live-xp__player-name:focus-visible {
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--DEF,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--DEF,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--DEF,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--DEF {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--DEF,
+.fotmob:not([data-theme='light']) .trade-tool__pos.trade-tool__pos--DEF {
   color: #9dcebc;
   border-color: color-mix(in srgb, #3f8a74 40%, var(--border));
   background: color-mix(in srgb, #3f8a74 18%, transparent);
@@ -17726,7 +17765,8 @@ button.live-xp__player-name:focus-visible {
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--MID,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--MID,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--MID,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--MID {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--MID,
+.fotmob:not([data-theme='light']) .trade-tool__pos.trade-tool__pos--MID {
   color: #c4b5e0;
   border-color: color-mix(in srgb, #7a6a9a 40%, var(--border));
   background: color-mix(in srgb, #7a6a9a 18%, transparent);
@@ -17734,7 +17774,8 @@ button.live-xp__player-name:focus-visible {
 .fotmob:not([data-theme='light']) .draft-pos.draft-pos--FWD,
 .fotmob:not([data-theme='light']) .waivers-pos-chip.waivers-pos-chip--FWD,
 .fotmob:not([data-theme='light']) .pdetail__hero-pos.pdetail__hero-pos--FWD,
-.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--FWD {
+.fotmob:not([data-theme='light']) .pdetail-p__hero-pos.pdetail-p__hero-pos--FWD,
+.fotmob:not([data-theme='light']) .trade-tool__pos.trade-tool__pos--FWD {
   color: #e0a090;
   border-color: color-mix(in srgb, #c47a6a 40%, var(--border));
   background: color-mix(in srgb, #c47a6a 18%, transparent);
