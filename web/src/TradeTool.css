@@ -300,16 +300,27 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
 .trade-tool__search-input {
   box-sizing: border-box;
   width: 100%;
-  min-height: 30px;
+  min-height: 36px;
   margin: 0;
-  padding: 5px 10px;
+  padding: 6px 10px;
   border-radius: 14px;
   border: 1px solid color-mix(in srgb, var(--fm-border) 78%, transparent);
   background: var(--fm-card);
   color: var(--fm-text-strong);
   font: inherit;
-  font-size: 13px;
+  /* 16px keeps iOS Safari from auto-zooming when the field is focused. */
+  font-size: 16px;
   font-weight: 600;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.trade-tool__search-input::-webkit-search-decoration,
+.trade-tool__search-input::-webkit-search-cancel-button,
+.trade-tool__search-input::-webkit-search-results-button,
+.trade-tool__search-input::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .trade-tool__search-input::placeholder {

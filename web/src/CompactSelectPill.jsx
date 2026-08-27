@@ -24,7 +24,8 @@
  *     Defaults to 'left'.
  *   - `id` (string, optional): id on the trigger button.
  *   - `onClear` (() => void, optional): when set and a value is selected,
- *     an × sits in the pill (before the chevron) and clears the choice.
+ *     an × replaces the chevron so the pill can be cleared without showing
+ *     both controls at once. Tap the rest of the pill to change the value.
  *   - `menuMaxWidth` (string|number, optional): CSS max-width for the menu.
  *
  * Keyboard:
@@ -269,9 +270,11 @@ export function CompactSelectPill({
           </>
         ) : null}
         <span className="cpsp__value">{displayValue}</span>
-        <span className="cpsp__chev" aria-hidden>
-          ▾
-        </span>
+        {showClear ? null : (
+          <span className="cpsp__chev" aria-hidden>
+            ▾
+          </span>
+        )}
       </button>
       {showClear ? (
         <button
