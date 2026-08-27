@@ -16619,9 +16619,9 @@
   flex: 1 1 0;
   min-height: 0;
   display: grid;
-  grid-template-columns: 18px 22px 20px minmax(0, 1.25fr) 12px 18px minmax(0, 1fr) 20px;
+  grid-template-columns: 18px 22px 28px minmax(0, 1fr) 12px minmax(0, 1fr) 20px;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 .mockup-wv-share__row:last-child { border-bottom: 0; }
@@ -16641,6 +16641,21 @@
 .mockup-wv-share__tag--fa {
   background: color-mix(in srgb, var(--text-muted) 16%, transparent);
   color: var(--text-muted);
+}
+.mockup-wv-share__pos.mockup-wv-pos-chip {
+  justify-self: center;
+  width: auto;
+  min-width: 24px;
+  height: 15px;
+  padding: 0 3px;
+  font-size: 8px;
+  letter-spacing: 0.03em;
+}
+.mockup-wv-share__player {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
 }
 .mockup-wv-share__crest {
   display: inline-flex;
@@ -16670,9 +16685,10 @@
 .mockup-wv-share--airy .mockup-wv-share__rank { font-size: var(--text-md); }
 .mockup-wv-share--dense { font-size: var(--text-xs); }
 .mockup-wv-share--dense .mockup-wv-share__row {
-  grid-template-columns: 16px 18px 16px minmax(0, 1.25fr) 10px 14px minmax(0, 1fr) 16px;
+  grid-template-columns: 16px 18px 24px minmax(0, 1fr) 10px minmax(0, 1fr) 16px;
   gap: 4px;
 }
+.mockup-wv-share--dense .mockup-wv-share__player { gap: 4px; }
 .mockup-wv-share--dense .mockup-wv-share__tag { padding: 1px 3px; }
 .mockup-wv-share--dense .mockup-wv-share__name { font-size: var(--text-xs); }
 

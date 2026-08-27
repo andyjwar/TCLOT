@@ -645,9 +645,12 @@
   min-height: 22px;
   padding: 2px 0;
   display: grid;
-  grid-template-columns: 24px 18px minmax(0, 1.25fr) 10px 16px minmax(0, 1fr) 20px;
+  /* marker · pos · player in · arrow · player out · avatar
+   * Equal 1fr player columns pull the out side left vs the old 1.25fr/1fr
+   * split, making room for the single position chip. */
+  grid-template-columns: 22px 26px minmax(0, 1fr) 10px minmax(0, 1fr) 20px;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 .waivers-share__row:last-child { border-bottom: 0; }
@@ -676,6 +679,22 @@
 .waivers-share__tag--fa {
   background: color-mix(in srgb, var(--text-muted) 16%, transparent);
   color: var(--text-muted);
+}
+.waivers-share__pos {
+  justify-self: center;
+  min-width: 0;
+}
+.waivers-share .waivers-pos-chip {
+  height: 15px;
+  padding: 0 3px;
+  font-size: 9px;
+  letter-spacing: 0.03em;
+}
+.waivers-share__player {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
 }
 .waivers-share__crest {
   display: inline-flex;
@@ -720,8 +739,14 @@
 .waivers-share--compact .waivers-share__row {
   min-height: 20px;
   padding: 1px 0;
-  grid-template-columns: 22px 16px minmax(0, 1.25fr) 9px 14px minmax(0, 1fr) 17px;
-  gap: 4px;
+  grid-template-columns: 20px 24px minmax(0, 1fr) 9px minmax(0, 1fr) 17px;
+  gap: 3px;
+}
+.waivers-share--compact .waivers-share__player { gap: 3px; }
+.waivers-share--compact .waivers-pos-chip {
+  height: 14px;
+  padding: 0 3px;
+  font-size: 8px;
 }
 .waivers-share--compact .waivers-share__crest { width: 16px; height: 16px; }
 .waivers-share--compact .waivers-share__crest--out { width: 14px; height: 14px; }
@@ -736,8 +761,14 @@
 .waivers-share--dense .waivers-share__row {
   min-height: 18px;
   padding: 0;
-  grid-template-columns: 20px 14px minmax(0, 1.25fr) 8px 12px minmax(0, 1fr) 15px;
+  grid-template-columns: 18px 22px minmax(0, 1fr) 8px minmax(0, 1fr) 15px;
   gap: 3px;
+}
+.waivers-share--dense .waivers-share__player { gap: 3px; }
+.waivers-share--dense .waivers-pos-chip {
+  height: 13px;
+  padding: 0 2px;
+  font-size: 8px;
 }
 .waivers-share--dense .waivers-share__crest { width: 14px; height: 14px; }
 .waivers-share--dense .waivers-share__crest--out { width: 12px; height: 12px; }
