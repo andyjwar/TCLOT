@@ -33,6 +33,7 @@ import {
   portraitDefaultWireStatIdsForPosition,
   readWireStatSelection,
   visibleWireColumns,
+  wireColumnHeaderLabel,
   wireColumnIsGroupStart,
   wireColumnToSortKey,
   wireStatsMapFromPayload,
@@ -588,7 +589,7 @@ function NextFixtureBadges({ fixtures, nextOnly = false }) {
  * Portrait Variant I tile list — replaces the desktop table grid on
  * `@media (max-width: 600px)` with a flat tile-based list. Each tile uses a
  * 2-column grid: left = identity (crest + name + position single letter +
- * owner avatar + ailments + Next-3 fixtures), right = fixed 168px N-track
+ * owner avatar + ailments + Next-3 fixtures), right = fixed ~188px N-track
  * grid of stat values aligned under a persistent column header.
  *
  * The header + tile right-column tracks share the same `repeat(N, 1fr)`
@@ -644,9 +645,16 @@ function PortraitWireTileList({
               : colSortKey
                 ? 'none'
                 : undefined
-            const cellClass = `players-wire-tile-colhead__cell${
-              isActive ? ' players-wire-tile-colhead__cell--sorted' : ''
-            }`
+            const cellClass = [
+              'players-wire-tile-colhead__cell',
+              isActive ? 'players-wire-tile-colhead__cell--sorted' : '',
+              isActive && sortDir === 'asc'
+                ? 'players-wire-tile-colhead__cell--asc'
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' ')
+            const headerLabel = wireColumnHeaderLabel(col)
             if (!colSortKey) {
               return (
                 <span
@@ -655,7 +663,7 @@ function PortraitWireTileList({
                   role="columnheader"
                   title={col.title}
                 >
-                  {col.label}
+                  {headerLabel}
                 </span>
               )
             }
@@ -669,21 +677,7 @@ function PortraitWireTileList({
                 title={col.title ? `${col.title} · tap to sort` : 'Tap to sort'}
                 onClick={() => onColumnSort(col.id)}
               >
-                <span className="players-wire-tile-colhead__label">
-                  {col.shortLabel || col.label}
-                </span>
-                {/* Always reserve the arrow slot so switching the sorted
-                 * column doesn't nudge labels sideways and throw the
-                 * header out of line with the values below. */}
-                <span
-                  className={
-                    'players-wire-tile-colhead__arrow' +
-                    (isActive ? '' : ' players-wire-tile-colhead__arrow--idle')
-                  }
-                  aria-hidden
-                >
-                  {isActive ? (sortDir === 'asc' ? '↑' : '↓') : '↓'}
-                </span>
+                <span className="players-wire-tile-colhead__label">{headerLabel}</span>
               </button>
             )
           })}
@@ -1481,7 +1475,9 @@ export function PlayersWorkbench({
                     title={col.title ? `${col.title} · click to sort` : 'Click to sort'}
                     onClick={() => handleColumnSort(col.id)}
                   >
-                    <span className="players-table__th-label">{col.label}</span>
+                    <span className="players-table__th-label">
+                      {wireColumnHeaderLabel(col)}
+                    </span>
                     {!mobileLayout ? (
                       isActive ? (
                         <span className="players-table__sort-indicator" aria-hidden>
