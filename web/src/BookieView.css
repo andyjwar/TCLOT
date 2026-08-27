@@ -512,6 +512,12 @@
   border-bottom: 1px solid color-mix(in srgb, var(--fm-muted) 14%, transparent);
 }
 
+/* My bets carries a fifth column: the cash-out offer, right of Return. */
+.bookie-bets--cashout .bookie-bet {
+  grid-template-columns: minmax(0, 1fr) 2.85rem 3.2rem 3.95rem 3.95rem;
+  column-gap: 6px;
+}
+
 .bookie-bet:last-child {
   border-bottom: none;
 }
@@ -616,35 +622,44 @@
   font-weight: 800;
 }
 
-/* The tempter's button — amber like every "are you sure you want your
- * winnings early?" pitch ever made. Sits on its own line under the ticket. */
+/* The tempter's button — a blue pill in the Cash out column, matching the
+ * Wager/Return pills so the offer reads as one more figure on the ticket. */
 .bookie-bet__cashout {
-  grid-column: 1 / -1;
-  justify-self: start;
-  border: 1px solid color-mix(in srgb, #d97706 45%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 1.35em;
+  padding: 0 0.2em;
+  border: none;
   border-radius: 999px;
-  background: color-mix(in srgb, #f59e0b 12%, transparent);
-  color: #fbbf24;
+  background: color-mix(in srgb, #3b82f6 18%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in srgb, #3b82f6 18%, transparent);
+  color: #93c5fd;
   font: inherit;
-  font-size: 0.78rem;
   font-weight: 700;
-  padding: 3px 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  justify-self: stretch;
   cursor: pointer;
-  transition: background 120ms ease, border-color 120ms ease;
+  transition: background 120ms ease, box-shadow 120ms ease;
 }
 
 .bookie-bet__cashout:hover:not(:disabled) {
-  background: color-mix(in srgb, #f59e0b 22%, transparent);
+  background: color-mix(in srgb, #3b82f6 30%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in srgb, #3b82f6 30%, transparent);
 }
 
 .bookie-bet__cashout--armed {
-  background: #d97706;
-  border-color: #d97706;
+  background: #2563eb;
+  box-shadow: 0 0 0 0.12em #2563eb;
   color: #fff;
 }
 
 .bookie-bet__cashout--armed:hover:not(:disabled) {
-  background: #b45309;
+  background: #1d4ed8;
+  box-shadow: 0 0 0 0.12em #1d4ed8;
 }
 
 .bookie-bet__cashout:disabled {
@@ -653,7 +668,7 @@
 }
 
 .fotmob[data-theme='light'] .bookie-bet__cashout {
-  color: #b45309;
+  color: #1d4ed8;
 }
 
 .fotmob[data-theme='light'] .bookie-bet__cashout--armed {

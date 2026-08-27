@@ -97,13 +97,14 @@ function betReturnLabel(bet) {
   return fmtCoins(betReturnValue(bet))
 }
 
-function BetColHead() {
+function BetColHead({ cashout = false }) {
   return (
     <li className="bookie-bet bookie-bet--head" aria-hidden="true">
       <span className="bookie-bet__desc" />
       <span className="bookie-bet__col">Odds</span>
       <span className="bookie-bet__col">Wager</span>
       <span className="bookie-bet__col">Return</span>
+      {cashout ? <span className="bookie-bet__col">Cash out</span> : null}
     </li>
   )
 }
@@ -1040,10 +1041,10 @@ function BetSlip({ slip, me, minStake, token, onClose, onPlaced }) {
 }
 
 /**
- * The tempter's button: shows the standing offer, arms on the first tap
- * ("sure?"), pays on the second. If the board moves between quote and
- * acceptance the Worker refuses with a fresh number, which is shown
- * instead of silently paying less.
+ * The tempter's button: a pill in the Cash out column showing the standing
+ * offer, arms on the first tap ("sure?"), pays on the second. If the board
+ * moves between quote and acceptance the Worker refuses with a fresh number,
+ * which is shown instead of silently paying less.
  */
 function CashoutButton({ bet, value, token, onCashedOut }) {
   // Parent keys this component by bet id + quoted value, so a fresh quote
@@ -1077,14 +1078,15 @@ function CashoutButton({ bet, value, token, onCashedOut }) {
       type="button"
       className={'bookie-bet__cashout' + (armed ? ' bookie-bet__cashout--armed' : '')}
       disabled={busy}
-      title="Take the bookie's offer now and settle this ticket early"
+      title={
+        moved
+          ? `Offer moved — take ${fmtCoins(offer)} now and settle this ticket early`
+          : `Cash out ${fmtCoins(offer)} now and settle this ticket early`
+      }
+      aria-label={`Cash out ${fmtCoins(offer)}`}
       onClick={() => (armed ? take() : setArmed(true))}
     >
-      {busy
-        ? 'Cashing out…'
-        : armed
-          ? `Sure? Take ${fmtCoins(offer)}`
-          : `${moved ? 'Offer moved — cash' : 'Cash'} out ${fmtCoins(offer)}`}
+      {busy ? '…' : armed ? 'Sure?' : fmtCoins(offer)}
     </button>
   )
 }
@@ -1120,8 +1122,8 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
   return (
     <section className="tile tile--compact" aria-label="My bets">
       <h3 className="bookie__section-title">My bets</h3>
-      <ul className="bookie-bets">
-        <BetColHead />
+      <ul className="bookie-bets bookie-bets--cashout">
+        <BetColHead cashout />
         {bets.map((b) => {
           const quote = b.status === 'open' ? cashoutQuotes.get(Number(b.id)) : undefined
           return (
