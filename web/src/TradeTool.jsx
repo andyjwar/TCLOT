@@ -405,6 +405,8 @@ function sourceDisplayName(source, managers, clubs, fallback) {
   const club = clubs.find((c) => c.id === parsed.id)
   return club?.name || club?.short_name || fallback
 }
+
+function PickedChip({ player, side, onRemove }) {
   return (
     <span className={`trade-tool__chip trade-tool__chip--${side}`}>
       <PlayerKit badgeUrl={player.badgeUrl} teamShort={player.teamShort} />
