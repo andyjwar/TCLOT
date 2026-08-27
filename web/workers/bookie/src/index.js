@@ -33,6 +33,7 @@
 
 import { footballComplete, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
+import { applyFreshStart } from './freshStart.js';
 
 const STARTING_BALANCE = 1000;
 const WEEKLY_STIPEND = 50;
@@ -868,6 +869,16 @@ async function handleState(request, env, ctx, ch) {
   }
   const seasonNow = season ?? (await currentSeason(db));
   if (!seasonNow) return json({ season: null, markets: [], leaderboard: [] }, 200, ch);
+
+  // One-shot restart: wipe tickets and put every bankroll back at 1,000.
+  // No-ops after the first run (see freshStart.js).
+  const wiped = await applyFreshStart(db, {
+    startingBalance: STARTING_BALANCE,
+    nowIso: new Date().toISOString(),
+    metaGet,
+    metaSet,
+  });
+  if (wiped) console.log('bookie: fresh start — bets cleared, balances reset to', STARTING_BALANCE);
 
   const nowMs = Date.now();
   const markets = await db
