@@ -328,6 +328,20 @@
 
 .bookie-player-board__player {
   display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 8px;
+}
+
+.bookie-player-board__badge {
+  flex: none;
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
+.bookie-player-board__id {
+  display: flex;
   flex-direction: column;
   min-width: 0;
   gap: 1px;

@@ -20,6 +20,8 @@ import {
   cashoutBookieBet,
 } from './bookieApi.js'
 import { decimalOddsToFraction } from './oddsFormat.js'
+import { historyOpponentMetaForGw, loadLeagueFixtures } from './playerGwHistory.js'
+import { fetchLeagueJsonFile } from './playersBenchShared.js'
 import './BookieView.css'
 
 /** "Fri 28 Aug, 18:30" in the viewer's locale. */
@@ -527,6 +529,43 @@ function FoldTile({ ariaLabel, title, meta, open = false, children }) {
   )
 }
 
+/** @type {Promise<object | null> | null} */
+let fplMiniLoad = null
+function loadFplMini() {
+  if (!fplMiniLoad) {
+    fplMiniLoad = fetchLeagueJsonFile('fpl-mini.json').catch(() => null)
+  }
+  return fplMiniLoad
+}
+
+/**
+ * PL club context for the player-special boards: element → club (badge) and
+ * this gameweek's real fixture with home/away. Derived client-side from
+ * fpl-mini.json + fixtures.json because an open market keeps the payload it
+ * was ingested with — selections carry no club code or fixture fields.
+ */
+function usePlayerClubContext(active) {
+  const [ctx, setCtx] = useState(null)
+  useEffect(() => {
+    if (!active || ctx) return undefined
+    let alive = true
+    Promise.all([loadFplMini(), loadLeagueFixtures()]).then(([mini, fixtures]) => {
+      if (!alive || !mini) return
+      setCtx({
+        teamById: new Map((mini.teams ?? []).map((t) => [Number(t.id), t])),
+        teamIdByElement: new Map(
+          (mini.elements ?? []).map((e) => [Number(e.id), Number(e.team)]),
+        ),
+        fixtures: Array.isArray(fixtures) ? fixtures : [],
+      })
+    })
+    return () => {
+      alive = false
+    }
+  }, [active, ctx])
+  return ctx
+}
+
 function WeeklyMarkets({
   gw,
   markets,
@@ -556,6 +595,8 @@ function WeeklyMarkets({
     }
     return map
   }, [playerMarkets])
+
+  const clubCtx = usePlayerClubContext(boardsByMatch.size > 0)
 
   if (gw == null || markets.length === 0) {
     return (
@@ -652,6 +693,7 @@ function WeeklyMarkets({
                     key={b.id}
                     market={b}
                     matchLabel={matchLabel}
+                    clubCtx={clubCtx}
                     me={me}
                     slip={slip}
                     onPick={onPick}
@@ -702,8 +744,12 @@ const PLAYER_BOARD_META = {
  * One player-special board (anytime goalscorer or top point scorer) inside a
  * matchup group: every pooled player with a price, longest odds hidden
  * behind a "full board" toggle so four matchups don't become a scroll cliff.
+ *
+ * Each row leads with the player's club badge and notes their real PL
+ * fixture — "LIV (H)" — instead of spelling out the club, which the badge
+ * already carries. Until clubCtx loads the meta falls back to the club code.
  */
-function PlayerBoard({ market, matchLabel, me, slip, onPick }) {
+function PlayerBoard({ market, matchLabel, clubCtx, me, slip, onPick }) {
   const [showAll, setShowAll] = useState(false)
   const meta = PLAYER_BOARD_META[market.kind]
   const p = market.payload
@@ -719,12 +765,43 @@ function PlayerBoard({ market, matchLabel, me, slip, onPick }) {
             Number(s.ownerEntryId) === Number(p.homeEntryId) ? p.homeName : p.awayName
           const active =
             slip?.marketId === market.id && slip?.selection === String(s.elementId)
+          const teamId = clubCtx?.teamIdByElement.get(Number(s.elementId))
+          const club = teamId != null ? clubCtx.teamById.get(teamId) : null
+          const clubCode = Number(club?.code)
+          const badgeUrl = Number.isFinite(clubCode)
+            ? `https://resources.premierleague.com/premierleague/badges/50/t${clubCode}.png`
+            : null
+          const { opponents } = historyOpponentMetaForGw(
+            p.gw,
+            teamId,
+            clubCtx?.fixtures,
+            clubCtx?.teamById,
+          )
+          const fixtureLabel = opponents
+            .map((o) => `${o.short} (${o.isHome ? 'H' : 'A'})`)
+            .join(', ')
           return (
             <li key={s.elementId} className="bookie-outright__row">
               <span className="bookie-player-board__player">
-                <span className="bookie-player-board__name">{s.name}</span>
-                <span className="bookie-player-board__meta">
-                  {s.club} {s.position} · {lastWordTeamName(owner) || standingsMobileTeamName(owner)}
+                {badgeUrl ? (
+                  <img
+                    className="bookie-player-board__badge"
+                    src={badgeUrl}
+                    alt={club?.name ?? s.club ?? ''}
+                    loading="lazy"
+                    width="22"
+                    height="22"
+                  />
+                ) : (
+                  <span className="bookie-player-board__badge" aria-hidden="true" />
+                )}
+                <span className="bookie-player-board__id">
+                  <span className="bookie-player-board__name">{s.name}</span>
+                  <span className="bookie-player-board__meta">
+                    {fixtureLabel || s.club}
+                    {' · '}
+                    {lastWordTeamName(owner) || standingsMobileTeamName(owner)}
+                  </span>
                 </span>
               </span>
               <OddsButton
