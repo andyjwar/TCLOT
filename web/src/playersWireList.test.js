@@ -116,10 +116,14 @@ test('formatWireStatValue — DC (total) reads defensive_contribution', () => {
   )
 })
 
-test('default All tab shows five stats including both DC columns', () => {
-  assert.equal(DEFAULT_WIRE_STAT_IDS.length, 5)
-  assert.ok(DEFAULT_WIRE_STAT_IDS.includes('defConHits'))
-  assert.ok(DEFAULT_WIRE_STAT_IDS.includes('defConTotal'))
+test('default All tab is GP, 60+, G, A, DC (FPL)', () => {
+  assert.deepEqual(DEFAULT_WIRE_STAT_IDS, [
+    'gp',
+    'sixtyPlus',
+    'goals',
+    'assists',
+    'defConHits',
+  ])
   assert.equal(WIRE_STAT_CATALOG.defConHits.label, 'DC (FPL)')
   assert.equal(WIRE_STAT_CATALOG.defConTotal.label, 'DC (total)')
 })
@@ -132,8 +136,9 @@ test('desktop wire inserts a gap so Pts and stats sit to the right of POS', () =
   const pts = ids.indexOf('pts')
   assert.equal(ids[0], 'player')
   assert.ok(pos >= 0 && gap === pos + 1 && pts === gap + 1)
+  assert.ok(ids.includes('sixtyPlus'))
   assert.ok(ids.includes('defConHits'))
-  assert.ok(ids.includes('defConTotal'))
+  assert.ok(!ids.includes('defConTotal'))
   assert.equal(ids[ids.length - 1], 'next3')
 })
 

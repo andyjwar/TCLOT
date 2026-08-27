@@ -19,7 +19,7 @@ export const PORTRAIT_POS_LABEL_SINGLE = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' }
  * Defaults per filter therefore stay focused on numeric stats (Pts is always
  * rendered first, ahead of these). */
 export const PORTRAIT_DEFAULT_WIRE_STAT_IDS_BY_POSITION = {
-  all: ['gp', 'goals', 'assists', 'defConHits', 'defConTotal'],
+  all: ['gp', 'sixtyPlus', 'goals', 'assists', 'defConHits'],
   '1': ['starts', 'cs', 'savePts', 'bonus'],
   '2': ['goals', 'assists', 'defConHits', 'defConTotal'],
   '3': ['goals', 'assists', 'defConHits', 'defConTotal'],
@@ -63,16 +63,16 @@ export const WIRE_POSITION_PILLS = [
 export const WIRE_MAX_STAT_COLUMNS = 8
 
 export const WIRE_STAT_SELECTION_KEY = 'tclot-wire-stat-columns'
-/** Bumped to v5 so merged DC (FPL)/(total) defaults replace saved 7-stat sets. */
-const WIRE_STAT_SELECTION_V2_KEY = 'tclot-wire-stat-columns-v5'
+/** Bumped to v6 so All-tab defaults become GP, 60+, G, A, DC (FPL). */
+const WIRE_STAT_SELECTION_V2_KEY = 'tclot-wire-stat-columns-v6'
 
 /** Default toggleable stat columns on the All tab (Pts is always fixed). Five stats. */
 export const DEFAULT_WIRE_STAT_IDS = [
   'gp',
+  'sixtyPlus',
   'goals',
   'assists',
   'defConHits',
-  'defConTotal',
 ]
 
 /** Default table columns per position tab — applied when switching GK/DEF/MID/FWD. */
