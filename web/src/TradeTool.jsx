@@ -25,12 +25,14 @@ import {
   aggregateSideStats,
   applyTradePick,
   buildRadarAxes,
+  encodeTradeSource,
   filterSquadForTrade,
   formatTradeStat,
   indexElementsByCode,
   joinPriorByCode,
   lockedTradePosition,
   normalizeTradeStatSelection,
+  parseTradeSource,
   seasonShortLabel,
   toggleTradeStat,
 } from './tradeToolStats.js'
@@ -56,9 +58,43 @@ async function fetchOptionalUrl(url) {
   }
 }
 
+function sortTradePlayers(list) {
+  list.sort(
+    (a, b) =>
+      a.positionType - b.positionType ||
+      b.seasonPoints - a.seasonPoints ||
+      a.name.localeCompare(b.name),
+  )
+}
+
+function toTradePlayer(el, teamById, priorByCode, currentSummary, priorSummaryById) {
+  const pid = Number(el?.id)
+  if (!Number.isFinite(pid)) return null
+  const type = /** @type {1|2|3|4} */ (Number(el.element_type))
+  if (!POSITION_ORDER.includes(type)) return null
+  const plTeam = teamById.get(Number(el.team))
+  const priorEl = joinPriorByCode(el, priorByCode)
+  const priorSummary =
+    priorEl != null ? priorSummaryById.get(Number(priorEl.id)) ?? null : null
+  return {
+    element: pid,
+    name: fplElementWebName(el, pid),
+    positionType: type,
+    seasonPoints: Number(el.total_points) || 0,
+    teamShort: plTeam?.short_name != null ? String(plTeam.short_name) : null,
+    badgeUrl: badgeUrlFor(plTeam),
+    shirtUrl: fplShirtImageUrl(plTeam?.code, el.element_type),
+    currentEl: el,
+    priorEl,
+    currentSummary: currentSummary.get(pid) ?? null,
+    priorSummary,
+    hasPrior: Boolean(priorEl),
+  }
+}
+
 /**
  * Current-season bootstrap + ownership, plus optional prior-season bootstrap
- * joined later via Opta `code`.
+ * joined later via Opta `code`. Also indexes every PL club's full squad.
  */
 function useTradeToolData({
   enabled,
@@ -70,6 +106,8 @@ function useTradeToolData({
     status: 'idle',
     error: null,
     squadsByEntry: new Map(),
+    squadsByClub: new Map(),
+    clubs: [],
     hasPrior: false,
   })
   const reqRef = useRef(0)
@@ -106,10 +144,6 @@ function useTradeToolData({
           ])
         if (reqRef.current !== reqId) return
 
-        const elemsById = new Map()
-        for (const el of boot?.elements || []) {
-          elemsById.set(Number(el.id), el)
-        }
         const teamById = new Map()
         for (const t of boot?.teams || []) {
           teamById.set(Number(t.id), t)
@@ -128,6 +162,27 @@ function useTradeToolData({
           teamsForOwner,
         )
 
+        const elemsById = new Map()
+        const byClub = new Map()
+        for (const t of boot?.teams || []) {
+          byClub.set(Number(t.id), [])
+        }
+        for (const el of boot?.elements || []) {
+          const pid = Number(el.id)
+          elemsById.set(pid, el)
+          const player = toTradePlayer(
+            el,
+            teamById,
+            priorByCode,
+            currentSummary,
+            priorSummaryById,
+          )
+          if (!player) continue
+          const clubId = Number(el.team)
+          if (byClub.has(clubId)) byClub.get(clubId).push(player)
+        }
+        for (const list of byClub.values()) sortTradePlayers(list)
+
         const byEntry = new Map()
         for (const e of leagueEntries || []) {
           byEntry.set(Number(e.id), [])
@@ -137,42 +192,33 @@ function useTradeToolData({
           if (!byEntry.has(lid)) continue
           const el = elemsById.get(Number(pid))
           if (!el) continue
-          const type = /** @type {1|2|3|4} */ (Number(el.element_type))
-          if (!POSITION_ORDER.includes(type)) continue
-          const plTeam = teamById.get(Number(el.team))
-          const priorEl = joinPriorByCode(el, priorByCode)
-          const priorSummary =
-            priorEl != null
-              ? priorSummaryById.get(Number(priorEl.id)) ?? null
-              : null
-          byEntry.get(lid).push({
-            element: Number(pid),
-            name: fplElementWebName(el, pid),
-            positionType: type,
-            seasonPoints: Number(el.total_points) || 0,
-            teamShort: plTeam?.short_name != null ? String(plTeam.short_name) : null,
-            badgeUrl: badgeUrlFor(plTeam),
-            shirtUrl: fplShirtImageUrl(plTeam?.code, el.element_type),
-            currentEl: el,
-            priorEl,
-            currentSummary: currentSummary.get(Number(pid)) ?? null,
-            priorSummary,
-            hasPrior: Boolean(priorEl),
-          })
-        }
-        for (const list of byEntry.values()) {
-          list.sort(
-            (a, b) =>
-              a.positionType - b.positionType ||
-              b.seasonPoints - a.seasonPoints ||
-              a.name.localeCompare(b.name),
+          const player = toTradePlayer(
+            el,
+            teamById,
+            priorByCode,
+            currentSummary,
+            priorSummaryById,
           )
+          if (player) byEntry.get(lid).push(player)
         }
+        for (const list of byEntry.values()) sortTradePlayers(list)
+
+        const clubs = [...(boot?.teams || [])]
+          .map((t) => ({
+            id: Number(t.id),
+            name: String(t.name || t.short_name || `Club ${t.id}`),
+            short_name: t.short_name != null ? String(t.short_name) : null,
+            code: t.code,
+          }))
+          .filter((t) => Number.isFinite(t.id))
+          .sort((a, b) => a.name.localeCompare(b.name))
 
         setState({
           status: 'ready',
           error: null,
           squadsByEntry: byEntry,
+          squadsByClub: byClub,
+          clubs,
           hasPrior: priorByCode.size > 0,
         })
       } catch (err) {
@@ -181,6 +227,8 @@ function useTradeToolData({
           status: 'error',
           error: err?.message || String(err),
           squadsByEntry: new Map(),
+          squadsByClub: new Map(),
+          clubs: [],
           hasPrior: false,
         })
       }
@@ -327,6 +375,37 @@ function TradeStatsPill({ selectedIds, onChange, sheet }) {
   )
 }
 
+function ClubCrest({ badgeUrl, fallback }) {
+  return (
+    <span className="trade-tool__club-crest" aria-hidden>
+      {badgeUrl ? (
+        <img src={badgeUrl} alt="" width={28} height={28} loading="lazy" />
+      ) : (
+        <span className="trade-tool__club-crest-fallback">{fallback ?? '?'}</span>
+      )}
+    </span>
+  )
+}
+
+function squadForSource(source, squadsByEntry, squadsByClub) {
+  const parsed = parseTradeSource(source)
+  if (!parsed) return []
+  if (parsed.kind === 'entry') return squadsByEntry.get(parsed.id) || []
+  return squadsByClub.get(parsed.id) || []
+}
+
+function sourceDisplayName(source, managers, clubs, fallback) {
+  const parsed = parseTradeSource(source)
+  if (!parsed) return fallback
+  if (parsed.kind === 'entry') {
+    return (
+      managers.find((m) => Number(m.id) === parsed.id)?.entry_name || fallback
+    )
+  }
+  const club = clubs.find((c) => c.id === parsed.id)
+  return club?.name || club?.short_name || fallback
+}
+
 function PickedChip({ player, side, onRemove }) {
   return (
     <span className={`trade-tool__chip trade-tool__chip--${side}`}>
@@ -398,12 +477,13 @@ export function TradeTool({
   currentSeasonLabel = '',
   priorSeasonLabel = null,
 }) {
-  const { status, error, squadsByEntry, hasPrior } = useTradeToolData({
-    enabled: true,
-    leagueEntries,
-    leagueDataRevision,
-    priorSeasonLabel,
-  })
+  const { status, error, squadsByEntry, squadsByClub, clubs, hasPrior } =
+    useTradeToolData({
+      enabled: true,
+      leagueEntries,
+      leagueDataRevision,
+      priorSeasonLabel,
+    })
 
   const managers = useMemo(() => {
     return [...(leagueEntries || [])]
@@ -413,17 +493,22 @@ export function TradeTool({
       )
   }, [leagueEntries])
 
-  const managerOptions = useMemo(
-    () =>
-      managers.map((m) => ({
-        value: String(m.id),
-        label: m.entry_name || `Team ${m.id}`,
-      })),
-    [managers],
-  )
+  const sourceOptions = useMemo(() => {
+    const fantasy = managers.map((m) => ({
+      value: encodeTradeSource('entry', m.id),
+      label: m.entry_name || `Team ${m.id}`,
+      group: 'Fantasy',
+    }))
+    const clubOpts = (clubs || []).map((c) => ({
+      value: encodeTradeSource('club', c.id),
+      label: c.name,
+      group: 'Clubs',
+    }))
+    return [...fantasy, ...clubOpts]
+  }, [managers, clubs])
 
-  const [entryA, setEntryA] = useState(null)
-  const [entryB, setEntryB] = useState(null)
+  const [sourceA, setSourceA] = useState('')
+  const [sourceB, setSourceB] = useState('')
   const [idsA, setIdsA] = useState(/** @type {number[]} */ ([]))
   const [idsB, setIdsB] = useState(/** @type {number[]} */ ([]))
   const [seasonMode, setSeasonMode] = useState(
@@ -432,28 +517,37 @@ export function TradeTool({
   const [statIds, setStatIds] = useState(() => [...DEFAULT_TRADE_STAT_IDS])
   const mobileLayout = useMobileLayout()
 
-  const pickManager = (side, raw) => {
-    const next = Number(raw)
-    if (!Number.isFinite(next)) return
+  const pickSource = (side, raw) => {
+    const next = parseTradeSource(raw)
+    if (!next) return
+    const encoded = encodeTradeSource(next.kind, next.id)
+    const otherRaw = side === 'a' ? sourceB : sourceA
+    const other = parseTradeSource(otherRaw)
+    const sameFantasyEntry =
+      next.kind === 'entry' &&
+      other?.kind === 'entry' &&
+      other.id === next.id
     if (side === 'a') {
-      setEntryA(next)
+      setSourceA(encoded)
       setIdsA([])
-      if (next === entryB) {
-        setEntryB(null)
+      if (sameFantasyEntry) {
+        setSourceB('')
         setIdsB([])
       }
     } else {
-      setEntryB(next)
+      setSourceB(encoded)
       setIdsB([])
-      if (next === entryA) {
-        setEntryA(null)
+      if (sameFantasyEntry) {
+        setSourceA('')
         setIdsA([])
       }
     }
   }
 
-  const squadA = squadsByEntry.get(Number(entryA)) || []
-  const squadB = squadsByEntry.get(Number(entryB)) || []
+  const parsedA = parseTradeSource(sourceA)
+  const parsedB = parseTradeSource(sourceB)
+  const squadA = squadForSource(sourceA, squadsByEntry, squadsByClub)
+  const squadB = squadForSource(sourceB, squadsByEntry, squadsByClub)
   const pickedA = squadA.filter((p) => idsA.includes(p.element))
   const pickedB = squadB.filter((p) => idsB.includes(p.element))
   const lockPosition = lockedTradePosition(pickedA, pickedB)
@@ -486,10 +580,8 @@ export function TradeTool({
     [statIds, sideAStats, sideBStats],
   )
 
-  const nameA =
-    managers.find((m) => Number(m.id) === Number(entryA))?.entry_name || 'Side A'
-  const nameB =
-    managers.find((m) => Number(m.id) === Number(entryB))?.entry_name || 'Side B'
+  const nameA = sourceDisplayName(sourceA, managers, clubs, 'Side A')
+  const nameB = sourceDisplayName(sourceB, managers, clubs, 'Side B')
   const compareA = pickedA[0]?.name || nameA
   const compareB = pickedB[0]?.name || nameB
   const currentShort = seasonShortLabel(currentSeasonLabel) || 'This season'
@@ -498,7 +590,8 @@ export function TradeTool({
   const lockPosLabel = lockPosition != null ? POS_LABEL[lockPosition] : null
 
   const renderSquad = (side) => {
-    const entryId = side === 'a' ? entryA : entryB
+    const source = side === 'a' ? sourceA : sourceB
+    const parsed = side === 'a' ? parsedA : parsedB
     const selected = side === 'a' ? idsA : idsB
     const visible = side === 'a' ? visibleA : visibleB
     const groups = POSITION_ORDER.map((type) => ({
@@ -506,27 +599,38 @@ export function TradeTool({
       label: POS_LABEL[type],
       players: visible.filter((p) => p.positionType === type),
     })).filter((g) => g.players.length)
-    const hasTeam = entryId != null
+    const hasTeam = parsed != null
+    const club =
+      parsed?.kind === 'club'
+        ? clubs.find((c) => c.id === parsed.id) ?? null
+        : null
 
     return (
       <div className={`trade-tool__side trade-tool__side--${side}`}>
         <div className="trade-tool__side-head">
-          {hasTeam ? (
+          {parsed?.kind === 'entry' ? (
             <TeamAvatar
-              entryId={entryId}
+              entryId={parsed.id}
               name={side === 'a' ? nameA : nameB}
               size="sm"
               logoMap={teamLogoMap}
               kitIndexByEntry={kitIndexByEntry}
             />
           ) : null}
+          {parsed?.kind === 'club' ? (
+            <ClubCrest
+              badgeUrl={badgeUrlFor(club)}
+              fallback={club?.short_name?.slice(0, 3)}
+            />
+          ) : null}
           <CompactSelectPill
-            ariaLabel={side === 'a' ? 'Give manager' : 'Get manager'}
-            value={entryId != null ? String(entryId) : ''}
-            onChange={(v) => pickManager(side, v)}
-            options={managerOptions}
+            ariaLabel={side === 'a' ? 'Give team or club' : 'Get team or club'}
+            value={source}
+            onChange={(v) => pickSource(side, v)}
+            options={sourceOptions}
             placeholder="Pick a team"
-            isActive={entryId != null}
+            isActive={hasTeam}
+            menuMaxWidth={280}
           />
         </div>
         {!hasTeam ? (
@@ -593,7 +697,7 @@ export function TradeTool({
               {renderSquad('b')}
             </div>
 
-            {(entryA != null || entryB != null) ? (
+            {(parsedA || parsedB) ? (
             <div className="trade-tool__picked" aria-label="Players in the trade">
               <div className="trade-tool__picked-col">
                 {pickedA.length ? (

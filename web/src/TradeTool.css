@@ -242,10 +242,37 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
 
 .trade-tool__side--a {
   box-shadow: inset 3px 0 0 var(--trade-a);
+  background: color-mix(in srgb, var(--trade-a) 14%, var(--fm-card));
+  border-color: color-mix(in srgb, var(--trade-a) 32%, var(--fm-border));
 }
 
 .trade-tool__side--b {
   box-shadow: inset 3px 0 0 var(--trade-b);
+  background: color-mix(in srgb, var(--trade-b) 14%, var(--fm-card));
+  border-color: color-mix(in srgb, var(--trade-b) 32%, var(--fm-border));
+}
+
+.trade-tool__club-crest {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+}
+
+.trade-tool__club-crest img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.trade-tool__club-crest-fallback {
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
 }
 
 .trade-tool__side-head {

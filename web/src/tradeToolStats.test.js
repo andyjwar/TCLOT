@@ -21,6 +21,8 @@ import {
   lockedTradePosition,
   filterSquadForTrade,
   applyTradePick,
+  encodeTradeSource,
+  parseTradeSource,
 } from './tradeToolStats.js'
 
 const CURRENT = {
@@ -253,4 +255,27 @@ test('applyTradePick — one per side, same-position, replace, deselect', () => 
     elementId: 12,
   })
   assert.deepEqual(swapSamePos, { idsA: [12], idsB: [20] })
+})
+
+test('encodeTradeSource / parseTradeSource — entry vs club keys', () => {
+  assert.equal(encodeTradeSource('entry', 42), 'entry:42')
+  assert.equal(encodeTradeSource('club', 14), 'club:14')
+  assert.equal(encodeTradeSource('club', Number.NaN), '')
+  assert.deepEqual(parseTradeSource('entry:42'), { kind: 'entry', id: 42 })
+  assert.deepEqual(parseTradeSource('club:14'), { kind: 'club', id: 14 })
+  assert.equal(parseTradeSource('42'), null)
+  assert.equal(parseTradeSource(''), null)
+})
+
+test('applyTradePick — same element cannot sit on both sides', () => {
+  const gk = { element: 10, positionType: 1 }
+  const next = applyTradePick({
+    idsA: [10],
+    idsB: [],
+    squadA: [gk],
+    squadB: [gk],
+    side: 'b',
+    elementId: 10,
+  })
+  assert.deepEqual(next, { idsA: [10], idsB: [] })
 })
