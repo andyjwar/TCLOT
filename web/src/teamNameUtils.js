@@ -95,7 +95,8 @@ export function isMsfgTeamName(name) {
 }
 
 /**
- * Team name shown on mobile Standings (hero + table, and Live Table).
+ * Team name shown on mobile Standings (hero + table, and Live Table)
+ * and Weekly waivers (All Swaps, By team, desktop swap table).
  * Full name for every club except MSFG, which always renders as
  * `Mordor SFG`.
  *
