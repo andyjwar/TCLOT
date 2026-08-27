@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
-import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PlayerKit } from './PlayerKit.jsx'
 import { TeamAvatar } from './TeamAvatar.jsx'
 import { TradeRadar } from './TradeRadar.jsx'
@@ -281,23 +280,15 @@ function PickedChip({ player, side, onRemove }) {
 }
 
 function SquadRow({ player, selected, side, onToggle, missingPrior, seasonMode }) {
-  const toggle = () => onToggle(player.element)
   return (
-    <div
+    <button
+      type="button"
       className={
         'trade-tool__row' +
         (selected ? ` is-selected is-selected--${side}` : '')
       }
-      role="button"
-      tabIndex={0}
       aria-pressed={selected}
-      onClick={toggle}
-      onKeyDown={(ev) => {
-        if (ev.key === 'Enter' || ev.key === ' ') {
-          ev.preventDefault()
-          toggle()
-        }
-      }}
+      onClick={() => onToggle(player.element)}
     >
       <PlayerKit
         shirtUrl={player.shirtUrl}
@@ -305,19 +296,7 @@ function SquadRow({ player, selected, side, onToggle, missingPrior, seasonMode }
         teamShort={player.teamShort}
       />
       <span className="trade-tool__row-id">
-        <span
-          onClick={(ev) => ev.stopPropagation()}
-          onKeyDown={(ev) => ev.stopPropagation()}
-        >
-          <ClickablePlayerName
-            element={player.element}
-            displayName={player.name}
-            teamShort={player.teamShort}
-            className="trade-tool__row-name"
-          >
-            {player.name}
-          </ClickablePlayerName>
-        </span>
+        <span className="trade-tool__row-name">{player.name}</span>
         <span className="trade-tool__row-meta">
           <span className={`trade-tool__pos trade-tool__pos--${POS_LABEL[player.positionType]}`}>
             {POS_LABEL[player.positionType]}
@@ -329,7 +308,7 @@ function SquadRow({ player, selected, side, onToggle, missingPrior, seasonMode }
         </span>
       </span>
       <span className="trade-tool__row-pts tabular">{player.seasonPoints}</span>
-    </div>
+    </button>
   )
 }
 

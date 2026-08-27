@@ -184,7 +184,8 @@
   flex-direction: column;
   gap: 8px;
   max-height: 420px;
-  overflow: auto;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .trade-tool__pos-h {
@@ -198,10 +199,11 @@
 
 .trade-tool__row {
   display: grid;
-  grid-template-columns: 28px 1fr auto;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
   align-items: center;
   gap: 8px;
   width: 100%;
+  min-width: 0;
   padding: 5px 6px;
   border: 1px solid transparent;
   border-radius: 8px;
