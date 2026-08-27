@@ -48,12 +48,56 @@ function shareCardDensity(rowCount) {
   return 'airy'
 }
 
+/** Draft waivers are same-position swaps — one GKP/DEF/MID/FWD label per row. */
+function shareMovePos(row) {
+  const raw = row?.pickedPos || row?.droppedPos
+  return raw ? String(raw).toUpperCase() : ''
+}
+
+function SharePos({ pos }) {
+  if (!pos) return <span className="waivers-share__pos" aria-hidden="true" />
+  return (
+    <span
+      className={`waivers-share__pos waivers-pos-chip waivers-pos-chip--${pos}`}
+      title={pos}
+      aria-label={pos}
+    >
+      {pos}
+    </span>
+  )
+}
+
+function shareClubCode(teamShort) {
+  const t = String(teamShort ?? '').trim().toUpperCase()
+  if (!t || t === '—' || t === '?') return ''
+  return t.slice(0, 3)
+}
+
+function SharePlayer({ badgeUrl, teamShort, name, out = false }) {
+  const club = shareClubCode(teamShort)
+  return (
+    <span className={out ? 'waivers-share__player waivers-share__player--out' : 'waivers-share__player'}>
+      <span className="waivers-share__club-id">
+        <span className={out ? 'waivers-share__crest waivers-share__crest--out' : 'waivers-share__crest'}>
+          <PlayerKit badgeUrl={badgeUrl} teamShort={teamShort} />
+        </span>
+        {club ? <span className="waivers-share__club">{club}</span> : null}
+      </span>
+      <span className={out ? 'waivers-share__name waivers-share__name--out' : 'waivers-share__name'}>
+        {name ?? '—'}
+      </span>
+    </span>
+  )
+}
+
 /**
  * Portrait, screenshot-friendly waiver card. Rows stack at a fixed compact
  * height (no flex-grow between rows) so a light week stays tight and
  * 15–20 picks still fit in one phone screenshot. Density scales type/crests
- * to row count. Real GW data: IN player + club crest ← OUT player,
- * league-wide waiver order (FA = none), manager fantasy crest pinned right.
+ * to row count. Real GW data: position · IN crest + club code + name ←
+ * OUT crest + club code + name, league-wide waiver order (FA = none),
+ * manager fantasy crest pinned right. Position is shown once — in and
+ * out share it. Club codes sit immediately right of each badge.
  */
 function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEntry }) {
   const density = shareCardDensity(rows.length)
@@ -69,6 +113,7 @@ function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEnt
       <ol className="waivers-share__list">
         {rows.map((r) => {
           const isFa = r.transactionKind === 'f'
+          const pos = shareMovePos(r)
           return (
             <li className="waivers-share__row" key={r.transactionId}>
               <span className="waivers-share__marker tabular">
@@ -80,17 +125,19 @@ function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEnt
                   ''
                 )}
               </span>
-              <span className="waivers-share__crest">
-                <PlayerKit badgeUrl={r.pickedBadgeUrl} teamShort={r.pickedTeamShort} />
-              </span>
-              <span className="waivers-share__name">{r.pickedName ?? '—'}</span>
+              <SharePos pos={pos} />
+              <SharePlayer
+                badgeUrl={r.pickedBadgeUrl}
+                teamShort={r.pickedTeamShort}
+                name={r.pickedName}
+              />
               <span className="waivers-share__arrow" aria-hidden="true">←</span>
-              <span className="waivers-share__crest waivers-share__crest--out">
-                <PlayerKit badgeUrl={r.droppedBadgeUrl} teamShort={r.droppedTeamShort} />
-              </span>
-              <span className="waivers-share__name waivers-share__name--out">
-                {r.droppedName ?? '—'}
-              </span>
+              <SharePlayer
+                badgeUrl={r.droppedBadgeUrl}
+                teamShort={r.droppedTeamShort}
+                name={r.droppedName}
+                out
+              />
               <span className="waivers-share__avatar">
                 <TeamAvatar
                   entryId={r.leagueEntryId}

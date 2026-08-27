@@ -23,7 +23,8 @@
  *   - `align` ('left'|'right', optional): menu alignment relative to button.
  *     Defaults to 'left'.
  *   - `id` (string, optional): id on the trigger button.
- *   - `className` (string, optional): extra class on the root wrapper.
+ *   - `onClear` (() => void, optional): when set and a value is selected,
+ *     an × sits in the pill (before the chevron) and clears the choice.
  *   - `menuMaxWidth` (string|number, optional): CSS max-width for the menu.
  *
  * Keyboard:
@@ -72,6 +73,7 @@ import { usePillMenuDismiss } from './usePillMenuDismiss.js'
  *   className?: string,
  *   menuMaxWidth?: string | number,
  *   disabled?: boolean,
+ *   onClear?: () => void,
  * }} props
  */
 export function CompactSelectPill({
@@ -87,6 +89,7 @@ export function CompactSelectPill({
   className,
   menuMaxWidth,
   disabled = false,
+  onClear,
 }) {
   const [open, setOpen] = useState(false)
   const [highlightIdx, setHighlightIdx] = useState(-1)
@@ -219,9 +222,12 @@ export function CompactSelectPill({
     .filter(Boolean)
     .join(' ')
 
+  const showClear = typeof onClear === 'function' && selectedOption != null
+
   const rootClass = [
     'cpsp',
     align === 'right' ? 'cpsp--align-right' : '',
+    showClear ? 'cpsp--clearable' : '',
     className ?? '',
   ]
     .filter(Boolean)
@@ -263,10 +269,27 @@ export function CompactSelectPill({
           </>
         ) : null}
         <span className="cpsp__value">{displayValue}</span>
+        {showClear ? (
+          <span className="cpsp__clear-slot" aria-hidden />
+        ) : null}
         <span className="cpsp__chev" aria-hidden>
           ▾
         </span>
       </button>
+      {showClear ? (
+        <button
+          type="button"
+          className="cpsp__clear"
+          aria-label="Clear selection"
+          onClick={(ev) => {
+            ev.preventDefault()
+            ev.stopPropagation()
+            onClear()
+          }}
+        >
+          <span aria-hidden>×</span>
+        </button>
+      ) : null}
       {open ? (
         <ul
           ref={menuRef}

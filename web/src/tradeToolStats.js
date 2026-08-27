@@ -193,7 +193,8 @@ export const DEFAULT_TRADE_STAT_IDS = [
 
 export const TRADE_MAX_STATS = 8
 export const TRADE_MIN_STATS = 3
-export const TRADE_MAX_PLAYERS_PER_SIDE = 5
+/** One-for-one compare — FPL Draft trades are same-position swaps. */
+export const TRADE_MAX_PLAYERS_PER_SIDE = 1
 
 /** "2026-27" → "26/27" */
 export function seasonShortLabel(label) {
@@ -464,6 +465,127 @@ export function formatTradeStat(statId, value) {
 }
 
 /**
+ * Position lock for same-position trades. The first selected player on
+ * either side sets the position the other side may pick.
+ *
+ * @param {{ positionType?: number }[] | null | undefined} pickedA
+ * @param {{ positionType?: number }[] | null | undefined} pickedB
+ * @returns {number | null}
+ */
+export function lockedTradePosition(pickedA, pickedB) {
+  const a = Array.isArray(pickedA) ? pickedA[0] : null
+  const b = Array.isArray(pickedB) ? pickedB[0] : null
+  const type = a?.positionType ?? b?.positionType
+  const n = Number(type)
+  return Number.isFinite(n) ? n : null
+}
+
+/**
+ * Squad list for one trade side. Once a position is locked, both sides
+ * only list that position — FPL Draft trades are same-position swaps.
+ *
+ * @param {object[] | null | undefined} squad
+ * @param {number | null | undefined} lockPosition
+ * @returns {object[]}
+ */
+export function filterSquadForTrade(squad, lockPosition) {
+  const list = Array.isArray(squad) ? squad : []
+  if (lockPosition == null) return list
+  return list.filter((p) => Number(p.positionType) === Number(lockPosition))
+}
+
+/**
+ * Case-insensitive player-name filter for Trade Tool search.
+ *
+ * @param {{ name?: string }[]} squad
+ * @param {string} query
+ */
+export function filterSquadByQuery(squad, query) {
+  const list = Array.isArray(squad) ? squad : []
+  const q = String(query ?? '').trim().toLowerCase()
+  if (!q) return list
+  return list.filter((p) => String(p.name ?? '').toLowerCase().includes(q))
+}
+
+/**
+ * Encode a Trade Tool side source for the team picker.
+ * Fantasy managers use `entry:<leagueEntryId>`; PL clubs use `club:<teamId>`.
+ *
+ * @param {'entry' | 'club'} kind
+ * @param {number} id
+ * @returns {string}
+ */
+export function encodeTradeSource(kind, id) {
+  const n = Number(id)
+  if (!Number.isFinite(n) || (kind !== 'entry' && kind !== 'club')) return ''
+  return `${kind}:${n}`
+}
+
+/**
+ * @param {string | number | null | undefined} raw
+ * @returns {{ kind: 'entry' | 'club', id: number } | null}
+ */
+export function parseTradeSource(raw) {
+  const m = String(raw ?? '').match(/^(entry|club):(\d+)$/)
+  if (!m) return null
+  return { kind: /** @type {'entry' | 'club'} */ (m[1]), id: Number(m[2]) }
+}
+
+/**
+ * Toggle or replace a one-player-per-side pick. A mismatched position is
+ * ignored when the other side already has a player selected. The same
+ * element cannot sit on both sides (a club squad can overlap a fantasy squad).
+ *
+ * @param {{
+ *   idsA?: number[],
+ *   idsB?: number[],
+ *   squadA?: { element: number, positionType: number }[],
+ *   squadB?: { element: number, positionType: number }[],
+ *   side: 'a' | 'b',
+ *   elementId: number,
+ * }} args
+ * @returns {{ idsA: number[], idsB: number[] }}
+ */
+export function applyTradePick({
+  idsA = [],
+  idsB = [],
+  squadA = [],
+  squadB = [],
+  side,
+  elementId,
+}) {
+  const id = Number(elementId)
+  const isA = side === 'a'
+  const squad = isA ? squadA : squadB
+  const player = (squad || []).find((p) => Number(p.element) === id)
+  if (!player) return { idsA: [...idsA], idsB: [...idsB] }
+
+  const current = isA ? idsA : idsB
+  const other = isA ? idsB : idsA
+  const otherSquad = isA ? squadB : squadA
+  const otherPicked = (otherSquad || []).find((p) =>
+    (other || []).includes(Number(p.element)),
+  )
+
+  if ((current || []).includes(id)) {
+    return isA ? { idsA: [], idsB: [...other] } : { idsA: [...other], idsB: [] }
+  }
+
+  if ((other || []).includes(id)) {
+    return { idsA: [...idsA], idsB: [...idsB] }
+  }
+
+  if (
+    otherPicked &&
+    Number(otherPicked.positionType) !== Number(player.positionType)
+  ) {
+    return { idsA: [...idsA], idsB: [...idsB] }
+  }
+
+  return isA ? { idsA: [id], idsB: [...other] } : { idsA: [...other], idsB: [id] }
+}
+
+/**
  * Toggle a stat in the radar selection, respecting min/max.
  * @param {string[]} selectedIds
  * @param {string} statId
@@ -478,46 +600,4 @@ export function toggleTradeStat(selectedIds, statId) {
   }
   if (current.length >= TRADE_MAX_STATS) return current
   return [...current, statId]
-}
-
-/**
- * First selected player locks the trade to that FPL position (GKP/DEF/MID/FWD).
- * Draft trades are same-position; mixed picks are ignored beyond the first.
- *
- * @param {{ positionType?: number }[]} players
- * @returns {1|2|3|4|null}
- */
-export function lockedTradePosition(players) {
-  for (const p of players || []) {
-    const type = Number(p?.positionType)
-    if (type === 1 || type === 2 || type === 3 || type === 4) {
-      return /** @type {1|2|3|4} */ (type)
-    }
-  }
-  return null
-}
-
-/**
- * Deselect is always allowed. Adding a player requires room on that side
- * and a matching position once the trade is locked.
- *
- * @param {{ element?: number, positionType?: number } | null | undefined} player
- * @param {{
- *   selectedIds?: number[],
- *   lockedPosition?: number | null,
- *   maxPerSide?: number,
- * }} opts
- */
-export function canToggleTradePlayer(player, opts = {}) {
-  const id = Number(player?.element)
-  if (!Number.isFinite(id)) return false
-  const selectedIds = opts.selectedIds || []
-  if (selectedIds.includes(id)) return true
-  const max = opts.maxPerSide ?? TRADE_MAX_PLAYERS_PER_SIDE
-  if (selectedIds.length >= max) return false
-  const locked = opts.lockedPosition
-  if (locked != null && Number(player?.positionType) !== Number(locked)) {
-    return false
-  }
-  return true
 }

@@ -24,20 +24,22 @@ On each build, GitHub runs **`ingest.py`** with the committed id, then builds th
 
 ### Waiver visibility latency
 
-TCLOT does **not** process waivers — FPL Draft does. The Moves → Waivers tab only updates after GitHub Actions runs `ingest.py`, builds static JSON (`transactions.json`, `drops-gw-live.json`), and deploys.
+TCLOT does **not** process waivers — FPL Draft does. Successful claims show on Moves → Waivers in two layers:
+
+1. **Live overlay (browser)** — after each `waivers_time`, the Waivers tab polls the FPL Draft `transactions` feed every **30 seconds** (via the same CORS proxy as Live scores) until that GW is in the deployed JSON. Claims appear as soon as FPL publishes them (usually within **~10 min**). Player GW points stay blank until ingest.
+2. **Static ingest (GitHub Actions)** — `ingest.py` writes `transactions.json` / `drops-gw-live.json` and deploys. A `*/15` burst cron runs for the first **90 min** after `waivers_time`, then hourly for ~36h. This is what fills GW points and the rest of the site.
 
 | Stage | Typical delay |
 | --- | --- |
-| FPL publishes successful claims | Usually within **~10 min** of `waivers_time`; the gate waits **10 min** before trusting rows |
-| Next scheduled ingest | **≤~15–20 min** during the burst window — the `*/15` cron deploys for the first **90 min** after `waivers_time` (GitHub cron jitter adds a few min); reverts to hourly for the rest of the 36h window |
-| Build + deploy | A few minutes |
-| Browser | **Reload after deploy** — the Waivers tab does not poll FPL live |
+| FPL publishes successful claims | Usually within **~10 min** of `waivers_time` |
+| Waivers tab (live overlay) | **Seconds after FPL publishes** — 30s poll, no deploy wait |
+| Static ingest + GW points | **≤~15–20 min** during the burst window (`*/15` cron; GitHub jitter adds a few min); hourly after that |
 
-**On a normal waiver day:** plan for **~15–35 minutes** end-to-end. Manual **Actions → Deploy site to Pages → Run workflow** (or any push to `main`) is the fast path once FPL has the rows.
+A tighter GitHub cron does **not** make claims appear faster: scheduled workflows already jitter, and each run is a full ingest + Vite build. The live overlay is the fast path. Manual **Actions → Deploy site to Pages → Run workflow** (or any push to `main`) still refreshes the durable JSON.
 
-**Note on GitHub cron jitter:** scheduled workflows are not punctual — under load they can run several minutes late or occasionally be skipped, so `*/15` is effectively "every ~15–20 min." That jitter (plus FPL's own ~10 min) is the practical floor; a tighter cron mostly adds wasted runner starts, not proportionally faster visibility.
+**Note on GitHub cron jitter:** scheduled workflows are not punctual — under load they can run several minutes late or occasionally be skipped, so `*/15` is effectively "every ~15–20 min" for the **static** files. That jitter is why the Waivers tab polls FPL directly instead of relying on a 5-minute cron.
 
-**Why last season felt huge:** the site used to sit on old committed JSON for **hours to days** between rare scheduled refreshes (once-daily catch-all, hourly cron only inside post-waiver windows). Mitigations since then: hourly post-waiver window (Apr 2026), post-deadline hourly ingest (May 2026), thrice-daily catch-alls + pre-waiver 3-hourly refresh (Aug 2026), and the `*/15` post-waiver burst cron. Constants live in [`web/src/waiverRefreshSchedule.js`](web/src/waiverRefreshSchedule.js); the Waivers tab shows a banner when static data lags FPL ([`web/src/waiverDataFreshness.js`](web/src/waiverDataFreshness.js)).
+**Why last season felt huge:** the site used to sit on old committed JSON for **hours to days** between rare scheduled refreshes (once-daily catch-all, hourly cron only inside post-waiver windows). Mitigations since then: hourly post-waiver window (Apr 2026), post-deadline hourly ingest (May 2026), thrice-daily catch-alls + pre-waiver 3-hourly refresh (Aug 2026), and the `*/15` post-waiver burst cron. Constants live in [`web/src/waiverRefreshSchedule.js`](web/src/waiverRefreshSchedule.js); live overlay helpers in [`web/src/liveWaiverMoves.js`](web/src/liveWaiverMoves.js). The Waivers tab shows a banner while it is polling FPL or showing live rows that are not in the deployed JSON yet ([`web/src/waiverDataFreshness.js`](web/src/waiverDataFreshness.js)).
 
 You can also set **Repository variable** `FPL_LEAGUE_ID` (Settings → Variables) if you prefer — same name.
 
@@ -127,6 +129,31 @@ The **Bookie** tab needs a second Worker with a **D1 database** (both on Cloudfl
 5. Add **`VITE_BOOKIE_API_URL`** (no trailing slash) exactly like `VITE_FPL_PROXY_URL` in section 1b — repository secret or variable, plus the `github-pages` Environment if needed — then **re-run the deploy workflow**. Without it the Bookie tab shows setup instructions instead of markets. There is **no CI gate** for this one: a missing `VITE_BOOKIE_API_URL` degrades gracefully.
 
 Sanity check after deploy: `curl https://YOUR-WORKER.workers.dev/api/health` → `{"ok":true,...}`, and `/api/state` should list the open markets once the cron (or first `/api/state` hit) has ingested the sheet.
+
+---
+
+## 1d. Web push notifications (optional)
+
+Managers can opt in from **Settings → Push notifications** once a push worker is deployed. Full details in [`web/workers/push-api/README.md`](web/workers/push-api/README.md).
+
+1. Deploy the push worker:
+   ```bash
+   cd web/workers/push-api
+   npm install
+   npm run generate-vapid
+   npx wrangler kv:namespace create SUBSCRIPTIONS   # paste id into wrangler.toml
+   npx wrangler secret put VAPID_SUBJECT            # mailto:you@example.com
+   npx wrangler secret put VAPID_SERVER_PUBLIC_KEY
+   npx wrangler secret put VAPID_SERVER_PRIVATE_KEY
+   npx wrangler secret put PUSH_INTERNAL_SECRET     # random string for CI notify
+   npm run deploy
+   ```
+2. Bake into the web build (repository secret or variable, same pattern as the FPL proxy; also add them on **Vercel → Project → Settings → Environment Variables** for `tclot.vercel.app`):
+   - **`VITE_PUSH_API_URL`** — worker origin, no trailing slash (e.g. `https://tclot-push-api.your-subdomain.workers.dev`)
+   - **`VITE_VAPID_PUBLIC_KEY`** — public key from `npm run generate-vapid`
+3. Optional CI hook after waiver ingest: set **`PUSH_INTERNAL_SECRET`** (same value as the worker secret) so the deploy workflow can POST `/internal/notify`.
+
+If these env vars are missing, the Settings toggle shows **“Push is not configured for this deploy”** and the rest of the site is unaffected.
 
 ---
 

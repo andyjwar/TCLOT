@@ -1,15 +1,16 @@
 /**
  * Shared team-name display helpers.
  *
- * Mobile surfaces outside Standings (Live GW fixture rows, waivers,
- * draft board, etc.) collapse full team names to a curated short label
- * from {@link MOBILE_SHORT_NAMES}, else the first word —
+ * Mobile surfaces outside Standings and Weekly waivers (Live GW fixture
+ * rows, draft board, etc.) collapse full team names to a curated short
+ * label from {@link MOBILE_SHORT_NAMES}, else the first word —
  * `firstWord('Crouch End Oashisu') === 'Crouch'`.
  *
- * Mobile Standings dropped that first-word collapse: without the
- * manager subtitle there is room for the full club name. The one
- * exception is MSFG, which renders as `Mordor SFG` even when the FPL
- * entry is the long Mordorlicious / Mordor S.F.G form.
+ * Mobile Standings and Weekly waivers dropped that first-word collapse:
+ * without a manager subtitle there is room for the full club name. The
+ * one exception is MSFG, which renders as `Mordor SFG` even when the FPL
+ * entry is the long Mordorlicious / Mordor S.F.G form. Use
+ * {@link standingsMobileTeamName} for those surfaces.
  */
 
 /** Curated mobile labels for the 2026-27 squads, keyed by full `entry_name`. */
@@ -94,7 +95,8 @@ export function isMsfgTeamName(name) {
 }
 
 /**
- * Team name shown on mobile Standings (hero + table, and Live Table).
+ * Team name shown on mobile Standings (hero + table, and Live Table)
+ * and Weekly waivers (All Swaps, By team, desktop swap table).
  * Full name for every club except MSFG, which always renders as
  * `Mordor SFG`.
  *

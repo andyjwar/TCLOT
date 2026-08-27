@@ -515,6 +515,7 @@ import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
 import { SettingsPage } from './SettingsPage'
+import { usePushNotifications } from './usePushNotifications.js'
 import { BrandHeaderWordmark } from './BrandHeaderWordmark'
 import { LeagueInfoModal } from './LeagueInfoModal'
 import { GlobalSearch } from './GlobalSearch.jsx'
@@ -539,6 +540,12 @@ import {
   WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
 import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
+import { useLiveWaiverMoves } from './useLiveWaiverMoves.js'
+import {
+  liveWaiverPollTarget,
+  mergeWaiverOutGwRows,
+  rowsCoverGameweek,
+} from './liveWaiverMoves.js'
 import {
   sortGroupsByFirstWaiverOrder,
   sortMovesWaiverThenFa,
@@ -2602,7 +2609,7 @@ function App() {
     tradesPanelRows = [],
     league = null,
     matches = [],
-    waiverOutGwRows = [],
+    waiverOutGwRows: staticWaiverOutGwRows = [],
     firstWaiverOrderPicks = [],
     gwRankExtremesMeta = { maxGw: 0, teamCount: 0 },
     gwWeeksAtFirst = [],
@@ -2798,6 +2805,8 @@ function App() {
     }
   }, [])
 
+  const pushNotifications = usePushNotifications({ leagueEntries })
+
   const onBootstrapLiveMeta = useCallback((meta) => {
     setFplLiveLandingGw(meta?.currentGw ?? null)
   }, [])
@@ -2945,7 +2954,36 @@ function App() {
     data?.teamLogoMap ?? EMPTY_TEAM_LOGO_MAP
   )
 
-  /** GWs present in waiver / FA analytics (drops-gw-live). */
+  const liveWaiverTarget = useMemo(
+    () => liveWaiverPollTarget(draftBootstrapEvents.events, statusNow.getTime()),
+    [draftBootstrapEvents.events, statusNow],
+  )
+  const staticProcessedWaiverGws = useMemo(() => {
+    const s = new Set()
+    for (const r of staticWaiverOutGwRows) {
+      const g = Number(r.gameweek)
+      if (Number.isFinite(g) && g >= 1 && g <= 38) s.add(g)
+    }
+    return [...s].sort((a, b) => a - b)
+  }, [staticWaiverOutGwRows])
+  const liveWaiver = useLiveWaiverMoves({
+    leagueId: league?.id ?? null,
+    leagueEntries,
+    archiveView: isArchiveView(),
+    targetGw: liveWaiverTarget?.id ?? null,
+    staticHasTargetGw:
+      liveWaiverTarget != null &&
+      staticProcessedWaiverGws.includes(liveWaiverTarget.id),
+  })
+  const waiverOutGwRows = useMemo(
+    () => mergeWaiverOutGwRows(staticWaiverOutGwRows, liveWaiver.rows),
+    [staticWaiverOutGwRows, liveWaiver.rows],
+  )
+  const refreshLeagueAndWaivers = useCallback(async () => {
+    await Promise.all([refresh(), liveWaiver.refetch()])
+  }, [refresh, liveWaiver.refetch])
+
+  /** GWs present in waiver / FA analytics (drops-gw-live plus any live FPL overlay). */
   const processedWaiverGws = useMemo(() => {
     const s = new Set()
     for (const r of waiverOutGwRows) {
@@ -3222,6 +3260,11 @@ function App() {
         selectedGw: waiverGwEffective,
         hasMovesForSelectedGw: (waiversForSelectedGw.groups?.length ?? 0) > 0,
         isGwInProcessedList: processedWaiverGws.includes(waiverGwEffective),
+        liveFetchStatus: liveWaiver.status,
+        hasLiveMovesForSelectedGw: rowsCoverGameweek(
+          liveWaiver.rows,
+          waiverGwEffective,
+        ),
         now: statusNow,
       }),
     [
@@ -3230,6 +3273,8 @@ function App() {
       waiverGwEffective,
       waiversForSelectedGw.groups,
       processedWaiverGws,
+      liveWaiver.status,
+      liveWaiver.rows,
       statusNow,
     ],
   )
@@ -3247,7 +3292,7 @@ function App() {
   if (loading) {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
-        <PullToRefresh onRefresh={refresh} />
+        <PullToRefresh onRefresh={refreshLeagueAndWaivers} />
         <div className="load-screen">
           <div className="load-screen__toolbar">
             <ThemeToggle value={themePref} onChange={setThemePref} />
@@ -3261,7 +3306,7 @@ function App() {
   if (error || !data) {
     return (
       <div className="app fotmob" data-theme={colorTheme}>
-        <PullToRefresh onRefresh={refresh} />
+        <PullToRefresh onRefresh={refreshLeagueAndWaivers} />
         <header className="page-header">
           <BrandHeader
             liveStatus={brandHeaderStatus}
@@ -3376,7 +3421,7 @@ function App() {
       data-bottom-nav-hidden={bottomNavHidden ? 'true' : undefined}
       data-dashboard-view={dashboardView}
     >
-      <PullToRefresh onRefresh={refresh} />
+      <PullToRefresh onRefresh={refreshLeagueAndWaivers} />
       <main className="dashboard-layout dashboard-layout--with-nav">
         <div className="dashboard-page-hero">
           <header className="page-header">
@@ -3530,7 +3575,13 @@ function App() {
                           ]
                             .filter(Boolean)
                             .join(' ')
-                          const displayName = standingsMobileTeamName(row.teamName)
+                          /* Ceefax bumps the name type well past what full
+                           * club names can fit at 390px — use the curated
+                           * short labels so rows stay single-line. */
+                          const displayName =
+                            colorTheme === 'ceefax'
+                              ? firstWord(row.teamName)
+                              : standingsMobileTeamName(row.teamName)
                           const form5 = (row.form ?? []).slice(-5)
                           return (
                             <Fragment key={row.league_entry}>
@@ -4019,7 +4070,7 @@ function App() {
           <section className="tile tile--compact" aria-labelledby="waiver-totals-heading">
             <div className="tile-head-row tile-head-row--tight">
               <h2 id="waiver-totals-heading" className="tile-title tile-title--sm">
-                Waiver in / out — team totals
+                Pickups in / out — team totals
               </h2>
             </div>
             <WaiverTotalsToggle
@@ -4107,6 +4158,7 @@ function App() {
               onThemePrefChange={setThemePref}
               defaultTab={defaultTabPref}
               onDefaultTabChange={setDefaultTabPref}
+              push={pushNotifications}
             />
           ) : null}
 
@@ -4266,6 +4318,7 @@ function App() {
         onThemePrefChange={setThemePref}
         defaultTab={defaultTabPref}
         onDefaultTabChange={setDefaultTabPref}
+        push={pushNotifications}
       />
     </div>
     </TeamDetailOverlayProvider>

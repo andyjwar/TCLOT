@@ -11,6 +11,12 @@
   gap: var(--space-2);
   min-width: 0;
 }
+.waivers-player-with-fa {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
 .waivers-crest {
   flex: 0 0 auto;
   display: inline-flex;
@@ -257,7 +263,12 @@
 }
 
 /* ── Section 1 · mobile glance + tiles ── */
-.waivers-weekly-mobile { display: flex; flex-direction: column; gap: var(--space-3); }
+.waivers-weekly-mobile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-width: 0;
+}
 .waivers-weekly-mobile .waivers-toggle--sm { align-self: flex-start; }
 
 /* Each transaction is its own spaced rounded tile (All Swaps feed);
@@ -602,7 +613,9 @@
 /* ══ Section 5 · Shareable weekly waiver card (screenshot card) ══════ */
 .waivers-share {
   height: auto;
+  width: 100%;
   max-width: 460px;
+  min-width: 0;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
@@ -612,6 +625,7 @@
   box-sizing: border-box;
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
+  overflow: hidden;
 }
 .waivers-share__head {
   display: flex;
@@ -636,6 +650,7 @@
   margin: 0;
   padding: 0;
   flex: 0 1 auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -643,11 +658,13 @@
 .waivers-share__row {
   flex: 0 0 auto;
   min-height: 22px;
+  min-width: 0;
   padding: 2px 0;
   display: grid;
-  grid-template-columns: 24px 18px minmax(0, 1.25fr) 10px 16px minmax(0, 1fr) 20px;
+  /* marker · pos · player in · arrow · player out · avatar */
+  grid-template-columns: 1.35rem max-content minmax(0, 1fr) 0.7rem minmax(0, 1fr) 1.15rem;
   align-items: center;
-  gap: 5px;
+  column-gap: 4px;
   border-bottom: 1px solid color-mix(in srgb, var(--border) 55%, transparent);
 }
 .waivers-share__row:last-child { border-bottom: 0; }
@@ -677,6 +694,41 @@
   background: color-mix(in srgb, var(--text-muted) 16%, transparent);
   color: var(--text-muted);
 }
+.waivers-share__pos {
+  justify-self: center;
+  min-width: 0;
+}
+.waivers-share .waivers-pos-chip {
+  height: 15px;
+  padding: 0 3px;
+  font-size: 9px;
+  letter-spacing: 0.03em;
+}
+.waivers-share__player {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+}
+.waivers-share__club-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.waivers-share__club {
+  flex: 0 0 3ch;
+  width: 3ch;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
 .waivers-share__crest {
   display: inline-flex;
   align-items: center;
@@ -693,9 +745,12 @@
 .waivers-share__crest .pl-kit-fallback {
   width: 100%; height: 100%;
   display: inline-flex; align-items: center; justify-content: center;
-  font-size: 7px; font-weight: 700; color: var(--text-muted);
+  /* Club code sits beside the crest — don't double the 3-letter fallback. */
+  font-size: 0;
+  background: var(--surface-2);
 }
 .waivers-share__name {
+  flex: 1 1 0;
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -720,8 +775,16 @@
 .waivers-share--compact .waivers-share__row {
   min-height: 20px;
   padding: 1px 0;
-  grid-template-columns: 22px 16px minmax(0, 1.25fr) 9px 14px minmax(0, 1fr) 17px;
-  gap: 4px;
+  grid-template-columns: 1.25rem max-content minmax(0, 1fr) 0.65rem minmax(0, 1fr) 1.05rem;
+  column-gap: 3px;
+}
+.waivers-share--compact .waivers-share__player { gap: 4px; }
+.waivers-share--compact .waivers-share__club-id { gap: 2px; }
+.waivers-share--compact .waivers-share__club { font-size: 8px; }
+.waivers-share--compact .waivers-pos-chip {
+  height: 14px;
+  padding: 0 3px;
+  font-size: 8px;
 }
 .waivers-share--compact .waivers-share__crest { width: 16px; height: 16px; }
 .waivers-share--compact .waivers-share__crest--out { width: 14px; height: 14px; }
@@ -736,8 +799,16 @@
 .waivers-share--dense .waivers-share__row {
   min-height: 18px;
   padding: 0;
-  grid-template-columns: 20px 14px minmax(0, 1.25fr) 8px 12px minmax(0, 1fr) 15px;
-  gap: 3px;
+  grid-template-columns: 1.15rem max-content minmax(0, 1fr) 0.6rem minmax(0, 1fr) 0.95rem;
+  column-gap: 3px;
+}
+.waivers-share--dense .waivers-share__player { gap: 3px; }
+.waivers-share--dense .waivers-share__club-id { gap: 2px; }
+.waivers-share--dense .waivers-share__club { font-size: 8px; }
+.waivers-share--dense .waivers-pos-chip {
+  height: 13px;
+  padding: 0 2px;
+  font-size: 8px;
 }
 .waivers-share--dense .waivers-share__crest { width: 14px; height: 14px; }
 .waivers-share--dense .waivers-share__crest--out { width: 12px; height: 12px; }

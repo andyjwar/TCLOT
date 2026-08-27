@@ -100,13 +100,14 @@ const POS_BY_TYPE = { 1: 'GKP', 2: 'DEF', 3: 'MID', 4: 'FWD' };
 /** FPL element IDs omitted from this list (e.g. suspected bad/misleading waiver attribution). */
 const EXCLUDED_WAIVER_ELEMENT_IDS = new Set([667]);
 
+/** Successful waiver + free-agent claims per player (outfield). */
 function buildMostWaivered(transactionsPayload, fplMini) {
   if (!transactionsPayload?.transactions || !fplMini?.elements?.length) return [];
   const elemById = Object.fromEntries(fplMini.elements.map((e) => [e.id, e]));
   const teamById = Object.fromEntries((fplMini.teams || []).map((t) => [t.id, t]));
   const counts = {};
   for (const tx of transactionsPayload.transactions) {
-    if (tx.kind !== 'w' || tx.result !== 'a') continue;
+    if ((tx.kind !== 'w' && tx.kind !== 'f') || tx.result !== 'a') continue;
     const el = tx.element_in;
     if (el == null || EXCLUDED_WAIVER_ELEMENT_IDS.has(el)) continue;
     const meta = elemById[el];
@@ -1058,10 +1059,9 @@ function processLeagueData(raw, extras = {}) {
   const waiverInByLeagueEntry = new Map(
     totals.filter((t) => t.leagueEntry != null).map((t) => [t.leagueEntry, t])
   );
-  /** Successful waiver swaps per FPL entry (kind w). Same volume as waiver-outs. */
+  /** Successful pickup swaps per FPL entry (waiver + free agent). Same volume as outs. */
   const waiverSwapCountByEntry = new Map();
   for (const r of waiverOutGwRows) {
-    if (r.transactionKind === 'f') continue;
     const id = r.entry;
     waiverSwapCountByEntry.set(id, (waiverSwapCountByEntry.get(id) || 0) + 1);
   }
@@ -1113,7 +1113,6 @@ function processLeagueData(raw, extras = {}) {
       let knownPtsCount = 0;
       for (const r of waiverOutGwRows) {
         if (r.entry !== entryId) continue;
-        if (r.transactionKind === 'f') continue;
         waiverOutCount += 1;
         if (typeof r.droppedPlayerGwPoints === 'number') {
           totalDroppedGwPoints += r.droppedPlayerGwPoints;

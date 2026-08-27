@@ -1,14 +1,15 @@
 /**
  * Settings page — minimal card under the More menu.
  * Spec: Mockup.jsx SettingsShowcase + Mockup.css .mockup-settings-* rules.
- * Two stacked rows in one card: Theme (segmented) + Default landing tab.
- * Both preferences write to localStorage immediately on change — no
- * Save button, no confirmation toast (the change itself is the feedback).
+ * Stacked rows in one card: Theme, Default landing tab, then Push
+ * notifications (opt-in toggle + My team + alert types). Preferences
+ * write to localStorage immediately on change — no Save button, no
+ * confirmation toast (the change itself is the feedback).
  *
  * Storage keys + the default-tab option list live in `settingsStorage.js`
  * so this file only exports components (react-refresh-friendly).
  *
- * `SettingsPanelBody` is the bare controls (Theme + Default tab rows),
+ * `SettingsPanelBody` is the bare controls (Theme + Default tab + Push),
  * extracted so it can be embedded inside `LeagueInfoModal`'s Settings
  * card without re-implementing the form. `SettingsPage` is the
  * tile-wrapped version still used by the standalone `dashboardView ===
@@ -18,9 +19,10 @@
 import { ThemeToggle } from './ThemeToggle'
 import { DEFAULT_TAB_OPTIONS } from './settingsStorage'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import { PushNotificationSettings } from './PushNotificationSettings.jsx'
 
 /**
- * Just the form rows — Theme segmented + Default landing tab pill.
+ * Just the form rows — Theme segmented + Default landing tab pill + Push.
  * Used by both the standalone Settings tile and the embedded Settings
  * card inside `LeagueInfoModal`.
  *
@@ -29,6 +31,7 @@ import { CompactSelectPill } from './CompactSelectPill.jsx'
  *   onThemePrefChange: (t: 'light' | 'dark' | 'system' | 'ceefax') => void,
  *   defaultTab: string,
  *   onDefaultTabChange: (id: string) => void,
+ *   push?: ReturnType<typeof import('./usePushNotifications.js').usePushNotifications>,
  * }} props
  */
 export function SettingsPanelBody({
@@ -36,6 +39,7 @@ export function SettingsPanelBody({
   onThemePrefChange,
   defaultTab,
   onDefaultTabChange,
+  push,
 }) {
   return (
     <div className="settings-card">
@@ -70,6 +74,8 @@ export function SettingsPanelBody({
           }))}
         />
       </div>
+
+      {push ? <PushNotificationSettings {...push} /> : null}
     </div>
   )
 }
@@ -80,6 +86,7 @@ export function SettingsPanelBody({
  *   onThemePrefChange: (t: 'light' | 'dark' | 'system' | 'ceefax') => void,
  *   defaultTab: string,
  *   onDefaultTabChange: (id: string) => void,
+ *   push?: ReturnType<typeof import('./usePushNotifications.js').usePushNotifications>,
  * }} props
  */
 export function SettingsPage({
@@ -87,6 +94,7 @@ export function SettingsPage({
   onThemePrefChange,
   defaultTab,
   onDefaultTabChange,
+  push,
 }) {
   return (
     <section className="tile tile--compact settings-page" aria-label="Settings">
@@ -96,6 +104,7 @@ export function SettingsPage({
         onThemePrefChange={onThemePrefChange}
         defaultTab={defaultTab}
         onDefaultTabChange={onDefaultTabChange}
+        push={push}
       />
     </section>
   )

@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { PlayerKit } from './PlayerKit.jsx'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
-import { firstWord } from './teamNameUtils.js'
+import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
 import './WaiversPanel.css'
@@ -172,7 +172,9 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
                         logoMap={teamLogoMap}
                         kitIndexByEntry={kitIndexByEntry}
                       />
-                      <span className="waivers-table__team-name">{firstWord(r.teamName)}</span>
+                      <span className="waivers-table__team-name" title={r.teamName}>
+                        {standingsMobileTeamName(r.teamName)}
+                      </span>
                     </span>
                   </td>
                   <td>
@@ -246,7 +248,9 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
                 logoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
-              <span className="waivers-glance__team">{firstWord(m.teamName)}</span>
+              <span className="waivers-glance__team" title={m.teamName}>
+                {standingsMobileTeamName(m.teamName)}
+              </span>
               <span className="waivers-glance__counts">
                 {order != null ? (
                   <span
@@ -355,7 +359,9 @@ function WeeklyWaiversTiles({
                 logoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
-              <span className="waivers-weekly-tile__team">{g.teamName}</span>
+              <span className="waivers-weekly-tile__team" title={g.teamName}>
+                {standingsMobileTeamName(g.teamName)}
+              </span>
               <span className="waivers-weekly-tile__count muted">
                 {(g.moves || []).length}
               </span>
@@ -524,8 +530,8 @@ export function WaiverTotalsToggle({
     <div className="waivers-totals">
       <div className="waivers-toggle" role="tablist" aria-label="Waiver totals direction">
         {[
-          { v: 'in', label: 'Waivered in' },
-          { v: 'out', label: 'Waived out' },
+          { v: 'in', label: 'Picked up' },
+          { v: 'out', label: 'Dropped' },
         ].map((opt) => (
           <button
             key={opt.v}
@@ -541,8 +547,8 @@ export function WaiverTotalsToggle({
       </div>
       <p className="waivers-totals__hint">
         {mode === 'in'
-          ? 'Total FPL points scored by every player a team waivered in, from pickup until they left.'
-          : 'Sum of dropped players’ GW points in the week each waiver hit (lower = cleaner exits).'}
+          ? 'Total FPL points scored by every player a team picked up (waiver or free agent), from pickup until they left.'
+          : 'Sum of dropped players’ GW points in the week each waiver or free-agent swap hit (lower = cleaner exits).'}
       </p>
       <ol className="waivers-bars">
         <li className="waivers-bar-row waivers-bars-head" aria-hidden="true">
@@ -678,8 +684,8 @@ export function WaiverPickupsToggle({
       </div>
       <p className="waivers-totals__hint">
         {mode === 'best'
-          ? 'Top player–team pairs by total FPL points from each waiver-in until they left the squad.'
-          : 'Players claimed off waivers by the most distinct teams this season.'}
+          ? 'Top player–team pairs by total FPL points from each waiver or free-agent add until they left the squad.'
+          : 'Players claimed off waivers or as a free agent the most this season.'}
       </p>
       <ol className="waivers-rank-list">
         {mode === 'best'
@@ -689,13 +695,18 @@ export function WaiverPickupsToggle({
                 key={`${r.entry}-${r.elementId}`}
               >
                 <span className="waivers-rank-row__rank tabular">{r.rank ?? i + 1}</span>
-                <WvPlayerCell
-                  element={r.elementId}
-                  name={r.playerName}
-                  badgeUrl={r.badgeUrl}
-                  teamShort={r.teamShort}
-                  pos={r.pos}
-                />
+                <span className="waivers-player-with-fa">
+                  <WvPlayerCell
+                    element={r.elementId}
+                    name={r.playerName}
+                    badgeUrl={r.badgeUrl}
+                    teamShort={r.teamShort}
+                    pos={r.pos}
+                  />
+                  {r.freeAgentStints > 0 ? (
+                    <span className="waivers-fa-tag">FA</span>
+                  ) : null}
+                </span>
                 <span className="waivers-rank-row__meta">
                   <span className="waivers-rank-row__owner-name">{firstWord(r.teamName)}</span>
                   <span className="waivers-rank-row__range muted">
@@ -734,7 +745,7 @@ export function WaiverPickupsToggle({
   )
 }
 
-/** Explains static-site waiver lag when FPL has processed claims but deploy JSON hasn't caught up. */
+/** Explains waiver lag: live FPL overlay vs waiting on the static ingest deploy. */
 export function WaiverFreshnessBanner({ notice }) {
   if (!notice) return null
   const isStale = notice.kind === 'stale'

@@ -1,8 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  DEFAULT_WIRE_STAT_IDS,
+  POS_FILTER_ALL,
+  WIRE_STAT_CATALOG,
   elementStatsAreCarryOver,
   formatWireStatValue,
+  visibleWireColumns,
+  wireColumnHeaderLabel,
 } from './playersWireList.js'
 
 // Pre-season draft bootstrap: current null, nothing finished.
@@ -98,4 +103,58 @@ test('formatWireStatValue — without blankCarryOver values render as before', (
     formatWireStatValue('gp', EL, { gamesPlayed: 3 }, false),
     '3',
   )
+})
+
+test('formatWireStatValue — DC (total) reads defensive_contribution', () => {
+  assert.equal(
+    formatWireStatValue(
+      'defConTotal',
+      { ...EL, defensive_contribution: 21 },
+      null,
+      false,
+    ),
+    '21',
+  )
+})
+
+test('default All tab is GP, 60+, G, A, DC (FPL)', () => {
+  assert.deepEqual(DEFAULT_WIRE_STAT_IDS, [
+    'gp',
+    'sixtyPlus',
+    'goals',
+    'assists',
+    'defConHits',
+  ])
+  assert.equal(WIRE_STAT_CATALOG.defConHits.label, 'DC (FPL)')
+  assert.equal(WIRE_STAT_CATALOG.defConTotal.label, 'DC (total)')
+})
+
+test('column headers use DC / DC\'s, not FPL / TOT', () => {
+  assert.equal(WIRE_STAT_CATALOG.defConHits.shortLabel, 'DC')
+  assert.equal(WIRE_STAT_CATALOG.defConTotal.shortLabel, "DC's")
+  assert.equal(wireColumnHeaderLabel(WIRE_STAT_CATALOG.defConHits), 'DC')
+  assert.equal(wireColumnHeaderLabel(WIRE_STAT_CATALOG.defConTotal), "DC's")
+  assert.equal(wireColumnHeaderLabel(WIRE_STAT_CATALOG.gp), 'GP')
+})
+
+test('desktop wire inserts a gap so Pts and stats sit to the right of POS', () => {
+  const cols = visibleWireColumns(POS_FILTER_ALL, DEFAULT_WIRE_STAT_IDS)
+  const ids = cols.map((c) => c.id)
+  const pos = ids.indexOf('pos')
+  const gap = ids.indexOf('gap')
+  const pts = ids.indexOf('pts')
+  assert.equal(ids[0], 'player')
+  assert.ok(pos >= 0 && gap === pos + 1 && pts === gap + 1)
+  assert.ok(ids.includes('sixtyPlus'))
+  assert.ok(ids.includes('defConHits'))
+  assert.ok(!ids.includes('defConTotal'))
+  assert.equal(ids[ids.length - 1], 'next3')
+})
+
+test('portrait wire has no gap column', () => {
+  const cols = visibleWireColumns(POS_FILTER_ALL, DEFAULT_WIRE_STAT_IDS, {
+    portrait: true,
+  })
+  assert.ok(!cols.some((c) => c.id === 'gap'))
+  assert.equal(cols[0].id, 'player')
 })

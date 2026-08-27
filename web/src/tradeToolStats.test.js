@@ -19,7 +19,11 @@ import {
   formatTradeStat,
   toggleTradeStat,
   lockedTradePosition,
-  canToggleTradePlayer,
+  filterSquadForTrade,
+  filterSquadByQuery,
+  applyTradePick,
+  encodeTradeSource,
+  parseTradeSource,
 } from './tradeToolStats.js'
 
 const CURRENT = {
@@ -163,38 +167,130 @@ test('toggleTradeStat — respects min and max', () => {
   assert.equal(toggleTradeStat(atMax, 'starts').length, TRADE_MAX_STATS)
 })
 
-test('lockedTradePosition — first pick locks GKP/DEF/MID/FWD', () => {
-  assert.equal(lockedTradePosition([]), null)
-  assert.equal(lockedTradePosition([{ positionType: 1 }]), 1)
-  assert.equal(lockedTradePosition([{ positionType: 3 }, { positionType: 1 }]), 3)
-  assert.equal(lockedTradePosition([{ positionType: 9 }]), null)
+test('TRADE_MAX_PLAYERS_PER_SIDE is one-for-one', () => {
+  assert.equal(TRADE_MAX_PLAYERS_PER_SIDE, 1)
 })
 
-test('canToggleTradePlayer — same position only once locked', () => {
+test('lockedTradePosition — first pick on either side locks the position', () => {
+  assert.equal(lockedTradePosition([], []), null)
+  assert.equal(lockedTradePosition([{ positionType: 1 }], []), 1)
+  assert.equal(lockedTradePosition([], [{ positionType: 3 }]), 3)
+  assert.equal(lockedTradePosition([{ positionType: 2 }], [{ positionType: 2 }]), 2)
+})
+
+test('filterSquadForTrade — locked position hides every other slot', () => {
+  const squad = [
+    { element: 1, positionType: 1 },
+    { element: 2, positionType: 2 },
+    { element: 3, positionType: 1 },
+  ]
+  assert.deepEqual(filterSquadForTrade(squad, null), squad)
+  assert.deepEqual(
+    filterSquadForTrade(squad, 1).map((p) => p.element),
+    [1, 3],
+  )
+})
+
+test('filterSquadByQuery — matches player name, ignores blank query', () => {
+  const squad = [
+    { name: 'Raya' },
+    { name: 'Haaland' },
+    { name: 'Donnarumma' },
+  ]
+  assert.deepEqual(filterSquadByQuery(squad, ''), squad)
+  assert.deepEqual(
+    filterSquadByQuery(squad, 'haal').map((p) => p.name),
+    ['Haaland'],
+  )
+  assert.equal(filterSquadByQuery(squad, 'zzz').length, 0)
+})
+
+test('applyTradePick — one per side, same-position, replace, deselect', () => {
+  const gkA = { element: 10, positionType: 1 }
+  const defA = { element: 11, positionType: 2 }
+  const gkB = { element: 20, positionType: 1 }
+  const midB = { element: 21, positionType: 3 }
+  const squadA = [gkA, defA]
+  const squadB = [gkB, midB]
+
+  const pickGkA = applyTradePick({
+    idsA: [],
+    idsB: [],
+    squadA,
+    squadB,
+    side: 'a',
+    elementId: 10,
+  })
+  assert.deepEqual(pickGkA, { idsA: [10], idsB: [] })
+
+  const pickGkB = applyTradePick({
+    ...pickGkA,
+    squadA,
+    squadB,
+    side: 'b',
+    elementId: 20,
+  })
+  assert.deepEqual(pickGkB, { idsA: [10], idsB: [20] })
+
+  const rejectMid = applyTradePick({
+    ...pickGkB,
+    squadA,
+    squadB,
+    side: 'b',
+    elementId: 21,
+  })
+  assert.deepEqual(rejectMid, { idsA: [10], idsB: [20] })
+
+  const replaceSamePos = applyTradePick({
+    idsA: [10],
+    idsB: [],
+    squadA,
+    squadB,
+    side: 'a',
+    elementId: 11,
+  })
+  assert.deepEqual(replaceSamePos, { idsA: [11], idsB: [] })
+
+  const deselect = applyTradePick({
+    idsA: [10],
+    idsB: [20],
+    squadA,
+    squadB,
+    side: 'a',
+    elementId: 10,
+  })
+  assert.deepEqual(deselect, { idsA: [], idsB: [20] })
+
+  const swapSamePos = applyTradePick({
+    idsA: [10],
+    idsB: [20],
+    squadA: [...squadA, { element: 12, positionType: 1 }],
+    squadB,
+    side: 'a',
+    elementId: 12,
+  })
+  assert.deepEqual(swapSamePos, { idsA: [12], idsB: [20] })
+})
+
+test('encodeTradeSource / parseTradeSource — entry vs club keys', () => {
+  assert.equal(encodeTradeSource('entry', 42), 'entry:42')
+  assert.equal(encodeTradeSource('club', 14), 'club:14')
+  assert.equal(encodeTradeSource('club', Number.NaN), '')
+  assert.deepEqual(parseTradeSource('entry:42'), { kind: 'entry', id: 42 })
+  assert.deepEqual(parseTradeSource('club:14'), { kind: 'club', id: 14 })
+  assert.equal(parseTradeSource('42'), null)
+  assert.equal(parseTradeSource(''), null)
+})
+
+test('applyTradePick — same element cannot sit on both sides', () => {
   const gk = { element: 10, positionType: 1 }
-  const mid = { element: 20, positionType: 3 }
-  assert.equal(canToggleTradePlayer(gk, { selectedIds: [], lockedPosition: null }), true)
-  assert.equal(
-    canToggleTradePlayer(mid, { selectedIds: [10], lockedPosition: 1 }),
-    false,
-  )
-  assert.equal(
-    canToggleTradePlayer(gk, { selectedIds: [10], lockedPosition: 1 }),
-    true,
-  )
-  assert.equal(
-    canToggleTradePlayer({ element: 11, positionType: 1 }, {
-      selectedIds: [10],
-      lockedPosition: 1,
-    }),
-    true,
-  )
-  const full = Array.from({ length: TRADE_MAX_PLAYERS_PER_SIDE }, (_, i) => 100 + i)
-  assert.equal(
-    canToggleTradePlayer({ element: 12, positionType: 1 }, {
-      selectedIds: full,
-      lockedPosition: 1,
-    }),
-    false,
-  )
+  const next = applyTradePick({
+    idsA: [10],
+    idsB: [],
+    squadA: [gk],
+    squadB: [gk],
+    side: 'b',
+    elementId: 10,
+  })
+  assert.deepEqual(next, { idsA: [10], idsB: [] })
 })
