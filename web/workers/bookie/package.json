@@ -9,6 +9,8 @@
     "db:create": "wrangler d1 create tclot-bookie",
     "db:migrate": "wrangler d1 execute tclot-bookie --remote --file=schema.sql",
     "db:migrate:local": "wrangler d1 execute tclot-bookie --local --file=schema.sql",
+    "db:fresh-start": "wrangler d1 execute tclot-bookie --remote --file=fresh-start.sql",
+    "db:fresh-start:local": "wrangler d1 execute tclot-bookie --local --file=fresh-start.sql",
     "tail": "wrangler tail"
   },
   "devDependencies": {

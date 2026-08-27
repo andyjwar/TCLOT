@@ -29,6 +29,10 @@ against the official FPL Draft results.
 - **Bankroll** — everyone starts a season with 1,000 Clotcoins (the TCLOT
   currency); a 50-Clotcoin stipend
   lands after each settled gameweek so going bust is never terminal.
+  A one-shot restart (`fresh-start.sql` / `applyFreshStart`) can wipe the
+  ticket ledger and put every bankroll back at 1,000 without touching PINs
+  or markets. It is gated by the `freshStart:2026-08-27` meta key so it
+  cannot run twice.
 - **Cash out** — every open ticket carries a live offer: current win
   probability × potential payout, minus an 8% house margin (`src/cashout.js`).
   Pre-deadline that probability is the market's own opening price; once the

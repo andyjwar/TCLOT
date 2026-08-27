@@ -750,6 +750,7 @@ function PlayerBoard({ market, matchLabel, me, slip, onPick }) {
         <button
           type="button"
           className="bookie-player-board__more"
+          aria-expanded={showAll}
           onClick={() => setShowAll((v) => !v)}
         >
           {showAll ? 'Short board' : `Full board (${selections.length} prices)`}
