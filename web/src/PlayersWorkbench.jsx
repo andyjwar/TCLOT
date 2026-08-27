@@ -33,6 +33,7 @@ import {
   portraitDefaultWireStatIdsForPosition,
   readWireStatSelection,
   visibleWireColumns,
+  wireColumnHeaderLabel,
   wireColumnIsGroupStart,
   wireColumnToSortKey,
   wireStatsMapFromPayload,
@@ -588,12 +589,15 @@ function NextFixtureBadges({ fixtures, nextOnly = false }) {
  * Portrait Variant I tile list — replaces the desktop table grid on
  * `@media (max-width: 600px)` with a flat tile-based list. Each tile uses a
  * 2-column grid: left = identity (crest + name + position single letter +
- * owner avatar + ailments + Next-3 fixtures), right = fixed 168px N-track
+ * owner avatar + ailments + Next-3 fixtures), right = fixed ~188px N-track
  * grid of stat values aligned under a persistent column header.
  *
- * The header + tile right-column tracks share the same `repeat(N, 1fr)`
- * template so PTS / G / A / DC values stay column-aligned across tiles
- * regardless of how the left column wraps.
+ * The header + tile right-column tracks share the same
+ * `repeat(N, minmax(0, 1fr))` template (via `--wire-stat-cols`) so
+ * PTS / GP / 60+ / G / A / DC labels and values share identical
+ * equal-width tracks. `minmax(0, 1fr)` is required: plain `1fr` is
+ * `minmax(auto, 1fr)`, so the PTS pill's min-width would widen the
+ * first data track and drift every column to its right.
  */
 function PortraitWireTileList({
   outfieldList,
@@ -619,21 +623,23 @@ function PortraitWireTileList({
   const rightCols = visibleCols.filter(
     (c) => c.id !== 'player' && c.id !== 'next3',
   )
-  const rightTracks = `repeat(${Math.max(rightCols.length, 1)}, 1fr)`
+  const rightTracks = `repeat(${Math.max(rightCols.length, 1)}, minmax(0, 1fr))`
   const tappable = Boolean(playerDetailOverlay)
 
   return (
-    <div className="players-wire-tile-list" role="list" aria-label="Waiver wire players">
+    <div
+      className="players-wire-tile-list"
+      role="list"
+      aria-label="Waiver wire players"
+      style={{ '--wire-stat-cols': rightTracks }}
+    >
       <div
         className="players-wire-tile-colhead"
         role="row"
         aria-label="Stat columns"
       >
         <span className="players-wire-tile-colhead__spacer" aria-hidden />
-        <div
-          className="players-wire-tile-colhead__cols"
-          style={{ gridTemplateColumns: rightTracks }}
-        >
+        <div className="players-wire-tile-colhead__cols">
           {rightCols.map((col) => {
             const colSortKey = wireColumnToSortKey(col.id)
             const isActive = col.id === activeSortColId
@@ -644,9 +650,16 @@ function PortraitWireTileList({
               : colSortKey
                 ? 'none'
                 : undefined
-            const cellClass = `players-wire-tile-colhead__cell${
-              isActive ? ' players-wire-tile-colhead__cell--sorted' : ''
-            }`
+            const cellClass = [
+              'players-wire-tile-colhead__cell',
+              isActive ? 'players-wire-tile-colhead__cell--sorted' : '',
+              isActive && sortDir === 'asc'
+                ? 'players-wire-tile-colhead__cell--asc'
+                : '',
+            ]
+              .filter(Boolean)
+              .join(' ')
+            const headerLabel = wireColumnHeaderLabel(col)
             if (!colSortKey) {
               return (
                 <span
@@ -655,7 +668,7 @@ function PortraitWireTileList({
                   role="columnheader"
                   title={col.title}
                 >
-                  {col.label}
+                  {headerLabel}
                 </span>
               )
             }
@@ -669,21 +682,7 @@ function PortraitWireTileList({
                 title={col.title ? `${col.title} · tap to sort` : 'Tap to sort'}
                 onClick={() => onColumnSort(col.id)}
               >
-                <span className="players-wire-tile-colhead__label">
-                  {col.shortLabel || col.label}
-                </span>
-                {/* Always reserve the arrow slot so switching the sorted
-                 * column doesn't nudge labels sideways and throw the
-                 * header out of line with the values below. */}
-                <span
-                  className={
-                    'players-wire-tile-colhead__arrow' +
-                    (isActive ? '' : ' players-wire-tile-colhead__arrow--idle')
-                  }
-                  aria-hidden
-                >
-                  {isActive ? (sortDir === 'asc' ? '↑' : '↓') : '↓'}
-                </span>
+                <span className="players-wire-tile-colhead__label">{headerLabel}</span>
               </button>
             )
           })}
@@ -780,10 +779,7 @@ function PortraitWireTileList({
                 />
               </span>
             ) : null}
-            <div
-              className="players-wire-tile__right"
-              style={{ gridTemplateColumns: rightTracks }}
-            >
+            <div className="players-wire-tile__right">
               {rightCols.map((col) => {
                 const isActive = col.id === activeSortColId
                 if (col.id === 'pts') {
@@ -1481,7 +1477,9 @@ export function PlayersWorkbench({
                     title={col.title ? `${col.title} · click to sort` : 'Click to sort'}
                     onClick={() => handleColumnSort(col.id)}
                   >
-                    <span className="players-table__th-label">{col.label}</span>
+                    <span className="players-table__th-label">
+                      {wireColumnHeaderLabel(col)}
+                    </span>
                     {!mobileLayout ? (
                       isActive ? (
                         <span className="players-table__sort-indicator" aria-hidden>

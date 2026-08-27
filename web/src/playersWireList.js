@@ -199,7 +199,7 @@ export const WIRE_STAT_CATALOG = {
   defConHits: {
     id: 'defConHits',
     label: 'DC (FPL)',
-    shortLabel: 'FPL',
+    shortLabel: 'DC',
     title: 'Gameweeks with DefCon fantasy points (2 pts)',
     group: 'defensive',
     sortKey: 'def_con',
@@ -208,7 +208,7 @@ export const WIRE_STAT_CATALOG = {
   defConTotal: {
     id: 'defConTotal',
     label: 'DC (total)',
-    shortLabel: 'TOT',
+    shortLabel: "DC's",
     title: 'Defensive contributions — raw season total of qualifying actions',
     group: 'defensive',
     sortKey: 'def_con_total',
@@ -342,7 +342,7 @@ export const SORT_LABELS = {
   xgc: 'xGC',
 }
 
-/** Numeric stats: wide enough for "DC (FPL)" + sort arrow; no 1fr so they stay packed right. */
+/** Numeric stats packed right. `max-content` fits longer labels (Save Pts, Bonus). */
 const WIRE_STAT_COL = 'minmax(4.6rem, max-content)'
 const WIRE_PTS_COL = 'minmax(4.25rem, 4.75rem)'
 /** Absorbs leftover width between POS and Pts so score + stats sit on the right. */
@@ -408,6 +408,19 @@ function wireStatToColumn(statId) {
 }
 
 /**
+ * Compact table-header text. Stats picker keeps the long `label`
+ * (e.g. "DC (FPL)" / "DC (total)"); the column header uses `shortLabel`
+ * when set ("DC" / "DC's").
+ *
+ * @param {{ shortLabel?: string, label?: string } | null | undefined} col
+ * @returns {string}
+ */
+export function wireColumnHeaderLabel(col) {
+  if (!col) return ''
+  return col.shortLabel || col.label || ''
+}
+
+/**
  * @param {PositionFilterId} positionFilter
  * @returns {string[]}
  */
@@ -418,7 +431,7 @@ export function defaultWireStatIdsForPosition(positionFilter) {
 }
 
 /**
- * Portrait max stat columns. Variant I tiles have a fixed 168px right column
+ * Portrait max stat columns. Variant I tiles have a fixed ~188px right column
  * that fits Pts + N stats — 'all' caps at 5 stats (so right column shows
  * Pts + 5 = 6 cells), per-position filters cap at 4 (Pts + 4 = 5 cells). Pos
  * is rendered in the tile sub-row and is not counted in this cap.

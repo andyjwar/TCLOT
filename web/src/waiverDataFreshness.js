@@ -1,6 +1,7 @@
 /**
- * Waivers tab freshness copy — explains why moves may lag FPL after `waivers_time`.
- * TCLOT ships static JSON from gated GitHub Actions deploys, not live FPL polling.
+ * Waivers tab freshness copy — explains lag after `waivers_time`.
+ * The tab polls FPL Draft transactions live while static ingest JSON is behind;
+ * a gated GitHub Actions deploy still ships the durable `drops-gw-live` file.
  */
 
 import {
@@ -37,9 +38,11 @@ export function formatLeagueDataBuiltAgo(builtAtMs, nowMs = Date.now()) {
  *   selectedGw?: number | null,
  *   hasMovesForSelectedGw?: boolean,
  *   isGwInProcessedList?: boolean,
+ *   liveFetchStatus?: 'off' | 'loading' | 'ready' | 'error',
+ *   hasLiveMovesForSelectedGw?: boolean,
  *   now?: Date,
  * }} input
- * @returns {{ kind: 'grace' | 'awaiting-deploy' | 'stale', title: string, message: string } | null}
+ * @returns {{ kind: 'grace' | 'awaiting-deploy' | 'stale' | 'live' | 'polling', title: string, message: string } | null}
  */
 export function deriveWaiverFreshnessNotice({
   draftEvents,
@@ -47,6 +50,8 @@ export function deriveWaiverFreshnessNotice({
   selectedGw,
   hasMovesForSelectedGw = false,
   isGwInProcessedList = false,
+  liveFetchStatus = 'off',
+  hasLiveMovesForSelectedGw = false,
   now = new Date(),
 }) {
   if (!Array.isArray(draftEvents) || !draftEvents.length) return null
@@ -67,19 +72,46 @@ export function deriveWaiverFreshnessNotice({
   const inPostWaiverWindow = nowMs > graceEndMs && nowMs < freshWindowEndMs
   const dataBuiltAfterGrace = Number.isFinite(builtAtMs) && builtAtMs >= graceEndMs
   const gwPresentInBuild = isGwInProcessedList || hasMovesForSelectedGw
+  const showingLiveMoves = hasLiveMovesForSelectedGw === true
 
-  if (dataBuiltAfterGrace && gwPresentInBuild) return null
+  if (dataBuiltAfterGrace && gwPresentInBuild && !showingLiveMoves) return null
+
+  if (showingLiveMoves) {
+    return {
+      kind: 'live',
+      title: 'Live FPL results',
+      message:
+        'Showing processed claims from FPL. Player GW points appear after the next site deploy.',
+    }
+  }
 
   if (nowMs < graceEndMs) {
+    const polling =
+      liveFetchStatus === 'loading' ||
+      liveFetchStatus === 'ready' ||
+      liveFetchStatus === 'error'
     return {
       kind: 'grace',
       title: 'Waiver results pending',
-      message:
-        'FPL usually publishes successful claims within ~10 minutes of waivers running. This site starts refreshing about 10 minutes after waivers.',
+      message: polling
+        ? 'FPL usually publishes successful claims within ~10 minutes of waivers running. This page checks FPL every 30 seconds.'
+        : 'FPL usually publishes successful claims within ~10 minutes of waivers running. This site starts refreshing about 10 minutes after waivers.',
     }
   }
 
   if (inPostWaiverWindow) {
+    if (
+      liveFetchStatus === 'loading' ||
+      liveFetchStatus === 'ready' ||
+      liveFetchStatus === 'error'
+    ) {
+      return {
+        kind: 'polling',
+        title: 'Checking FPL for waiver results',
+        message:
+          'This page asks FPL every 30 seconds. Results usually appear within ~10 minutes of waivers running. You do not need to wait for a site redeploy.',
+      }
+    }
     const inBurst = nowMs < waiversTimeMs + WAIVER_BURST_WINDOW_MS
     const msToNext = inBurst ? msUntilNextQuarterHour(nowMs) : msUntilNextHourlyCron(nowMs)
     const minsToNext = Math.max(1, Math.ceil(msToNext / 60_000))
