@@ -3,17 +3,25 @@
  * Fetches FPL event/live per GW, then:
  * 1) drops-gw-live.json — dropped player’s pts that GW for successful waivers + free-agency swaps (neutral path name)
  * 2) pickups-tenure.json — top 10 pickup pairs + team tenure totals
- *    from each waiver-in until that player left the squad (same entry).
+ *    from each waiver-in or free-agent add until that player left the squad (same entry).
  */
 import { readFileSync, writeFileSync, existsSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
+import {
+  aggregatePickupTenure,
+  compareTx,
+  isSuccessfulSwap,
+  resolveWaiverAnalyticsLastGw,
+  sumPlayerRange,
+} from '../src/waiverPickupAnalytics.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const leagueDataDir = join(__dirname, '../public/league-data')
 const txPath = join(leagueDataDir, 'transactions.json')
 const tradesPath = join(leagueDataDir, 'trades.json')
 const detailsPath = join(leagueDataDir, 'details.json')
+const fixturesPath = join(leagueDataDir, 'fixtures.json')
 const outWaiverOut = join(leagueDataDir, 'drops-gw-live.json')
 const outWaiverInTop = join(leagueDataDir, 'pickups-tenure.json')
 const outTradesPanel = join(leagueDataDir, 'trades-panel.json')
@@ -33,31 +41,6 @@ function leagueEntryMaps(details) {
 
 function sleep(ms) {
   return new Promise((r) => setTimeout(r, ms))
-}
-
-function lastFinishedGwFromDetails(details) {
-  let max = 0
-  for (const m of details.matches || []) {
-    if (m.finished && Number(m.event) > max) max = Number(m.event)
-  }
-  return max
-}
-
-function compareTx(a, b) {
-  const ta = a.added ? Date.parse(a.added) : 0
-  const tb = b.added ? Date.parse(b.added) : 0
-  if (ta !== tb) return ta - tb
-  return (a.id ?? 0) - (b.id ?? 0)
-}
-
-function sumPlayerRange(cache, elementId, startGw, endGw) {
-  let s = 0
-  const pid = Number(elementId)
-  for (let g = startGw; g <= endGw; g++) {
-    const m = cache[g]
-    if (m && typeof m[pid] === 'number') s += m[pid]
-  }
-  return s
 }
 
 function isTxStrictlyAfterTrade(tx, trade) {
@@ -285,17 +268,25 @@ async function main() {
     /* ok */
   }
 
-  const finishedGw = lastFinishedGwFromDetails(details)
-  const eventCandidates = [
-    ...transactions.map((t) => Number(t.event) || 0),
-    ...executedTrades.map((t) => Number(t.event) || 0),
-  ]
-  const maxEventGw =
-    eventCandidates.length > 0 ? Math.max(...eventCandidates) : 0
+  let fixtures = []
+  try {
+    if (existsSync(fixturesPath)) {
+      fixtures = JSON.parse(readFileSync(fixturesPath, 'utf8'))
+    }
+  } catch {
+    /* ok */
+  }
+
   /* Transactions use the target GW before every league match in that GW is
-   * `finished` in details — waivers for GW N+1 can exist while last finished is N. */
-  let lastGw = Math.max(finishedGw >= 1 ? finishedGw : 0, maxEventGw, 1)
-  lastGw = Math.min(lastGw, 38)
+   * `finished` in details — waivers for GW N+1 can exist while last finished is N.
+   * Also follow started/finished PL fixtures so tenure points roll forward when
+   * H2H `finished` still lags (or during a live GW). */
+  const lastGw = resolveWaiverAnalyticsLastGw({
+    details,
+    fixtures,
+    transactions,
+    trades: executedTrades,
+  })
 
   console.log(
     `build-waiver-gw-analytics: fetching event/live for GWs 1–${lastGw}…`
@@ -345,11 +336,6 @@ async function main() {
     }
   }
 
-  const isSuccessfulSwap = (t) =>
-    t.result === 'a' &&
-    t.element_out != null &&
-    Number(t.event) > 0
-
   const waiversDrop = transactions.filter((t) => t.kind === 'w' && isSuccessfulSwap(t))
   const freeAgentDrop = transactions.filter((t) => t.kind === 'f' && isSuccessfulSwap(t))
 
@@ -382,104 +368,18 @@ async function main() {
     )
   }
 
-  /* —— waiver in: tenure pts until dropped —— */
-  const waiverIns = transactions.filter(
-    (t) =>
-      t.kind === 'w' &&
-      t.result === 'a' &&
-      t.element_in != null &&
-      Number(t.event) > 0
-  )
-
-  function findNextDrop(w) {
-    const i = sorted.findIndex((t) => t.id === w.id)
-    if (i < 0) return null
-    const entry = Number(w.entry)
-    const pid = Number(w.element_in)
-    for (let j = i + 1; j < sorted.length; j++) {
-      const t = sorted[j]
-      if (Number(t.entry) !== entry) continue
-      if (t.result !== 'a') continue
-      if (t.element_out != null && Number(t.element_out) === pid) return t
-    }
-    return null
-  }
-
-  /** @type {Map<string, { entry: number, elementId: number, totalPointsForTeam: number, waiverStints: number, firstGw: number, lastGw: number }>} */
-  const agg = new Map()
-
-  for (const w of waiverIns) {
-    const startGw = Number(w.event)
-    const elementId = Number(w.element_in)
-    const entry = Number(w.entry)
-    const drop = findNextDrop(w)
-    let endGw = lastGw
-    if (drop) {
-      endGw = Math.min(Number(drop.event) - 1, lastGw)
-    }
-    let stintPts = 0
-    if (endGw >= startGw) {
-      stintPts = sumPlayerRange(cache, elementId, startGw, endGw)
-    }
-    const key = `${entry}|${elementId}`
-    const cur = agg.get(key) || {
-      entry,
-      elementId,
-      totalPointsForTeam: 0,
-      waiverStints: 0,
-      firstGw: startGw,
-      lastGw: endGw,
-    }
-    cur.totalPointsForTeam += stintPts
-    cur.waiverStints += 1
-    cur.firstGw = Math.min(cur.firstGw, startGw)
-    cur.lastGw = Math.max(cur.lastGw, endGw)
-    agg.set(key, cur)
-  }
-
-  const top10 = [...agg.values()]
-    .filter((r) => r.totalPointsForTeam > 0 || r.waiverStints > 0)
-    .sort((a, b) => {
-      const d = b.totalPointsForTeam - a.totalPointsForTeam
-      if (d !== 0) return d
-      return b.waiverStints - a.waiverStints
-    })
-    .slice(0, 10)
-    .map((r, idx) => ({ rank: idx + 1, ...r }))
-
-  /** Sum tenure pts for every waiver-in, grouped by team (entry_id).
-   *  waiverInCount = successful waiver stints (same volume as waiver outs);
-   *  distinctPlayers = unique element ids ever claimed (can be lower when re-waived). */
-  const byEntryTeam = new Map()
-  for (const v of agg.values()) {
-    if (!byEntryTeam.has(v.entry)) {
-      byEntryTeam.set(v.entry, {
-        entry: v.entry,
-        totalWaiverInPoints: 0,
-        distinctPlayers: 0,
-        waiverInCount: 0,
-      })
-    }
-    const t = byEntryTeam.get(v.entry)
-    t.totalWaiverInPoints += v.totalPointsForTeam
-    t.distinctPlayers += 1
-    t.waiverInCount += v.waiverStints
-  }
+  /* —— pickup tenure: waiver + free-agent adds until dropped —— */
   const fplEntryToLeagueId = new Map(
     (details.league_entries || [])
       .filter((e) => e.entry_id != null && e.id != null)
       .map((e) => [Number(e.entry_id), Number(e.id)])
   )
-  const teamWaiverInTotals = [...byEntryTeam.values()]
-    .map((t) => ({
-      ...t,
-      leagueEntry: fplEntryToLeagueId.get(t.entry) ?? undefined,
-    }))
-    .sort(
-      (a, b) =>
-        b.totalWaiverInPoints - a.totalWaiverInPoints ||
-        a.entry - b.entry
-    )
+  const { rows: top10, teamWaiverInTotals: teamTotalsRaw } =
+    aggregatePickupTenure(transactions, lastGw, cache)
+  const teamWaiverInTotals = teamTotalsRaw.map((t) => ({
+    ...t,
+    leagueEntry: fplEntryToLeagueId.get(t.entry) ?? undefined,
+  }))
 
   if (transactions.length > 0) {
     writeFileSync(
@@ -487,7 +387,7 @@ async function main() {
       JSON.stringify(
         {
           generated: new Date().toISOString(),
-          note: 'Total FPL pts while on squad after waiver-in, through GW before drop (or last finished GW). Same player re-waived: stints summed. teamWaiverInTotals.waiverInCount = successful waiver stints (matches waived-out transaction volume); distinctPlayers = unique elements.',
+          note: 'Total FPL pts while on squad after waiver-in or free-agent add, through GW before drop (or last finished/live GW). Same player re-claimed: stints summed. Never-fielded (in and out same GW) omitted. teamWaiverInTotals.waiverInCount = successful pickup stints (w + f, matches drops-gw-live volume); distinctPlayers = unique elements.',
           lastGwUsed: lastGw,
           rows: top10,
           teamWaiverInTotals,
