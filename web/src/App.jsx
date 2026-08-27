@@ -4022,7 +4022,7 @@ function App() {
           <section className="tile tile--compact" aria-labelledby="waiver-totals-heading">
             <div className="tile-head-row tile-head-row--tight">
               <h2 id="waiver-totals-heading" className="tile-title tile-title--sm">
-                Waiver in / out — team totals
+                Pickups in / out — team totals
               </h2>
             </div>
             <WaiverTotalsToggle
