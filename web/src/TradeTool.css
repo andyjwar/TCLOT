@@ -289,7 +289,7 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
 
 .trade-tool__side-head .cpsp {
   flex: 0 1 auto;
-  max-width: min(46%, 11rem);
+  max-width: min(52%, 12.5rem);
 }
 
 .trade-tool__search {
@@ -308,7 +308,8 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
   background: var(--fm-card);
   color: var(--fm-text-strong);
   font: inherit;
-  font-size: 13px;
+  /* 16px keeps iOS Safari from auto-zooming the page when the field is focused. */
+  font-size: 16px;
   font-weight: 600;
 }
 
