@@ -1,7 +1,7 @@
 import { Fragment } from 'react';
 import { TeamAvatar } from './TeamAvatar';
 import { PointsCell } from './PointsCell.jsx';
-import { standingsMobileTeamName } from './teamNameUtils.js';
+import { firstWord, standingsMobileTeamName } from './teamNameUtils.js';
 import { ClickableTeamName } from './TeamDetailOverlay.jsx';
 import { useIsCeefax } from './useIsCeefax.js';
 
@@ -63,8 +63,13 @@ function SectionLabelRow({ label, colSpan, top }) {
  * name (MSFG stays `MSFG`) now that the manager subtitle is gone.
  */
 function LiveTeamCell({ row, teamLogoMap, kitIndexByEntry, mobile }) {
+  const isCeefax = useIsCeefax();
+  /* Ceefax bumps the name type well past what full club names can fit
+   * at 390px — use the curated short labels so rows stay single-line. */
   const displayName = mobile
-    ? standingsMobileTeamName(row.teamName)
+    ? isCeefax
+      ? firstWord(row.teamName)
+      : standingsMobileTeamName(row.teamName)
     : row.teamName;
   const moveUp = row.rankMove > 0;
   const moveDown = row.rankMove < 0;
