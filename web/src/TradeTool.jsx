@@ -26,6 +26,7 @@ import {
   applyTradePick,
   buildRadarAxes,
   encodeTradeSource,
+  filterSquadByQuery,
   filterSquadForTrade,
   formatTradeStat,
   indexElementsByCode,
@@ -426,34 +427,48 @@ function PickedChip({ player, side, onRemove }) {
 
 function SquadRow({ player, selected, side, onToggle, missingPrior, seasonMode }) {
   return (
-    <button
-      type="button"
+    <div
       className={
         'trade-tool__row' +
         (selected ? ` is-selected is-selected--${side}` : '')
       }
-      aria-pressed={selected}
-      onClick={() => onToggle(player.element)}
     >
-      <PlayerKit
-        shirtUrl={player.shirtUrl}
-        badgeUrl={player.badgeUrl}
-        teamShort={player.teamShort}
-      />
-      <span className="trade-tool__row-id">
-        <span className="trade-tool__row-name">{player.name}</span>
-        <span className="trade-tool__row-meta">
-          <span className={`trade-tool__pos trade-tool__pos--${POS_LABEL[player.positionType]}`}>
-            {POS_LABEL[player.positionType]}
+      <button
+        type="button"
+        className="trade-tool__row-hit"
+        aria-pressed={selected}
+        onClick={() => onToggle(player.element)}
+      >
+        <PlayerKit
+          shirtUrl={player.shirtUrl}
+          badgeUrl={player.badgeUrl}
+          teamShort={player.teamShort}
+        />
+        <span className="trade-tool__row-id">
+          <span className="trade-tool__row-name">{player.name}</span>
+          <span className="trade-tool__row-meta">
+            <span className={`trade-tool__pos trade-tool__pos--${POS_LABEL[player.positionType]}`}>
+              {POS_LABEL[player.positionType]}
+            </span>
+            {player.teamShort ? <span>{player.teamShort}</span> : null}
+            {missingPrior && seasonMode !== 'current' ? (
+              <span className="trade-tool__no-prior">no 25/26</span>
+            ) : null}
           </span>
-          {player.teamShort ? <span>{player.teamShort}</span> : null}
-          {missingPrior && seasonMode !== 'current' ? (
-            <span className="trade-tool__no-prior">no 25/26</span>
-          ) : null}
         </span>
-      </span>
-      <span className="trade-tool__row-pts tabular">{player.seasonPoints}</span>
-    </button>
+        <span className="trade-tool__row-pts tabular">{player.seasonPoints}</span>
+      </button>
+      {selected ? (
+        <button
+          type="button"
+          className="trade-tool__row-x"
+          aria-label={`Remove ${player.name}`}
+          onClick={() => onToggle(player.element)}
+        >
+          ×
+        </button>
+      ) : null}
+    </div>
   )
 }
 
@@ -511,11 +526,24 @@ export function TradeTool({
   const [sourceB, setSourceB] = useState('')
   const [idsA, setIdsA] = useState(/** @type {number[]} */ ([]))
   const [idsB, setIdsB] = useState(/** @type {number[]} */ ([]))
+  const [queryA, setQueryA] = useState('')
+  const [queryB, setQueryB] = useState('')
   const [seasonMode, setSeasonMode] = useState(
     /** @type {'current' | 'prior' | 'combined'} */ ('current'),
   )
   const [statIds, setStatIds] = useState(() => [...DEFAULT_TRADE_STAT_IDS])
   const mobileLayout = useMobileLayout()
+
+  const allPlayers = useMemo(() => {
+    const byId = new Map()
+    for (const list of squadsByClub.values()) {
+      for (const p of list || []) {
+        const id = Number(p.element)
+        if (Number.isFinite(id) && !byId.has(id)) byId.set(id, p)
+      }
+    }
+    return [...byId.values()]
+  }, [squadsByClub])
 
   const pickSource = (side, raw) => {
     const next = parseTradeSource(raw)
@@ -530,17 +558,33 @@ export function TradeTool({
     if (side === 'a') {
       setSourceA(encoded)
       setIdsA([])
+      setQueryA('')
       if (sameFantasyEntry) {
         setSourceB('')
         setIdsB([])
+        setQueryB('')
       }
     } else {
       setSourceB(encoded)
       setIdsB([])
+      setQueryB('')
       if (sameFantasyEntry) {
         setSourceA('')
         setIdsA([])
+        setQueryA('')
       }
+    }
+  }
+
+  const clearSource = (side) => {
+    if (side === 'a') {
+      setSourceA('')
+      setIdsA([])
+      setQueryA('')
+    } else {
+      setSourceB('')
+      setIdsB([])
+      setQueryB('')
     }
   }
 
@@ -548,18 +592,26 @@ export function TradeTool({
   const parsedB = parseTradeSource(sourceB)
   const squadA = squadForSource(sourceA, squadsByEntry, squadsByClub)
   const squadB = squadForSource(sourceB, squadsByEntry, squadsByClub)
-  const pickedA = squadA.filter((p) => idsA.includes(p.element))
-  const pickedB = squadB.filter((p) => idsB.includes(p.element))
+  const poolA = parsedA ? squadA : allPlayers
+  const poolB = parsedB ? squadB : allPlayers
+  const pickedA = poolA.filter((p) => idsA.includes(p.element))
+  const pickedB = poolB.filter((p) => idsB.includes(p.element))
   const lockPosition = lockedTradePosition(pickedA, pickedB)
-  const visibleA = filterSquadForTrade(squadA, lockPosition)
-  const visibleB = filterSquadForTrade(squadB, lockPosition)
+  const visibleA = filterSquadForTrade(
+    filterSquadByQuery(parsedA ? squadA : queryA.trim() ? allPlayers : [], queryA),
+    lockPosition,
+  )
+  const visibleB = filterSquadForTrade(
+    filterSquadByQuery(parsedB ? squadB : queryB.trim() ? allPlayers : [], queryB),
+    lockPosition,
+  )
 
   const togglePlayer = (side, elementId) => {
     const next = applyTradePick({
       idsA,
       idsB,
-      squadA,
-      squadB,
+      squadA: poolA,
+      squadB: poolB,
       side,
       elementId,
     })
@@ -593,6 +645,8 @@ export function TradeTool({
     const source = side === 'a' ? sourceA : sourceB
     const parsed = side === 'a' ? parsedA : parsedB
     const selected = side === 'a' ? idsA : idsB
+    const query = side === 'a' ? queryA : queryB
+    const setQuery = side === 'a' ? setQueryA : setQueryB
     const visible = side === 'a' ? visibleA : visibleB
     const groups = POSITION_ORDER.map((type) => ({
       type,
@@ -600,6 +654,7 @@ export function TradeTool({
       players: visible.filter((p) => p.positionType === type),
     })).filter((g) => g.players.length)
     const hasTeam = parsed != null
+    const hasQuery = Boolean(query.trim())
     const club =
       parsed?.kind === 'club'
         ? clubs.find((c) => c.id === parsed.id) ?? null
@@ -627,21 +682,36 @@ export function TradeTool({
             ariaLabel={side === 'a' ? 'Give team or club' : 'Get team or club'}
             value={source}
             onChange={(v) => pickSource(side, v)}
+            onClear={() => clearSource(side)}
             options={sourceOptions}
             placeholder="Pick a team"
             isActive={hasTeam}
             menuMaxWidth={280}
           />
+          <label className="trade-tool__search">
+            <span className="visually-hidden">Search player</span>
+            <input
+              type="search"
+              className="trade-tool__search-input"
+              placeholder="Player"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoComplete="off"
+              enterKeyHint="search"
+            />
+          </label>
         </div>
-        {!hasTeam ? (
-          <p className="muted muted--tight">Pick a team to see the squad.</p>
+        {!hasTeam && !hasQuery ? (
+          <p className="muted muted--tight">Pick a team or search a player.</p>
         ) : status === 'loading' ? (
           <p className="muted muted--tight">Loading squad…</p>
         ) : !groups.length ? (
           <p className="muted muted--tight">
-            {lockPosLabel
-              ? `No ${lockPosLabel} on this squad.`
-              : 'No squad on record yet.'}
+            {hasQuery
+              ? 'No matching player.'
+              : lockPosLabel
+                ? `No ${lockPosLabel} on this squad.`
+                : 'No squad on record yet.'}
           </p>
         ) : (
           <div className="trade-tool__roster">
@@ -697,7 +767,7 @@ export function TradeTool({
               {renderSquad('b')}
             </div>
 
-            {(parsedA || parsedB) ? (
+            {(parsedA || parsedB || pickedA.length || pickedB.length) ? (
             <div className="trade-tool__picked" aria-label="Players in the trade">
               <div className="trade-tool__picked-col">
                 {pickedA.length ? (
@@ -819,7 +889,7 @@ export function TradeTool({
               </>
             ) : (
               <p className="muted muted--tight trade-tool__empty">
-                Pick a team on each side, then one player of the same position.
+                Pick a team or search a player on each side. Same position only.
               </p>
             )}
           </div>

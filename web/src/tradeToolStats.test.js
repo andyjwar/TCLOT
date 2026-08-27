@@ -20,6 +20,7 @@ import {
   toggleTradeStat,
   lockedTradePosition,
   filterSquadForTrade,
+  filterSquadByQuery,
   applyTradePick,
   encodeTradeSource,
   parseTradeSource,
@@ -188,6 +189,20 @@ test('filterSquadForTrade — locked position hides every other slot', () => {
     filterSquadForTrade(squad, 1).map((p) => p.element),
     [1, 3],
   )
+})
+
+test('filterSquadByQuery — matches player name, ignores blank query', () => {
+  const squad = [
+    { name: 'Raya' },
+    { name: 'Haaland' },
+    { name: 'Donnarumma' },
+  ]
+  assert.deepEqual(filterSquadByQuery(squad, ''), squad)
+  assert.deepEqual(
+    filterSquadByQuery(squad, 'haal').map((p) => p.name),
+    ['Haaland'],
+  )
+  assert.equal(filterSquadByQuery(squad, 'zzz').length, 0)
 })
 
 test('applyTradePick — one per side, same-position, replace, deselect', () => {

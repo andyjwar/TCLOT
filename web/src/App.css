@@ -17391,6 +17391,39 @@ button.live-xp__player-name:focus-visible {
   transform: rotate(180deg);
 }
 
+.cpsp--clearable .cpsp__btn {
+  padding-right: 34px;
+}
+
+.cpsp__clear {
+  position: absolute;
+  right: 22px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: color-mix(in srgb, var(--fm-text-strong) 58%, var(--fm-muted));
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cpsp__clear:hover {
+  background: color-mix(in srgb, var(--fm-muted) 22%, transparent);
+  color: var(--fm-text-strong);
+}
+
 .cpsp__menu {
   position: absolute;
   top: calc(100% + 6px);

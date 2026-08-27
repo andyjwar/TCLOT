@@ -495,6 +495,19 @@ export function filterSquadForTrade(squad, lockPosition) {
 }
 
 /**
+ * Case-insensitive player-name filter for Trade Tool search.
+ *
+ * @param {{ name?: string }[]} squad
+ * @param {string} query
+ */
+export function filterSquadByQuery(squad, query) {
+  const list = Array.isArray(squad) ? squad : []
+  const q = String(query ?? '').trim().toLowerCase()
+  if (!q) return list
+  return list.filter((p) => String(p.name ?? '').toLowerCase().includes(q))
+}
+
+/**
  * Encode a Trade Tool side source for the team picker.
  * Fantasy managers use `entry:<leagueEntryId>`; PL clubs use `club:<teamId>`.
  *
