@@ -17506,13 +17506,16 @@ button.live-xp__player-name:focus-visible {
   transform: rotate(180deg);
 }
 
-.cpsp--clearable .cpsp__btn {
-  padding-right: 34px;
+/* In-flow hole so the × sits left of ▾ instead of painting over it. */
+.cpsp__clear-slot {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 1px;
 }
 
 .cpsp__clear {
   position: absolute;
-  right: 22px;
+  right: 26px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;

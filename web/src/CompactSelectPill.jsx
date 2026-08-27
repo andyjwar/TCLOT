@@ -269,6 +269,9 @@ export function CompactSelectPill({
           </>
         ) : null}
         <span className="cpsp__value">{displayValue}</span>
+        {showClear ? (
+          <span className="cpsp__clear-slot" aria-hidden />
+        ) : null}
         <span className="cpsp__chev" aria-hidden>
           ▾
         </span>

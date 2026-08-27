@@ -3575,7 +3575,13 @@ function App() {
                           ]
                             .filter(Boolean)
                             .join(' ')
-                          const displayName = standingsMobileTeamName(row.teamName)
+                          /* Ceefax bumps the name type well past what full
+                           * club names can fit at 390px — use the curated
+                           * short labels so rows stay single-line. */
+                          const displayName =
+                            colorTheme === 'ceefax'
+                              ? firstWord(row.teamName)
+                              : standingsMobileTeamName(row.teamName)
                           const form5 = (row.form ?? []).slice(-5)
                           return (
                             <Fragment key={row.league_entry}>
@@ -4064,7 +4070,7 @@ function App() {
           <section className="tile tile--compact" aria-labelledby="waiver-totals-heading">
             <div className="tile-head-row tile-head-row--tight">
               <h2 id="waiver-totals-heading" className="tile-title tile-title--sm">
-                Waiver in / out — team totals
+                Pickups in / out — team totals
               </h2>
             </div>
             <WaiverTotalsToggle

@@ -12,6 +12,9 @@ const leagueDataDir = join(__dirname, '../public/league-data/seasons/2025-26')
  * Successful waiver swaps always have both element_in and element_out, so
  * per-team In and Out claim counts must match. The UI used to show distinct
  * waivered-in players vs out transaction count, which made volume look wrong.
+ *
+ * 2025-26 committed pickups-tenure is waiver-only (kind w). Current-season
+ * builds count free-agent adds too — see waiverPickupAnalytics.test.js.
  */
 test('every successful waiver has both in and out', () => {
   const { transactions } = JSON.parse(
