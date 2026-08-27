@@ -81,11 +81,7 @@ function SharePlayer({ badgeUrl, teamShort, name, out = false }) {
         <span className={out ? 'waivers-share__crest waivers-share__crest--out' : 'waivers-share__crest'}>
           <PlayerKit badgeUrl={badgeUrl} teamShort={teamShort} />
         </span>
-        {club ? (
-          <span className="waivers-share__club" title={club}>
-            {club}
-          </span>
-        ) : null}
+        {club ? <span className="waivers-share__club">{club}</span> : null}
       </span>
       <span className={out ? 'waivers-share__name waivers-share__name--out' : 'waivers-share__name'}>
         {name ?? '—'}
