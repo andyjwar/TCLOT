@@ -11701,12 +11701,18 @@ function WvShareCard({ rows, gw = 38, density = 'airy' }) {
               {r.in.pos}
             </span>
             <span className="mockup-wv-share__player">
-              <ClubCrest club={r.in.club} size={20} className="mockup-wv-share__crest" />
+              <span className="mockup-wv-share__club-id">
+                <ClubCrest club={r.in.club} size={20} className="mockup-wv-share__crest" />
+                <span className="mockup-wv-share__club">{r.in.club}</span>
+              </span>
               <span className="mockup-wv-share__name">{r.in.name}</span>
             </span>
             <span className="mockup-wv-share__arrow" aria-hidden="true">←</span>
             <span className="mockup-wv-share__player mockup-wv-share__player--out">
-              <ClubCrest club={r.out.club} size={18} className="mockup-wv-share__crest mockup-wv-share__crest--out" />
+              <span className="mockup-wv-share__club-id">
+                <ClubCrest club={r.out.club} size={18} className="mockup-wv-share__crest mockup-wv-share__crest--out" />
+                <span className="mockup-wv-share__club">{r.out.club}</span>
+              </span>
               <span className="mockup-wv-share__name mockup-wv-share__name--out">{r.out.name}</span>
             </span>
             <WvTeamBadge code={r.team} size={18} />
@@ -12859,8 +12865,8 @@ export function Mockup() {
             sized to fill one portrait screen. Rows flex to fit, so ~8 successful
             waivers read large and the 30-row league record still lands on one
             screen with no scroll. Each row: waiver rank (FA = none) · W/FA tag ·
-            position (once) · IN player + club crest ← OUT player · and the
-            manager's fantasy-team crest pinned right. Mirrors the data in <code style={{ fontFamily: 'Geist Mono, monospace', fontSize: 12 }}>WaiverSummaryShare</code>.
+            position (once) · IN crest + club code + name ← OUT crest + club
+            code + name · and the manager's fantasy-team crest pinned right. Mirrors the data in <code style={{ fontFamily: 'Geist Mono, monospace', fontSize: 12 }}>WaiverSummaryShare</code>.
           </p>
           <div className="mockup-portrait-row mockup-wv-frames">
             <div className="mockup-portrait-col">

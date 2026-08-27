@@ -67,11 +67,25 @@ function SharePos({ pos }) {
   )
 }
 
+function shareClubCode(teamShort) {
+  const t = String(teamShort ?? '').trim().toUpperCase()
+  if (!t || t === '—' || t === '?') return ''
+  return t.slice(0, 3)
+}
+
 function SharePlayer({ badgeUrl, teamShort, name, out = false }) {
+  const club = shareClubCode(teamShort)
   return (
     <span className={out ? 'waivers-share__player waivers-share__player--out' : 'waivers-share__player'}>
-      <span className={out ? 'waivers-share__crest waivers-share__crest--out' : 'waivers-share__crest'}>
-        <PlayerKit badgeUrl={badgeUrl} teamShort={teamShort} />
+      <span className="waivers-share__club-id">
+        <span className={out ? 'waivers-share__crest waivers-share__crest--out' : 'waivers-share__crest'}>
+          <PlayerKit badgeUrl={badgeUrl} teamShort={teamShort} />
+        </span>
+        {club ? (
+          <span className="waivers-share__club" title={club}>
+            {club}
+          </span>
+        ) : null}
       </span>
       <span className={out ? 'waivers-share__name waivers-share__name--out' : 'waivers-share__name'}>
         {name ?? '—'}
@@ -84,9 +98,10 @@ function SharePlayer({ badgeUrl, teamShort, name, out = false }) {
  * Portrait, screenshot-friendly waiver card. Rows stack at a fixed compact
  * height (no flex-grow between rows) so a light week stays tight and
  * 15–20 picks still fit in one phone screenshot. Density scales type/crests
- * to row count. Real GW data: position · IN club crest + name ← OUT club
- * crest + name, league-wide waiver order (FA = none), manager fantasy crest
- * pinned right. Position is shown once — in and out share it.
+ * to row count. Real GW data: position · IN crest + club code + name ←
+ * OUT crest + club code + name, league-wide waiver order (FA = none),
+ * manager fantasy crest pinned right. Position is shown once — in and
+ * out share it. Club codes sit immediately right of each badge.
  */
 function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEntry }) {
   const density = shareCardDensity(rows.length)

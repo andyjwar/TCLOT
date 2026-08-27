@@ -693,8 +693,27 @@
 .waivers-share__player {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   min-width: 0;
+}
+.waivers-share__club-id {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+.waivers-share__club {
+  flex: 0 0 2.15em;
+  width: 2.15em;
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
 }
 .waivers-share__crest {
   display: inline-flex;
@@ -742,7 +761,9 @@
   grid-template-columns: 20px 24px minmax(0, 1fr) 9px minmax(0, 1fr) 17px;
   gap: 3px;
 }
-.waivers-share--compact .waivers-share__player { gap: 3px; }
+.waivers-share--compact .waivers-share__player { gap: 4px; }
+.waivers-share--compact .waivers-share__club-id { gap: 2px; }
+.waivers-share--compact .waivers-share__club { font-size: 8px; }
 .waivers-share--compact .waivers-pos-chip {
   height: 14px;
   padding: 0 3px;
@@ -765,6 +786,8 @@
   gap: 3px;
 }
 .waivers-share--dense .waivers-share__player { gap: 3px; }
+.waivers-share--dense .waivers-share__club-id { gap: 2px; }
+.waivers-share--dense .waivers-share__club { font-size: 8px; flex-basis: 2em; width: 2em; }
 .waivers-share--dense .waivers-pos-chip {
   height: 13px;
   padding: 0 2px;
