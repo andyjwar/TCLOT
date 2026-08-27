@@ -87,7 +87,7 @@ export function pickDeadlineReminders(events, nowMs) {
           bucket === '1h'
             ? `GW${target.id} waiver deadline in 1 hour`
             : `GW${target.id} waiver deadline tomorrow`,
-        body: 'Submit your waiver claims in Moves before the deadline.',
+        body: 'Stick your waivers in before it’s too late, you absolute muppet.',
       })
     }
   }

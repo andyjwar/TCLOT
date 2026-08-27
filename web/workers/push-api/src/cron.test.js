@@ -46,6 +46,22 @@ describe('pickDeadlineReminders', () => {
     assert.ok(waiver)
     assert.equal(waiver.gw, 5)
     assert.equal(waiver.pref, 'deadlineReminders')
+    assert.equal(
+      waiver.body,
+      'Stick your waivers in before it’s too late, you absolute muppet.',
+    )
+  })
+
+  it('fires a waiver-deadline 1h reminder with the same body copy', () => {
+    const now = Date.parse('2026-08-22T07:15:00Z') // 45m before waivers_time
+    const picks = pickDeadlineReminders(events, now)
+    const waiver = picks.find((p) => p.type === 'waiver_deadline_1h')
+    assert.ok(waiver)
+    assert.equal(waiver.title, 'GW5 waiver deadline in 1 hour')
+    assert.equal(
+      waiver.body,
+      'Stick your waivers in before it’s too late, you absolute muppet.',
+    )
   })
 
   it('fires a lineup-deadline 1h reminder near the lineup deadline', () => {
