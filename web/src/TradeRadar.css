@@ -25,14 +25,14 @@
 }
 
 .trade-radar__poly {
-  fill-opacity: 0.18;
-  stroke-width: 2.25;
+  fill-opacity: 0.28;
+  stroke-width: 2.6;
   stroke-linejoin: round;
 }
 
 .trade-radar__poly--a {
-  fill: var(--brand, #795bfb);
-  stroke: var(--brand, #795bfb);
+  fill: var(--tclot-logo-purple, #795bfb);
+  stroke: var(--tclot-logo-purple, #795bfb);
 }
 
 .trade-radar__poly--b {
@@ -92,7 +92,7 @@
 }
 
 .fotmob[data-theme='light'] .trade-radar__poly {
-  fill-opacity: 0.14;
+  fill-opacity: 0.22;
 }
 
 body[data-tclot-theme='ceefax'] .trade-radar__poly--a,

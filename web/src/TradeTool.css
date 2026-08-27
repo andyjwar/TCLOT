@@ -212,6 +212,7 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+  appearance: none;
 }
 
 .trade-tool__row:hover {
@@ -348,11 +349,13 @@
 }
 
 .trade-tool__chip--a {
-  border-color: color-mix(in srgb, var(--brand, #795bfb) 40%, var(--fm-border));
+  border-color: color-mix(in srgb, var(--brand, #795bfb) 55%, var(--fm-border));
+  background: color-mix(in srgb, var(--brand, #795bfb) 16%, var(--fm-card));
 }
 
 .trade-tool__chip--b {
-  border-color: color-mix(in srgb, var(--fm-pitch, #12a15a) 40%, var(--fm-border));
+  border-color: color-mix(in srgb, var(--fm-pitch, #12a15a) 55%, var(--fm-border));
+  background: color-mix(in srgb, var(--fm-pitch, #12a15a) 16%, var(--fm-card));
 }
 
 .trade-tool__chip-name {
