@@ -17506,14 +17506,16 @@ button.live-xp__player-name:focus-visible {
   transform: rotate(180deg);
 }
 
-/* × sits between the value and the chevron, not on top of ▾. */
-.cpsp--clearable .cpsp__chev {
-  margin-left: 22px;
+/* In-flow hole so the × sits left of ▾ instead of painting over it. */
+.cpsp__clear-slot {
+  flex: 0 0 22px;
+  width: 22px;
+  height: 1px;
 }
 
 .cpsp__clear {
   position: absolute;
-  right: 28px;
+  right: 26px;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1;
