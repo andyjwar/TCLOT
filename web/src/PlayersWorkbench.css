@@ -1742,13 +1742,19 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
     display: block;
   }
 
-  .players-wire-tile-colhead__cols {
+  .players-wire-tile-colhead__cols,
+  .players-wire-tile__right {
     display: grid;
+    grid-template-columns: var(--wire-stat-cols);
     column-gap: 4px;
+    width: 100%;
+    min-width: 0;
+    justify-items: stretch;
   }
 
   .players-wire-tile-colhead__cell {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: flex-end;
     position: relative;
@@ -1763,7 +1769,8 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
     text-transform: uppercase;
     color: var(--text-muted);
     min-width: 0;
-    text-align: right;
+    width: 100%;
+    text-align: center;
     overflow: visible;
   }
 
@@ -1790,7 +1797,9 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
     position: relative;
     display: inline-block;
     min-width: 0;
+    max-width: 100%;
     white-space: nowrap;
+    line-height: 1.1;
   }
 
   /* Sort caret hangs under the label — zero horizontal footprint, so
@@ -1972,8 +1981,6 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
   }
 
   .players-wire-tile__right {
-    display: grid;
-    column-gap: 4px;
     align-items: center;
     font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
@@ -1985,22 +1992,30 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
   }
 
   .players-wire-tile__stat {
-    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     min-width: 0;
+    width: 100%;
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
 
   /* Purple glass pill behind the total-points number, mirroring the
-   * "Best pickups" / "Most waivered" .waivers-pts styling. Pinned to the
-   * right edge of its grid track so it stays aligned under the PTS header. */
+   * "Best pickups" / "Most waivered" .waivers-pts styling. Sized to the
+   * figure and centered on the PTS track — min-width stays 0 so the pill
+   * cannot widen this column and shove GP / 60+ / G / A / DC left. */
   .players-wire-tile__stat--pts {
-    justify-self: end;
+    justify-self: center;
+    width: auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 30px;
-    padding: 2px 7px;
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    padding: 2px 5px;
     border-radius: var(--r-sm);
     background: var(--brand-tint);
     color: var(--text-strong);
