@@ -3703,6 +3703,8 @@ button.player-history-name-btn.latest-waivers__player-name {
 /* Compact waiver summary (screenshot + copy) */
 .waiver-summary-share {
   margin-top: 4px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .waiver-summary-share__toolbar {
