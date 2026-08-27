@@ -1,0 +1,112 @@
+.trade-radar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  min-width: 0;
+}
+
+.trade-radar__svg {
+  width: min(100%, 420px);
+  height: auto;
+  overflow: visible;
+}
+
+.trade-radar__ring {
+  fill: none;
+  stroke: var(--fm-border);
+  stroke-width: 1;
+}
+
+.trade-radar__axis {
+  stroke: var(--fm-border);
+  stroke-width: 1;
+}
+
+.trade-radar__poly {
+  fill-opacity: 0.18;
+  stroke-width: 2.25;
+  stroke-linejoin: round;
+}
+
+.trade-radar__poly--a {
+  fill: var(--brand, #795bfb);
+  stroke: var(--brand, #795bfb);
+}
+
+.trade-radar__poly--b {
+  fill: var(--fm-pitch, #12a15a);
+  stroke: var(--fm-pitch, #12a15a);
+}
+
+.trade-radar__nums {
+  font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.trade-radar__num--a {
+  fill: var(--brand, #795bfb);
+}
+
+.trade-radar__num--b {
+  fill: var(--fm-pitch, #12a15a);
+}
+
+.trade-radar__slash {
+  fill: var(--fm-muted);
+  font-weight: 500;
+}
+
+.trade-radar__k {
+  fill: var(--fm-muted);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.trade-radar__caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-xs, 11px);
+  color: var(--fm-muted);
+  font-weight: 600;
+}
+
+.trade-radar__swatch {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+}
+
+.trade-radar__swatch--a {
+  background: var(--brand, #795bfb);
+}
+
+.trade-radar__swatch--b {
+  background: var(--fm-pitch, #12a15a);
+}
+
+.fotmob[data-theme='light'] .trade-radar__poly {
+  fill-opacity: 0.14;
+}
+
+body[data-tclot-theme='ceefax'] .trade-radar__poly--a,
+body[data-tclot-theme='ceefax'] .trade-radar__num--a,
+body[data-tclot-theme='ceefax'] .trade-radar__swatch--a {
+  fill: var(--text-strong, #fff);
+  background: var(--text-strong, #fff);
+  stroke: var(--text-strong, #fff);
+}
+
+body[data-tclot-theme='ceefax'] .trade-radar__poly--b,
+body[data-tclot-theme='ceefax'] .trade-radar__num--b,
+body[data-tclot-theme='ceefax'] .trade-radar__swatch--b {
+  fill: var(--fm-pitch, #8f8);
+  background: var(--fm-pitch, #8f8);
+  stroke: var(--fm-pitch, #8f8);
+}

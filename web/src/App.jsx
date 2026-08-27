@@ -507,6 +507,7 @@ import { TeamDetailOverlayProvider, ClickableTeamName } from './TeamDetailOverla
 import { PlayerHistoryProvider, ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { PremWindow } from './PremWindow'
 import { DraftBoard } from './DraftBoard'
+import { TradeTool } from './TradeTool.jsx'
 import { SeasonPredictions } from './SeasonPredictions'
 import { BookieView } from './BookieView'
 import { WeeklyRecap } from './WeeklyRecap'
@@ -2611,7 +2612,7 @@ function App() {
   const leagueEntries = data?.leagueEntries ?? EMPTY_LEAGUE_ENTRIES
   const [dashboardView, setDashboardView] = useState(initialDashboardViewForViewport) // standings | teamSelection | hall | fplLive | players | more | settings
   const [teamSelectionTab, setTeamSelectionTab] = useState(
-    /** @type {'waivers' | 'trades' | 'draft'} */ ('draft'),
+    /** @type {'waivers' | 'trades' | 'tradeTool' | 'draft'} */ ('draft'),
   )
   const [movesTabPrimed, setMovesTabPrimed] = useState(false)
   /* FPL Live sub-tab. `null` = no explicit choice yet — the rendered tab then
@@ -3900,6 +3901,19 @@ function App() {
                   <button
                     type="button"
                     role="tab"
+                    id="tab-team-selection-trade-tool"
+                    aria-selected={teamSelectionTab === 'tradeTool'}
+                    className={
+                      'subnav__tab' +
+                      (teamSelectionTab === 'tradeTool' ? ' subnav__tab--active' : '')
+                    }
+                    onClick={() => setTeamSelectionTab('tradeTool')}
+                  >
+                    Trade Tool
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
                     id="tab-team-selection-draft"
                     aria-selected={teamSelectionTab === 'draft'}
                     className={
@@ -4047,6 +4061,19 @@ function App() {
                 />
               ) : null}
             </div>
+              )}
+
+              {teamSelectionTab === 'tradeTool' && (
+              <TradeTool
+                leagueEntries={leagueEntries}
+                teamLogoMap={teamLogoMap}
+                kitIndexByEntry={kitIndexByEntry}
+                leagueDataRevision={String(
+                  import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
+                ).trim()}
+                currentSeasonLabel={seasonCatalog.current}
+                priorSeasonLabel={seasonCatalog.archived[0] ?? null}
+              />
               )}
 
               {teamSelectionTab === 'draft' && (
