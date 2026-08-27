@@ -1741,18 +1741,24 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
     display: block;
   }
 
-  .players-wire-tile-colhead__cols {
+  .players-wire-tile-colhead__cols,
+  .players-wire-tile__right {
     display: grid;
+    grid-template-columns: var(--wire-stat-cols);
     column-gap: 6px;
+    width: 100%;
+    min-width: 0;
+    justify-items: stretch;
   }
 
   .players-wire-tile-colhead__cell {
-    display: inline-flex;
+    display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: flex-end;
-    gap: 2px;
+    gap: 1px;
     margin: 0;
-    padding: 2px 0;
+    padding: 2px 0 0;
     border: none;
     background: transparent;
     font-family: 'Geist', system-ui, sans-serif;
@@ -1762,7 +1768,8 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
     text-transform: uppercase;
     color: var(--text-muted);
     min-width: 0;
-    text-align: right;
+    width: 100%;
+    text-align: center;
   }
 
   .players-wire-tile-colhead__btn {
@@ -1786,17 +1793,22 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
 
   .players-wire-tile-colhead__label {
     min-width: 0;
+    max-width: 100%;
+    white-space: nowrap;
+    line-height: 1.1;
   }
 
-  /* Fixed-width arrow slot — active and idle headers share the same
-   * footprint so sorting a different column never reflows the row. */
+  /* Arrow sits under the label, centered on the same track as the
+   * value. Idle and active headers share the height so swapping the
+   * sorted column never reflows the row. */
   .players-wire-tile-colhead__arrow {
     flex-shrink: 0;
-    display: inline-flex;
+    display: flex;
     align-items: center;
     justify-content: center;
-    width: 0.7em;
-    font-size: 9px;
+    width: 100%;
+    height: 8px;
+    font-size: 8px;
     line-height: 1;
     color: var(--brand);
   }
@@ -1961,8 +1973,6 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
   }
 
   .players-wire-tile__right {
-    display: grid;
-    column-gap: 6px;
     align-items: center;
     font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
     font-variant-numeric: tabular-nums;
@@ -1974,22 +1984,30 @@ body[data-tclot-theme='dark'] .players-fixture-badge--away {
   }
 
   .players-wire-tile__stat {
-    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
     min-width: 0;
+    width: 100%;
     font-variant-numeric: tabular-nums;
     font-feature-settings: 'tnum';
   }
 
   /* Purple glass pill behind the total-points number, mirroring the
-   * "Best pickups" / "Most waivered" .waivers-pts styling. Pinned to the
-   * right edge of its grid track so it stays aligned under the PTS header. */
+   * "Best pickups" / "Most waivered" .waivers-pts styling. Sized to the
+   * figure and centered on the PTS track — min-width stays 0 so the pill
+   * cannot widen this column and shove GP / 60+ / G / A / DC left. */
   .players-wire-tile__stat--pts {
-    justify-self: end;
+    justify-self: center;
+    width: auto;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 30px;
-    padding: 2px 7px;
+    box-sizing: border-box;
+    min-width: 0;
+    max-width: 100%;
+    padding: 2px 5px;
     border-radius: var(--r-sm);
     background: var(--brand-tint);
     color: var(--text-strong);
