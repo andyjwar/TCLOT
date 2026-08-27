@@ -87,7 +87,9 @@ export function deriveWaiverFreshnessNotice({
 
   if (nowMs < graceEndMs) {
     const polling =
-      liveFetchStatus === 'loading' || liveFetchStatus === 'ready'
+      liveFetchStatus === 'loading' ||
+      liveFetchStatus === 'ready' ||
+      liveFetchStatus === 'error'
     return {
       kind: 'grace',
       title: 'Waiver results pending',
@@ -98,7 +100,11 @@ export function deriveWaiverFreshnessNotice({
   }
 
   if (inPostWaiverWindow) {
-    if (liveFetchStatus === 'loading' || liveFetchStatus === 'ready') {
+    if (
+      liveFetchStatus === 'loading' ||
+      liveFetchStatus === 'ready' ||
+      liveFetchStatus === 'error'
+    ) {
       return {
         kind: 'polling',
         title: 'Checking FPL for waiver results',

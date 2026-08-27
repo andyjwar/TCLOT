@@ -98,6 +98,19 @@ test('deriveWaiverFreshnessNotice — polling copy while waiting on FPL', () => 
   assert.match(notice?.message ?? '', /every 30 seconds/)
 })
 
+test('deriveWaiverFreshnessNotice — polling copy while live fetch retries after error', () => {
+  const now = new Date(Date.parse(WT) + 30 * 60_000)
+  const notice = deriveWaiverFreshnessNotice({
+    draftEvents: EVENTS,
+    selectedGw: 4,
+    leagueDataBuiltAt: '2026-09-01T12:00:00Z',
+    liveFetchStatus: 'error',
+    now,
+  })
+  assert.equal(notice?.kind, 'polling')
+  assert.match(notice?.message ?? '', /every 30 seconds/)
+})
+
 test('deriveWaiverFreshnessNotice — awaiting deploy after burst reverts to hourly', () => {
   // 3h after waivers: past 90-min burst, still inside 36h post-waiver window
   const now = new Date(Date.parse(WT) + 3 * 60 * 60_000)
