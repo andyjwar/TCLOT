@@ -130,6 +130,31 @@ Sanity check after deploy: `curl https://YOUR-WORKER.workers.dev/api/health` →
 
 ---
 
+## 1d. Web push notifications (optional)
+
+Managers can opt in from **Settings → Push notifications** once a push worker is deployed. Full details in [`web/workers/push-api/README.md`](web/workers/push-api/README.md).
+
+1. Deploy the push worker:
+   ```bash
+   cd web/workers/push-api
+   npm install
+   npm run generate-vapid
+   npx wrangler kv:namespace create SUBSCRIPTIONS   # paste id into wrangler.toml
+   npx wrangler secret put VAPID_SUBJECT            # mailto:you@example.com
+   npx wrangler secret put VAPID_SERVER_PUBLIC_KEY
+   npx wrangler secret put VAPID_SERVER_PRIVATE_KEY
+   npx wrangler secret put PUSH_INTERNAL_SECRET     # random string for CI notify
+   npm run deploy
+   ```
+2. Bake into the web build (repository secret or variable, same pattern as the FPL proxy; also add them on **Vercel → Project → Settings → Environment Variables** for `tclot.vercel.app`):
+   - **`VITE_PUSH_API_URL`** — worker origin, no trailing slash (e.g. `https://tclot-push-api.your-subdomain.workers.dev`)
+   - **`VITE_VAPID_PUBLIC_KEY`** — public key from `npm run generate-vapid`
+3. Optional CI hook after waiver ingest: set **`PUSH_INTERNAL_SECRET`** (same value as the worker secret) so the deploy workflow can POST `/internal/notify`.
+
+If these env vars are missing, the Settings toggle shows **“Push is not configured for this deploy”** and the rest of the site is unaffected.
+
+---
+
 ## 2. Team logos (PNG)
 
 Logos are **not** fetched from FPL. They only exist if **you** put files in the repo.

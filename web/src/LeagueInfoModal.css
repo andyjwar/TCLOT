@@ -507,6 +507,12 @@ body[data-tclot-theme='light'] .league-info-modal-shell .li-modal--lp-c {
   font-size: var(--text-md);
   color: var(--text);
 }
+.league-info-modal-shell .li-card--settings .settings-row--stack,
+.league-info-modal-shell .li-card--settings .settings-row--checks {
+  flex-direction: column;
+  align-items: stretch;
+  padding-inline: 0;
+}
 
 .league-info-modal-shell .league-info-modal__placeholder {
   margin: 0;

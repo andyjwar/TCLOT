@@ -515,6 +515,7 @@ import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
 import { SettingsPage } from './SettingsPage'
+import { usePushNotifications } from './usePushNotifications.js'
 import { BrandHeaderWordmark } from './BrandHeaderWordmark'
 import { LeagueInfoModal } from './LeagueInfoModal'
 import { GlobalSearch } from './GlobalSearch.jsx'
@@ -2798,6 +2799,8 @@ function App() {
     }
   }, [])
 
+  const pushNotifications = usePushNotifications({ leagueEntries })
+
   const onBootstrapLiveMeta = useCallback((meta) => {
     setFplLiveLandingGw(meta?.currentGw ?? null)
   }, [])
@@ -4107,6 +4110,7 @@ function App() {
               onThemePrefChange={setThemePref}
               defaultTab={defaultTabPref}
               onDefaultTabChange={setDefaultTabPref}
+              push={pushNotifications}
             />
           ) : null}
 
@@ -4266,6 +4270,7 @@ function App() {
         onThemePrefChange={setThemePref}
         defaultTab={defaultTabPref}
         onDefaultTabChange={setDefaultTabPref}
+        push={pushNotifications}
       />
     </div>
     </TeamDetailOverlayProvider>

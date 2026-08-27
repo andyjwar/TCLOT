@@ -101,6 +101,7 @@ function liInitials(text, count = 2) {
  *   onThemePrefChange: (t: 'light' | 'dark' | 'system' | 'ceefax') => void,
  *   defaultTab: string,
  *   onDefaultTabChange: (id: string) => void,
+ *   push?: ReturnType<typeof import('./usePushNotifications.js').usePushNotifications>,
  * }} props
  */
 export function LeagueInfoModal({
@@ -114,6 +115,7 @@ export function LeagueInfoModal({
   onThemePrefChange,
   defaultTab,
   onDefaultTabChange,
+  push,
 }) {
   const closeBtnRef = useRef(null)
   const modalRef = useRef(null)
@@ -402,6 +404,7 @@ export function LeagueInfoModal({
                 onThemePrefChange={onThemePrefChange}
                 defaultTab={defaultTab}
                 onDefaultTabChange={onDefaultTabChange}
+                push={push}
               />
             </div>
           ) : null}
