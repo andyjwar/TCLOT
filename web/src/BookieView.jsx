@@ -587,11 +587,6 @@ function WeeklyMarkets({
           const away = standingsMobileTeamName(p.awayName)
           const matchLabel = `${home} v ${away}`
           const boards = boardsByMatch.get(`${p.homeEntryId}-${p.awayEntryId}`) ?? []
-          const specialBits = boards.map((b) =>
-            b.kind === 'scorer'
-              ? `${b.payload?.selections?.length ?? 0} scorers`
-              : `${b.payload?.selections?.length ?? 0} top pts`,
-          )
           const pickFor = (selection, label, odds) => () =>
             onPick({
               marketId: m.id,
@@ -627,9 +622,6 @@ function WeeklyMarkets({
                     />
                   </span>
                 </span>
-                {specialBits.length > 0 ? (
-                  <span className="bookie-punter__meta tabular">{specialBits.join(' · ')}</span>
-                ) : null}
               </summary>
               <div className="bookie-fixture__body">
                 <div className="bookie-market__odds" role="group" aria-label="Match odds">
