@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   TRADE_MIN_STATS,
   TRADE_MAX_STATS,
+  TRADE_MAX_PLAYERS_PER_SIDE,
   DEFAULT_TRADE_STAT_IDS,
   seasonShortLabel,
   normalizeTradeStatSelection,
@@ -17,6 +18,8 @@ import {
   polygonPath,
   formatTradeStat,
   toggleTradeStat,
+  lockedTradePosition,
+  canToggleTradePlayer,
 } from './tradeToolStats.js'
 
 const CURRENT = {
@@ -158,4 +161,40 @@ test('toggleTradeStat — respects min and max', () => {
   assert.ok(added.includes('xa'))
   const atMax = ['pts', 'goals', 'assists', 'cs', 'bonus', 'xg', 'xa', 'minutes']
   assert.equal(toggleTradeStat(atMax, 'starts').length, TRADE_MAX_STATS)
+})
+
+test('lockedTradePosition — first pick locks GKP/DEF/MID/FWD', () => {
+  assert.equal(lockedTradePosition([]), null)
+  assert.equal(lockedTradePosition([{ positionType: 1 }]), 1)
+  assert.equal(lockedTradePosition([{ positionType: 3 }, { positionType: 1 }]), 3)
+  assert.equal(lockedTradePosition([{ positionType: 9 }]), null)
+})
+
+test('canToggleTradePlayer — same position only once locked', () => {
+  const gk = { element: 10, positionType: 1 }
+  const mid = { element: 20, positionType: 3 }
+  assert.equal(canToggleTradePlayer(gk, { selectedIds: [], lockedPosition: null }), true)
+  assert.equal(
+    canToggleTradePlayer(mid, { selectedIds: [10], lockedPosition: 1 }),
+    false,
+  )
+  assert.equal(
+    canToggleTradePlayer(gk, { selectedIds: [10], lockedPosition: 1 }),
+    true,
+  )
+  assert.equal(
+    canToggleTradePlayer({ element: 11, positionType: 1 }, {
+      selectedIds: [10],
+      lockedPosition: 1,
+    }),
+    true,
+  )
+  const full = Array.from({ length: TRADE_MAX_PLAYERS_PER_SIDE }, (_, i) => 100 + i)
+  assert.equal(
+    canToggleTradePlayer({ element: 12, positionType: 1 }, {
+      selectedIds: full,
+      lockedPosition: 1,
+    }),
+    false,
+  )
 })

@@ -479,3 +479,45 @@ export function toggleTradeStat(selectedIds, statId) {
   if (current.length >= TRADE_MAX_STATS) return current
   return [...current, statId]
 }
+
+/**
+ * First selected player locks the trade to that FPL position (GKP/DEF/MID/FWD).
+ * Draft trades are same-position; mixed picks are ignored beyond the first.
+ *
+ * @param {{ positionType?: number }[]} players
+ * @returns {1|2|3|4|null}
+ */
+export function lockedTradePosition(players) {
+  for (const p of players || []) {
+    const type = Number(p?.positionType)
+    if (type === 1 || type === 2 || type === 3 || type === 4) {
+      return /** @type {1|2|3|4} */ (type)
+    }
+  }
+  return null
+}
+
+/**
+ * Deselect is always allowed. Adding a player requires room on that side
+ * and a matching position once the trade is locked.
+ *
+ * @param {{ element?: number, positionType?: number } | null | undefined} player
+ * @param {{
+ *   selectedIds?: number[],
+ *   lockedPosition?: number | null,
+ *   maxPerSide?: number,
+ * }} opts
+ */
+export function canToggleTradePlayer(player, opts = {}) {
+  const id = Number(player?.element)
+  if (!Number.isFinite(id)) return false
+  const selectedIds = opts.selectedIds || []
+  if (selectedIds.includes(id)) return true
+  const max = opts.maxPerSide ?? TRADE_MAX_PLAYERS_PER_SIDE
+  if (selectedIds.length >= max) return false
+  const locked = opts.lockedPosition
+  if (locked != null && Number(player?.positionType) !== Number(locked)) {
+    return false
+  }
+  return true
+}

@@ -24,13 +24,16 @@ import {
   TRADE_STAT_GROUPS,
   aggregateSideStats,
   buildRadarAxes,
+  canToggleTradePlayer,
   formatTradeStat,
   indexElementsByCode,
   joinPriorByCode,
+  lockedTradePosition,
   normalizeTradeStatSelection,
   seasonShortLabel,
   toggleTradeStat,
 } from './tradeToolStats.js'
+import { useMobileLayout } from './usePortraitMobile.js'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
 import './TradeTool.css'
 
@@ -188,12 +191,81 @@ function useTradeToolData({
   return state
 }
 
+function TradeStatsOptions({ selection, onChange }) {
+  return TRADE_STAT_GROUPS.map((group) => (
+    <section key={group.id} className="trade-tool__stats-group">
+      <h4>{group.label}</h4>
+      <div className="trade-tool__stats-grid">
+        {Object.values(TRADE_STAT_CATALOG)
+          .filter((s) => s.group === group.id)
+          .map((stat) => {
+            const checked = selection.includes(stat.id)
+            const blocked =
+              (!checked && selection.length >= TRADE_MAX_STATS) ||
+              (checked && selection.length <= TRADE_MIN_STATS)
+            return (
+              <label
+                key={stat.id}
+                className={
+                  'trade-tool__stats-opt' +
+                  (checked ? ' is-checked' : '') +
+                  (blocked && !checked ? ' is-disabled' : '')
+                }
+                title={stat.title}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={blocked && !checked}
+                  onChange={() => onChange(toggleTradeStat(selection, stat.id))}
+                />
+                {stat.label}
+                <span className="trade-tool__stats-opt-title">{stat.title}</span>
+              </label>
+            )
+          })}
+      </div>
+    </section>
+  ))
+}
+
 function TradeStatsPill({ selectedIds, onChange }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef(null)
+  const sheetRef = useRef(null)
+  const mobile = useMobileLayout()
   const selection = normalizeTradeStatSelection(selectedIds)
   const dismiss = useCallback(() => setOpen(false), [])
-  usePillMenuDismiss(rootRef, open, dismiss)
+  usePillMenuDismiss(rootRef, open && !mobile, dismiss)
+
+  useEffect(() => {
+    if (!open) return undefined
+    const onKey = (ev) => {
+      if (ev.key === 'Escape') dismiss()
+    }
+    document.addEventListener('keydown', onKey)
+    return () => document.removeEventListener('keydown', onKey)
+  }, [open, dismiss])
+
+  useEffect(() => {
+    if (!open || !mobile) return undefined
+    const prev = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    const node = sheetRef.current
+    node?.focus()
+    return () => {
+      document.body.style.overflow = prev
+    }
+  }, [open, mobile])
+
+  const head = (
+    <div className="trade-tool__stats-head">
+      <span>Radar axes</span>
+      <span className="muted">
+        {selection.length} of {TRADE_MAX_STATS} · min {TRADE_MIN_STATS}
+      </span>
+    </div>
+  )
 
   return (
     <div className="trade-tool__stats-pill" ref={rootRef}>
@@ -212,49 +284,38 @@ function TradeStatsPill({ selectedIds, onChange }) {
           {selection.length}/{TRADE_MAX_STATS}
         </span>
       </button>
-      {open ? (
+      {open && !mobile ? (
         <div className="trade-tool__stats-panel" role="dialog" aria-label="Radar stats">
-          <div className="trade-tool__stats-head">
-            <span>Radar axes</span>
-            <span className="muted">
-              {selection.length} of {TRADE_MAX_STATS} · min {TRADE_MIN_STATS}
-            </span>
+          {head}
+          <TradeStatsOptions selection={selection} onChange={onChange} />
+        </div>
+      ) : null}
+      {open && mobile ? (
+        <div className="trade-tool__stats-overlay">
+          <button
+            type="button"
+            className="trade-tool__stats-scrim"
+            aria-label="Close radar stats"
+            onClick={dismiss}
+          />
+          <div
+            ref={sheetRef}
+            className="trade-tool__stats-sheet"
+            role="dialog"
+            aria-label="Radar stats"
+            tabIndex={-1}
+          >
+            {head}
+            <button
+              type="button"
+              className="trade-tool__stats-close"
+              aria-label="Close"
+              onClick={dismiss}
+            >
+              ×
+            </button>
+            <TradeStatsOptions selection={selection} onChange={onChange} />
           </div>
-          {TRADE_STAT_GROUPS.map((group) => (
-            <section key={group.id} className="trade-tool__stats-group">
-              <h4>{group.label}</h4>
-              <div className="trade-tool__stats-grid">
-                {Object.values(TRADE_STAT_CATALOG)
-                  .filter((s) => s.group === group.id)
-                  .map((stat) => {
-                    const checked = selection.includes(stat.id)
-                    const blocked =
-                      (!checked && selection.length >= TRADE_MAX_STATS) ||
-                      (checked && selection.length <= TRADE_MIN_STATS)
-                    return (
-                      <label
-                        key={stat.id}
-                        className={
-                          'trade-tool__stats-opt' +
-                          (checked ? ' is-checked' : '') +
-                          (blocked && !checked ? ' is-disabled' : '')
-                        }
-                        title={stat.title}
-                      >
-                        <input
-                          type="checkbox"
-                          checked={checked}
-                          disabled={blocked && !checked}
-                          onChange={() => onChange(toggleTradeStat(selection, stat.id))}
-                        />
-                        {stat.label}
-                        <span className="trade-tool__stats-opt-title">{stat.title}</span>
-                      </label>
-                    )
-                  })}
-              </div>
-            </section>
-          ))}
         </div>
       ) : null}
     </div>
@@ -279,16 +340,26 @@ function PickedChip({ player, side, onRemove }) {
   )
 }
 
-function SquadRow({ player, selected, side, onToggle, missingPrior, seasonMode }) {
+function SquadRow({
+  player,
+  selected,
+  side,
+  onToggle,
+  missingPrior,
+  seasonMode,
+  disabled,
+}) {
   return (
     <button
       type="button"
       className={
         'trade-tool__row' +
-        (selected ? ` is-selected is-selected--${side}` : '')
+        (selected ? ` is-selected is-selected--${side}` : '') +
+        (disabled ? ' is-disabled' : '')
       }
       aria-pressed={selected}
-      onClick={() => onToggle(player.element)}
+      disabled={disabled}
+      onClick={() => onToggle(player)}
     >
       <PlayerKit
         shirtUrl={player.shirtUrl}
@@ -365,12 +436,6 @@ export function TradeTool({
   )
   const [statIds, setStatIds] = useState(() => [...DEFAULT_TRADE_STAT_IDS])
 
-  useEffect(() => {
-    if (entryA != null || entryB != null || managers.length < 2) return
-    setEntryA(Number(managers[0].id))
-    setEntryB(Number(managers[1].id))
-  }, [managers, entryA, entryB])
-
   const pickManager = (side, raw) => {
     const next = Number(raw)
     if (!Number.isFinite(next)) return
@@ -395,9 +460,21 @@ export function TradeTool({
   const squadB = squadsByEntry.get(Number(entryB)) || []
   const pickedA = squadA.filter((p) => idsA.includes(p.element))
   const pickedB = squadB.filter((p) => idsB.includes(p.element))
+  const lockedPos = lockedTradePosition([...pickedA, ...pickedB])
+  const lockedLabel = lockedPos != null ? POS_LABEL[lockedPos] : null
 
-  const togglePlayer = (side, elementId) => {
-    const id = Number(elementId)
+  const togglePlayer = (side, player) => {
+    const id = Number(player?.element)
+    if (!Number.isFinite(id)) return
+    const sideIds = side === 'a' ? idsA : idsB
+    if (
+      !canToggleTradePlayer(player, {
+        selectedIds: sideIds,
+        lockedPosition: lockedPos,
+      })
+    ) {
+      return
+    }
     if (side === 'a') {
       setIdsB((prev) => prev.filter((x) => x !== id))
       setIdsA((prev) => {
@@ -436,39 +513,68 @@ export function TradeTool({
   const priorShort = seasonShortLabel(priorSeasonLabel) || 'Last season'
   const showRadar = pickedA.length > 0 && pickedB.length > 0
 
+  const optionsFor = (side) => {
+    const taken = side === 'a' ? entryB : entryA
+    return managerOptions.map((o) => ({
+      ...o,
+      disabled: taken != null && Number(o.value) === Number(taken),
+    }))
+  }
+
   const renderSquad = (side) => {
     const entryId = side === 'a' ? entryA : entryB
     const squad = side === 'a' ? squadA : squadB
     const selected = side === 'a' ? idsA : idsB
+    const empty = entryId == null
     const groups = POSITION_ORDER.map((type) => ({
       type,
       label: POS_LABEL[type],
       players: squad.filter((p) => p.positionType === type),
-    })).filter((g) => g.players.length)
+    })).filter((g) => {
+      if (!g.players.length) return false
+      if (lockedPos != null && g.type !== lockedPos) return false
+      return true
+    })
 
     return (
-      <div className={`trade-tool__side trade-tool__side--${side}`}>
+      <div
+        className={
+          `trade-tool__side trade-tool__side--${side}` +
+          (empty ? ' trade-tool__side--empty' : '')
+        }
+      >
         <div className="trade-tool__side-head">
-          <TeamAvatar
-            entryId={entryId}
-            name={side === 'a' ? nameA : nameB}
-            size="sm"
-            logoMap={teamLogoMap}
-            kitIndexByEntry={kitIndexByEntry}
-          />
+          {empty ? null : (
+            <TeamAvatar
+              entryId={entryId}
+              name={side === 'a' ? nameA : nameB}
+              size="sm"
+              logoMap={teamLogoMap}
+              kitIndexByEntry={kitIndexByEntry}
+            />
+          )}
           <CompactSelectPill
-            ariaLabel={side === 'a' ? 'Give manager' : 'Get manager'}
+            ariaLabel={side === 'a' ? 'Give team' : 'Get team'}
             value={entryId != null ? String(entryId) : ''}
             onChange={(v) => pickManager(side, v)}
-            options={managerOptions}
-            placeholder="Pick a manager"
+            options={optionsFor(side)}
+            placeholder="Pick a team"
             isActive={entryId != null}
+            menuMaxWidth="18rem"
           />
         </div>
-        {status === 'loading' ? (
+        {empty ? (
+          <p className="muted muted--tight trade-tool__side-hint">
+            Choose a team to see the squad.
+          </p>
+        ) : status === 'loading' ? (
           <p className="muted muted--tight">Loading squad…</p>
         ) : !groups.length ? (
-          <p className="muted muted--tight">No squad on record yet.</p>
+          <p className="muted muted--tight">
+            {lockedLabel
+              ? `No ${lockedLabel} in this squad.`
+              : 'No squad on record yet.'}
+          </p>
         ) : (
           <div className="trade-tool__roster">
             {groups.map((g) => (
@@ -480,9 +586,15 @@ export function TradeTool({
                     player={p}
                     selected={selected.includes(p.element)}
                     side={side}
-                    onToggle={(id) => togglePlayer(side, id)}
+                    onToggle={(player) => togglePlayer(side, player)}
                     missingPrior={!p.hasPrior}
                     seasonMode={seasonMode}
+                    disabled={
+                      !canToggleTradePlayer(p, {
+                        selectedIds: selected,
+                        lockedPosition: lockedPos,
+                      })
+                    }
                   />
                 ))}
               </div>
@@ -502,8 +614,9 @@ export function TradeTool({
           </h2>
         </div>
         <p className="tile-hint muted tile-hint--tight">
-          Build a proposed swap and compare season stats. Nothing is sent to FPL
-          Draft — agree the deal, then offer it in the official app.
+          Pick a team, then its squad. Trades are same position only (GKP for
+          GKP, MID for MID). Nothing is sent to FPL Draft — agree the deal,
+          then offer it in the official app.
         </p>
 
         <div className="trade-tool__controls">
@@ -543,6 +656,11 @@ export function TradeTool({
           ) : null}
           <TradeStatsPill selectedIds={statIds} onChange={setStatIds} />
         </div>
+        {lockedLabel ? (
+          <p className="trade-tool__lock muted muted--tight">
+            Same position only: {lockedLabel}. Clear picks to switch.
+          </p>
+        ) : null}
 
         {status === 'error' ? (
           <p className="muted muted--tight" role="alert">
@@ -566,11 +684,11 @@ export function TradeTool({
                       key={p.element}
                       player={p}
                       side="a"
-                      onRemove={(id) => togglePlayer('a', id)}
+                      onRemove={() => togglePlayer('a', p)}
                     />
                   ))
                 ) : (
-                  <span className="muted">Tap players to give</span>
+                  <span className="muted">Pick a team, then a player to give</span>
                 )}
               </div>
               <span className="trade-tool__picked-swap" aria-hidden>
@@ -583,11 +701,11 @@ export function TradeTool({
                       key={p.element}
                       player={p}
                       side="b"
-                      onRemove={(id) => togglePlayer('b', id)}
+                      onRemove={() => togglePlayer('b', p)}
                     />
                   ))
                 ) : (
-                  <span className="muted">Tap players to get</span>
+                  <span className="muted">Pick a team, then a player to get</span>
                 )}
               </div>
             </div>
@@ -637,7 +755,7 @@ export function TradeTool({
               </>
             ) : (
               <p className="muted muted--tight trade-tool__empty">
-                Pick at least one player on each side to compare.
+                Pick a team on each side, then at least one player each to compare.
               </p>
             )}
           </div>
