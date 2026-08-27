@@ -671,6 +671,10 @@ body[data-tclot-theme='dark'] .tc-card {
 .tc-squad__ch--name {
   text-align: left;
 }
+/* Centered over the full-width season pills below it. */
+.tc-squad__ch--season {
+  text-align: center;
+}
 .tc-squad__group {
   margin-top: 12px;
 }
@@ -752,7 +756,18 @@ body[data-tclot-theme='dark'] .tc-card {
 .tc-squad__cell--gw {
   color: var(--tc-brand);
 }
+/* Season column wears the same dark-green glass pill as the header total. */
 .tc-squad__cell--season {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: stretch;
+  box-sizing: border-box;
+  padding: 0.12em 0.3em;
+  border-radius: 0.35em;
+  line-height: 1.3;
   color: var(--tc-text-strong);
   font-weight: 800;
+  background: color-mix(in srgb, var(--tc-pos) 18%, transparent);
+  box-shadow: 0 0 0 0.15em color-mix(in srgb, var(--tc-pos) 15%, transparent);
 }
