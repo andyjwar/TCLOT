@@ -669,7 +669,9 @@ function PortraitWireTileList({
                 title={col.title ? `${col.title} · tap to sort` : 'Tap to sort'}
                 onClick={() => onColumnSort(col.id)}
               >
-                <span className="players-wire-tile-colhead__label">{col.label}</span>
+                <span className="players-wire-tile-colhead__label">
+                  {col.shortLabel || col.label}
+                </span>
                 {/* Always reserve the arrow slot so switching the sorted
                  * column doesn't nudge labels sideways and throw the
                  * header out of line with the values below. */}
@@ -1450,6 +1452,17 @@ export function PlayersWorkbench({
                   .filter(Boolean)
                   .join(' ')
 
+                if (col.id === 'gap') {
+                  return (
+                    <span
+                      key={col.id}
+                      className={`${thClass} players-table__th--gap`}
+                      role="presentation"
+                      aria-hidden="true"
+                    />
+                  )
+                }
+
                 if (!colSortKey) {
                   return (
                     <span key={col.id} className={thClass} role="columnheader" title={col.title}>
@@ -1527,6 +1540,21 @@ export function PlayersWorkbench({
                   >
                     {visibleCols.map((col, colIndex) => {
                       const groupStart = wireColumnIsGroupStart(col.id, visibleCols, colIndex)
+                      if (col.id === 'gap') {
+                        return (
+                          <span
+                            key={col.id}
+                            className={wireCellClass(
+                              col.id,
+                              activeSortColId,
+                              'players-table__cell--gap',
+                              groupStart,
+                            )}
+                            role="presentation"
+                            aria-hidden="true"
+                          />
+                        )
+                      }
                       if (col.id === 'player') {
                         const owner = ownerByElementId.get(elId)
                         return (
