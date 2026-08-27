@@ -874,6 +874,13 @@ body[data-tclot-theme='dark'] .players-table__head-row {
   text-align: center;
 }
 
+.players-table__head-row > .players-table__th--gap,
+.players-table__row > .players-table__cell--gap {
+  padding: 0;
+  min-width: 0;
+  pointer-events: none;
+}
+
 .players-table__th-btn {
   /* Default: right-align label + sort arrow so numeric column headers match
    * their right-aligned data cells (Pts, stat cols). Per-column overrides
@@ -915,19 +922,17 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 
 .players-table__th--sorted {
   color: var(--text-strong);
-  font-weight: 800;
-}
-
-.players-table__th--sorted .players-table__th-label {
-  font-weight: 800;
 }
 
 .players-table__th-label {
   min-width: 0;
+  white-space: nowrap;
 }
 
 .players-table__sort-indicator {
   flex-shrink: 0;
+  width: 0.7rem;
+  text-align: center;
   font-size: 0.62rem;
   line-height: 1;
   color: var(--brand);

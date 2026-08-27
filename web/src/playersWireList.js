@@ -19,10 +19,10 @@ export const PORTRAIT_POS_LABEL_SINGLE = { 1: 'G', 2: 'D', 3: 'M', 4: 'F' }
  * Defaults per filter therefore stay focused on numeric stats (Pts is always
  * rendered first, ahead of these). */
 export const PORTRAIT_DEFAULT_WIRE_STAT_IDS_BY_POSITION = {
-  all: ['gp', 'goals', 'assists', 'defConHits'],
+  all: ['gp', 'sixtyPlus', 'goals', 'assists', 'defConHits'],
   '1': ['starts', 'cs', 'savePts', 'bonus'],
-  '2': ['goals', 'assists', 'cs', 'defConHits'],
-  '3': ['goals', 'assists', 'cs', 'defConHits'],
+  '2': ['goals', 'assists', 'defConHits', 'defConTotal'],
+  '3': ['goals', 'assists', 'defConHits', 'defConTotal'],
   '4': ['sixtyPlus', 'goals', 'assists', 'bonus'],
 }
 
@@ -51,6 +51,7 @@ export const WIRE_POSITION_PILLS = [
 /** @typedef {object} WireStatDef
  * @property {string} id
  * @property {string} label
+ * @property {string} [shortLabel]
  * @property {string} [title]
  * @property {WireStatGroupId} group
  * @property {WireSortKey} sortKey
@@ -62,26 +63,25 @@ export const WIRE_POSITION_PILLS = [
 export const WIRE_MAX_STAT_COLUMNS = 8
 
 export const WIRE_STAT_SELECTION_KEY = 'tclot-wire-stat-columns'
-const WIRE_STAT_SELECTION_V2_KEY = 'tclot-wire-stat-columns-v4'
+/** Bumped to v6 so All-tab defaults become GP, 60+, G, A, DC (FPL). */
+const WIRE_STAT_SELECTION_V2_KEY = 'tclot-wire-stat-columns-v6'
 
-/** Default toggleable stat columns on the All tab (Pts is always fixed). */
+/** Default toggleable stat columns on the All tab (Pts is always fixed). Five stats. */
 export const DEFAULT_WIRE_STAT_IDS = [
   'gp',
   'sixtyPlus',
   'goals',
   'assists',
-  'cs',
-  'xg',
-  'xa',
+  'defConHits',
 ]
 
 /** Default table columns per position tab — applied when switching GK/DEF/MID/FWD. */
 export const DEFAULT_WIRE_STAT_IDS_BY_POSITION = {
   all: DEFAULT_WIRE_STAT_IDS,
   '1': ['gp', 'starts', 'cs', 'savePts', 'bonus'],
-  '2': ['gp', 'sixtyPlus', 'goals', 'assists', 'cs', 'defConHits', 'bonus'],
-  '3': ['gp', 'sixtyPlus', 'goals', 'assists', 'cs', 'defConHits', 'xg', 'xa'],
-  '4': ['gp', 'sixtyPlus', 'goals', 'assists', 'xg', 'xa', 'bonus'],
+  '2': ['gp', 'cs', 'goals', 'defConHits', 'defConTotal'],
+  '3': ['gp', 'goals', 'assists', 'defConHits', 'defConTotal'],
+  '4': ['gp', 'goals', 'assists', 'xg', 'xa'],
 }
 
 export const WIRE_STAT_GROUP_LABELS = {
@@ -107,13 +107,13 @@ const POSITION_PICKER_PROFILES = {
   },
   '2': {
     promotedLabel: 'Top for DEF',
-    promote: ['cs', 'xgc', 'gc', 'defConHits'],
-    hint: 'Clean sheets, xGC, GC, and DefCon surfaced first while the DEF tab is active.',
+    promote: ['cs', 'xgc', 'gc', 'defConHits', 'defConTotal'],
+    hint: 'Clean sheets, xGC, GC, and both DC stats surfaced first while the DEF tab is active.',
   },
   '3': {
     promotedLabel: 'Top for MID',
-    promote: ['xg', 'xa', 'goals', 'assists', 'defConHits'],
-    hint: 'xG, xA, returns, and DefCon surfaced first while the MID tab is active.',
+    promote: ['xg', 'xa', 'goals', 'assists', 'defConHits', 'defConTotal'],
+    hint: 'xG, xA, returns, and both DC stats surfaced first while the MID tab is active.',
   },
   '4': {
     promotedLabel: 'Top for FWD',
@@ -199,6 +199,7 @@ export const WIRE_STAT_CATALOG = {
   defConHits: {
     id: 'defConHits',
     label: 'DC (FPL)',
+    shortLabel: 'FPL',
     title: 'Gameweeks with DefCon fantasy points (2 pts)',
     group: 'defensive',
     sortKey: 'def_con',
@@ -207,6 +208,7 @@ export const WIRE_STAT_CATALOG = {
   defConTotal: {
     id: 'defConTotal',
     label: 'DC (total)',
+    shortLabel: 'TOT',
     title: 'Defensive contributions — raw season total of qualifying actions',
     group: 'defensive',
     sortKey: 'def_con_total',
@@ -340,13 +342,21 @@ export const SORT_LABELS = {
   xgc: 'xGC',
 }
 
-/** Even flex share for numeric stat columns (player capped so stats spread across the row). */
-const WIRE_STAT_COL = 'minmax(2.15rem, 1fr)'
+/** Numeric stats: wide enough for "DC (FPL)" + sort arrow; no 1fr so they stay packed right. */
+const WIRE_STAT_COL = 'minmax(4.6rem, max-content)'
+const WIRE_PTS_COL = 'minmax(4.25rem, 4.75rem)'
+/** Absorbs leftover width between POS and Pts so score + stats sit on the right. */
+const WIRE_GAP_COLUMN = {
+  id: 'gap',
+  label: '',
+  title: '',
+  width: 'minmax(1.25rem, 1.4fr)',
+}
 
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_BEFORE = [
-  { id: 'player', label: 'Player', title: 'Player', width: 'minmax(11rem, 1.6fr)' },
-  { id: 'pts', label: 'Pts', width: 'minmax(3rem, 52px)' },
+  { id: 'player', label: 'Player', title: 'Player', width: 'minmax(12rem, 1.15fr)' },
+  { id: 'pts', label: 'Pts', width: WIRE_PTS_COL },
 ]
 
 /** Desktop-only Position column injected between Player and Pts. Chip-only. */
@@ -359,7 +369,7 @@ const WIRE_POSITION_COLUMN = {
 
 /** @type {{ id: string, label: string, title?: string, width: string }[]} */
 const WIRE_FIXED_COLUMNS_AFTER = [
-  { id: 'next3', label: 'Next 3', width: 'minmax(6.25rem, 1.65fr)' },
+  { id: 'next3', label: 'Next 3', width: 'minmax(6.25rem, max-content)' },
 ]
 
 const WIRE_NEXT_FIXTURE_PORTRAIT = {
@@ -390,6 +400,7 @@ function wireStatToColumn(statId) {
   return {
     id: def.id,
     label: def.label,
+    shortLabel: def.shortLabel,
     title: def.title,
     width: WIRE_STAT_COL,
     hideWhenPos: def.hideWhenPos,
@@ -509,11 +520,6 @@ function readWireStatSelectionsMap() {
         return parsed
       }
     }
-    const legacy = localStorage.getItem(WIRE_STAT_SELECTION_KEY)
-    if (legacy) {
-      const parsed = JSON.parse(legacy)
-      if (Array.isArray(parsed)) return { all: parsed }
-    }
   } catch {
     /* ignore */
   }
@@ -587,11 +593,13 @@ export function visibleWireColumns(positionFilter, selectedStatIds, options = {}
         return c
       })
     : (() => {
-        // Desktop column order: Player → POS → Pts → stats → Next3
+        // Desktop: Player → POS → [gap] → Pts → stats → Next3
+        // The gap track eats leftover width so Pts + stats sit on the right.
         const out = []
         for (const c of WIRE_FIXED_COLUMNS_BEFORE) {
           if (c.id === 'pts') {
             out.push(WIRE_POSITION_COLUMN)
+            out.push(WIRE_GAP_COLUMN)
           }
           out.push(c)
         }
@@ -994,13 +1002,16 @@ export function wireColumnToSortKey(colId) {
       return 'next3'
     case 'pts':
       return 'total_points'
+    case 'gap':
+    case 'pos':
+      return null
     default:
       return null
   }
 }
 
 /** Wire table column groups for vertical separators: identity | summary | detail stats | fixtures */
-const WIRE_IDENTITY_COLS = new Set(['player', 'pos'])
+const WIRE_IDENTITY_COLS = new Set(['player', 'pos', 'gap'])
 const WIRE_SUMMARY_COLS = new Set(['pts', 'gp'])
 const WIRE_FIXTURE_COLS = new Set(['next3'])
 
