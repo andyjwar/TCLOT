@@ -1,5 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { draftResourceUrl } from './fplDraftUrl.js'
+import { leagueDataBase } from './seasonArchive.js'
+
+function parseBootstrapEvents(j) {
+  const ev = j?.events
+  const c = ev?.current != null ? Number(ev.current) : null
+  const n = ev?.next != null ? Number(ev.next) : null
+  const list = Array.isArray(ev?.data) ? ev.data : Array.isArray(ev) ? ev : null
+  return {
+    current: Number.isFinite(c) && c >= 1 && c <= 38 ? c : null,
+    next: Number.isFinite(n) && n >= 1 && n <= 38 ? n : null,
+    events: Array.isArray(list) ? list : null,
+  }
+}
 
 /**
  * Draft `bootstrap-static` → `events.current` / `events.next` for UI that must not depend on
@@ -22,23 +35,28 @@ export function useDraftBootstrapEvents() {
   const [events, setEvents] = useState(null)
 
   const load = useCallback(async () => {
+    const apply = (parsed) => {
+      setCurrent(parsed.current)
+      setNext(parsed.next)
+      setEvents(parsed.events)
+    }
     try {
       const r = await fetch(draftResourceUrl('bootstrap-static'), {
         cache: 'no-store',
       })
+      if (r.ok) {
+        apply(parseBootstrapEvents(await r.json()))
+        return
+      }
+    } catch {
+      /* fall through to committed calendar */
+    }
+    try {
+      const r = await fetch(`${leagueDataBase()}/bootstrap_draft.json`, {
+        cache: 'no-store',
+      })
       if (!r.ok) return
-      const j = await r.json()
-      const ev = j?.events
-      const c = ev?.current != null ? Number(ev.current) : null
-      const n = ev?.next != null ? Number(ev.next) : null
-      setCurrent(Number.isFinite(c) && c >= 1 && c <= 38 ? c : null)
-      setNext(Number.isFinite(n) && n >= 1 && n <= 38 ? n : null)
-      const list = Array.isArray(ev?.data)
-        ? ev.data
-        : Array.isArray(ev)
-          ? ev
-          : null
-      setEvents(Array.isArray(list) ? list : null)
+      apply(parseBootstrapEvents(await r.json()))
     } catch {
       /* ignore — static waiver JSON still works */
     }
