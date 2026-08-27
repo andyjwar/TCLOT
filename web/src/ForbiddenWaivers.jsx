@@ -43,65 +43,67 @@ export function ForbiddenWaivers() {
       className="tile tile--compact forbidden-waivers"
       aria-labelledby="forbidden-waivers-heading"
     >
-      <div className="tile-head-row tile-head-row--tight">
-        <h2 id="forbidden-waivers-heading" className="tile-title tile-title--sm">
-          Forbidden waivers
-        </h2>
-        {players.length > 0 ? (
-          <span className="forbidden-waivers__count tabular">{players.length}</span>
-        ) : null}
-      </div>
-      <p className="tile-hint muted tile-hint--tight">
-        {closed
-          ? `The GW${data.windowClosesAfterGw} window has closed — this list is final. Players added to the game from now on are fair game.`
-          : 'League rule: anyone added to the FPL game after Aug 18 (3:30 PM EST) cannot be picked up by any team until GW8 waivers.'}
-      </p>
-      {players.length === 0 ? (
-        <p className="forbidden-waivers__empty">
-          No new players have entered the game since the cutoff.
+      <details className="forbidden-waivers__fold">
+        <summary className="forbidden-waivers__summary">
+          <h2 id="forbidden-waivers-heading" className="tile-title tile-title--sm">
+            Forbidden waivers
+          </h2>
+          {players.length > 0 ? (
+            <span className="forbidden-waivers__count tabular">{players.length}</span>
+          ) : null}
+        </summary>
+        <p className="tile-hint muted tile-hint--tight">
+          {closed
+            ? `The GW${data.windowClosesAfterGw} window has closed — this list is final. Players added to the game from now on are fair game.`
+            : 'League rule: anyone added to the FPL game after Aug 18 (3:30 PM EST) cannot be picked up by any team until GW8 waivers.'}
         </p>
-      ) : (
-        <ul className="forbidden-waivers__list">
-          {players
-            .slice()
-            .sort(
-              (a, b) =>
-                (POS_RANK[a.position] ?? 5) - (POS_RANK[b.position] ?? 5) ||
-                (a.fullName || a.webName || '').localeCompare(b.fullName || b.webName || ''),
-            )
-            .map((p) => {
-              const badge = plClubBadgeUrl(p.teamCode)
-              return (
-                <li key={p.id} className="forbidden-waivers__row">
-                  {isCeefax ? (
-                    <span className="forbidden-waivers__badge forbidden-waivers__badge--code">
-                      {p.team || ''}
-                    </span>
-                  ) : badge ? (
-                    <img
-                      className="forbidden-waivers__badge"
-                      src={badge}
-                      alt={p.team || ''}
-                      loading="lazy"
-                      width="20"
-                      height="20"
-                    />
-                  ) : (
-                    <span className="forbidden-waivers__badge" aria-hidden />
-                  )}
-                  <span className="forbidden-waivers__name" title={p.fullName}>
-                    {p.fullName || p.webName}
-                  </span>
-                  <span
-                    className={`forbidden-waivers__pos forbidden-waivers__pos--${p.position.toLowerCase()}`}
-                  >
-                    {p.position}
-                  </span>
-                </li>
+        {players.length === 0 ? (
+          <p className="forbidden-waivers__empty">
+            No new players have entered the game since the cutoff.
+          </p>
+        ) : (
+          <ul className="forbidden-waivers__list">
+            {players
+              .slice()
+              .sort(
+                (a, b) =>
+                  (POS_RANK[a.position] ?? 5) - (POS_RANK[b.position] ?? 5) ||
+                  (a.fullName || a.webName || '').localeCompare(b.fullName || b.webName || ''),
               )
-            })}
-        </ul>
-      )}
+              .map((p) => {
+                const badge = plClubBadgeUrl(p.teamCode)
+                return (
+                  <li key={p.id} className="forbidden-waivers__row">
+                    {isCeefax ? (
+                      <span className="forbidden-waivers__badge forbidden-waivers__badge--code">
+                        {p.team || ''}
+                      </span>
+                    ) : badge ? (
+                      <img
+                        className="forbidden-waivers__badge"
+                        src={badge}
+                        alt={p.team || ''}
+                        loading="lazy"
+                        width="20"
+                        height="20"
+                      />
+                    ) : (
+                      <span className="forbidden-waivers__badge" aria-hidden />
+                    )}
+                    <span className="forbidden-waivers__name" title={p.fullName}>
+                      {p.fullName || p.webName}
+                    </span>
+                    <span
+                      className={`forbidden-waivers__pos forbidden-waivers__pos--${p.position.toLowerCase()}`}
+                    >
+                      {p.position}
+                    </span>
+                  </li>
+                )
+              })}
+          </ul>
+        )}
+      </details>
     </section>
   )
 }

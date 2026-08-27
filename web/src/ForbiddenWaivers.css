@@ -1,4 +1,47 @@
-/* Forbidden Waivers rule tile (Moves → Waivers). */
+/* Forbidden Waivers rule tile (Moves → Waivers). Starts collapsed. */
+
+.forbidden-waivers__fold {
+  margin: 0;
+}
+
+.forbidden-waivers__summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.forbidden-waivers__summary::-webkit-details-marker {
+  display: none;
+}
+
+.forbidden-waivers__summary:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple, #795bfb);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.forbidden-waivers__summary .tile-title {
+  margin: 0;
+}
+
+.forbidden-waivers__summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  margin-left: 4px;
+  border-right: 2px solid var(--fm-muted, #8b93a7);
+  border-bottom: 2px solid var(--fm-muted, #8b93a7);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.forbidden-waivers__fold[open] > .forbidden-waivers__summary::after {
+  transform: rotate(-135deg);
+}
 
 .forbidden-waivers__count {
   margin-left: auto;
