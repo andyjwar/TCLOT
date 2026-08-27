@@ -7,6 +7,7 @@ import {
   elementStatsAreCarryOver,
   formatWireStatValue,
   visibleWireColumns,
+  wireColumnHeaderLabel,
 } from './playersWireList.js'
 
 // Pre-season draft bootstrap: current null, nothing finished.
@@ -126,6 +127,14 @@ test('default All tab is GP, 60+, G, A, DC (FPL)', () => {
   ])
   assert.equal(WIRE_STAT_CATALOG.defConHits.label, 'DC (FPL)')
   assert.equal(WIRE_STAT_CATALOG.defConTotal.label, 'DC (total)')
+})
+
+test('column headers use DC / DC\'s, not FPL / TOT', () => {
+  assert.equal(WIRE_STAT_CATALOG.defConHits.shortLabel, 'DC')
+  assert.equal(WIRE_STAT_CATALOG.defConTotal.shortLabel, "DC's")
+  assert.equal(wireColumnHeaderLabel(WIRE_STAT_CATALOG.defConHits), 'DC')
+  assert.equal(wireColumnHeaderLabel(WIRE_STAT_CATALOG.defConTotal), "DC's")
+  assert.equal(wireColumnHeaderLabel(WIRE_STAT_CATALOG.gp), 'GP')
 })
 
 test('desktop wire inserts a gap so Pts and stats sit to the right of POS', () => {
