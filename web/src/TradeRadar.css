@@ -1,10 +1,16 @@
 .trade-radar {
+  --trade-a: #e08a5e;
+  --trade-b: var(--fm-pitch, #12a15a);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   margin: 0;
   min-width: 0;
+}
+
+.fotmob[data-theme='light'] .trade-radar {
+  --trade-a: #b04f26;
 }
 
 .trade-radar__svg {
@@ -31,13 +37,13 @@
 }
 
 .trade-radar__poly--a {
-  fill: var(--tclot-logo-purple, #795bfb);
-  stroke: var(--tclot-logo-purple, #795bfb);
+  fill: var(--trade-a);
+  stroke: var(--trade-a);
 }
 
 .trade-radar__poly--b {
-  fill: var(--fm-pitch, #12a15a);
-  stroke: var(--fm-pitch, #12a15a);
+  fill: var(--trade-b);
+  stroke: var(--trade-b);
 }
 
 .trade-radar__nums {
@@ -48,11 +54,11 @@
 }
 
 .trade-radar__num--a {
-  fill: var(--brand, #795bfb);
+  fill: var(--trade-a);
 }
 
 .trade-radar__num--b {
-  fill: var(--fm-pitch, #12a15a);
+  fill: var(--trade-b);
 }
 
 .trade-radar__slash {
@@ -84,11 +90,11 @@
 }
 
 .trade-radar__swatch--a {
-  background: var(--brand, #795bfb);
+  background: var(--trade-a);
 }
 
 .trade-radar__swatch--b {
-  background: var(--fm-pitch, #12a15a);
+  background: var(--trade-b);
 }
 
 .fotmob[data-theme='light'] .trade-radar__poly {
@@ -98,9 +104,9 @@
 body[data-tclot-theme='ceefax'] .trade-radar__poly--a,
 body[data-tclot-theme='ceefax'] .trade-radar__num--a,
 body[data-tclot-theme='ceefax'] .trade-radar__swatch--a {
-  fill: var(--text-strong, #fff);
-  background: var(--text-strong, #fff);
-  stroke: var(--text-strong, #fff);
+  fill: #e08a5e;
+  background: #e08a5e;
+  stroke: #e08a5e;
 }
 
 body[data-tclot-theme='ceefax'] .trade-radar__poly--b,

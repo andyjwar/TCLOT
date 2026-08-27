@@ -1,7 +1,14 @@
 .trade-tool {
+  /* Give = rust, get = pitch green — the pair used for data pops on the site. */
+  --trade-a: #e08a5e;
+  --trade-b: var(--fm-pitch, #12a15a);
   display: flex;
   flex-direction: column;
   gap: 14px;
+}
+
+.fotmob[data-theme='light'] .trade-tool {
+  --trade-a: #b04f26;
 }
 
 .trade-tool__controls {
@@ -160,11 +167,11 @@
 }
 
 .trade-tool__side--a {
-  box-shadow: inset 3px 0 0 var(--brand, #795bfb);
+  box-shadow: inset 3px 0 0 var(--trade-a);
 }
 
 .trade-tool__side--b {
-  box-shadow: inset 3px 0 0 var(--fm-pitch, #12a15a);
+  box-shadow: inset 3px 0 0 var(--trade-b);
 }
 
 .trade-tool__side-head {
@@ -220,13 +227,13 @@
 }
 
 .trade-tool__row.is-selected--a {
-  background: color-mix(in srgb, var(--brand, #795bfb) 14%, transparent);
-  border-color: color-mix(in srgb, var(--brand, #795bfb) 40%, var(--fm-border));
+  background: color-mix(in srgb, var(--trade-a) 14%, transparent);
+  border-color: color-mix(in srgb, var(--trade-a) 40%, var(--fm-border));
 }
 
 .trade-tool__row.is-selected--b {
-  background: color-mix(in srgb, var(--fm-pitch, #12a15a) 14%, transparent);
-  border-color: color-mix(in srgb, var(--fm-pitch, #12a15a) 40%, var(--fm-border));
+  background: color-mix(in srgb, var(--trade-b) 14%, transparent);
+  border-color: color-mix(in srgb, var(--trade-b) 40%, var(--fm-border));
 }
 
 .trade-tool__row .pl-kit-badge,
@@ -349,13 +356,13 @@
 }
 
 .trade-tool__chip--a {
-  border-color: color-mix(in srgb, var(--brand, #795bfb) 55%, var(--fm-border));
-  background: color-mix(in srgb, var(--brand, #795bfb) 16%, var(--fm-card));
+  border-color: color-mix(in srgb, var(--trade-a) 55%, var(--fm-border));
+  background: color-mix(in srgb, var(--trade-a) 16%, var(--fm-card));
 }
 
 .trade-tool__chip--b {
-  border-color: color-mix(in srgb, var(--fm-pitch, #12a15a) 55%, var(--fm-border));
-  background: color-mix(in srgb, var(--fm-pitch, #12a15a) 16%, var(--fm-card));
+  border-color: color-mix(in srgb, var(--trade-b) 55%, var(--fm-border));
+  background: color-mix(in srgb, var(--trade-b) 16%, var(--fm-card));
 }
 
 .trade-tool__chip-name {
@@ -406,11 +413,11 @@
 }
 
 .trade-tool__th-a {
-  color: var(--brand, #795bfb);
+  color: var(--trade-a);
 }
 
 .trade-tool__th-b {
-  color: var(--fm-pitch, #12a15a);
+  color: var(--trade-b);
 }
 
 .trade-tool__tr {
@@ -434,11 +441,11 @@
 }
 
 .trade-tool__td.is-pos {
-  color: var(--brand, #795bfb);
+  color: var(--trade-a);
 }
 
 .trade-tool__td.is-neg {
-  color: var(--fm-pitch, #12a15a);
+  color: var(--trade-b);
 }
 
 .trade-tool__empty {

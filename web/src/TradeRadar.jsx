@@ -10,8 +10,7 @@ const LABEL_R = 158
 
 /**
  * Radar comparison of two trade sides. Axes come from `buildRadarAxes`.
- * Side A is brand purple; side B is pitch green — matching the site, not
- * the FIFA blue/green of the reference chart.
+ * Side A is rust; side B is pitch green.
  *
  * @param {{
  *   axes: { id: string, label: string, a: number, b: number, aNorm: number, bNorm: number }[],
