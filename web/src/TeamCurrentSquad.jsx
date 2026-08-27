@@ -59,7 +59,7 @@ export function TeamCurrentSquad({
         <span className="tc-squad__ch tc-squad__ch--name">Player</span>
         <span className="tc-squad__ch">On squad</span>
         <span className="tc-squad__ch">{gwColLabel}</span>
-        <span className="tc-squad__ch">Season</span>
+        <span className="tc-squad__ch tc-squad__ch--season">Season</span>
       </div>
 
       {groups.map((group) => (
