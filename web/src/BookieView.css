@@ -350,18 +350,46 @@
 }
 
 .bookie-player-board__more {
-  margin-top: 8px;
-  padding: 4px 10px;
-  font-size: 0.78rem;
-  border: 1px solid var(--fm-line);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--fm-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 14px;
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: 1.5px solid color-mix(in srgb, var(--fm-pitch) 70%, var(--fm-line));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--fm-pitch) 22%, #fff);
+  color: var(--fm-text-strong, inherit);
   cursor: pointer;
 }
 
+.bookie-player-board__more::after {
+  content: '';
+  width: 0.42em;
+  height: 0.42em;
+  margin-top: -0.12em;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.bookie-player-board__more[aria-expanded='true']::after {
+  margin-top: 0.18em;
+  transform: rotate(-135deg);
+}
+
 .bookie-player-board__more:hover {
-  color: inherit;
+  background: color-mix(in srgb, var(--fm-pitch) 32%, #fff);
+  border-color: var(--fm-pitch);
+}
+
+.bookie-player-board__more:focus-visible {
+  outline: 2px solid var(--fm-pitch);
+  outline-offset: 2px;
 }
 
 /* --- bet slip --- */
