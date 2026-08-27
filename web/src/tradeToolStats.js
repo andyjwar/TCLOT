@@ -495,8 +495,33 @@ export function filterSquadForTrade(squad, lockPosition) {
 }
 
 /**
+ * Encode a Trade Tool side source for the team picker.
+ * Fantasy managers use `entry:<leagueEntryId>`; PL clubs use `club:<teamId>`.
+ *
+ * @param {'entry' | 'club'} kind
+ * @param {number} id
+ * @returns {string}
+ */
+export function encodeTradeSource(kind, id) {
+  const n = Number(id)
+  if (!Number.isFinite(n) || (kind !== 'entry' && kind !== 'club')) return ''
+  return `${kind}:${n}`
+}
+
+/**
+ * @param {string | number | null | undefined} raw
+ * @returns {{ kind: 'entry' | 'club', id: number } | null}
+ */
+export function parseTradeSource(raw) {
+  const m = String(raw ?? '').match(/^(entry|club):(\d+)$/)
+  if (!m) return null
+  return { kind: /** @type {'entry' | 'club'} */ (m[1]), id: Number(m[2]) }
+}
+
+/**
  * Toggle or replace a one-player-per-side pick. A mismatched position is
- * ignored when the other side already has a player selected.
+ * ignored when the other side already has a player selected. The same
+ * element cannot sit on both sides (a club squad can overlap a fantasy squad).
  *
  * @param {{
  *   idsA?: number[],
@@ -531,6 +556,10 @@ export function applyTradePick({
 
   if ((current || []).includes(id)) {
     return isA ? { idsA: [], idsB: [...other] } : { idsA: [...other], idsB: [] }
+  }
+
+  if ((other || []).includes(id)) {
+    return { idsA: [...idsA], idsB: [...idsB] }
   }
 
   if (
