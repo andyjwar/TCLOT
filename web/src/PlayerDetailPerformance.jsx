@@ -4,6 +4,7 @@ import {
   fdrTone,
   formatPerformanceStat,
   historyWasHome,
+  performanceAutoScrollTarget,
   performanceStatCatalog,
   performanceStatValue,
   performanceTableRows,
@@ -147,14 +148,17 @@ export function PlayerDetailPerformance({ el, summaryPayload, teamById }) {
   const playerTeamId = Number(el?.team)
 
   /*
-   * Auto-scroll on Performance tab activation: position the most recent
-   * completed GW row near the top of the visible area so the latest data
-   * is immediately readable instead of forcing the user to scroll past
-   * GW 1. Component remounts when switching tabs, so the effect fires
-   * exactly once per activation; `didAutoScrollRef` guards against firing
-   * twice if `rows` changes mid-mount (e.g. summary payload arrives
-   * after first paint). Subsequent user scrolls aren't fought because
-   * we never re-trigger after the initial scroll for this mount.
+   * Auto-scroll on Performance tab activation: when the most recent
+   * completed GW sits below the fold, pin it just under the sticky
+   * header so the latest data is readable without scrolling past GW 1.
+   * Early in the season that row is already on screen — leave scroll
+   * at 0 so GW1 stays visible (auto-scrolling to GW2 was hiding it).
+   *
+   * Component remounts when switching tabs, so the effect fires once
+   * per activation; `didAutoScrollRef` guards against firing twice if
+   * `rows` changes mid-mount (e.g. summary payload arrives after first
+   * paint). Subsequent user scrolls aren't fought because we never
+   * re-trigger after the initial decision for this mount.
    *
    * "Last completed GW" = highest `gw` where `kind === 'past'`. Scroll
    * is applied via manual `scrollTop` on the table-wrap (see effect
@@ -178,7 +182,6 @@ export function PlayerDetailPerformance({ el, summaryPayload, teamById }) {
     const wrap = tableWrapRef.current
     const row = lastPastRowRef.current
     if (!wrap || !row) return
-    didAutoScrollRef.current = true
     /*
      * Use manual `scrollTop` rather than `scrollIntoView` so the scroll
      * is scoped to the table-wrap container only. `scrollIntoView`
@@ -190,11 +193,21 @@ export function PlayerDetailPerformance({ el, summaryPayload, teamById }) {
      * wrap, so the row's offset within the wrap is `offsetTop`. Sticky
      * `<th>` height (~38px) is subtracted so the row sits just below
      * the pinned header rather than under it.
+     *
+     * Skip the scroll when the last completed row already fits in the
+     * wrap (early season: GW1 + GW2). Otherwise GW1 is pushed above
+     * the sticky header and looks like it disappeared.
      */
     const stickyHeader = wrap.querySelector('thead')
     const headerHeight = stickyHeader instanceof HTMLElement ? stickyHeader.offsetHeight : 0
-    const target = Math.max(0, row.offsetTop - headerHeight - 4)
-    wrap.scrollTop = target
+    const target = performanceAutoScrollTarget({
+      rowOffsetTop: row.offsetTop,
+      rowHeight: row.offsetHeight,
+      headerHeight,
+      wrapClientHeight: wrap.clientHeight,
+    })
+    didAutoScrollRef.current = true
+    if (target != null) wrap.scrollTop = target
   }, [lastPastGw])
 
   return (
