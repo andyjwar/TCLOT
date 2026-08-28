@@ -693,7 +693,7 @@ export function TradeTool({
             <input
               type="search"
               className="trade-tool__search-input"
-              placeholder="Player"
+              placeholder="Search player"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               autoComplete="off"

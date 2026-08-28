@@ -290,11 +290,17 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
 .trade-tool__side-head .cpsp {
   flex: 0 1 auto;
   max-width: min(52%, 12.5rem);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.trade-tool__side-head .cpsp__btn {
+  max-width: 100%;
 }
 
 .trade-tool__search {
-  flex: 1 1 6.5rem;
-  min-width: 0;
+  flex: 1 1 8rem;
+  min-width: 8rem;
 }
 
 .trade-tool__search-input {
@@ -455,18 +461,53 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
 .trade-tool__pos {
   display: inline-flex;
   align-items: center;
-  height: 15px;
-  padding: 0 4px;
-  border-radius: 3px;
+  height: 16px;
+  padding: 0 5px;
+  border-radius: 4px;
   border: 1px solid var(--fm-border);
-  background: var(--fm-surface-2, var(--fm-card));
-  color: var(--fm-muted);
+  background: transparent;
   font-family: 'Geist Mono', 'JetBrains Mono', ui-monospace, monospace;
   font-size: 9px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+}
+
+.trade-tool__pos.trade-tool__pos--GKP {
+  color: #f59e0b;
+  border-color: color-mix(in srgb, #f59e0b 38%, var(--fm-border));
+}
+
+.trade-tool__pos.trade-tool__pos--DEF {
+  color: #22d3ee;
+  border-color: color-mix(in srgb, #22d3ee 38%, var(--fm-border));
+}
+
+.trade-tool__pos.trade-tool__pos--MID {
+  color: #c4b5fd;
+  border-color: color-mix(in srgb, #a78bfa 38%, var(--fm-border));
+}
+
+.trade-tool__pos.trade-tool__pos--FWD {
+  color: #fca5a5;
+  border-color: color-mix(in srgb, #ef4444 38%, var(--fm-border));
+}
+
+.fotmob[data-theme='light'] .trade-tool__pos.trade-tool__pos--GKP {
+  color: #b45309;
+}
+
+.fotmob[data-theme='light'] .trade-tool__pos.trade-tool__pos--DEF {
+  color: #0e7490;
+}
+
+.fotmob[data-theme='light'] .trade-tool__pos.trade-tool__pos--MID {
+  color: #6d28d9;
+}
+
+.fotmob[data-theme='light'] .trade-tool__pos.trade-tool__pos--FWD {
+  color: #b91c1c;
 }
 
 .trade-tool__no-prior {
@@ -617,6 +658,22 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
 }
 
 @media (max-width: 720px) {
+  .trade-tool__side-head {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+  }
+
+  .trade-tool__side-head .cpsp {
+    max-width: none;
+  }
+
+  .trade-tool__search {
+    grid-column: 1 / -1;
+    flex: none;
+    min-width: 0;
+  }
+
   .trade-tool__board {
     grid-template-columns: 1fr;
   }
