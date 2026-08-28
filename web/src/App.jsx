@@ -543,6 +543,10 @@ import {
 } from './WaiversPanel.jsx'
 import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
 import { reloadStandaloneApp } from './tclotRefresh.js'
+import {
+  readTclotViewState,
+  patchTclotViewState,
+} from './tclotViewState.js'
 import { useLiveWaiverMoves } from './useLiveWaiverMoves.js'
 import {
   liveWaiverPollTarget,
@@ -2459,10 +2463,14 @@ function TradeLedger({ trades = [], teamLogoMap, kitIndexByEntry = {} }) {
  * deadline. Stored Settings prefs do not override that landing. */
 function initialDashboardViewForViewport() {
   if (typeof window === 'undefined') return 'teamSelection'
-  return initialDashboardView({
-    hasPlayersHash: Boolean(parsePlayersHash()),
-    archiveView: isArchiveView(),
-  })
+  const hasPlayersHash = Boolean(parsePlayersHash())
+  const archiveView = isArchiveView()
+  if (hasPlayersHash || archiveView) {
+    return initialDashboardView({ hasPlayersHash, archiveView })
+  }
+  const stored = readTclotViewState().dashboardView
+  if (stored) return stored
+  return initialDashboardView({ hasPlayersHash, archiveView })
 }
 
 const STANDINGS_SORT_KEYS = /** @type {const} */ (['gf', 'ga', 'gd', 'total'])
@@ -2632,7 +2640,9 @@ function App() {
    * moved to the Preseason hub) and `'forecast'` (player forecast leaderboard,
    * hidden — the forecast data still powers the fixture Odds tab). */
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
-    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} */ (null),
+    /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} */ (
+      () => readTclotViewState().fplLiveTab
+    ),
   )
   /** FPL Live Recap/Preview tab label. Live (lineups locked) → Preview;
    * otherwise Recap. WeeklyRecap updates this when mounted. */
@@ -2653,7 +2663,7 @@ function App() {
    * the rank-1 highlight tradition still reads, plus user can mark any
    * other row for at-a-glance comparison. */
   const [selectedStandingsEntry, setSelectedStandingsEntry] = useState(null)
-  const [liveGw, setLiveGw] = useState(null)
+  const [liveGw, setLiveGw] = useState(() => readTclotViewState().liveGw)
   /** Draft bootstrap `events.current` — default Live tab GW when user has not chosen one. */
   const [fplLiveLandingGw, setFplLiveLandingGw] = useState(null)
   const [waiverGwView, setWaiverGwView] = useState(null)
@@ -2956,6 +2966,15 @@ function App() {
     if (fplLiveTab === 'recap') return
     setRecapMenuLabel(recapMenuLabelForStatus(brandHeaderStatus?.status))
   }, [fplLiveTab, brandHeaderStatus?.status])
+
+  /** Keep the open tab across a pull-to-refresh document reload. */
+  useEffect(() => {
+    patchTclotViewState({
+      dashboardView,
+      fplLiveTab: fplLiveTabRaw,
+      liveGw,
+    })
+  }, [dashboardView, fplLiveTabRaw, liveGw])
 
   const rankByEntryId = useMemo(() => {
     const m = new Map()

@@ -8,6 +8,7 @@ import { LiveFixtureOdds } from './LiveFixtureOdds.jsx';
 import { LiveFixtureSeasonH2h } from './LiveFixtureSeasonH2h.jsx';
 import { LiveStandingsTable } from './LiveStandingsTable.jsx';
 import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
+import { patchTclotViewState } from './tclotViewState.js';
 
 /**
  * Desktop / tablet fixture page — a full-width takeover that replaces the
@@ -49,14 +50,28 @@ export function LiveFixtureDesktopPage({
   onSelectFixture,
   ctx,
   onBack,
+  initialTabId = null,
 }) {
-  const [tab, setTab] = useState('match');
+  const [tab, setTab] = useState(() =>
+    FIXTURE_CARD_TABS.some((t) => t.id === initialTabId) ? initialTabId : 'match',
+  );
 
   const safeIndex = Math.min(
     Math.max(Number(activeIndex) || 0, 0),
     Math.max(fixtures.length - 1, 0),
   );
   const fixture = fixtures[safeIndex];
+
+  useEffect(() => {
+    if (!fixture) return
+    const gw = Number(ctx?.gameweek)
+    patchTclotViewState({
+      fixture: Number.isFinite(gw)
+        ? { homeId: fixture.homeId, awayId: fixture.awayId, gameweek: gw }
+        : null,
+      fixtureTab: tab,
+    })
+  }, [fixture, tab, ctx?.gameweek])
 
   // Esc backs out, matching the card deck's dismissal affordance.
   useEffect(() => {
