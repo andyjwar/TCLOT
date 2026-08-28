@@ -4,6 +4,7 @@ import {
   useRef,
   useState,
   useCallback,
+  useEffect,
   useSyncExternalStore,
 } from 'react';
 import { TeamAvatar } from './TeamAvatar';
@@ -47,6 +48,11 @@ import {
   liveGwOutcomeDot,
   projectedH2HPoints,
 } from './liveScoresDerivations.js';
+import {
+  readTclotViewState,
+  patchTclotViewState,
+  fixtureIndexFromViewState,
+} from './tclotViewState.js';
 
 /**
  * Live H2H win probabilities for one fixture from the forecast blend — the
@@ -1026,6 +1032,12 @@ export function LiveScores({
    * ({@link LiveFixtureDesktopPage}). `null` = both closed.
    */
   const [cardDeckIndex, setCardDeckIndex] = useState(null);
+  /** True after we have applied (or skipped) a stored scorecard once. */
+  const restoredScorecardRef = useRef(false);
+  /** User has opened a scorecard this mount — persist closes after that. */
+  const scorecardWasOpenRef = useRef(false);
+  const [restoreScorecard, setRestoreScorecard] = useState(false);
+  const restoredFixtureTab = readTclotViewState().fixtureTab;
 
   /** A fixture is open as the desktop full-width takeover page. */
   const pageOpen = !mobileNarrowViewport && cardDeckIndex != null;
@@ -1111,6 +1123,39 @@ export function LiveScores({
       openPlayerFromFixture,
     ],
   );
+
+  useEffect(() => {
+    if (restoredScorecardRef.current) return
+    if (cardFixtures.length === 0) return
+    restoredScorecardRef.current = true
+    const stored = readTclotViewState()
+    const i = fixtureIndexFromViewState(cardFixtures, stored.fixture, gameweek)
+    if (i == null) return
+    setRestoreScorecard(true)
+    setCardDeckIndex(i)
+  }, [cardFixtures, gameweek])
+
+  useEffect(() => {
+    if (cardDeckIndex != null) {
+      scorecardWasOpenRef.current = true
+      const fx = cardFixtures[cardDeckIndex]
+      if (!fx) return
+      patchTclotViewState({
+        dashboardView: 'fplLive',
+        fplLiveTab: 'live',
+        liveGw: Number(gameweek),
+        fixture: {
+          homeId: fx.homeId,
+          awayId: fx.awayId,
+          gameweek: Number(gameweek),
+        },
+      })
+      return
+    }
+    if (scorecardWasOpenRef.current) {
+      patchTclotViewState({ fixture: null, fixtureTab: null })
+    }
+  }, [cardDeckIndex, cardFixtures, gameweek])
 
   return (
     <div
@@ -1220,6 +1265,7 @@ export function LiveScores({
           onSelectFixture={setCardDeckIndex}
           ctx={cardDeckCtx}
           onBack={closeFixtureCard}
+          initialTabId={restoredFixtureTab}
         />
       ) : null}
       {/* `display: contents` wrapper — invisible to layout. While the fixture
@@ -1427,6 +1473,8 @@ export function LiveScores({
           openIndex={cardDeckIndex}
           onClose={() => setCardDeckIndex(null)}
           ctx={cardDeckCtx}
+          initialTabId={restoredFixtureTab}
+          skipOpenAnimation={restoreScorecard}
         />
       ) : null}
 

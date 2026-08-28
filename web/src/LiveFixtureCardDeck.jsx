@@ -11,6 +11,10 @@ import { LiveFixtureCard } from './LiveFixtureCard.jsx';
 import { LiveFixtureChipStrip } from './LiveFixtureChipStrip.jsx';
 import { FIXTURE_CARD_TABS } from './liveFixtureCardTabs.js';
 import { useOverlayDismissal } from './overlayStack.js';
+import {
+  patchTclotViewState,
+  fixtureTabIndexFromId,
+} from './tclotViewState.js';
 import './LiveFixtureCard.css';
 
 const TH_AXIS = 8;
@@ -56,13 +60,20 @@ function subscribeTheme(onChange) {
  * player detail overlay (z-index 10050) so tapping a player still slides
  * their stats up over the top.
  *
- * @param {{ fixtures: object[], openIndex: number|null, onClose: () => void, ctx: object }} props
+ * @param {{ fixtures: object[], openIndex: number|null, onClose: () => void, ctx: object, initialTabId?: string | null, skipOpenAnimation?: boolean }} props
  */
-export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
+export function LiveFixtureCardDeck({
+  fixtures,
+  openIndex,
+  onClose,
+  ctx,
+  initialTabId = null,
+  skipOpenAnimation = false,
+}) {
   const [mounted, setMounted] = useState(false);
   const [shown, setShown] = useState(false);
   const [index, setIndex] = useState(0);
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useState(() => fixtureTabIndexFromId(initialTabId));
   const theme = useSyncExternalStore(subscribeTheme, readTheme, () => 'dark');
 
   const sheetRef = useRef(null);
@@ -82,14 +93,22 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
   useEffect(() => {
     if (openIndex == null) return undefined;
     const target = Math.max(0, Math.min(openIndex, N - 1));
+    const tab = fixtureTabIndexFromId(initialTabId);
+    if (skipOpenAnimation) {
+      setMounted(true);
+      setIndex(target);
+      setTabIndex(tab);
+      setShown(true);
+      return undefined;
+    }
     const r1 = requestAnimationFrame(() => {
       setMounted(true);
       setIndex(target);
-      setTabIndex(0);
+      setTabIndex(tab);
       requestAnimationFrame(() => setShown(true));
     });
     return () => cancelAnimationFrame(r1);
-  }, [openIndex, N]);
+  }, [openIndex, N, initialTabId, skipOpenAnimation]);
 
   // External close (parent set openIndex back to null): animate out, unmount.
   useEffect(() => {
@@ -311,6 +330,19 @@ export function LiveFixtureCardDeck({ fixtures, openIndex, onClose, ctx }) {
     const i = FIXTURE_CARD_TABS.findIndex((t) => t.id === id);
     if (i >= 0) setTabIndex(i);
   }, []);
+
+  useEffect(() => {
+    if (openIndex == null || !mounted) return
+    const fx = fixtures[index]
+    if (!fx) return
+    const gw = Number(ctx?.gameweek)
+    patchTclotViewState({
+      fixture: Number.isFinite(gw)
+        ? { homeId: fx.homeId, awayId: fx.awayId, gameweek: gw }
+        : null,
+      fixtureTab: activeTabId,
+    })
+  }, [openIndex, mounted, index, activeTabId, fixtures, ctx?.gameweek])
 
   if (!mounted) return null;
 
