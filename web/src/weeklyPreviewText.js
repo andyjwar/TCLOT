@@ -5,8 +5,9 @@
  *
  * Written like a Saturday preview column, not a checklist:
  *  1. Lead — named derby (if any) plus how the book prices it, in one breath.
- *     Last-place jeopardy can ride along as a clause.
- *  2. Reporting — injury, bench, waiver or form, when there is a story.
+ *     Last-week arrival and last-place jeopardy ride along as clauses.
+ *  2. Reporting — injury, form, bench or waiver, when there is a story.
+ *     Juicy last-week hauls/blanks beat a routine waiver line.
  *  3. Kicker — stakes and a speculative path (watch / underdog / series).
  *
  * Cards already show win%, rank, record, key xP, and title %. Prose interprets.
@@ -34,7 +35,7 @@ const who = (side) => firstName(side?.manager) || side?.name
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
 const lcFirst = (s) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s)
-const FOLLOW_ON = /^(The|A|An|That|This|His|Her|Their|For|If|When|While|After|With|Question)\b/
+const FOLLOW_ON = /^(The|A|An|That|This|His|Her|Their|For|If|When|While|After|With)\b/
 function asFollowOn(s) {
   const t = String(s || '').replace(/[.!?]+$/, '')
   return FOLLOW_ON.test(t) ? lcFirst(t) : t
@@ -152,7 +153,7 @@ function isKeeper(p) {
 
 function leadWatch(keys) {
   if (!Array.isArray(keys) || keys.length === 0) return null
-  return keys.find((p) => !isKeeper(p)) ?? keys[0]
+  return keys.find((p) => p?.name && !isKeeper(p)) ?? keys[0]
 }
 
 function favoriteSide(m) {
@@ -198,6 +199,9 @@ function joinClauses(clauses) {
   if (!clean.length) return null
   if (clean.length === 1) return `${capitalize(clean[0])}.`
   if (clean.length === 2) {
+    if (clean[0].includes(';') || clean[1].includes(';')) {
+      return `${capitalize(clean[0])}. ${capitalize(clean[1])}.`
+    }
     const second = asFollowOn(clean[1])
     const glue = /^(if|when)\b/i.test(second) ? '; ' : ', while '
     return `${capitalize(clean[0])}${glue}${second}.`
@@ -221,7 +225,7 @@ function derbyOpen(m, key) {
       key,
     )
   }
-  return pick([`In ${name}, `, `${capitalize(name)} is up next, and `], key)
+  return pick([`In ${name}, `, `${capitalize(name)} this week: `], key)
 }
 
 function priceLean(m, key) {
@@ -265,7 +269,7 @@ function priceLean(m, key) {
     return pick(
       [
         `it is tight on the board, ${fav.name} ${favFrac} and ${dog.name} ${dogFrac}`,
-        `coin-flip prices, ${fav.name} ${favFrac} and ${dog.name} ${dogFrac}`,
+        `the book has it as a coin-flip, ${fav.name} ${favFrac} and ${dog.name} ${dogFrac}`,
       ],
       key,
     )
@@ -277,6 +281,85 @@ function priceLean(m, key) {
     ],
     key,
   )
+}
+
+function firstNamesClash(m) {
+  const hn = who(m.home)
+  const an = who(m.away)
+  return Boolean(hn && an && String(hn).toLowerCase() === String(an).toLowerCase())
+}
+
+function sideLabel(m, side) {
+  if (firstNamesClash(m)) return side.name
+  return who(side)
+}
+
+function comingOff(t) {
+  if (!t || played(t) < 1) return null
+  if (t.streak?.type === 'W' && Number(t.streak.len) >= 2) return 'hot'
+  if (t.streak?.type === 'L' && Number(t.streak.len) >= 2) return 'cold'
+  const w = Number(t.record?.w) || 0
+  const d = Number(t.record?.d) || 0
+  const l = Number(t.record?.l) || 0
+  if (w && !d && !l) return 'win'
+  if (l && !w && !d) return 'loss'
+  if (d && !w && !l) return 'draw'
+  return null
+}
+
+function arriveVerb(m, side) {
+  return firstNamesClash(m) || !firstName(side?.manager) ? 'arrive' : 'comes'
+}
+
+function arrivalClause(m, key) {
+  const h = comingOff(m.home)
+  const a = comingOff(m.away)
+  if (!h && !a) return null
+  const hl = sideLabel(m, m.home)
+  const al = sideLabel(m, m.away)
+
+  if (h === 'win' && a === 'win') {
+    return pick(
+      [
+        `both sides arrive unbeaten at ${rec(m.home)}`,
+        `${m.home.name} and ${m.away.name} both come in on a win`,
+      ],
+      key,
+    )
+  }
+  if (h === 'loss' && a === 'loss') {
+    return pick(
+      [
+        `both arrive ${rec(m.home)}, looking to get off the mark`,
+        `neither has a win yet, ${m.home.name} and ${m.away.name} both ${rec(m.home)}`,
+      ],
+      key,
+    )
+  }
+  if ((h === 'win' && a === 'loss') || (h === 'loss' && a === 'win')) {
+    const winner = h === 'win' ? m.home : m.away
+    const loser = h === 'loss' ? m.home : m.away
+    return pick(
+      [
+        `${sideLabel(m, winner)} ${arriveVerb(m, winner)} in on a win, ${sideLabel(m, loser)} on a loss`,
+        `${winner.name} arrive ${rec(winner)}, ${loser.name} ${rec(loser)}`,
+      ],
+      key,
+    )
+  }
+  if (h === 'hot' || a === 'hot' || h === 'cold' || a === 'cold') {
+    const bits = []
+    for (const side of [m.home, m.away]) {
+      const kind = comingOff(side)
+      if (kind === 'hot') bits.push(`${sideLabel(m, side)} on a ${side.streak.len}-game winning run`)
+      if (kind === 'cold') bits.push(`${sideLabel(m, side)} on a ${side.streak.len}-game skid`)
+    }
+    if (bits.length) return bits.join(', ')
+  }
+  if (played(m.home) >= 1 && played(m.away) >= 1 && rec(m.home) && rec(m.away)) {
+    return `${hl} are ${rec(m.home)}, ${al} ${rec(m.away)}`
+  }
+  return null
 }
 
 function lastPlaceClause(m, key) {
@@ -328,15 +411,15 @@ function isDesperate(t) {
   return t.rank === 8 || (Number.isFinite(lastPct) && lastPct >= 20)
 }
 
-function pickupOf(side) {
+function pickupOf(side, skip = new Set()) {
   const list = Array.isArray(side?.recentPickups) ? side.recentPickups : []
-  const p = list.find((row) => row?.name)
+  const p = list.find((row) => row?.name && !skip.has(row.name))
   if (!p) return null
   return { side, name: p.name, kind: p.kind === 'f' ? 'free-agent' : 'waiver' }
 }
 
-function waiverSentence(m, key) {
-  const bits = [pickupOf(m.home), pickupOf(m.away)].filter(Boolean)
+function waiverSentence(m, key, skip = new Set()) {
+  const bits = [pickupOf(m.home, skip), pickupOf(m.away, skip)].filter(Boolean)
   if (bits.length === 0) return null
   if (bits.length === 1) {
     const b = bits[0]
@@ -351,14 +434,17 @@ function waiverSentence(m, key) {
   return `${who(bits[0].side)} claimed ${bits[0].name}; ${who(bits[1].side)} added ${bits[1].name}.`
 }
 
-function sideLabel(m, side) {
-  const hn = who(m.home)
-  const an = who(m.away)
-  if (hn && an && String(hn).toLowerCase() === String(an).toLowerCase()) return side.name
-  return who(side)
+function formIsJuicy(m) {
+  for (const side of [m.home, m.away]) {
+    const over = side?.form?.over
+    const under = side?.form?.under
+    if (over && Number(over.pts) >= 10) return true
+    if (under && Number(under.pts) <= 1 && Number(under.xp) >= 4) return true
+  }
+  return false
 }
 
-function formSentence(m) {
+function formSentence(m, key) {
   const pack = (side, row) => (row?.name ? { side, ...row } : null)
   const homeO = pack(m.home, m.home?.form?.over)
   const homeU = pack(m.home, m.home?.form?.under)
@@ -372,19 +458,43 @@ function formSentence(m) {
   if (cross.length) {
     cross.sort((a, b) => juice(b.o, b.u) - juice(a.o, a.u))
     const { o, u } = cross[0]
-    return `${o.name} already overdelivered for ${sideLabel(m, o.side)} last week (${o.pts}); ${u.name} returned ${u.pts} from ${formatXp(u.xp)} for ${sideLabel(m, u.side)}.`
+    return pick(
+      [
+        `${o.name} already hauled ${o.pts} for ${sideLabel(m, o.side)} last week; ${u.name} returned ${u.pts} from a ${formatXp(u.xp)} call for ${sideLabel(m, u.side)}.`,
+        `${o.name} dropped ${o.pts} for ${sideLabel(m, o.side)}; ${u.name} managed ${u.pts} from a ${formatXp(u.xp)} call for ${sideLabel(m, u.side)}.`,
+      ],
+      key,
+    )
   }
 
   const o = homeO || awayO
   const u = homeU || awayU
   if (o && u && o.name !== u.name) {
-    return `${o.name} already overdelivered for ${sideLabel(m, o.side)} last week (${o.pts}); ${u.name} returned ${u.pts} from ${formatXp(u.xp)} for ${sideLabel(m, u.side)}.`
+    return pick(
+      [
+        `${o.name} already hauled ${o.pts} for ${sideLabel(m, o.side)} last week; ${u.name} returned ${u.pts} from a ${formatXp(u.xp)} call for ${sideLabel(m, u.side)}.`,
+        `${o.name} dropped ${o.pts} for ${sideLabel(m, o.side)}; ${u.name} managed ${u.pts} from a ${formatXp(u.xp)} call for ${sideLabel(m, u.side)}.`,
+      ],
+      key,
+    )
   }
   if (o) {
-    return `${o.name} overperformed for ${sideLabel(m, o.side)} last week with ${o.pts}.`
+    return pick(
+      [
+        `${o.name} overperformed for ${sideLabel(m, o.side)} last week with ${o.pts}.`,
+        `${o.name} already hauled ${o.pts} for ${sideLabel(m, o.side)} last week.`,
+      ],
+      key,
+    )
   }
   if (u) {
-    return `${u.name} underperformed for ${sideLabel(m, u.side)} last week: ${u.pts} from ${formatXp(u.xp)}.`
+    return pick(
+      [
+        `${u.name} underperformed for ${sideLabel(m, u.side)} last week: ${u.pts} from a ${formatXp(u.xp)} call.`,
+        `${u.name} returned ${u.pts} from a ${formatXp(u.xp)} call for ${sideLabel(m, u.side)} last week.`,
+      ],
+      key,
+    )
   }
   return null
 }
@@ -396,8 +506,10 @@ function namedAlready(mentioned, p) {
 function keysSentence(m, key, mentioned) {
   const homeKeys = Array.isArray(m.home?.keys) ? m.home.keys : []
   const awayKeys = Array.isArray(m.away?.keys) ? m.away.keys : []
-  const h = homeKeys[0]?.name && !namedAlready(mentioned, homeKeys[0]) ? homeKeys[0].name : null
-  const a = awayKeys[0]?.name && !namedAlready(mentioned, awayKeys[0]) ? awayKeys[0].name : null
+  const homePick = homeKeys.find((p) => p?.name && !isKeeper(p) && !namedAlready(mentioned, p))
+  const awayPick = awayKeys.find((p) => p?.name && !isKeeper(p) && !namedAlready(mentioned, p))
+  const h = homePick?.name ?? null
+  const a = awayPick?.name ?? null
   if (!h && !a) return null
   if (h && a) {
     return pick(
@@ -468,21 +580,27 @@ function rivalrySentence(m) {
   return `${label(leader)} lead the season series ${lw}–${tw}${drawn}`
 }
 
-function mentionedPlayers(m) {
-  const names = new Set()
+function skipNamesFrom(m, texts) {
+  const blob = texts.filter(Boolean).join(' ')
+  const skip = new Set()
+  if (!blob) return skip
   for (const side of [m.home, m.away]) {
     for (const p of side?.recentPickups ?? []) {
-      if (p?.name) names.add(p.name)
+      if (p?.name && blob.includes(p.name)) skip.add(p.name)
     }
-    if (side?.form?.over?.name) names.add(side.form.over.name)
-    if (side?.form?.under?.name) names.add(side.form.under.name)
+    if (side?.benchCall?.bench?.name && blob.includes(side.benchCall.bench.name)) {
+      skip.add(side.benchCall.bench.name)
+    }
+    if (side?.benchCall?.starter?.name && blob.includes(side.benchCall.starter.name)) {
+      skip.add(side.benchCall.starter.name)
+    }
     for (const inj of side?.injuries ?? []) {
-      if (inj?.name) names.add(inj.name)
+      if (inj?.name && blob.includes(inj.name)) skip.add(inj.name)
     }
-    if (side?.benchCall?.bench?.name) names.add(side.benchCall.bench.name)
-    if (side?.benchCall?.starter?.name) names.add(side.benchCall.starter.name)
+    if (side?.form?.over?.name && blob.includes(side.form.over.name)) skip.add(side.form.over.name)
+    if (side?.form?.under?.name && blob.includes(side.form.under.name)) skip.add(side.form.under.name)
   }
-  return names
+  return skip
 }
 
 function topInjury(side) {
@@ -544,8 +662,8 @@ function benchSentence(m, key) {
   if (first) {
     return pick(
       [
-        `Question for ${first}: ${call.bench.name} sits on the bench while ${call.starter.name} starts.`,
         `${first} has ${call.bench.name} on the bench and ${call.starter.name} in the XI.`,
+        `${first} left ${call.bench.name} on the pine and started ${call.starter.name}.`,
       ],
       key,
     )
@@ -553,32 +671,41 @@ function benchSentence(m, key) {
   return `The ${side.name} XI looks off: ${call.bench.name} benched, ${call.starter.name} starting.`
 }
 
+function bothWinless(m) {
+  return comingOff(m.home) === 'loss' && comingOff(m.away) === 'loss'
+}
+
 function previewLead(m, key) {
   const open = derbyOpen(m, `${key}-n`)
   const lean = priceLean(m, `${key}-f`)
   const last = lastPlaceClause(m, `${key}-s`)
-  if (last) return leadWith(open, `${lean}, ${asFollowOn(last)}`)
-  return leadWith(open, lean)
+  const arrival = bothWinless(m) && last ? null : arrivalClause(m, `${key}-a`)
+  const extras = [arrival, last].filter(Boolean)
+  if (extras.length === 0) return leadWith(open, lean)
+  if (extras.length === 1) return leadWith(open, `${lean}, and ${asFollowOn(extras[0])}`)
+  return leadWith(open, `${lean}, ${asFollowOn(extras[0])}, and ${asFollowOn(extras[1])}`)
 }
 
 function previewReport(m, key) {
-  return joinClauses(
-    [
-      injurySentence(m, `${key}-inj`),
-      benchSentence(m, `${key}-b`),
-      waiverSentence(m, `${key}-w`),
-      formSentence(m),
-    ]
-      .filter(Boolean)
-      .slice(0, 2),
-  )
+  const injury = injurySentence(m, `${key}-inj`)
+  const form = formSentence(m, `${key}-form`)
+  const bench = benchSentence(m, `${key}-b`)
+  const selected = []
+  if (injury) selected.push(injury)
+  if (form && formIsJuicy(m) && selected.length < 2) selected.push(form)
+  if (bench && selected.length < 2) selected.push(bench)
+  if (form && !formIsJuicy(m) && selected.length < 2) selected.push(form)
+  const skip = skipNamesFrom(m, selected)
+  const waiver = waiverSentence(m, `${key}-w`, skip)
+  if (waiver && selected.length < 2) selected.push(waiver)
+  return joinClauses(selected.slice(0, 2))
 }
 
-function previewKicker(m, key) {
+function previewKicker(m, key, soFar = []) {
   const dog = underdogSentence(m, `${key}-u`)
   const title = titleClause(m, `${key}-t`)
   const series = rivalrySentence(m)
-  const keys = dog ? null : keysSentence(m, `${key}-k`, mentionedPlayers(m))
+  const keys = dog ? null : keysSentence(m, `${key}-k`, skipNamesFrom(m, soFar))
   return joinClauses([title, dog || keys, series].filter(Boolean).slice(0, 3))
 }
 
@@ -600,7 +727,7 @@ export function matchupPreviewSentences(m) {
   const out = [previewLead(m, `${key}-lead`)]
   const report = previewReport(m, `${key}-rep`)
   if (report) out.push(report)
-  const kicker = previewKicker(m, `${key}-kick`)
+  const kicker = previewKicker(m, `${key}-kick`, out)
   if (kicker) out.push(kicker)
   return sprinkleInto(out, managerFunFactSentences(m, `${key}-mff`), variantIndex, `${key}-mff`)
 }

@@ -466,10 +466,111 @@ test('bench copy questions the manager when a healthy option sits', () => {
     }),
   })
   const joined = out.join(' ')
-  assert.match(joined, /Question for Nick|has Konsa on the bench/)
+  assert.match(joined, /has Konsa on the bench|left Konsa on the pine/)
   assert.match(joined, /Konsa/)
   assert.match(joined, /Colwill/)
   assert.doesNotMatch(joined, /5\.5/)
+})
+
+test('lead weaves last-week arrival into the book line', () => {
+  const joined = matchupPreviewSentences({
+    ...base,
+    h2h: null,
+    home: team({
+      rank: 3,
+      record: { w: 1, d: 0, l: 0 },
+      lastPct: 1.8,
+    }),
+    away: team({
+      entryId: 2,
+      name: 'Hackney Rohirrim',
+      manager: 'Mike Sutton',
+      rank: 7,
+      record: { w: 0, d: 0, l: 1 },
+      titlePct: 11.4,
+      lastPct: 6.2,
+      lastPrice: '14/1',
+      keys: [{ name: 'Gabriel', pos: 'DEF', xp: 5.1 }],
+    }),
+    odds: { favoriteSide: 'home', favoritePct: 53, home: 53, draw: 3, away: 44 },
+    bookie: { home: '10/11', draw: '33/1', away: '5/4' },
+  }).join(' ')
+  assert.match(joined, /win/)
+  assert.match(joined, /loss/)
+  assert.match(joined, /10\/11/)
+  assert.match(joined, /5\/4/)
+})
+
+test('juicy last-week form survives when bench and waiver also exist', () => {
+  const joined = matchupPreviewSentences({
+    ...base,
+    h2h: null,
+    home: team({
+      recentPickups: [{ name: 'Bijol', kind: 'w', gw: 2 }],
+      form: { over: { name: 'Emersonn', pts: 9, xp: 0.5 }, under: { name: 'Roefs', pts: 1, xp: 5.4 } },
+      benchCall: {
+        bench: { name: 'Woltemade', pos: 'FWD', xp: 3.7, flag: 'ok' },
+        starter: { name: 'M.Sangaré', pos: 'MID', xp: 0.4, flag: 'ok' },
+        gap: 3.3,
+      },
+    }),
+    away: team({
+      entryId: 2,
+      name: 'Hackney Rohirrim',
+      manager: 'Mike Sutton',
+      rank: 7,
+      record: { w: 0, d: 0, l: 1 },
+      titlePct: 11.4,
+      lastPct: 6.2,
+      keys: [{ name: 'Gabriel', pos: 'DEF', xp: 5.1 }],
+      recentPickups: [{ name: 'McBurnie', kind: 'w', gw: 2 }],
+      form: { over: { name: 'Stach', pts: 13, xp: 3.4 }, under: { name: 'Bruno G.', pts: 0, xp: 4.8 } },
+    }),
+  }).join(' ')
+  assert.match(joined, /Stach|Emersonn/)
+  assert.match(joined, /13|9/)
+  assert.match(joined, /Woltemade|Sangaré/)
+  assert.doesNotMatch(joined, /claimed McBurnie|added Bijol|claimed Bijol/)
+})
+
+test('waiver is not restated when that player is already the bench story', () => {
+  const joined = matchupPreviewSentences({
+    ...base,
+    h2h: null,
+    home: team({
+      manager: 'Jon Ward',
+      name: 'Suffolk Sméagol',
+      rank: 2,
+      record: { w: 1, d: 0, l: 0 },
+      titlePct: 11.6,
+      lastPct: 5.8,
+      keys: [{ name: 'Lacroix', pos: 'DEF', xp: 3.4 }],
+      recentPickups: [{ name: 'Meunier', kind: 'w', gw: 2 }],
+      form: { over: { name: 'Palmer', pts: 13, xp: 4.5 }, under: null },
+      benchCall: {
+        bench: { name: 'Gyökeres', pos: 'FWD', xp: 4.7, flag: 'ok' },
+        starter: { name: 'Meunier', pos: 'DEF', xp: 0.5, flag: 'ok' },
+        gap: 4.2,
+      },
+    }),
+    away: team({
+      entryId: 44904,
+      name: 'Brampton Balrogs',
+      manager: 'Eddy Webster',
+      rank: 6,
+      record: { w: 0, d: 0, l: 1 },
+      titlePct: 3.6,
+      lastPct: 18.5,
+      keys: [{ name: 'De Cuyper', pos: 'DEF', xp: 4.5 }],
+      recentPickups: [{ name: 'Tzolakis', kind: 'w', gw: 2 }],
+      form: { over: null, under: { name: 'Thiago', pts: 0, xp: 4.3 } },
+    }),
+  }).join(' ')
+  assert.match(joined, /Palmer/)
+  assert.match(joined, /13/)
+  assert.match(joined, /Gyökeres/)
+  assert.match(joined, /Meunier/)
+  assert.doesNotMatch(joined, /claimed Meunier/)
 })
 
 test('missing-star injury copy when a notable player is out of the XI', () => {
