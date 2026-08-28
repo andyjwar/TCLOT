@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import { fetchLeagueDataJson } from './leagueDataFetch.js'
+import { namedFixtureFor, derbyChipLabel } from './leagueLore.js'
 import './WeeklyRecap.css'
 
 /**
@@ -272,6 +273,7 @@ function RecapHeader({ recapGw, decided }) {
           ) : null}
         </div>
       ) : null}
+      <WrapNote sentences={recapGw.wrap} />
     </>
   )
 }
@@ -383,8 +385,20 @@ function PreviewHeader({ preview }) {
         <WaiverChip waiver={preview.superlatives?.bestWaiver} />
         <DudChip dud={preview.superlatives?.dud} />
       </div>
+      <WrapNote sentences={preview.wrap} />
     </>
   )
+}
+
+function WrapNote({ sentences }) {
+  if (!Array.isArray(sentences) || sentences.length === 0) return null
+  return <p className="weekly-recap__wrap">{sentences.join(' ')}</p>
+}
+
+function DerbyChip({ matchup: m }) {
+  const name = m?.derby || namedFixtureFor(m?.home?.manager, m?.away?.manager)
+  if (!name) return null
+  return <p className="weekly-recap-matchup__derby">{derbyChipLabel(name)}</p>
 }
 
 function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
@@ -395,6 +409,7 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
       className="tile tile--compact weekly-recap-matchup"
       aria-label={`${m.home.name} v ${m.away.name}`}
     >
+      <DerbyChip matchup={m} />
       <div className="weekly-recap-matchup__scoreline">
         <span
           className={
@@ -506,6 +521,7 @@ function PreviewMatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
       className="tile tile--compact weekly-recap-matchup weekly-recap-matchup--preview"
       aria-label={`${m.home.name} v ${m.away.name} preview`}
     >
+      <DerbyChip matchup={m} />
       <div className="weekly-recap-matchup__scoreline">
         <span
           className={

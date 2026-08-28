@@ -1093,6 +1093,12 @@ body[data-tclot-theme='ceefax'] .pcompare-d__stat-up {
 body[data-tclot-theme='ceefax'] .weekly-recap__note {
   font-size: 18px !important;
 }
+body[data-tclot-theme='ceefax'] .weekly-recap__wrap {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__derby {
+  font-size: 14px !important;
+}
 body[data-tclot-theme='ceefax'] .weekly-recap__empty {
   font-size: 20px !important;
 }
@@ -1522,6 +1528,12 @@ body[data-tclot-theme='ceefax'] .pcompare-d__stat-up {
 /* Weekly recap (Preview tab) — bump the reading font + names. */
 body[data-tclot-theme='ceefax'] .weekly-recap__note {
   font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap__wrap {
+  font-size: 18px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__derby {
+  font-size: 14px !important;
 }
 body[data-tclot-theme='ceefax'] .weekly-recap__empty {
   font-size: 20px !important;

@@ -152,13 +152,45 @@ test('named fixture leads the preview', () => {
   assert.match(out[0], /Battle of Warderloo/)
 })
 
-test('vegan joke always fires when Mottershead is in the fixture', () => {
-  for (let gw = 1; gw <= 12; gw++) {
-    const out = matchupPreviewSentences({ ...base, gw })
-    assert.match(out.join(' '), /vegan|tofu|plant|oat milk/i)
+test('Bad Blood Derby leads when Andy plays Nick Goodacre', () => {
+  const out = matchupPreviewSentences({
+    ...base,
+    home: team({ name: 'Toronto Gimli', manager: 'Andy Ward' }),
+    away: team({
+      entryId: 2,
+      name: 'Atlético Bilbo',
+      manager: 'Nick Goodacre',
+      rank: 8,
+      record: { w: 0, d: 0, l: 1 },
+      lastPct: 41.6,
+      lastPrice: '6/5',
+      keys: [{ name: 'Enzo', xp: 5.3 }],
+    }),
+  })
+  assert.match(out[0], /Bad Blood Derby/)
+})
+
+test('vegan jokes are one Mottershead option, not an every-week guarantee', () => {
+  let sawPersonality = false
+  let sawVegan = false
+  const lines = new Set()
+  for (let gw = 1; gw <= 16; gw++) {
+    const joined = matchupPreviewSentences({ ...base, gw }).join(' ')
+    if (/vegan|Titanic|arts school|swagger|big-move|fallen-empire|trade flurry|extremely sure|spreadsheet|lampshade|conservative/i.test(joined)) {
+      sawPersonality = true
+    }
+    if (/vegan|invented veganism/i.test(joined)) sawVegan = true
+    const joke = matchupPreviewSentences({ ...base, gw }).find((s) =>
+      /vegan|Titanic|arts school|swagger|big-move|fallen-empire|extremely sure|spreadsheet|lampshade|conservative/i.test(s),
+    )
+    if (joke) lines.add(joke)
   }
+  assert.ok(sawPersonality, 'Mottershead/Goodacre personality should appear on some GWs')
   assert.equal(isVeganManager('Nick Mottershead'), true)
   assert.equal(isVeganManager('Nick Goodacre'), false)
+  // Not required every week, and not the same sentence on a loop.
+  assert.ok(lines.size >= 1)
+  void sawVegan
 })
 
 test('no vegan joke when Mottershead is not playing', () => {
@@ -180,9 +212,9 @@ test('no vegan joke when Mottershead is not playing', () => {
   assert.doesNotMatch(out.join(' '), /vegan|tofu|plant|oat milk/i)
 })
 
-test('East Asian derby + Boxhead lore can appear for Luke vs David', () => {
+test('East Asian Derby always leads; Luke/David personality can appear', () => {
   let sawDerby = false
-  let sawBoxhead = false
+  let sawPersonality = false
   for (let gw = 1; gw <= 16; gw++) {
     const joined = matchupPreviewSentences({
       ...base,
@@ -200,11 +232,13 @@ test('East Asian derby + Boxhead lore can appear for Luke vs David', () => {
       }),
       h2h: null,
     }).join(' ')
-    if (/East Asian derby/.test(joined)) sawDerby = true
-    if (/Boxhead/.test(joined)) sawBoxhead = true
+    if (/East Asian Derby/i.test(joined)) sawDerby = true
+    if (/BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil/i.test(joined)) {
+      sawPersonality = true
+    }
   }
   assert.ok(sawDerby, 'named fixture should lead')
-  assert.ok(sawBoxhead, 'Boxhead joke should fire on some GWs')
+  assert.ok(sawPersonality, 'David or Luke personality should fire on some GWs')
 })
 
 test('round-two rivalry line when they have already met', () => {

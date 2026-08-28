@@ -14,10 +14,14 @@
  *  7. Form — last week's over/underperformers.
  *  8. Watch list — names only (xP lives in the footer), from the starting XI.
  *  9. Underdog path — qualitative, and only when it's a real short favourite.
- *  10. Manager joke — vegan always-on for Mottershead; otherwise ~half the time.
+ *  10. Manager joke — occasional personality, never a trait checklist.
  */
 
-import { namedFixtureFor, managerFunFact, hasManagerLore, normManager } from './leagueLore.js'
+import {
+  namedFixtureFor,
+  matchupPersonalitySentence,
+  canonicalManager,
+} from './leagueLore.js'
 import { variantIndex } from './weeklyRecapText.js'
 import { probToFractionalOdds } from './oddsFormat.js'
 
@@ -38,9 +42,9 @@ const rec = (t) =>
 const played = (t) =>
   (Number(t?.record?.w) || 0) + (Number(t?.record?.d) || 0) + (Number(t?.record?.l) || 0)
 
-/** Nick Mottershead's vegan jokes should always land in the preview. */
+/** Nick Mottershead (vegan jokes are one of several Mottershead lines). */
 export function isVeganManager(manager) {
-  return normManager(manager) === 'nick mottershead'
+  return canonicalManager(manager) === 'nick mottershead'
 }
 
 /**
@@ -400,26 +404,11 @@ function underdogSentence(m, key) {
 }
 
 /**
- * Manager running joke. Vegan (Mottershead) always fires when he's in the
- * fixture. Everyone else with lore lands about half the time.
+ * Manager running joke. Seasoning only: gated, at most one line, tagged to
+ * the week when a waiver/bench/last-place hook exists.
  */
 function managerFunFactSentence(m, key) {
-  const home = m.home?.manager
-  const away = m.away?.manager
-  const veganHome = isVeganManager(home)
-  const veganAway = isVeganManager(away)
-  if (veganHome || veganAway) {
-    const manager = veganHome ? home : away
-    return managerFunFact(manager, pick, key)
-  }
-  const homeHas = hasManagerLore(home)
-  const awayHas = hasManagerLore(away)
-  if (!homeHas && !awayHas) return null
-  if (variantIndex(`${key}-gate`, 2) !== 0) return null
-  let manager
-  if (homeHas && awayHas) manager = variantIndex(`${key}-side`, 2) === 0 ? home : away
-  else manager = homeHas ? home : away
-  return managerFunFact(manager, pick, key)
+  return matchupPersonalitySentence(m, pick, key, variantIndex, { gate: 2 })
 }
 
 function rivalrySentence(m) {

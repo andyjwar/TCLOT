@@ -6,6 +6,8 @@
  *  - `model`: odds vs reality for the week
  *  - `matchups`: score, pre-match call, template recap paragraph, table context
  *  - `superlatives`: week high, closest match, star player, best waiver, dud
+ *  - `wrap`: short week headline (named derbies, occasional personality)
+ *  - `derby` on each matchup when the pairing has a nickname
  *
  * Preview entries (`previews`) — one per finished GW (frozen from the archive)
  * and the next unfinished GW (starting XIs when present):
@@ -35,7 +37,8 @@ import {
   streakAsOf,
   matchFavorite,
 } from '../src/seasonPredictionsModel.js'
-import { matchupRecapSentences } from '../src/weeklyRecapText.js'
+import { matchupRecapSentences, recapWeekWrapSentences } from '../src/weeklyRecapText.js'
+import { namedFixtureFor } from '../src/leagueLore.js'
 import {
   matchupPreviewSentences,
   oddsPercents,
@@ -291,6 +294,7 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
       odds,
       predicted,
       h2h,
+      derby: namedFixtureFor(home.manager, away.manager),
       sentences: matchupRecapSentences({ gw, home, away, odds, leagueAvg, h2h }),
     }
   })
@@ -363,6 +367,7 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
       starPlayer,
     },
     matchups,
+    wrap: recapWeekWrapSentences({ gw, matchups }),
   })
 }
 
@@ -839,6 +844,7 @@ function buildPreviewForGw(gw) {
       bookie: bookiePrices,
       predicted,
       h2h,
+      derby: namedFixtureFor(home.manager, away.manager),
       sentences: matchupPreviewSentences({
         gw,
         home,
@@ -887,6 +893,7 @@ function buildPreviewForGw(gw) {
       dud: fun.dud,
     },
     matchups,
+    wrap: recapWeekWrapSentences({ gw, matchups }),
   }
 }
 
@@ -910,7 +917,7 @@ for (const recap of gameweeks) {
 }
 
 const output = {
-  schemaVersion: 6,
+  schemaVersion: 7,
   generatedAt: new Date().toISOString(),
   season: predictions.season,
   lastFinishedGw,

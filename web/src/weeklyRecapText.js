@@ -14,7 +14,14 @@
  *     season-high, a streak, a title-odds swing, or the fixture's weight.
  */
 
-import { namedFixtureFor, managerFunFact, hasManagerLore } from './leagueLore.js'
+import {
+  namedFixtureFor,
+  matchupPersonalitySentence,
+  managerFunFact,
+  uniqueDerbies,
+  titanicAside,
+  canonicalManager,
+} from './leagueLore.js'
 
 /** Small deterministic hash for stable template variation per matchup+GW. */
 export function variantIndex(key, n) {
@@ -410,21 +417,11 @@ function namedFixtureSentence(m, key) {
 }
 
 /**
- * A manager's running joke, woven in only *sometimes* (~1 matchup in 3) and
- * only when a side's manager has lore. Deterministic per matchup+GW, so it
- * never churns on rebuild.
+ * A manager's running joke, woven in only sometimes (~1 matchup in 3).
+ * Deterministic per matchup+GW, so it never churns on rebuild.
  */
 function managerFunFactSentence(m, key) {
-  const home = m.home?.manager
-  const away = m.away?.manager
-  const homeHas = hasManagerLore(home)
-  const awayHas = hasManagerLore(away)
-  if (!homeHas && !awayHas) return null
-  if (variantIndex(`${key}-gate`, 3) !== 0) return null
-  let manager
-  if (homeHas && awayHas) manager = variantIndex(`${key}-side`, 2) === 0 ? home : away
-  else manager = homeHas ? home : away
-  return managerFunFact(manager, pick, key)
+  return matchupPersonalitySentence(m, pick, key, variantIndex, { gate: 3 })
 }
 
 /**
@@ -478,4 +475,55 @@ export function ordinal(n) {
   const s = ['th', 'st', 'nd', 'rd']
   const mod = v % 100
   return `${v}${s[(mod - 20) % 10] || s[mod] || s[0]}`
+}
+
+/**
+ * One-line derby headline for a GW, or null when no named fixtures land.
+ * Used as the week wrap on previews and recaps.
+ */
+export function weekDerbySentence(matchups, key) {
+  const names = uniqueDerbies(matchups)
+  if (!names.length) return null
+  if (names.length === 1) {
+    return pick(
+      [`This week features ${names[0]}.`, `${capitalize(names[0])} is on the card.`],
+      key,
+    )
+  }
+  const last = names[names.length - 1]
+  const head = names.slice(0, -1).map(capitalize).join(', ')
+  return `${head} and ${last} headline the week.`
+}
+
+/**
+ * Short weekly wrap: named derbies first, then an occasional last-place or
+ * Titanic Duo aside. Stats still live on the matchup cards.
+ *
+ * @param {{ gw: number, matchups: object[] }} args
+ * @returns {string[]}
+ */
+export function recapWeekWrapSentences({ gw, matchups }) {
+  const key = `gw${gw}-wrap`
+  const out = []
+  const derby = weekDerbySentence(matchups, `${key}-d`)
+  if (derby) out.push(derby)
+
+  const sides = (matchups || []).flatMap((m) => [m.home, m.away]).filter((s) => s?.manager)
+  const last = [...sides].sort((a, b) => (Number(b.rank) || 0) - (Number(a.rank) || 0))[0]
+  if (last && Number(last.rank) >= 7 && variantIndex(`${key}-last-gate`, 3) === 0) {
+    const line = managerFunFact(last.manager, pick, `${key}-last`, ['last'])
+    if (line) out.push(line)
+  }
+
+  const andy = sides.find((s) => canonicalManager(s.manager) === 'andy ward')
+  const nickm = sides.find((s) => canonicalManager(s.manager) === 'nick mottershead')
+  const bothSinking =
+    andy &&
+    nickm &&
+    Number(andy.record?.l) > Number(andy.record?.w) &&
+    Number(nickm.record?.l) > Number(nickm.record?.w)
+  if (bothSinking && variantIndex(`${key}-titanic`, 4) === 0) {
+    out.push(titanicAside(pick, `${key}-titanic-line`))
+  }
+  return out
 }
