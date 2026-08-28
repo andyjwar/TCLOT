@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { draftResourceUrl } from './fplDraftUrl.js'
 import { leagueDataBase } from './seasonArchive.js'
+import { subscribeTclotRefresh } from './tclotRefresh.js'
 
 function parseBootstrapEvents(j) {
   const ev = j?.events
@@ -74,6 +75,8 @@ export function useDraftBootstrapEvents() {
     document.addEventListener('visibilitychange', onVis)
     return () => document.removeEventListener('visibilitychange', onVis)
   }, [load])
+
+  useEffect(() => subscribeTclotRefresh(() => void load()), [load])
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined

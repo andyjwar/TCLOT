@@ -23,6 +23,7 @@ import {
 } from './fplDraftUrl';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { bustFplLiveCache, fetchFplJsonCached } from './fplFetchCache.js';
+import { subscribeTclotRefresh } from './tclotRefresh.js';
 import { gameWeekSelectLabel } from './gwLabel.js';
 import { countEffectiveXiPlayersRemaining } from './liveScoresDerivations.js';
 
@@ -776,6 +777,13 @@ export function useLiveScores({
     }, ms);
     return () => window.clearInterval(id);
   }, [enabled, canPollLiveGw, pollIntervalMs, load, tabVisible]);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    return subscribeTclotRefresh(() => {
+      void load();
+    });
+  }, [load]);
 
   const refresh = useCallback(() => {
     bustFplLiveCache();

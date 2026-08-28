@@ -542,6 +542,7 @@ import {
   WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
 import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
+import { requestTclotRefresh } from './tclotRefresh.js'
 import { useLiveWaiverMoves } from './useLiveWaiverMoves.js'
 import {
   liveWaiverPollTarget,
@@ -3012,6 +3013,7 @@ function App() {
     [staticWaiverOutGwRows, liveWaiver.rows],
   )
   const refreshLeagueAndWaivers = useCallback(async () => {
+    requestTclotRefresh()
     await Promise.all([refresh(), liveWaiver.refetch()])
   }, [refresh, liveWaiver.refetch])
 

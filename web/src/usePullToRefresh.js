@@ -18,6 +18,11 @@ const MAX_DISTANCE = 100
 const ENGAGE_SLOP = 10
 /** The spinner shows at least this long so a fast refresh doesn't blink. */
 const MIN_SPIN_MS = 600
+/** Don't leave the spinner up forever if a refetch hangs. */
+const REFRESH_TIMEOUT_MS = 10_000
+/** iOS often reports a fractional leftover scrollY at visual top, especially
+ * with viewport-fit=cover. Treat anything this small as "at the top". */
+export const PTR_AT_TOP_EPSILON = 2
 
 /** Two-stage damping: tracks the finger at half speed up to the trigger
  * point, then goes heavy — the classic native rubber-band feel. */
@@ -30,12 +35,80 @@ function dampen(dy) {
   )
 }
 
+export function isScrollAtTop(scrollTop, epsilon = PTR_AT_TOP_EPSILON) {
+  return Number(scrollTop) <= epsilon
+}
+
+/**
+ * Decide how a touchmove at page-top should proceed.
+ * `preventDefault` must be true on the first downward move — iOS Safari
+ * marks later touchmoves non-cancelable once it has taken them as a scroll.
+ *
+ * @returns {{ tracking: boolean, engaged: boolean, preventDefault: boolean }}
+ */
+export function pullMoveDecision({ dx, dy, engaged, slop = ENGAGE_SLOP }) {
+  const downward = dy > 0 && Math.abs(dy) >= Math.abs(dx)
+  if (!engaged) {
+    if (dy < 0 || Math.abs(dx) > Math.abs(dy)) {
+      return { tracking: false, engaged: false, preventDefault: false }
+    }
+    if (dy < slop) {
+      return { tracking: true, engaged: false, preventDefault: downward }
+    }
+    return { tracking: true, engaged: true, preventDefault: downward }
+  }
+  return { tracking: true, engaged: true, preventDefault: downward }
+}
+
+export function pageScrollTop() {
+  if (typeof window === 'undefined' || typeof document === 'undefined') return 0
+  const se = document.scrollingElement
+  return Math.max(
+    window.scrollY || 0,
+    window.pageYOffset || 0,
+    document.documentElement?.scrollTop || 0,
+    document.body?.scrollTop || 0,
+    se?.scrollTop || 0,
+  )
+}
+
+function overflowYOf(el) {
+  if (typeof window === 'undefined' || !el) return ''
+  try {
+    return window.getComputedStyle(el).overflowY
+  } catch {
+    return ''
+  }
+}
+
+function isYScrollContainer(el) {
+  const oy = overflowYOf(el)
+  if (oy !== 'auto' && oy !== 'scroll' && oy !== 'overlay') return false
+  return el.scrollHeight > el.clientHeight + 1
+}
+
+/** True when the touch began inside a vertical scroller that is not at top. */
+export function hasScrolledAncestor(node, epsilon = PTR_AT_TOP_EPSILON) {
+  let el = node instanceof Element ? node : null
+  while (el && el !== document.body) {
+    if (isYScrollContainer(el) && !isScrollAtTop(el.scrollTop, epsilon)) return true
+    el = el.parentElement
+  }
+  return false
+}
+
 function isStandaloneApp() {
   if (typeof window === 'undefined') return false
   // iOS Safari home-screen apps expose navigator.standalone; other platforms
-  // resolve the manifest display mode via the media query.
+  // resolve the manifest display mode via the media query. fullscreen /
+  // minimal-ui also have no native PTR.
   if (window.navigator.standalone === true) return true
-  return window.matchMedia?.('(display-mode: standalone)')?.matches ?? false
+  return (
+    window.matchMedia?.('(display-mode: standalone)')?.matches ||
+    window.matchMedia?.('(display-mode: fullscreen)')?.matches ||
+    window.matchMedia?.('(display-mode: minimal-ui)')?.matches ||
+    false
+  )
 }
 
 function ptrDebugForced() {
@@ -46,16 +119,22 @@ function ptrDebugForced() {
   }
 }
 
-/** True when the touch began inside an element that is itself scrolled down
- * (e.g. the player-detail overlay's inner scroller). Pulling there should
- * scroll that element, not trigger a page refresh. */
-function hasScrolledAncestor(node) {
-  let el = node instanceof Element ? node : null
-  while (el && el !== document.body) {
-    if (el.scrollTop > 0) return true
-    el = el.parentElement
-  }
-  return false
+function ptrShouldEnable() {
+  if (typeof window === 'undefined') return false
+  if (ptrDebugForced()) return true
+  // Do not AND with (pointer: coarse): iPad + Magic Keyboard reports
+  // pointer:fine while the user is still pulling with a finger.
+  return isStandaloneApp()
+}
+
+function settleAfter(fn) {
+  const started = Date.now()
+  const timeout = new Promise((resolve) => {
+    window.setTimeout(resolve, REFRESH_TIMEOUT_MS)
+  })
+  return Promise.race([Promise.resolve().then(fn).catch(() => {}), timeout]).then(
+    () => Math.max(0, MIN_SPIN_MS - (Date.now() - started)),
+  )
 }
 
 /**
@@ -66,25 +145,43 @@ function hasScrolledAncestor(node) {
  *   refreshing: boolean, armed: boolean, progress: number }}
  */
 export function usePullToRefresh({ onRefresh } = {}) {
-  const [enabled] = useState(() => {
-    if (typeof window === 'undefined') return false
-    if (ptrDebugForced()) return true
-    return (
-      isStandaloneApp() &&
-      (window.matchMedia?.('(pointer: coarse)')?.matches ?? false)
-    )
-  })
+  const [enabled, setEnabled] = useState(() => ptrShouldEnable())
   const [distance, setDistance] = useState(0)
   /** Finger is down and we own the gesture (drives transition suppression). */
   const [pulling, setPulling] = useState(false)
   const [refreshing, setRefreshing] = useState(false)
   const onRefreshRef = useRef(onRefresh)
+  const refreshingRef = useRef(false)
   useEffect(() => {
     onRefreshRef.current = onRefresh
   }, [onRefresh])
+  useEffect(() => {
+    refreshingRef.current = refreshing
+  }, [refreshing])
 
   useEffect(() => {
-    if (!enabled || refreshing) return undefined
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
+      return undefined
+    }
+    const queries = [
+      window.matchMedia('(display-mode: standalone)'),
+      window.matchMedia('(display-mode: fullscreen)'),
+      window.matchMedia('(display-mode: minimal-ui)'),
+    ]
+    const sync = () => setEnabled(ptrShouldEnable())
+    for (const q of queries) {
+      q.addEventListener?.('change', sync)
+    }
+    sync()
+    return () => {
+      for (const q of queries) {
+        q.removeEventListener?.('change', sync)
+      }
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!enabled) return undefined
     let startX = 0
     let startY = 0
     /** Touch began at page top — candidate for a pull. */
@@ -95,9 +192,9 @@ export function usePullToRefresh({ onRefresh } = {}) {
     let buzzed = false
 
     const onTouchStart = (e) => {
+      if (refreshingRef.current) return
       if (e.touches.length !== 1) return
-      const scroller = document.scrollingElement || document.documentElement
-      if (scroller.scrollTop > 0) return
+      if (!isScrollAtTop(pageScrollTop())) return
       if (hasScrolledAncestor(e.target)) return
       startX = e.touches[0].clientX
       startY = e.touches[0].clientY
@@ -107,22 +204,20 @@ export function usePullToRefresh({ onRefresh } = {}) {
     }
 
     const onTouchMove = (e) => {
-      if (!tracking) return
+      if (!tracking || refreshingRef.current) return
       const dx = e.touches[0].clientX - startX
       const dy = e.touches[0].clientY - startY
-      if (!engaged) {
-        if (dy < 0 || Math.abs(dx) > Math.abs(dy)) {
-          // Upward scroll or horizontal swipe (carousels, table pans) —
-          // hand the gesture back to the page for this touch.
-          tracking = false
-          return
-        }
-        if (dy < ENGAGE_SLOP) return
+      const next = pullMoveDecision({ dx, dy, engaged })
+      if (next.preventDefault && e.cancelable) e.preventDefault()
+      if (!next.tracking) {
+        tracking = false
+        return
+      }
+      if (next.engaged && !engaged) {
         engaged = true
         setPulling(true)
       }
-      // Suppress iOS rubber-banding while we drive the indicator.
-      if (e.cancelable) e.preventDefault()
+      if (!engaged) return
       dist = dampen(dy)
       if (!buzzed && dist >= TRIGGER_DISTANCE) {
         buzzed = true
@@ -144,17 +239,12 @@ export function usePullToRefresh({ onRefresh } = {}) {
         setDistance(TRIGGER_DISTANCE)
         const fn = onRefreshRef.current
         if (typeof fn === 'function') {
-          const started = Date.now()
-          Promise.resolve()
-            .then(fn)
-            .catch(() => {})
-            .then(() => {
-              const wait = Math.max(0, MIN_SPIN_MS - (Date.now() - started))
-              window.setTimeout(() => {
-                setRefreshing(false)
-                setDistance(0)
-              }, wait)
-            })
+          settleAfter(fn).then((wait) => {
+            window.setTimeout(() => {
+              setRefreshing(false)
+              setDistance(0)
+            }, wait)
+          })
         } else {
           // No in-app refresh wired up — fall back to a full reload after
           // the spinner has a frame to paint.
@@ -176,7 +266,7 @@ export function usePullToRefresh({ onRefresh } = {}) {
       window.removeEventListener('touchend', onTouchEnd)
       window.removeEventListener('touchcancel', onTouchEnd)
     }
-  }, [enabled, refreshing])
+  }, [enabled])
 
   return {
     enabled,

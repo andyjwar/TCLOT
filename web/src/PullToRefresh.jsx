@@ -4,7 +4,7 @@ import './PullToRefresh.css'
 /* Floating pull-to-refresh indicator for the installed (standalone PWA) app;
  * `?ptr=1` force-enables it in any browser for testing. A progress ring
  * draws around the disc as you pull, pops when the refresh arms, then spins
- * while `onRefresh` re-fetches league data in place — see usePullToRefresh. */
+ * while `onRefresh` re-fetches league + live FPL data in place — see usePullToRefresh. */
 
 const RING_R = 13
 const RING_C = 2 * Math.PI * RING_R
