@@ -291,7 +291,6 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
   flex: 0 1 auto;
   max-width: min(52%, 12.5rem);
   min-width: 0;
-  overflow: hidden;
 }
 
 .trade-tool__side-head .cpsp__btn {
