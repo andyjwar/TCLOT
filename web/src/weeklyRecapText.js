@@ -148,8 +148,8 @@ function recapLead(m, key) {
     }
     return pick(
       [
-        `${open}${winner.name} steamrolled ${loser.name} ${score}, the kind of scoreline that gets screenshotted.`,
-        `${open}${winner.name} blew ${loser.name} away ${score}, a statement the rest of the league will have noticed.`,
+        `${open}${winner.name} steamrolled ${loser.name} ${score}, the kind of hiding you screenshot and send to the group chat.`,
+        `${open}${winner.name} blew ${loser.name} away ${score}, the sort of statement that follows you around the table.`,
       ],
       key,
     )
@@ -157,8 +157,8 @@ function recapLead(m, key) {
   if (o?.kind === 'lock') {
     return pick(
       [
-        `${open}${winner.name} beat ${loser.name} ${score}, and at ${o.p}% pre-match nobody should be pretending to be surprised.`,
-        `${open}${winner.name} had ${loser.name} ${score}, which is roughly what a ${o.p}% favourite is supposed to look like.`,
+        `${open}${winner.name} beat ${loser.name} ${score}, and at ${o.p}% pre-match anyone claiming shock should be asked to produce receipts.`,
+        `${open}${winner.name} had ${loser.name} ${score}, which is roughly what a ${o.p}% favourite is supposed to look like, only with less suspense.`,
       ],
       key,
     )
@@ -178,8 +178,8 @@ function recapLead(m, key) {
   if (margin <= 5) {
     return pick(
       [
-        `${open}${winner.name} edged ${loser.name} ${score} in a proper nail-biter.`,
-        `${open}${winner.name} squeaked past ${loser.name} ${score} — margins don't come much finer.`,
+        `${open}${winner.name} edged ${loser.name} ${score} in a proper nail-biter, the kind that ruins a Sunday and a blood-pressure reading.`,
+        `${open}${winner.name} squeaked past ${loser.name} ${score} — margins don't come much finer, or much ruder.`,
       ],
       key,
     )
@@ -245,8 +245,8 @@ function playerReport(m, key) {
   if (pLoser?.flop) {
     return pick(
       [
-        `${loser.name} will point at ${pLoser.flop.name}, projected for ${pLoser.flop.xp} and back with ${pLoser.flop.pts}.`,
-        `The blank that hurt was ${loser.name}'s ${pLoser.flop.name}, ${pLoser.flop.pts} against a ${pLoser.flop.xp}-point call.`,
+        `${loser.name} will point at ${pLoser.flop.name}, projected for ${pLoser.flop.xp} and back with ${pLoser.flop.pts}, which is how inquests get a name on the docket.`,
+        `The blank that hurt was ${loser.name}'s ${pLoser.flop.name}, ${pLoser.flop.pts} against a ${pLoser.flop.xp}-point call, the sort of return that gets screenshotted in anger.`,
       ],
       key,
     )
@@ -257,7 +257,7 @@ function playerReport(m, key) {
   ]
   for (const { facts, team } of pDrawSides) {
     if (facts?.haul && (!winner || team === loser)) {
-      return `${facts.haul.name}'s ${facts.haul.pts} for ${team.name} deserved more than it got.`
+      return `${facts.haul.name}'s ${facts.haul.pts} for ${team.name} deserved more than it got, which is a polite way of saying the rest of the card went missing.`
     }
   }
   return null
@@ -348,8 +348,8 @@ function recapKicker(m, key) {
     if (spec) return `The point leaves ${parked} — ${spec}.`
     return pick(
       [
-        `The point leaves ${parked}, a week that asked a question and then shrugged.`,
-        `In the table that parks ${parked}. You wouldn't call it a statement from either side.`,
+        `The point leaves ${parked}, a week that asked a question, shrugged, and billed both managers for the privilege.`,
+        `In the table that parks ${parked}. You wouldn't call it a statement from either side, unless the statement was a shrug.`,
       ],
       key,
     )
@@ -382,8 +382,8 @@ function recapKicker(m, key) {
   }
   return pick(
     [
-      `${capitalize(table)}, while ${loserBit} — three points in the bag, and a week to think about how it happened.`,
-      `${capitalize(table)}; ${loserBit}. ${winner.name} will take it; ${loser.name} will spend the week picking at the tape.`,
+      `${capitalize(table)}, while ${loserBit} — three points in the bag, and a week for ${loser.name} to argue with the team sheet.`,
+      `${capitalize(table)}; ${loserBit}. ${winner.name} will take it; ${loser.name} will spend the week picking at the tape and blaming the furniture.`,
     ],
     key,
   )
@@ -394,8 +394,8 @@ function recapSpeculation(m, key) {
   if (loser?.rank === 8) {
     return pick(
       [
-        'the trapdoor is already making a noise',
-        'last place after a week like that is a long way back',
+        'the trapdoor is already making a noise, and nobody is pretending they cannot hear it',
+        'last place after a week like that is a long way back, even if you talk a good recovery',
       ],
       `${key}-last`,
     )
@@ -407,7 +407,7 @@ function recapSpeculation(m, key) {
     return `alarm bells for ${loser.name} — ${loser.streak.len} defeats on the spin now`
   }
   if (winner?.isWeekHigh) {
-    return `nobody in the league scored more than ${winner.name}'s ${winner.points} this week, and if that's their floor the rest have a problem`
+    return `nobody in the league scored more than ${winner.name}'s ${winner.points} this week, and if that's their floor the rest should start taking notes`
   }
   if (winner?.isSeasonHigh && m.gw > 2) {
     return `${winner.name}'s ${winner.points} is their best week of the season so far, a template worth repeating`
@@ -431,8 +431,8 @@ function recapSpeculation(m, key) {
   if (m.gw <= 2) {
     return pick(
       [
-        'one week is a small sample, but templates have a way of sticking',
-        "early days, though you wouldn't fancy the beaten side to reverse this in a hurry",
+        'one week is a small sample, but templates have a way of sticking, usually to the beaten side',
+        "early days, though you wouldn't fancy the beaten side to reverse this in a hurry, or with a straight face",
       ],
       `${key}-early`,
     )
@@ -442,7 +442,7 @@ function recapSpeculation(m, key) {
 
 function managerFunFactSentences(m, key) {
   return matchupPersonalitySentences(m, pick, key, variantIndex, {
-    gate: 3,
+    gate: 1,
     veganAlways: true,
   })
 }
@@ -493,8 +493,8 @@ export function weekDerbySentence(matchups, key) {
   if (names.length === 1) {
     return pick(
       [
-        `Headline fixture was ${names[0]}.`,
-        `${capitalize(names[0])} sat in the middle of the card.`,
+        `Headline fixture was ${names[0]}, which is to say the group chat had a title before kick-off.`,
+        `${capitalize(names[0])} sat in the middle of the card, as it always does when those two share a pitch.`,
       ],
       key,
     )

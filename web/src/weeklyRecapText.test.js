@@ -306,6 +306,18 @@ test('Mottershead recap always has a vegan joke, plus one extra when hooked', ()
   assert.ok(mott.length >= 2)
 })
 
+test('recaps sprinkle a manager joke when lore exists', () => {
+  const text = joined({
+    ...base,
+    home: team({ manager: 'Eddy Webster' }),
+    away: { ...base.away, manager: 'David Higman' },
+  })
+  assert.match(
+    text,
+    /thesis|timezone|puzzle|Classic Eddy|waiver|BBC|Glastonbury|devil|people's champion|licence-fee/i,
+  )
+})
+
 test('no manager fun fact when neither manager has lore', () => {
   for (let gw = 1; gw <= 10; gw++) {
     const text = joined({ ...base, gw })
