@@ -7,6 +7,8 @@
  * completes, Waivers once the next GW's waiver deadline has passed.
  */
 
+import { pickDeadlinePassedLiveEvent } from './fplLiveCalendar.js'
+
 /** Cold-load dashboard view. Players hash and archive views still win. */
 export function initialDashboardView({
   hasPlayersHash = false,
@@ -63,6 +65,11 @@ export function seasonPhaseLanding(
   now = new Date(),
 ) {
   const nowMs = now.getTime()
+  const liveEvent = pickDeadlinePassedLiveEvent(
+    [currentEvent, nextEvent].filter(Boolean),
+    now,
+  )
+  if (liveEvent) return 'scores'
   const currentUnfinished = currentEvent && currentEvent.finished !== true
   if (currentUnfinished) {
     const deadlineMs = Date.parse(currentEvent.deadline_time)

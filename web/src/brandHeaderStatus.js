@@ -8,6 +8,7 @@
  */
 
 import { formatKickoffLabel } from './liveScoresDerivations.js'
+import { pickDeadlinePassedLiveEvent } from './fplLiveCalendar.js'
 
 /**
  * Compact season label for the status strip — `25/26` for the 2025/26 season.
@@ -193,13 +194,17 @@ function kickoffLabelWithin24h(deadlineIso, now) {
  * Derive the brand-header status strip state purely from bootstrap-derived data.
  *
  * Status definitions:
- * - `live`: `events.current` exists, its deadline has passed, and `finished === false`.
+ * - `live`: an unfinished event whose lineup deadline has passed. Prefer
+ *           `events.current`; if FPL still has current on last week, the next
+ *           GW whose `deadline_time` has elapsed counts as live too (XIs lock
+ *           at the deadline, and `events.current` can lag several minutes).
  *           Optional `liveFixtureCount` / `minute` (from `useFplFixtureLiveSummary`,
  *           PR #4) ride along on the result — when both are absent the strip degrades
  *           to `● GW {N} · Live` (pre-kickoff, between fixture windows, or fetch
  *           failure). Optional `finishedFixtureCount` / `totalFixtureCount` drive
  *           the `progressLabel` ("2 of 10 complete") added in PR #5h.
- * - `idle`: `events.current` is finished (between GWs). Until FPL's
+ * - `idle`: `events.current` is finished (between GWs) and the next deadline
+ *           is still in the future. Until FPL's
  *           `waivers_time`, the next milestone is `Waivers in {clock} -
  *           {dateTime}`. After that cutoff, it advances to `GW {next} starts
  *           in {clock} - {dateTime}`.
@@ -272,9 +277,13 @@ export function deriveBrandHeaderStatus({
     }
   }
 
-  if (currentEvent && currentEvent.finished !== true) {
-    const deadline = currentEvent.deadline_time
-      ? new Date(currentEvent.deadline_time)
+  const liveEvent =
+    pickDeadlinePassedLiveEvent([currentEvent, nextEvent].filter(Boolean), now) ??
+    (currentEvent && currentEvent.finished !== true ? currentEvent : null)
+
+  if (liveEvent && liveEvent.finished !== true) {
+    const deadline = liveEvent.deadline_time
+      ? new Date(liveEvent.deadline_time)
       : null
     const deadlinePassed =
       deadline && !Number.isNaN(deadline.getTime()) && deadline.getTime() <= now.getTime()
@@ -290,7 +299,7 @@ export function deriveBrandHeaderStatus({
           : null
       return {
         status: 'live',
-        liveGw: Number(currentEvent.id),
+        liveGw: Number(liveEvent.id),
         lastFinishedGw,
         nextGw,
         nextDeadlineLabel: formatDeadlineDate(nextEvent?.deadline_time),

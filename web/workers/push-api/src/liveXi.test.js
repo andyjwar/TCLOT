@@ -121,4 +121,12 @@ describe('findLiveGw', () => {
     assert.equal(findLiveGw(events, Date.parse('2026-08-23T12:00:00Z')), 5)
     assert.equal(findLiveGw(events, Date.parse('2026-08-23T09:00:00Z')), null)
   })
+
+  it('rolls to the next locked GW while isCurrent still points at last week', () => {
+    const events = [
+      { id: 1, deadlineMs: Date.parse('2026-08-21T17:30:00Z'), isCurrent: true, finished: true },
+      { id: 2, deadlineMs: Date.parse('2026-08-28T17:30:00Z'), isCurrent: false, isNext: true, finished: false },
+    ]
+    assert.equal(findLiveGw(events, Date.parse('2026-08-28T17:31:00Z')), 2)
+  })
 })

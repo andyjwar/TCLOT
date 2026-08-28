@@ -9,10 +9,11 @@ on:
   # Schedules (UTC):
   # - 30 5/13/21 * * * — three times daily: full data refresh (gate always allows via daily windows in script)
   # - 0 * * * *  — every hour: post-waivers window, post-deadline ingest window, pre-waivers 3-hourly
-  #   window (24h before waivers_time), or the daily catch-all windows
+  #   window (24h before waivers_time), lineup-lock window (deadline → +3h),
+  #   or the daily catch-all windows
   #   (see web/scripts/waiver-refresh-gate.mjs). Push / workflow_dispatch always deploy.
-  # - */15 * * * * — burst cron: gate deploys ONLY inside ~90 min after each waivers_time
-  #   (waivers land within minutes); skips immediately at all other times.
+  # - */15 * * * * — burst cron: gate deploys inside ~90 min after each waivers_time
+  #   and inside 3h after each lineup deadline (Preview / locked XIs); skips otherwise.
   schedule:
     - cron: '30 5 * * *'
     - cron: '30 13 * * *'
@@ -64,7 +65,7 @@ jobs:
             echo "proceed=1" >> "$GITHUB_OUTPUT"
           else
             echo "proceed=0" >> "$GITHUB_OUTPUT"
-            echo "Skipped — not in post-waivers or daily catch-up window (see web/scripts/waiver-refresh-gate.mjs)"
+            echo "Skipped — not in post-waivers, lineup-lock, or daily catch-up window (see web/scripts/waiver-refresh-gate.mjs)"
           fi
 
       # Without this, GH Pages bundles `fplApiBase()` → direct FPL (CORS) and Live/Draft APIs break.

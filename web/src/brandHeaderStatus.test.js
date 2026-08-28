@@ -88,6 +88,19 @@ test('deriveBrandHeaderStatus — live when current event is unfinished and dead
   assert.equal(out.seasonShort, '25/26')
 })
 
+test('deriveBrandHeaderStatus — live on next GW when current still points at finished last week', () => {
+  const out = deriveBrandHeaderStatus({
+    currentEvent: { id: 1, finished: true, deadline_time: '2026-08-21T17:30:00Z' },
+    nextEvent: { id: 2, finished: false, deadline_time: '2026-08-28T17:30:00Z' },
+    lastFinishedEvent: { id: 1 },
+    season: '2026/27',
+    now: new Date('2026-08-28T17:31:00Z'),
+  })
+  assert.equal(out.status, 'live')
+  assert.equal(out.liveGw, 2)
+  assert.equal(out.lastFinishedGw, 1)
+})
+
 test('deriveBrandHeaderStatus — idle (between GWs) when last is finished and next deadline future', () => {
   const out = deriveBrandHeaderStatus({
     currentEvent: { id: 28, finished: true, deadline_time: '2026-03-08T13:30:00Z' },
@@ -458,7 +471,8 @@ test('deriveBrandHeaderStatus — kickoffLabel null when deadline already in the
     lastFinishedEvent: { id: 28 },
     now: new Date('2026-03-14T20:00:00Z'),
   })
-  assert.equal(out.status, 'idle')
+  assert.equal(out.status, 'live')
+  assert.equal(out.liveGw, 29)
   assert.equal(out.kickoffLabel, null)
 })
 

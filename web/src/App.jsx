@@ -512,6 +512,7 @@ import { SeasonPredictions } from './SeasonPredictions'
 import { BookieView } from './BookieView'
 import { WeeklyRecap } from './WeeklyRecap'
 import { recapMenuLabelForStatus } from './weeklyRecapView.js'
+import { pickDeadlinePassedLiveEvent, pickDeadlinePassedLiveGw } from './fplLiveCalendar.js'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
@@ -2818,6 +2819,26 @@ function App() {
   /** FPL draft calendar — fetched on mount so Waivers tab does not depend on opening Live first. */
   const draftBootstrapEvents = useDraftBootstrapEvents()
 
+  /** Snap the status clock onto the next lineup deadline so Live / Preview
+   * flip at lock, not up to a minute later on the 60s tick. */
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    const list = draftBootstrapEvents.events
+    if (!Array.isArray(list) || list.length === 0) return undefined
+    const nowMs = Date.now()
+    let soonest = null
+    for (const e of list) {
+      if (e?.finished === true) continue
+      const t = Date.parse(String(e?.deadline_time ?? ''))
+      if (!Number.isFinite(t) || t <= nowMs) continue
+      if (soonest == null || t < soonest) soonest = t
+    }
+    if (soonest == null) return undefined
+    const delay = Math.min(soonest - nowMs + 250, 60_000)
+    const id = window.setTimeout(() => setStatusNow(new Date()), delay)
+    return () => window.clearTimeout(id)
+  }, [draftBootstrapEvents.events, statusNow])
+
   /** One-shot landing prime once the FPL calendar loads. Moves sub-tab:
    * Draft until GW1 waivers_time, then Waivers. Dashboard view follows the
    * gameweek cycle — Scores while a GW is live, Recap after a GW completes,
@@ -2881,7 +2902,9 @@ function App() {
     finishedFixtureCount: brandFinishedFixtureCount,
     totalFixtureCount: brandTotalFixtureCount,
   } = useFplFixtureLiveSummary({
-    currentEvent: draftBootstrapEvents.currentEvent,
+    currentEvent:
+      pickDeadlinePassedLiveEvent(draftBootstrapEvents.events, statusNow) ??
+      draftBootstrapEvents.currentEvent,
   })
 
   /**
@@ -3019,17 +3042,20 @@ function App() {
   /**
    * `useDraftBootstrapEvents` can be one snapshot behind; `fplLiveLandingGw` updates on each
    * live load. Take the max so Squads & Results / Live roll forward when FPL bumps `current`.
+   * Also include the highest unfinished GW whose lineup deadline has already
+   * passed — FPL's `events.current` often stays on last week until after lock.
    */
   const mergedFplCalendarCurrent = useMemo(() => {
     const a = Number(draftBootstrapEvents.current)
     const b = Number(fplLiveLandingGw)
-    const aOk = Number.isFinite(a) && a >= 1 && a <= 38
-    const bOk = Number.isFinite(b) && b >= 1 && b <= 38
-    if (aOk && bOk) return Math.max(a, b)
-    if (aOk) return a
-    if (bOk) return b
-    return null
-  }, [draftBootstrapEvents.current, fplLiveLandingGw])
+    const d = Number(pickDeadlinePassedLiveGw(draftBootstrapEvents.events, statusNow))
+    const nums = []
+    if (Number.isFinite(a) && a >= 1 && a <= 38) nums.push(a)
+    if (Number.isFinite(b) && b >= 1 && b <= 38) nums.push(b)
+    if (Number.isFinite(d) && d >= 1 && d <= 38) nums.push(d)
+    if (!nums.length) return null
+    return Math.max(...nums)
+  }, [draftBootstrapEvents.current, draftBootstrapEvents.events, fplLiveLandingGw, statusNow])
 
   const draftGwCalendarCurrent =
     mergedFplCalendarCurrent ??
@@ -3343,6 +3369,8 @@ function App() {
     nextEvent,
     fplLiveLandingGw,
     explicitLiveGw: liveGw,
+    events: draftBootstrapEvents.events,
+    now: statusNow,
   })
 
   const renderGwFixture = (fx, i) => {

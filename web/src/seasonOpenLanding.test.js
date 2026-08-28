@@ -50,6 +50,16 @@ test('GW live (deadline passed, not finished) → Scores', () => {
   )
 })
 
+test('GW2 deadline passed while current still on finished GW1 → Scores', () => {
+  assert.equal(
+    seasonPhaseLanding(
+      { currentEvent: gw1Finished, nextEvent: gw2, lastFinishedEvent: gw1Finished },
+      new Date('2026-08-28T17:31:00Z'),
+    ),
+    'scores',
+  )
+})
+
 test('GW complete, before next waiver deadline → Recap', () => {
   // current still points at the finished GW, next is upcoming
   assert.equal(

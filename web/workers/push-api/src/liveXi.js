@@ -141,13 +141,16 @@ export function liveXiMessage(event, gw) {
   }
 }
 
-/** Find the current live GW (deadline passed, current/live, not finished). */
+/** Find the current live GW (deadline passed, not finished). */
 export function findLiveGw(events, nowMs) {
   const now = Number(nowMs)
-  const live = events.find(
-    (e) => (e.isLive || (e.isCurrent && !e.finished)) && now >= e.deadlineMs,
-  )
-  return live ? live.id : null
+  let best = null
+  for (const e of events) {
+    if (!e || e.finished) continue
+    if (!Number.isFinite(e.deadlineMs) || now < e.deadlineMs) continue
+    if (!best || e.id > best.id) best = e
+  }
+  return best ? best.id : null
 }
 
 const TOTALS_TTL_SECONDS = 7 * 24 * 60 * 60
