@@ -12,8 +12,11 @@ import { TradePillsMockup } from './TradePillsMockup.jsx'
 import { ScorecardRemainingMockup } from './ScorecardRemainingMockup.jsx'
 import { TopOfLeagueMockup } from './TopOfLeagueMockup.jsx'
 
+import { stripReloadQuery } from './tclotRefresh.js'
+
 // Local-only design preview (no production impact).
 // Visit `?mockup=1` to render the design system mockup instead of the live app.
+if (typeof window !== 'undefined') stripReloadQuery()
 const isRebrandGallery =
   typeof window !== 'undefined' &&
   new URLSearchParams(window.location.search).get('rebrand') === '1'

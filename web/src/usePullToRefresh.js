@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
+import { reloadStandaloneApp } from './tclotRefresh.js'
 
 /* Pull-to-refresh gesture for the installed (home-screen / standalone PWA)
  * app. In standalone display mode the browser provides no native
  * pull-to-refresh, so we reimplement it: drag down from the very top of the
- * page and release past the threshold to re-fetch league data in place (no
- * page reload). In a regular mobile browser tab the hook stays disabled —
- * iOS Safari and Android Chrome already ship a native pull-to-refresh there,
- * and a custom one would fight it. Append `?ptr=1` to force-enable for
- * testing in any browser (e.g. desktop DevTools touch emulation). */
+ * page and release past the threshold to reload the app (same as force-
+ * quitting — iOS otherwise keeps a frozen document). In a regular mobile
+ * browser tab the hook stays disabled — iOS Safari and Android Chrome
+ * already ship a native pull-to-refresh there, and a custom one would fight
+ * it. Append `?ptr=1` to force-enable for testing in any browser. */
 
 /** Pull distance (px, after resistance damping) that arms the refresh. */
 const TRIGGER_DISTANCE = 64
@@ -139,8 +140,9 @@ function settleAfter(fn) {
 
 /**
  * @param {{ onRefresh?: () => (void | Promise<unknown>) }} [options]
- *   `onRefresh` — async in-place data refresh; the spinner spins until it
- *   settles. Falls back to a full page reload when omitted.
+ *   `onRefresh` — cache-busting document reload (see `reloadStandaloneApp`).
+ *   Spinner stays up until navigation unloads the page, or the timeout
+ *   fires. Falls back to the same reload when omitted.
  * @returns {{ enabled: boolean, distance: number, pulling: boolean,
  *   refreshing: boolean, armed: boolean, progress: number }}
  */
@@ -246,9 +248,10 @@ export function usePullToRefresh({ onRefresh } = {}) {
             }, wait)
           })
         } else {
-          // No in-app refresh wired up — fall back to a full reload after
-          // the spinner has a frame to paint.
-          window.setTimeout(() => window.location.reload(), 80)
+          // No onRefresh wired up — same cache-bust navigate iOS needs.
+          window.setTimeout(() => {
+            void reloadStandaloneApp()
+          }, 80)
         }
       } else {
         setDistance(0)

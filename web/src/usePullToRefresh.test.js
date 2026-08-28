@@ -5,7 +5,15 @@ import {
   isScrollAtTop,
   pullMoveDecision,
 } from './usePullToRefresh.js'
-import { requestTclotRefresh, subscribeTclotRefresh } from './tclotRefresh.js'
+import {
+  RELOAD_QUERY_PARAM,
+  reloadAppUrl,
+  reloadStandaloneApp,
+  requestTclotRefresh,
+  stripReloadQuery,
+  subscribeTclotRefresh,
+  urlWithoutReloadParam,
+} from './tclotRefresh.js'
 import { fetchFplJsonCached } from './fplFetchCache.js'
 
 test('isScrollAtTop treats iOS leftover scrollY as the top', () => {
@@ -70,5 +78,103 @@ test('requestTclotRefresh busts the FPL cache and notifies subscribers', async (
     globalThis.fetch = originalFetch
     if (originalWindow === undefined) delete globalThis.window
     else globalThis.window = originalWindow
+  }
+})
+
+test('reloadAppUrl stamps a fresh _r without stacking or dropping other params', () => {
+  const stamped = reloadAppUrl('https://tclot.vercel.app/?ptr=1#/players', 1700000000000)
+  assert.equal(stamped, `/?ptr=1&${RELOAD_QUERY_PARAM}=1700000000000#/players`)
+
+  const replaced = reloadAppUrl(
+    `https://tclot.vercel.app/TCLOT/?${RELOAD_QUERY_PARAM}=old&ptr=1`,
+    99,
+  )
+  assert.equal(replaced, `/TCLOT/?ptr=1&${RELOAD_QUERY_PARAM}=99`)
+})
+
+test('urlWithoutReloadParam strips _r or returns null when it is absent', () => {
+  assert.equal(urlWithoutReloadParam('https://tclot.vercel.app/'), null)
+  assert.equal(
+    urlWithoutReloadParam(`https://tclot.vercel.app/?ptr=1&${RELOAD_QUERY_PARAM}=9#h`),
+    '/?ptr=1#h',
+  )
+  assert.equal(
+    urlWithoutReloadParam(`https://tclot.vercel.app/?${RELOAD_QUERY_PARAM}=1`),
+    '/',
+  )
+})
+
+test('stripReloadQuery replaceStates the URL without the cache-buster', () => {
+  const originalWindow = globalThis.window
+  const replaced = []
+  globalThis.window = {
+    location: { href: `https://tclot.vercel.app/?ptr=1&${RELOAD_QUERY_PARAM}=abc` },
+    history: {
+      state: { tab: 'live' },
+      replaceState(state, _title, url) {
+        replaced.push({ state, url })
+      },
+    },
+  }
+  try {
+    stripReloadQuery()
+    assert.equal(replaced.length, 1)
+    assert.equal(replaced[0].url, '/?ptr=1')
+    assert.equal(replaced[0].state.tab, 'live')
+  } finally {
+    if (originalWindow === undefined) delete globalThis.window
+    else globalThis.window = originalWindow
+  }
+})
+
+test('reloadStandaloneApp clears Cache Storage then replace()s a cache-busted URL', async () => {
+  const originalCaches = globalThis.caches
+  const deleted = []
+  globalThis.caches = {
+    keys: async () => ['tclot-shell', 'other'],
+    delete: async (key) => {
+      deleted.push(key)
+      return true
+    },
+  }
+  const replaced = []
+  const locationLike = {
+    href: 'https://tclot.vercel.app/?ptr=1',
+    replace(url) {
+      replaced.push(url)
+    },
+  }
+  try {
+    await reloadStandaloneApp(locationLike)
+    assert.deepEqual(deleted, ['tclot-shell', 'other'])
+    assert.equal(replaced.length, 1)
+    assert.match(replaced[0], /^\?ptr=1&_r=\d+$|^\/\?ptr=1&_r=\d+$/)
+    const url = new URL(replaced[0], 'https://tclot.vercel.app')
+    assert.equal(url.searchParams.get('ptr'), '1')
+    assert.ok(url.searchParams.get(RELOAD_QUERY_PARAM))
+  } finally {
+    if (originalCaches === undefined) delete globalThis.caches
+    else globalThis.caches = originalCaches
+  }
+})
+
+test('reloadStandaloneApp falls back to assigning href when replace throws', async () => {
+  const originalCaches = globalThis.caches
+  globalThis.caches = {
+    keys: async () => [],
+    delete: async () => true,
+  }
+  const locationLike = {
+    href: 'https://tclot.vercel.app/',
+    replace() {
+      throw new Error('replace blocked')
+    },
+  }
+  try {
+    await reloadStandaloneApp(locationLike)
+    assert.match(locationLike.href, /^\/\?_r=\d+$/)
+  } finally {
+    if (originalCaches === undefined) delete globalThis.caches
+    else globalThis.caches = originalCaches
   }
 })

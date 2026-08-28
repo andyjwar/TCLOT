@@ -542,7 +542,7 @@ import {
   WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
 import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
-import { requestTclotRefresh } from './tclotRefresh.js'
+import { reloadStandaloneApp } from './tclotRefresh.js'
 import { useLiveWaiverMoves } from './useLiveWaiverMoves.js'
 import {
   liveWaiverPollTarget,
@@ -2569,7 +2569,7 @@ function resolveSystemTheme() {
 }
 
 function App() {
-  const { data, error, loading, refresh } = useLeagueData()
+  const { data, error, loading } = useLeagueData()
   /** Minute-resolution clock for between-GW waiver / deadline countdowns. */
   const [statusNow, setStatusNow] = useState(() => new Date())
   useEffect(() => {
@@ -3013,9 +3013,10 @@ function App() {
     [staticWaiverOutGwRows, liveWaiver.rows],
   )
   const refreshLeagueAndWaivers = useCallback(async () => {
-    requestTclotRefresh()
-    await Promise.all([refresh(), liveWaiver.refetch()])
-  }, [refresh, liveWaiver.refetch])
+    // In-place JSON refetch cannot unstick an iOS home-screen app; the
+    // document is frozen until the process is killed. Cache-bust navigate.
+    await reloadStandaloneApp()
+  }, [])
 
   /** GWs present in waiver / FA analytics (drops-gw-live plus any live FPL overlay). */
   const processedWaiverGws = useMemo(() => {
