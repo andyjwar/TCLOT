@@ -11,7 +11,9 @@
  *
  * Preview entries (`previews`) — one per finished GW (frozen from the archive)
  * and the next unfinished GW only after that GW's lineup deadline:
- *  - win/draw/win percents, projected XI points, watch-list from the locked 11
+ *  - win/draw/win percents from the same XI + predictions.json forecast as
+ *    Live Odds (not the season-strength / bookie board); projected XI points;
+ *    watch-list from the locked 11
  *  - bookie fractions, recent waivers, last-week form
  *  - injuries / bench-vs-XI questions when they actually change the week
  *  - template look-forward paragraph (bookie lean / stakes / XI / lore)
@@ -45,6 +47,12 @@ import {
   watchPlayersFromXi,
   formFromXi,
 } from '../src/weeklyPreviewText.js'
+import {
+  calibrationSigmaScale,
+  resolvePreviewOdds,
+  starterElementIds,
+  xiPredictionOdds,
+} from '../src/weeklyPreviewOdds.js'
 import {
   playerAvailability,
   lineupFromPriorXi,
@@ -384,9 +392,11 @@ function readOptional(name) {
 
 const bookie = readOptional('bookie-markets.json')
 const playerPredictions = readOptional('predictions.json')
+const modelCalibration = readOptional('model-calibration.json')
 const elementStatus = readOptional('element_status.json')
 const bootstrapDraft = readOptional('bootstrap_draft.json')
 const draftPicks = readOptional('draft_picks.json')
+const sigmaScale = calibrationSigmaScale(modelCalibration)
 
 const elementNameById = new Map(
   (bootstrapDraft?.elements ?? []).map((e) => [
@@ -716,32 +726,28 @@ function previewTeam(entryId, asOfGw) {
   }
 }
 
-function previewOddsFor(match, history, bookieRow) {
+function previewOddsFor(match, history, bookieRow, homeLu, awayLu) {
   const h = Number(match.league_entry_1)
   const a = Number(match.league_entry_2)
   const arch = findArchivedH2hRow(history, h, a)
-  const mc = arch?.xPtsMc
-  if (mc && Number.isFinite(Number(mc.homeWinPct)) && Number.isFinite(Number(mc.awayWinPct))) {
-    const homeIsH = Number(arch.league_entry_1) === h
-    const hw = homeIsH ? Number(mc.homeWinPct) : Number(mc.awayWinPct)
-    const aw = homeIsH ? Number(mc.awayWinPct) : Number(mc.homeWinPct)
-    const dw = Number.isFinite(Number(mc.drawPct)) ? Number(mc.drawPct) : 0
-    return { hw, dw, aw, source: 'engine', arch }
-  }
-  if (bookieRow?.probs) {
-    return {
-      hw: Number(bookieRow.probs.home) * 100,
-      dw: Number(bookieRow.probs.draw) * 100,
-      aw: Number(bookieRow.probs.away) * 100,
-      source: 'strength',
-      arch: null,
-    }
-  }
   const fav = matchFavorite(match, history, strengthById)
-  if (Number.isFinite(fav.homePct) && Number.isFinite(fav.awayPct)) {
-    return { hw: fav.homePct, dw: 0, aw: fav.awayPct, source: fav.source, arch: null }
-  }
-  return null
+  const priced = resolvePreviewOdds({
+    archiveMc: arch?.xPtsMc,
+    archiveHomeIsMatchHome: arch ? Number(arch.league_entry_1) === h : true,
+    xiOdds: xiPredictionOdds(
+      predById,
+      starterElementIds(homeLu?.starters),
+      starterElementIds(awayLu?.starters),
+      sigmaScale,
+    ),
+    bookieProbs: bookieRow?.probs ?? null,
+    strength:
+      Number.isFinite(fav.homePct) && Number.isFinite(fav.awayPct)
+        ? { homePct: fav.homePct, awayPct: fav.awayPct, source: fav.source }
+        : null,
+  })
+  if (!priced) return null
+  return { ...priced, arch }
 }
 
 function buildPreviewForGw(gw) {
@@ -764,7 +770,9 @@ function buildPreviewForGw(gw) {
     const bookieRow = bookieGw
       ? (bookieByPair.get(`${homeId}-${awayId}`) ?? bookieByPair.get(`${awayId}-${homeId}`))
       : null
-    const priced = previewOddsFor(match, history, bookieRow)
+    const homeLu = lineupByLeague.get(homeId) ?? null
+    const awayLu = lineupByLeague.get(awayId) ?? null
+    const priced = previewOddsFor(match, history, bookieRow, homeLu, awayLu)
     const pcts = priced
       ? oddsPercents({ home: priced.hw, draw: priced.dw, away: priced.aw })
       : { home: 50, draw: 0, away: 50 }
@@ -788,8 +796,6 @@ function buildPreviewForGw(gw) {
         }
 
     const arch = priced?.arch ?? findArchivedH2hRow(history, homeId, awayId)
-    const homeLu = lineupByLeague.get(homeId) ?? null
-    const awayLu = lineupByLeague.get(awayId) ?? null
     const homeKeys = watchPlayersFromXi(archivedXi(arch, homeId), 2)
     const awayKeys = watchPlayersFromXi(archivedXi(arch, awayId), 2)
     const home = {
@@ -819,6 +825,11 @@ function buildPreviewForGw(gw) {
       predicted = {
         home: homeIsE1 ? Number(arch.xPtsXi1) : Number(arch.xPtsXi2),
         away: homeIsE1 ? Number(arch.xPtsXi2) : Number(arch.xPtsXi1),
+      }
+    } else if (Number.isFinite(priced?.homeMu) && Number.isFinite(priced?.awayMu)) {
+      predicted = {
+        home: Math.round(priced.homeMu * 10) / 10,
+        away: Math.round(priced.awayMu * 10) / 10,
       }
     } else if (Number.isFinite(homeLu?.predicted) && Number.isFinite(awayLu?.predicted)) {
       predicted = { home: homeLu.predicted, away: awayLu.predicted }
