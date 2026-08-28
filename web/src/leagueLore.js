@@ -7,8 +7,9 @@
  * matches "Andy Ward" and so on.
  *
  * Statistical story always leads. These lines are seasoning: short, affectionate,
- * mates taking the piss. Named fixtures ALWAYS fire. Preview personality is
- * sprinkled on every fixture that has lore; recap personality stays gated.
+ * mates taking the piss. Named fixtures ALWAYS fire. Preview lore is sprinkled,
+ * not a per-manager checklist. Mottershead always gets a vegan joke, plus one
+ * more line when the week actually gives him a hook.
  */
 
 /** Normalise a manager name for matching: trim, collapse spaces, lowercase. */
@@ -75,6 +76,15 @@ const TITANIC_LINES = [
   'Historic titans, present-day collision: the Duo play themselves.',
 ]
 
+/** Always-on Mottershead vegan asides. Rotated so it is not the same sentence every week. */
+export const VEGAN_LINES = [
+  'Nick Mottershead presents as if he invented veganism. He did not, but try telling him.',
+  'Plant-based and extremely sure: Mottershead is still talking like he invented veganism.',
+  'Somewhere a tofu scramble is being treated as a tactical innovation. That is Mottershead.',
+  'The XI may have meat in it. Mottershead is giving the vegan lecture anyway.',
+  'Mottershead has a take. It is about veganism. It always is.',
+]
+
 /**
  * Per-manager running jokes. `tags` let the picker prefer a line that fits
  * what actually happened (waiver, bench, last place) without cramming every
@@ -119,7 +129,6 @@ export const MANAGER_LORE = {
       { tags: ['generic', 'titanic'], text: `The Titanic Duo energy is still there. The iceberg evidence is mounting.` },
       { tags: ['generic'], text: `Nick Mottershead is doing this from a girls' arts school, which remains a deeply improbable sentence.` },
       { tags: ['generic'], text: `Fallen-empire energy from Mottershead: the old swagger, a newer set of results.` },
-      { tags: ['generic', 'vegan'], text: `Nick Mottershead presents as if he invented veganism. He did not, but try telling him.` },
       { tags: ['trade'], text: `Another Mottershead trade flurry. Historic titans, present-day volume.` },
     ],
   },
@@ -201,18 +210,40 @@ export function loreTagsFromSide(side) {
  * @param {string[]} [tags]
  * @returns {string|null}
  */
-export function managerFunFact(manager, pick, key, tags = []) {
+export function managerFunFact(manager, pick, key, tags = [], { excludeTags = [] } = {}) {
   const lore = MANAGER_LORE[canonicalManager(manager)]
   if (!lore || !lore.facts || lore.facts.length === 0) return null
+  const skip = new Set((excludeTags || []).filter(Boolean))
+  const facts = lore.facts.filter((f) => !factTags(f).some((t) => skip.has(t)))
   const want = new Set((tags || []).filter(Boolean))
-  const tagged = lore.facts.filter((f) => factTags(f).some((t) => want.has(t)))
+  const tagged = facts.filter((f) => factTags(f).some((t) => want.has(t)))
   const hookOnly =
     tagged.length > 0 &&
-    tagged.length < lore.facts.length &&
+    tagged.length < facts.length &&
     pick(['hook', 'hook', 'any'], `${key}-pool`) !== 'any'
-  const pool = (hookOnly ? tagged : lore.facts).map(factText).filter(Boolean)
+  const pool = (hookOnly ? tagged : facts).map(factText).filter(Boolean)
   if (!pool.length) return null
   return pick(pool, key)
+}
+
+export function isMottershead(manager) {
+  return canonicalManager(manager) === 'nick mottershead'
+}
+
+export function mottersheadSideOf(m) {
+  if (isMottershead(m?.home?.manager)) return m.home
+  if (isMottershead(m?.away?.manager)) return m.away
+  return null
+}
+
+export function mottersheadVeganLine(pick, key) {
+  return pick(VEGAN_LINES, key)
+}
+
+function mottExtraFits(side, homeMgr, awayMgr) {
+  if (isTitanicPair(homeMgr, awayMgr)) return true
+  const tags = loreTagsFromSide(side)
+  return tags.some((t) => t === 'waiver' || t === 'trade' || t === 'bench' || t === 'last' || t === 'conservative')
 }
 
 /** Chip / heading form: drop a leading "the ". */
@@ -241,6 +272,22 @@ export function titanicAside(pick, key) {
   return pick(TITANIC_LINES, key)
 }
 
+/**
+ * Drop asides into the paragraph instead of stacking them at the end.
+ * Never inserts before the lead sentence (named derby / result).
+ */
+export function sprinkleInto(sentences, extras, variantIndex, key) {
+  if (!extras?.length) return sentences
+  const out = [...sentences]
+  extras.forEach((line, i) => {
+    const lo = Math.min(1, out.length)
+    const span = Math.max(1, out.length - lo + 1)
+    const idx = lo + variantIndex(`${key}-spr-${i}`, span)
+    out.splice(Math.min(idx, out.length), 0, line)
+  })
+  return out
+}
+
 /** True when we have at least one running joke for this manager. */
 export function hasManagerLore(manager) {
   const lore = MANAGER_LORE[canonicalManager(manager)]
@@ -250,17 +297,16 @@ export function hasManagerLore(manager) {
 /**
  * Personality asides for a matchup.
  *
- * Named derbies live elsewhere and always fire. Here: Titanic Duo only when
- * Andy Ward plays Nick Mottershead, and only some weeks. Otherwise one joke
- * per manager who has lore (`both: true`), or a single pick (`both: false`).
- * `gate` 1 = every fixture; higher = skip some weeks so a recap is not a
- * checklist.
+ * Named derbies live elsewhere and always fire. Mottershead always gets a
+ * vegan joke when `veganAlways` is set, plus one extra non-vegan line when
+ * the week has a hook (waiver, trade, bench, last, Titanic pairing).
+ * Everyone else: at most one sprinkle, never a line-per-manager checklist.
  *
  * @param {{ home?: object, away?: object }} m
  * @param {(arr: string[], key: string) => string} pick
  * @param {string} key
  * @param {(key: string, n: number) => number} variantIndex
- * @param {{ gate?: number, both?: boolean }} [opts]
+ * @param {{ gate?: number, both?: boolean, veganAlways?: boolean }} [opts]
  * @returns {string[]}
  */
 export function matchupPersonalitySentences(
@@ -268,25 +314,55 @@ export function matchupPersonalitySentences(
   pick,
   key,
   variantIndex,
-  { gate = 2, both = false } = {},
+  { gate = 2, both = false, veganAlways = false } = {},
 ) {
   const home = m?.home?.manager
   const away = m?.away?.manager
-  if (isTitanicPair(home, away) && variantIndex(`${key}-titanic`, 3) === 0) {
-    return [pick(TITANIC_LINES, `${key}-titanic-line`)].filter(Boolean)
+  const out = []
+  const mott = mottersheadSideOf(m)
+
+  if (veganAlways && mott) {
+    const vegan = mottersheadVeganLine(pick, `${key}-vegan`)
+    if (vegan) out.push(vegan)
+    if (mottExtraFits(mott, home, away)) {
+      if (isTitanicPair(home, away) && variantIndex(`${key}-titanic`, 2) === 0) {
+        out.push(pick(TITANIC_LINES, `${key}-titanic-line`))
+      } else {
+        const extra = managerFunFact(
+          mott.manager,
+          pick,
+          `${key}-mott-extra`,
+          loreTagsFromSide(mott),
+          { excludeTags: ['vegan'] },
+        )
+        if (extra) out.push(extra)
+      }
+    }
+  } else if (isTitanicPair(home, away) && variantIndex(`${key}-titanic`, 3) === 0) {
+    out.push(pick(TITANIC_LINES, `${key}-titanic-line`))
   }
-  const sides = []
-  if (hasManagerLore(home)) sides.push({ manager: home, side: m.home, which: 'home' })
-  if (hasManagerLore(away)) sides.push({ manager: away, side: m.away, which: 'away' })
-  if (!sides.length) return []
-  if (gate > 1 && variantIndex(`${key}-gate`, gate) !== 0) return []
+
+  const others = []
+  if (hasManagerLore(home) && !isMottershead(home)) {
+    others.push({ manager: home, side: m.home, which: 'home' })
+  }
+  if (hasManagerLore(away) && !isMottershead(away)) {
+    others.push({ manager: away, side: m.away, which: 'away' })
+  }
+
+  if (veganAlways && mott) {
+    // Mottershead card already has vegan (+ extra). Do not also checklist the opponent.
+    return out.filter(Boolean)
+  }
+
+  if (!others.length) return out.filter(Boolean)
+  if (gate > 1 && variantIndex(`${key}-gate`, gate) !== 0) return out.filter(Boolean)
 
   const chosen =
-    both || sides.length === 1
-      ? sides
-      : [sides[variantIndex(`${key}-side`, sides.length)]]
+    both || others.length === 1
+      ? others
+      : [others[variantIndex(`${key}-side`, others.length)]]
 
-  const out = []
   for (const s of chosen) {
     const line = managerFunFact(
       s.manager,
@@ -296,7 +372,7 @@ export function matchupPersonalitySentences(
     )
     if (line) out.push(line)
   }
-  return out
+  return out.filter(Boolean)
 }
 
 /**

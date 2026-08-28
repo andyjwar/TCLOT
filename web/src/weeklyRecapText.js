@@ -16,8 +16,9 @@
 
 import {
   namedFixtureFor,
-  matchupPersonalitySentence,
+  matchupPersonalitySentences,
   managerFunFact,
+  sprinkleInto,
   uniqueDerbies,
   titanicAside,
   canonicalManager,
@@ -417,11 +418,14 @@ function namedFixtureSentence(m, key) {
 }
 
 /**
- * A manager's running joke, woven in only sometimes (~1 matchup in 3).
- * Deterministic per matchup+GW, so it never churns on rebuild.
+ * Manager jokes. Mottershead always gets the vegan line, plus one extra
+ * when the week hooks him. Everyone else is still a sprinkle (~1 in 3).
  */
-function managerFunFactSentence(m, key) {
-  return matchupPersonalitySentence(m, pick, key, variantIndex, { gate: 3 })
+function managerFunFactSentences(m, key) {
+  return matchupPersonalitySentences(m, pick, key, variantIndex, {
+    gate: 3,
+    veganAlways: true,
+  })
 }
 
 /**
@@ -454,12 +458,12 @@ export function matchupRecapSentences(m) {
   if (players) out.push(players)
   const waiver = waiverSentence(m, `${key}-w`)
   if (waiver) out.push(waiver)
-  const managerJoke = managerFunFactSentence(m, `${key}-mff`)
-  if (managerJoke) out.push(managerJoke)
+  const jokes = managerFunFactSentences(m, `${key}-mff`)
+  const sprinkled = sprinkleInto(out, jokes, variantIndex, `${key}-mff`)
   // The season rivalry is the freshest bit of colour once it exists; otherwise
   // fall back to the best available fun fact.
-  out.push(rivalrySentence(m) ?? funFactSentence(m, `${key}-f`))
-  return out
+  sprinkled.push(rivalrySentence(m) ?? funFactSentence(m, `${key}-f`))
+  return sprinkled
 }
 
 /** Winner/loser orientation for one matchup; both null for draws. */

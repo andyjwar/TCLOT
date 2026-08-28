@@ -170,27 +170,30 @@ test('Bad Blood Derby leads when Andy plays Nick Goodacre', () => {
   assert.match(out[0], /Bad Blood Derby/)
 })
 
-test('vegan jokes are one Mottershead option, not an every-week guarantee', () => {
-  let sawPersonality = false
-  let sawVegan = false
-  const lines = new Set()
+test('Mottershead preview always has a vegan joke', () => {
   for (let gw = 1; gw <= 16; gw++) {
     const joined = matchupPreviewSentences({ ...base, gw }).join(' ')
-    if (/vegan|Titanic|arts school|swagger|big-move|fallen-empire|trade flurry|extremely sure|spreadsheet|lampshade|conservative/i.test(joined)) {
-      sawPersonality = true
-    }
-    if (/vegan|invented veganism/i.test(joined)) sawVegan = true
-    const joke = matchupPreviewSentences({ ...base, gw }).find((s) =>
-      /vegan|Titanic|arts school|swagger|big-move|fallen-empire|extremely sure|spreadsheet|lampshade|conservative/i.test(s),
-    )
-    if (joke) lines.add(joke)
+    assert.match(joined, /vegan|tofu|plant-based/i)
   }
-  assert.ok(sawPersonality, 'Mottershead/Goodacre personality should appear on some GWs')
   assert.equal(isVeganManager('Nick Mottershead'), true)
   assert.equal(isVeganManager('Nick Goodacre'), false)
-  // Not required every week, and not the same sentence on a loop.
-  assert.ok(lines.size >= 1)
-  void sawVegan
+})
+
+test('Mottershead gets a second line when the week hooks him', () => {
+  const quiet = matchupPreviewSentences(base).filter((s) =>
+    /vegan|tofu|plant-based|swagger|arts school|big-move|fallen-empire|trade flurry|extremely sure|Titanic/i.test(s),
+  )
+  assert.equal(quiet.length, 1)
+
+  const hooked = matchupPreviewSentences({
+    ...base,
+    home: team({ recentPickups: [{ name: 'Schade', kind: 'w' }, { name: 'Tel', kind: 'w' }] }),
+  })
+  const mott = hooked.filter((s) =>
+    /vegan|tofu|plant-based|swagger|arts school|big-move|fallen-empire|trade flurry|extremely sure|Titanic/i.test(s),
+  )
+  assert.ok(mott.length >= 2)
+  assert.match(mott.join(' '), /vegan|tofu|plant-based/i)
 })
 
 test('no vegan joke when Mottershead is not playing', () => {
@@ -212,7 +215,7 @@ test('no vegan joke when Mottershead is not playing', () => {
   assert.doesNotMatch(out.join(' '), /vegan|tofu|plant|oat milk/i)
 })
 
-test('East Asian Derby always leads; Luke and David personality both land', () => {
+test('East Asian Derby always leads; one personality sprinkle, not both managers', () => {
   const out = matchupPreviewSentences({
     ...base,
     gw: 2,
@@ -231,11 +234,16 @@ test('East Asian Derby always leads; Luke and David personality both land', () =
   })
   const joined = out.join(' ')
   assert.match(out[0], /East Asian Derby/)
-  assert.match(joined, /BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil|people's champion|licence-fee/i)
-  assert.match(joined, /manifesto|Prime Minister|Samsung|Norfolk|harmony|left-wing/i)
+  const lore = out.filter((s) =>
+    /BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil|people's champion|licence-fee|harmony|left-wing/i.test(
+      s,
+    ),
+  )
+  assert.equal(lore.length, 1)
+  assert.match(joined, /BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil|people's champion|licence-fee|harmony|left-wing/i)
 })
 
-test('every GW2-style fixture gets personality, including non-derbies', () => {
+test('GW2-style fixtures sprinkle lore without a line per manager', () => {
   const fixtures = [
     {
       home: team({ manager: 'Nick Goodacre', name: 'Atlético Bilbo', entryId: 1 }),
@@ -308,20 +316,19 @@ test('every GW2-style fixture gets personality, including non-derbies', () => {
       }),
     },
   ]
-  const lore = [
-    /lampshade|conservative|spreadsheet|Nick Goodacre|Northern|safest/i,
-    /Andy|comeback|big game|Titanic|battle|Canada/i,
-    /Jon|Brother Ward|commentary|poke/i,
-    /Eddy|thesis|timezone|puzzle|children|Canada/i,
-    /BBC|Glastonbury|devil|people's champion|licence-fee/i,
-    /manifesto|Prime Minister|Samsung|Norfolk|harmony|left-wing/i,
-    /twins|wildcard|theorised|classified|sleep/i,
-    /vegan|Titanic|arts school|swagger|big-move|fallen-empire|extremely sure/i,
-  ]
+  const loreRe =
+    /lampshade|spreadsheet|Northern caution|safest available|anything rash|comeback remains imminent|talks a big game|Titanic Duo|battle mode|British in Canada|lying down|Brother Ward|poked the bear|notes on everyone else's|thesis|timezone|puzzle|Classic Eddy|post-waiver debrief|gone native|talked himself out|BBC|Glastonbury|devil's advocate|people's champion|licence-fee|manifesto|Prime Minister|Samsung|Norfolk|harmony|left-wing|twins|wildcard|theorised|classified|vegan|tofu|plant-based|arts school|swagger|big-move|fallen-empire|extremely sure|trade flurry|invented veganism/i
   for (const fx of fixtures) {
-    const joined = matchupPreviewSentences({ ...base, gw: 2, h2h: null, ...fx }).join(' ')
-    const hits = lore.filter((re) => re.test(joined))
-    assert.ok(hits.length >= 1, `expected lore on ${fx.home.manager} vs ${fx.away.manager}: ${joined}`)
+    const sentences = matchupPreviewSentences({ ...base, gw: 2, h2h: null, ...fx })
+    const joined = sentences.join(' ')
+    const lore = sentences.filter((s) => loreRe.test(s))
+    const mott = Boolean(fx.home.manager === 'Nick Mottershead' || fx.away.manager === 'Nick Mottershead')
+    if (mott) {
+      assert.match(joined, /vegan|tofu|plant-based/i)
+      assert.ok(lore.length <= 2)
+    } else {
+      assert.equal(lore.length, 1, `expected one sprinkle on ${fx.home.manager} vs ${fx.away.manager}: ${joined}`)
+    }
   }
 })
 
