@@ -13,6 +13,7 @@ import {
   lastFiveGwCards,
   lastNHistoryRows,
   miniBarTone,
+  performanceAutoScrollTarget,
   performanceStatCatalog,
   performanceStatValue,
   performanceTableRows,
@@ -161,6 +162,53 @@ test('performanceTableRows — past + future merged, DGW collapsed into extras',
       { gw: 6, kind: 'future', extras: 0 },
     ],
   )
+})
+
+test('performanceAutoScrollTarget — keeps early-season GW1 on screen', () => {
+  // Mobile Performance wrap shows ~12 rows. After GW2 the last-past row
+  // (thead + GW1 + GW2) still fits; scrolling would hide GW1.
+  const headerHeight = 38
+  const rowHeight = 44
+  const wrapClientHeight = 520
+  const gw2OffsetTop = headerHeight + rowHeight // first tbody row is GW1
+  assert.equal(
+    performanceAutoScrollTarget({
+      rowOffsetTop: gw2OffsetTop,
+      rowHeight,
+      headerHeight,
+      wrapClientHeight,
+    }),
+    null,
+  )
+})
+
+test('performanceAutoScrollTarget — pins last completed GW when it is below the fold', () => {
+  const headerHeight = 38
+  const rowHeight = 44
+  const wrapClientHeight = 520
+  // GW20 sits well below a ~12-row viewport.
+  const gw20OffsetTop = headerHeight + rowHeight * 19
+  assert.equal(
+    performanceAutoScrollTarget({
+      rowOffsetTop: gw20OffsetTop,
+      rowHeight,
+      headerHeight,
+      wrapClientHeight,
+    }),
+    gw20OffsetTop - headerHeight - 4,
+  )
+})
+
+test('performanceAutoScrollTarget — rejects incomplete layout measurements', () => {
+  const dims = {
+    rowOffsetTop: 80,
+    rowHeight: 44,
+    headerHeight: 38,
+    wrapClientHeight: 520,
+  }
+  assert.equal(performanceAutoScrollTarget({ ...dims, wrapClientHeight: 0 }), null)
+  assert.equal(performanceAutoScrollTarget({ ...dims, rowHeight: 0 }), null)
+  assert.equal(performanceAutoScrollTarget({ ...dims, wrapClientHeight: NaN }), null)
 })
 
 test('isSeasonComplete — true only when summary loaded with zero upcoming fixtures', () => {

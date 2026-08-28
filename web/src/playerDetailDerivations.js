@@ -245,6 +245,42 @@ export function performanceTableRows(elementSummary) {
 }
 
 /**
+ * Scroll offset that pins the last completed GW just below the sticky
+ * table header. Returns `null` when that row is already fully visible
+ * at the top of the table so early-season weeks (GW1) stay on screen.
+ *
+ * Mid-season, when the latest completed row sits below the fold, this
+ * returns the same `scrollTop` the Performance tab has always used.
+ *
+ * @param {{
+ *   rowOffsetTop: number,
+ *   rowHeight: number,
+ *   headerHeight: number,
+ *   wrapClientHeight: number,
+ *   headerGap?: number,
+ * }} dims
+ * @returns {number | null}
+ */
+export function performanceAutoScrollTarget({
+  rowOffsetTop,
+  rowHeight,
+  headerHeight,
+  wrapClientHeight,
+  headerGap = 4,
+}) {
+  const rowTop = Number(rowOffsetTop)
+  const rowH = Number(rowHeight)
+  const headH = Number(headerHeight)
+  const wrapH = Number(wrapClientHeight)
+  const gap = Number(headerGap)
+  if (![rowTop, rowH, headH, wrapH, gap].every(Number.isFinite)) return null
+  if (wrapH <= 0 || rowH <= 0) return null
+  const rowBottom = rowTop + rowH
+  if (rowBottom <= wrapH) return null
+  return Math.max(0, rowTop - headH - gap)
+}
+
+/**
  * "Season complete" detector for the Overview Next-5 placeholder. Returns
  * `true` only when we're confident the season is over — the summary
  * payload has loaded *and* it has zero upcoming fixtures. Returns `false`
