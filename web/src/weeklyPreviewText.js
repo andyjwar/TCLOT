@@ -3,19 +3,15 @@
  * MATCHUP, generated deterministically from the bookie board + squad facts
  * (same inputs → same words, so rebuilds never churn the JSON).
  *
- * The card chrome already shows win%, rank, record, key xP, and title %.
- * Prose therefore does not restate those numbers. It weaves:
- *  1. Named fixture — when the pairing has a nickname, it leads.
- *  2. Bookie lean — fractional prices (from the bookie sheet when present).
- *  3. Stakes — must-win / last-place / title favourite, when that actually matters.
- *  4. Injuries — a started-while-out player, or a missing star, when it matters.
- *  5. Bench — question the manager if a healthy higher-xP option sits.
- *  6. Waivers — a recent claim or free-agent add.
- *  7. Form — last week's over/underperformers.
- *  8. Watch list — names only (xP lives in the footer), from the starting XI.
- *  9. Underdog path — qualitative, and only when it's a real short favourite.
- *  10. Manager jokes — sprinkled, not a per-manager checklist. Mottershead
- *      always gets a vegan line, plus one more when the week gives him a hook.
+ * Written like a Saturday preview column, not a checklist:
+ *  1. Lead — named derby (if any) plus how the book prices it, in one breath.
+ *     Last-place jeopardy can ride along as a clause.
+ *  2. Reporting — injury, bench, waiver or form, when there is a story.
+ *  3. Kicker — stakes and a speculative path (watch / underdog / series).
+ *
+ * Cards already show win%, rank, record, key xP, and title %. Prose interprets.
+ * Manager jokes are sprinkled, not a per-manager checklist. Mottershead always
+ * gets a vegan line, plus one more when the week gives him a hook.
  */
 
 import {
@@ -37,6 +33,12 @@ const firstName = (mgr) => {
 const who = (side) => firstName(side?.manager) || side?.name
 
 const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
+const lcFirst = (s) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s)
+const FOLLOW_ON = /^(The|A|An|That|This|His|Her|Their|For|If|When|While|After|With|Question)\b/
+function asFollowOn(s) {
+  const t = String(s || '').replace(/[.!?]+$/, '')
+  return FOLLOW_ON.test(t) ? lcFirst(t) : t
+}
 
 const rec = (t) =>
   t?.record ? `${t.record.w}-${t.record.d}-${t.record.l}` : null
@@ -187,27 +189,48 @@ export function bookiePrecall(m) {
   return { home: h || '–', draw: d || '–', away: a || '–' }
 }
 
-function namedFixtureSentence(m, key) {
-  const name = namedFixtureFor(m.home?.manager, m.away?.manager)
-  if (!name) return null
-  const round = m.h2h && Number.isFinite(m.h2h.games) ? m.h2h.games + 1 : null
-  return pick(
-    [
-      `${capitalize(name)} is up next.`,
-      `This week's edition of ${name}.`,
-      round && round > 1 ? `Round ${round} of ${name}.` : `${capitalize(name)} returns.`,
-    ],
-    key,
-  )
+function stripStop(s) {
+  return String(s || '').replace(/[.!?]+$/, '')
 }
 
-function favoriteSentence(m, key) {
+function joinClauses(clauses) {
+  const clean = clauses.filter(Boolean).map((s) => String(s).replace(/[.!?]+$/, ''))
+  if (!clean.length) return null
+  if (clean.length === 1) return `${capitalize(clean[0])}.`
+  if (clean.length === 2) {
+    const second = asFollowOn(clean[1])
+    const glue = /^(if|when)\b/i.test(second) ? '; ' : ', while '
+    return `${capitalize(clean[0])}${glue}${second}.`
+  }
+  return `${capitalize(clean[0])}, ${asFollowOn(clean[1])}, and ${asFollowOn(clean[2])}.`
+}
+
+function leadWith(open, body) {
+  const raw = stripStop(body)
+  const text = open ? `${open}${lcFirst(raw)}` : capitalize(raw)
+  return `${text}.`
+}
+
+function derbyOpen(m, key) {
+  const name = namedFixtureFor(m.home?.manager, m.away?.manager)
+  if (!name) return ''
+  const round = m.h2h && Number.isFinite(m.h2h.games) ? m.h2h.games + 1 : null
+  if (round && round > 1) {
+    return pick(
+      [`Round ${round} of ${name}, `, `In ${name}, `],
+      key,
+    )
+  }
+  return pick([`In ${name}, `, `${capitalize(name)} is up next, and `], key)
+}
+
+function priceLean(m, key) {
   const { fav, dog, p } = favoriteSide(m)
   if (!fav || !dog || !Number.isFinite(p)) {
     return pick(
       [
-        `${m.home.name} vs ${m.away.name} — the board has no lean yet.`,
-        `No favourite here: ${m.home.name} and ${m.away.name} are unpriced.`,
+        `${m.home.name} and ${m.away.name} go in unpriced`,
+        `the board has no lean yet between ${m.home.name} and ${m.away.name}`,
       ],
       key,
     )
@@ -218,72 +241,67 @@ function favoriteSentence(m, key) {
     if (favFrac && dogFrac) {
       return pick(
         [
-          `The book has ${fav.name} as a short ${favFrac}; ${dog.name} are the long shot at ${dogFrac}.`,
-          `Clear favourite on the board: ${fav.name} ${favFrac}, ${dog.name} ${dogFrac}.`,
+          `the book has ${fav.name} as a short ${favFrac}, with ${dog.name} the long shot at ${dogFrac}`,
+          `clear favourite on the board is ${fav.name} at ${favFrac}, ${dog.name} out at ${dogFrac}`,
         ],
         key,
       )
     }
-    return `Clear favourite: ${fav.name} over ${dog.name}.`
+    return `clear favourite is ${fav.name} over ${dog.name}`
   }
   if (p >= 58) {
     if (favFrac && dogFrac) {
       return pick(
         [
-          `The book fancies ${fav.name} at ${favFrac}; ${dog.name} are ${dogFrac}.`,
-          `${fav.name} the lean at ${favFrac} — ${dog.name} sit ${dogFrac}.`,
+          `the book fancies ${fav.name} at ${favFrac}, ${dog.name} sitting ${dogFrac}`,
+          `${fav.name} are the lean at ${favFrac}, with ${dog.name} ${dogFrac}`,
         ],
         key,
       )
     }
-    return `${fav.name} are the lean over ${dog.name}.`
+    return `${fav.name} are the lean over ${dog.name}`
   }
   if (favFrac && dogFrac) {
     return pick(
       [
-        `Tight on the board: ${fav.name} ${favFrac}, ${dog.name} ${dogFrac}.`,
-        `Coin-flip prices: ${fav.name} ${favFrac} and ${dog.name} ${dogFrac}.`,
+        `it is tight on the board, ${fav.name} ${favFrac} and ${dog.name} ${dogFrac}`,
+        `coin-flip prices, ${fav.name} ${favFrac} and ${dog.name} ${dogFrac}`,
       ],
       key,
     )
   }
   return pick(
     [
-      `This one's tight. ${fav.name} just shade it.`,
-      `Coin-flip territory between ${fav.name} and ${dog.name}.`,
+      `this one's tight, ${fav.name} just shade it`,
+      `coin-flip territory between ${fav.name} and ${dog.name}`,
     ],
     key,
   )
 }
 
-function isDesperate(t) {
-  if (!t || played(t) < 1 || (t.record?.w ?? 0) > 0) return false
-  const lastPct = Number(t.lastPct)
-  return t.rank === 8 || (Number.isFinite(lastPct) && lastPct >= 20)
+function lastPlaceClause(m, key) {
+  const desperate = [m.home, m.away].find(isDesperate)
+  if (!desperate) return null
+  const lastPrice = desperate.lastPrice
+  if (desperate.rank === 8 && lastPrice) {
+    return pick(
+      [
+        `${desperate.name} sit last at ${rec(desperate)}, ${lastPrice} with the book to finish there`,
+        `${desperate.name} are ${rec(desperate)} and last, priced ${lastPrice} to go bottom, so this one matters`,
+      ],
+      key,
+    )
+  }
+  if (desperate.rank === 8) {
+    return `${desperate.name} are ${rec(desperate)} and last, and they need this one`
+  }
+  if (lastPrice) {
+    return `${desperate.name} are ${rec(desperate)}, the book having them ${lastPrice} to finish last`
+  }
+  return `${desperate.name} are ${rec(desperate)} and cannot afford another L`
 }
 
-function stakesSentence(m, key) {
-  const desperate = [m.home, m.away].find(isDesperate)
-  if (desperate) {
-    const lastPrice = desperate.lastPrice
-    if (desperate.rank === 8 && lastPrice) {
-      return pick(
-        [
-          `${desperate.name} are ${rec(desperate)} and last; the book has them ${lastPrice} to finish bottom.`,
-          `${desperate.name} sit last at ${rec(desperate)} — ${lastPrice} with the book to go last, so this one matters.`,
-        ],
-        key,
-      )
-    }
-    if (desperate.rank === 8) {
-      return `${desperate.name} are ${rec(desperate)} and last. They need this one.`
-    }
-    if (lastPrice) {
-      return `${desperate.name} are ${rec(desperate)}; the book has them ${lastPrice} to finish last.`
-    }
-    return `${desperate.name} are ${rec(desperate)} and can't afford another L.`
-  }
-
+function titleClause(m, key) {
   const homeTitle = Number(m.home?.titlePct)
   const awayTitle = Number(m.away?.titlePct)
   if (!Number.isFinite(homeTitle) || !Number.isFinite(awayTitle)) return null
@@ -295,13 +313,19 @@ function stakesSentence(m, key) {
   if (price) {
     return pick(
       [
-        `${lead.name} are the title favourite at ${price}.`,
-        `Title board still has ${lead.name} out in front at ${price}; ${trail.name} are chasing.`,
+        `${lead.name} are the title favourite at ${price}`,
+        `the title board still has ${lead.name} out in front at ${price}, ${trail.name} chasing`,
       ],
       key,
     )
   }
-  return `${lead.name} still lead the title board.`
+  return `${lead.name} still lead the title board`
+}
+
+function isDesperate(t) {
+  if (!t || played(t) < 1 || (t.record?.w ?? 0) > 0) return false
+  const lastPct = Number(t.lastPct)
+  return t.rank === 8 || (Number.isFinite(lastPct) && lastPct >= 20)
 }
 
 function pickupOf(side) {
@@ -378,15 +402,15 @@ function keysSentence(m, key, mentioned) {
   if (h && a) {
     return pick(
       [
-        `Players to watch: ${h} for ${m.home.name}, ${a} for ${m.away.name}.`,
-        `The hinge is ${h} against ${a}.`,
+        `the hinge looks like ${h} against ${a}`,
+        `${h} for ${m.home.name} and ${a} for ${m.away.name} are the ones the weekend probably turns on`,
       ],
       key,
     )
   }
   return h
-    ? `${h} is the one to watch for ${m.home.name}.`
-    : `${a} is the one to watch for ${m.away.name}.`
+    ? `${h} is the one to watch for ${m.home.name}`
+    : `${a} is the one to watch for ${m.away.name}`
 }
 
 function underdogSentence(m, key) {
@@ -398,8 +422,8 @@ function underdogSentence(m, key) {
   const blank = favKey ? `${favKey} to blank` : `${fav.name}'s big name to blank`
   return pick(
     [
-      `For ${dog.name} to win, they need ${haul} and ${blank}.`,
-      `${who(dog)}'s path is ugly: ${blank}, plus ${haul}.`,
+      `if ${dog.name} are to spoil it they need ${haul} and ${blank}`,
+      `${who(dog)}'s path is ugly, ${blank}, plus ${haul}`,
     ],
     key,
   )
@@ -432,16 +456,16 @@ function rivalrySentence(m) {
         : h.awayWins > h.homeWins
           ? `${label(m.away)} took the first meeting`
           : 'they drew last time'
-    return `${last} — this is round two.`
+    return `${last}, so this is round two`
   }
   const drawn = h.draws ? ` (${h.draws} drawn)` : ''
   if (h.homeWins === h.awayWins) {
-    return `Season series locked at ${h.homeWins}–${h.awayWins}${drawn} heading in.`
+    return `the season series is locked at ${h.homeWins}–${h.awayWins}${drawn} heading in`
   }
   const leader = h.homeWins > h.awayWins ? m.home : m.away
   const lw = Math.max(h.homeWins, h.awayWins)
   const tw = Math.min(h.homeWins, h.awayWins)
-  return `${label(leader)} lead the season series ${lw}–${tw}${drawn}.`
+  return `${label(leader)} lead the season series ${lw}–${tw}${drawn}`
 }
 
 function mentionedPlayers(m) {
@@ -529,8 +553,38 @@ function benchSentence(m, key) {
   return `The ${side.name} XI looks off: ${call.bench.name} benched, ${call.starter.name} starting.`
 }
 
+function previewLead(m, key) {
+  const open = derbyOpen(m, `${key}-n`)
+  const lean = priceLean(m, `${key}-f`)
+  const last = lastPlaceClause(m, `${key}-s`)
+  if (last) return leadWith(open, `${lean}, ${asFollowOn(last)}`)
+  return leadWith(open, lean)
+}
+
+function previewReport(m, key) {
+  return joinClauses(
+    [
+      injurySentence(m, `${key}-inj`),
+      benchSentence(m, `${key}-b`),
+      waiverSentence(m, `${key}-w`),
+      formSentence(m),
+    ]
+      .filter(Boolean)
+      .slice(0, 2),
+  )
+}
+
+function previewKicker(m, key) {
+  const dog = underdogSentence(m, `${key}-u`)
+  const title = titleClause(m, `${key}-t`)
+  const series = rivalrySentence(m)
+  const keys = dog ? null : keysSentence(m, `${key}-k`, mentionedPlayers(m))
+  return joinClauses([title, dog || keys, series].filter(Boolean).slice(0, 3))
+}
+
 /**
- * The pre-match paragraph for one matchup.
+ * The pre-match paragraph for one matchup: a lead, optional reporting, a
+ * kicker, then personality asides sprinkled through.
  *
  * @param {{
  *   gw: number,
@@ -543,25 +597,10 @@ function benchSentence(m, key) {
  */
 export function matchupPreviewSentences(m) {
   const key = `${m.home.entryId}-${m.away.entryId}-gw${m.gw}-preview`
-  const out = []
-  const named = namedFixtureSentence(m, `${key}-n`)
-  if (named) out.push(named)
-  out.push(favoriteSentence(m, `${key}-f`))
-  const stakes = stakesSentence(m, `${key}-s`)
-  if (stakes) out.push(stakes)
-  const injury = injurySentence(m, `${key}-inj`)
-  if (injury) out.push(injury)
-  const bench = benchSentence(m, `${key}-b`)
-  if (bench) out.push(bench)
-  const waiver = waiverSentence(m, `${key}-w`)
-  if (waiver) out.push(waiver)
-  const form = formSentence(m)
-  if (form) out.push(form)
-  const keys = keysSentence(m, `${key}-k`, mentionedPlayers(m))
-  if (keys) out.push(keys)
-  const dog = underdogSentence(m, `${key}-u`)
-  if (dog) out.push(dog)
-  const series = rivalrySentence(m)
-  if (series) out.push(series)
+  const out = [previewLead(m, `${key}-lead`)]
+  const report = previewReport(m, `${key}-rep`)
+  if (report) out.push(report)
+  const kicker = previewKicker(m, `${key}-kick`)
+  if (kicker) out.push(kicker)
   return sprinkleInto(out, managerFunFactSentences(m, `${key}-mff`), variantIndex, `${key}-mff`)
 }

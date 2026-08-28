@@ -1,27 +1,25 @@
 /**
- * Template prose for the weekly recap — one short paragraph per MATCHUP,
- * generated deterministically from match facts (same inputs → same words,
- * so rebuilds never churn the JSON).
+ * Template prose for the weekly recap — a short match report per MATCHUP,
+ * generated deterministically (same inputs → same words).
  *
- *  1. Result — what happened, scaled to the margin, winner first.
- *  2. Odds vs reality — what the model said pre-match and how that aged
- *     (omitted when no pre-match call exists).
- *  3. Table context — where the result leaves both sides (rank, move, record).
- *  4. Players — only when there's a story: someone carried their side, hauled,
- *     or a headline pick blanked (omitted otherwise; the card already lists
- *     top scorers).
- *  5. Fun fact / theme — the most interesting thing the data offers: a
- *     season-high, a streak, a title-odds swing, or the fixture's weight.
+ * Written like a Monday sports desk, not a checklist:
+ *  1. Lead — result, score, and how the pre-match call aged, in one breath.
+ *     Named derbies open as a clause, not their own sentence.
+ *  2. Reporting — the player or waiver story, when there is one.
+ *  3. Kicker — what it means (table, streak, series) plus a bit of speculation.
+ *
+ * Cards already show ranks, records, and top scorers. Prose interprets.
  */
 
 import {
   namedFixtureFor,
   matchupPersonalitySentences,
   managerFunFact,
-  sprinkleInto,
   uniqueDerbies,
   titanicAside,
   canonicalManager,
+  derbyChipLabel,
+  sprinkleInto,
 } from './leagueLore.js'
 
 /** Small deterministic hash for stable template variation per matchup+GW. */
@@ -36,6 +34,17 @@ export function variantIndex(key, n) {
 }
 
 const pick = (arr, key) => arr[variantIndex(key, arr.length)]
+
+const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
+const lcFirst = (s) => (s ? s.charAt(0).toLowerCase() + s.slice(1) : s)
+
+/** Lowercase a follow-on clause only when it starts with a sentence opener,
+ * so manager names stay capitalised after a join. */
+const FOLLOW_ON = /^(The|A|An|That|This|His|Her|Their|For|If|When|While|After|With|Question)\b/
+function asFollowOn(s) {
+  const t = String(s || '').replace(/[.!?]+$/, '')
+  return FOLLOW_ON.test(t) ? lcFirst(t) : t
+}
 
 const rec = (t) => `${t.record.w}-${t.record.d}-${t.record.l}`
 
@@ -54,150 +63,153 @@ const who = (side) => firstName(side?.manager) || side?.name
 const pickupLabel = (kind) => (kind === 'f' ? 'free-agent pickup' : 'waiver pickup')
 const puntLabel = (kind) => (kind === 'f' ? 'free-agent punt' : 'waiver gamble')
 
-function resultSentence(m, key) {
-  const { winner, loser } = sides(m)
-  if (!winner) {
-    const score = `${m.home.points}–${m.away.points}`
-    return pick(
-      [
-        `Nothing between ${m.home.name} and ${m.away.name} — a ${score} stalemate, a point apiece.`,
-        `${m.home.name} and ${m.away.name} couldn't be separated at ${score}.`,
-        `Deadlock: ${m.home.name} and ${m.away.name} shared the spoils at ${score}.`,
-      ],
-      key,
-    )
-  }
-  const score = `${winner.points}–${loser.points}`
-  const margin = winner.points - loser.points
-  if (margin >= 25) {
-    return pick(
-      [
-        `${winner.name} steamrolled ${loser.name} ${score} — the kind of scoreline that gets screenshotted.`,
-        `A statement from ${winner.name}: ${loser.name} were blown away ${score}.`,
-      ],
-      key,
-    )
-  }
-  if (margin <= 5) {
-    return pick(
-      [
-        `${winner.name} edged ${loser.name} ${score} in a proper nail-biter.`,
-        `${winner.name} squeaked past ${loser.name} ${score} — margins don't come much finer.`,
-      ],
-      key,
-    )
-  }
-  return pick(
-    [
-      `${winner.name} took care of ${loser.name}, ${score}.`,
-      `A solid week's work from ${winner.name}: ${score} over ${loser.name}.`,
-      `${winner.name} had enough in the tank to see off ${loser.name}, ${score}.`,
-    ],
-    key,
-  )
-}
-
-function oddsSentence(m, key) {
+function oddsShape(m) {
   if (!m.odds || !Number.isFinite(m.odds.favoritePct)) return null
   const fav = m.odds.favoriteSide === 'home' ? m.home : m.away
   const dog = m.odds.favoriteSide === 'home' ? m.away : m.home
   const p = Math.round(m.odds.favoritePct)
   const { winner } = sides(m)
-  if (!winner) {
-    return `The model leaned ${fav.name} at ${p}% pre-match, but the scoreboard refused to pick a side.`
-  }
+  if (!winner) return { kind: 'draw', fav, dog, p }
   if (winner.entryId === fav.entryId) {
-    if (p >= 65) {
-      return pick(
-        [
-          `No drama for the model — it had ${fav.name} at ${p}% and they delivered.`,
-          `As expected: the model gave ${fav.name} ${p}% pre-match, and that's how it went.`,
-        ],
-        key,
-      )
-    }
-    if (p >= 55) {
-      return pick(
-        [
-          `The model leaned ${fav.name} at ${p}%, and the lean paid off.`,
-          `Pre-match the model fancied ${fav.name} (${p}%) — right call.`,
-        ],
-        key,
-      )
-    }
-    return `The model called it a near coin flip (${p}–${100 - p}) and ${fav.name} shaded it.`
+    if (p >= 65) return { kind: 'lock', fav, dog, p }
+    if (p >= 55) return { kind: 'lean', fav, dog, p }
+    return { kind: 'coin', fav, dog, p }
   }
-  if (p >= 65) {
-    return pick(
-      [
-        `That's a proper upset — the model gave ${dog.name} just ${100 - p}% pre-match.`,
-        `The model had ${fav.name} at ${p}% and ${dog.name} tore up the script.`,
-      ],
-      key,
-    )
-  }
-  return pick(
-    [
-      `Mild upset: the model narrowly fancied ${fav.name} (${p}%), but ${dog.name} had other ideas.`,
-      `The model's slight lean toward ${fav.name} (${p}%) didn't survive contact with the scoreboard.`,
-    ],
-    key,
-  )
+  if (p >= 65) return { kind: 'shock', fav, dog, p }
+  return { kind: 'nudge', fav, dog, p }
 }
 
-function rankClause(t, kind) {
-  const pos = ordinal(t.rank)
-  const moved = t.prevRank != null && t.prevRank !== t.rank
-  if (kind === 'winner') {
-    if (t.rank === 1 && moved) return `sends ${t.name} top of the table`
-    if (t.rank === 1) return `keeps ${t.name} top of the pile`
-    if (moved && t.rank < t.prevRank) return `lifts ${t.name} to ${pos}`
-    return `leaves ${t.name} ${pos}`
+function derbyOpen(m, key) {
+  const name = namedFixtureFor(m.home?.manager, m.away?.manager)
+  if (!name) return ''
+  const chip = derbyChipLabel(name)
+  const round = m.h2h && Number.isFinite(m.h2h.games) ? m.h2h.games : null
+  if (round && round > 1) {
+    return pick([`Round ${round} of ${name}, `, `In ${name}, `], key)
   }
-  if (kind === 'loser') {
-    if (moved && t.rank > t.prevRank) return `drops ${t.name} to ${pos}`
-    return `leaves ${t.name} ${pos}`
-  }
-  return `${t.name} sit ${pos}`
+  return pick([`In ${name}, `, `${chip} again, and `], `${key}-d`)
 }
 
-function contextSentence(m, key) {
+function recapLead(m, key) {
   const { winner, loser } = sides(m)
+  const open = derbyOpen(m, `${key}-n`)
+  const o = oddsShape(m)
+
   if (!winner) {
+    const score = `${m.home.points}–${m.away.points}`
+    if (o) {
+      return pick(
+        [
+          `${open}${m.home.name} and ${m.away.name} shared a ${score} stalemate, the model having leaned ${o.fav.name} at ${o.p}% and then watched the scoreboard freeze.`,
+          `${open}Nothing in it at ${score} — ${o.fav.name} were ${o.p}% pre-match and still couldn't find a winner.`,
+        ],
+        key,
+      )
+    }
     return pick(
       [
-        `The point leaves ${m.home.name} ${ordinal(m.home.rank)} at ${rec(m.home)}, with ${m.away.name} ${ordinal(m.away.rank)} at ${rec(m.away)}.`,
-        `In the table, ${m.home.name} sit ${ordinal(m.home.rank)} (${rec(m.home)}) and ${m.away.name} ${ordinal(m.away.rank)} (${rec(m.away)}).`,
+        `${open}${m.home.name} and ${m.away.name} couldn't be separated at ${score}.`,
+        `${open}Deadlock: ${m.home.name} and ${m.away.name} shared the spoils at ${score}.`,
+      ],
+      key,
+    )
+  }
+
+  const score = `${winner.points}–${loser.points}`
+  const margin = winner.points - loser.points
+
+  if (o?.kind === 'shock') {
+    return pick(
+      [
+        `${open}${winner.name} tore up a ${o.p}% script and beat ${loser.name} ${score}.`,
+        `${open}${loser.name} were ${o.p}% favourite and still lost to ${winner.name} ${score} — a result ${winner.name} will dine out on.`,
+      ],
+      key,
+    )
+  }
+  if (o?.kind === 'nudge') {
+    return pick(
+      [
+        `${open}${winner.name} had other ideas, beating ${loser.name} ${score} after the model had narrowly fancied ${o.fav.name} at ${o.p}%.`,
+        `${open}${o.fav.name} were ${o.p}% on the board and still lost ${score} to ${winner.name}.`,
+      ],
+      key,
+    )
+  }
+  if (margin >= 25) {
+    if (o?.kind === 'lock' || o?.kind === 'lean') {
+      return pick(
+        [
+          `${open}${winner.name} ran up ${score} on ${loser.name}, a ${o.p}% favourite who looked every bit as short as advertised.`,
+          `${open}${winner.name} steamrolled ${loser.name} ${score}, the ${o.p}% call only louder.`,
+        ],
+        key,
+      )
+    }
+    return pick(
+      [
+        `${open}${winner.name} steamrolled ${loser.name} ${score}, the kind of scoreline that gets screenshotted.`,
+        `${open}${winner.name} blew ${loser.name} away ${score}, a statement the rest of the league will have noticed.`,
+      ],
+      key,
+    )
+  }
+  if (o?.kind === 'lock') {
+    return pick(
+      [
+        `${open}${winner.name} beat ${loser.name} ${score}, and at ${o.p}% pre-match nobody should be pretending to be surprised.`,
+        `${open}${winner.name} had ${loser.name} ${score}, which is roughly what a ${o.p}% favourite is supposed to look like.`,
+      ],
+      key,
+    )
+  }
+  if (o?.kind === 'lean') {
+    return pick(
+      [
+        `${open}${winner.name} justified a ${o.p}% lean, seeing off ${loser.name} ${score}.`,
+        `${open}${winner.name} took ${loser.name} ${score}, which is roughly what a ${o.p}% favourite is supposed to look like.`,
+      ],
+      key,
+    )
+  }
+  if (o?.kind === 'coin') {
+    return `${open}${winner.name} shaded ${loser.name} ${score} in the coin-flip the model had at ${o.p}–${100 - o.p}.`
+  }
+  if (margin <= 5) {
+    return pick(
+      [
+        `${open}${winner.name} edged ${loser.name} ${score} in a proper nail-biter.`,
+        `${open}${winner.name} squeaked past ${loser.name} ${score} — margins don't come much finer.`,
       ],
       key,
     )
   }
   return pick(
     [
-      `The win ${rankClause(winner, 'winner')} at ${rec(winner)}, while the defeat ${rankClause(loser, 'loser')} at ${rec(loser)}.`,
-      `That ${rankClause(winner, 'winner')} (${rec(winner)}); ${loser.name} are ${ordinal(loser.rank)} at ${rec(loser)}.`,
+      `${open}${winner.name} took care of ${loser.name}, ${score}.`,
+      `${open}A solid week's work from ${winner.name}: ${score} over ${loser.name}.`,
+      `${open}${winner.name} had enough in the tank to see off ${loser.name}, ${score}.`,
     ],
     key,
   )
 }
 
-/**
- * Player storyline, when one exists. Facts come from the archived XI
- * (m.home.players / m.away.players via sidePlayerFacts): `top` scorer,
- * `share` of team points, `haul` and `flop`. Returns null when the week was
- * unremarkable or no player data is archived.
- */
-function playerSentence(m, key) {
+function playerReport(m, key) {
   const { winner, loser } = sides(m)
   const ph = m.home.players
   const pa = m.away.players
   if (!ph && !pa) return null
   const pWinner = winner ? (winner === m.home ? ph : pa) : null
   const pLoser = loser ? (loser === m.home ? ph : pa) : null
+  const ws = winner?.pickup?.star
+  const haulIsWaiver =
+    ws && pWinner?.haul && String(ws.name) === String(pWinner.haul.name)
 
-  // Carried: the winner's top scorer did over a third of the work.
   if (pWinner?.top && pWinner.top.pts >= 15 && pWinner.share >= 0.33) {
     if (pWinner.share >= 0.4 && pWinner.top.pts >= 20) {
+      if (haulIsWaiver) {
+        return `${pWinner.top.name}, the ${pickupLabel(ws.kind)} ${who(winner)} added ${ws.recent ? 'this week' : `back in GW${ws.gw}`}, practically won it single-handed — ${pWinner.top.pts} of ${winner.name}'s ${winner.points}.`
+      }
       return pick(
         [
           `${pWinner.top.name} practically won it single-handed — ${pWinner.top.pts} of ${winner.name}'s ${winner.points}.`,
@@ -215,15 +227,17 @@ function playerSentence(m, key) {
     )
   }
 
-  // Haul + opposite-side blank is the juiciest combination.
   if (pWinner?.haul && pLoser?.flop) {
     return `${pWinner.haul.name} hauled ${pWinner.haul.pts} for ${winner.name} while ${loser.name}'s ${pLoser.flop.name} — pegged for ${pLoser.flop.xp} — managed just ${pLoser.flop.pts}.`
   }
   if (pWinner?.haul) {
+    if (haulIsWaiver) {
+      return `Shrewd business: ${who(winner)}'s ${pickupLabel(ws.kind)} ${ws.name} hauled ${ws.pts} and decided the week.`
+    }
     return pick(
       [
         `${pWinner.haul.name} led the charge for ${winner.name} with a ${pWinner.haul.pts}-point haul.`,
-        `The difference-maker: ${pWinner.haul.name}'s ${pWinner.haul.pts} for ${winner.name}.`,
+        `${pWinner.haul.name}'s ${pWinner.haul.pts} was the difference for ${winner.name} on the night.`,
       ],
       key,
     )
@@ -231,13 +245,12 @@ function playerSentence(m, key) {
   if (pLoser?.flop) {
     return pick(
       [
-        `${loser.name} will point at ${pLoser.flop.name}: projected for ${pLoser.flop.xp}, he returned ${pLoser.flop.pts}.`,
-        `The blank that hurt: ${loser.name}'s ${pLoser.flop.name} (${pLoser.flop.pts} against a ${pLoser.flop.xp}-point call).`,
+        `${loser.name} will point at ${pLoser.flop.name}, projected for ${pLoser.flop.xp} and back with ${pLoser.flop.pts}.`,
+        `The blank that hurt was ${loser.name}'s ${pLoser.flop.name}, ${pLoser.flop.pts} against a ${pLoser.flop.xp}-point call.`,
       ],
       key,
     )
   }
-  // Losing side's haul wasted, or a draw with a standout.
   const pDrawSides = [
     { facts: ph, team: m.home },
     { facts: pa, team: m.away },
@@ -250,177 +263,183 @@ function playerSentence(m, key) {
   return null
 }
 
-function funFactSentence(m, key) {
+function waiverReport(m, key) {
   const { winner, loser } = sides(m)
-  const candidates = []
-  // Skip the season-high fact in the first two GWs — beating one prior week
-  // isn't a story yet.
-  if (winner && winner.isSeasonHigh && m.gw > 2) {
-    candidates.push(
-      `${winner.name}'s ${winner.points} is their best week of the season so far.`,
-    )
-  }
-  const weekHighSide = [m.home, m.away].find((t) => t.isWeekHigh)
-  if (weekHighSide) {
-    candidates.push(
-      `Nobody in the league scored more than ${weekHighSide.name}'s ${weekHighSide.points} this week.`,
-    )
-  }
-  if (winner && winner.streak?.type === 'W' && winner.streak.len >= 3) {
-    candidates.push(`That's ${winner.streak.len} straight wins for ${winner.name}.`)
-  }
-  if (loser && loser.streak?.type === 'L' && loser.streak.len >= 3) {
-    candidates.push(
-      `Alarm bells for ${loser.name} — ${loser.streak.len} defeats on the spin now.`,
-    )
-  }
-  for (const t of [m.home, m.away]) {
-    const o = t.titleOdds
-    if (o && Number.isFinite(o.before) && Number.isFinite(o.after) && Math.abs(o.after - o.before) >= 5) {
-      candidates.push(
-        `The result moved ${t.name}'s title odds ${o.after > o.before ? 'up' : 'down'}: ${o.before}% → ${o.after}%.`,
-      )
-      break
-    }
-  }
-  if (Number.isFinite(m.leagueAvg) && m.leagueAvg > 0) {
-    const sum = m.home.points + m.away.points
-    const par = m.leagueAvg * 2
-    if (sum >= par + 12) {
-      candidates.push(
-        `At ${sum} combined points this was the week's heavyweight fixture.`,
-      )
-    } else if (sum <= par - 12) {
-      candidates.push(
-        `One for the purists: ${sum} combined points, well under the league's weekly par.`,
-      )
-    }
-  }
-  if (candidates.length === 0) {
-    candidates.push(
-      pick(
-        [
-          `Both sides finished within touching distance of their season averages — a matchup that went to form.`,
-          `Nothing here to scare the algorithm: both teams landed close to their usual output.`,
-        ],
-        key,
-      ),
-    )
-  }
-  return candidates[0]
-}
-
-/**
- * Waiver / free-agent storyline, when the week's standout (or its biggest
- * blank) traces back to a transaction. Facts come from `sidePickupFacts` in
- * build-weekly-recaps.mjs (`side.pickup.star` / `side.pickup.flop`). Returns
- * null when nobody's roster moves are worth a mention.
- */
-function waiverSentence(m, key) {
-  const { winner, loser } = sides(m)
-  const cands = []
-  const when = (p) => (p.recent ? 'this week' : `back in GW${p.gw}`)
-
-  // Winner rode a claimed player to the result — the juiciest waiver story.
   const ws = winner?.pickup?.star
+  const pWinner = winner ? (winner === m.home ? m.home.players : m.away.players) : null
+  if (ws && pWinner?.haul && String(ws.name) === String(pWinner.haul.name)) return null
+
+  const when = (p) => (p.recent ? 'this week' : `back in GW${p.gw}`)
   if (ws && (ws.wasHaul || ws.pts >= 12)) {
-    cands.push(
-      pick(
-        [
-          `${who(winner)}'s ${pickupLabel(ws.kind)} ${ws.name} (added ${when(ws)}) repaid the faith with ${ws.pts}.`,
-          `That ${pickupLabel(ws.kind)} is ageing well: ${ws.name} chipped in ${ws.pts} for ${who(winner)}.`,
-          `Shrewd business — ${who(winner)} plucked ${ws.name} off the wire and got ${ws.pts} out of him.`,
-        ],
-        key,
-      ),
+    return pick(
+      [
+        `${who(winner)}'s ${pickupLabel(ws.kind)} ${ws.name} (added ${when(ws)}) repaid the faith with ${ws.pts}.`,
+        `That ${pickupLabel(ws.kind)} is ageing well: ${ws.name} chipped in ${ws.pts} for ${who(winner)}.`,
+        `Shrewd business — ${who(winner)} plucked ${ws.name} off the wire and got ${ws.pts} out of him.`,
+      ],
+      key,
     )
   }
-
-  // A pickup that starred for the losing or drawing side still deserves a nod.
   for (const side of [m.home, m.away]) {
     const s = side?.pickup?.star
     if (s && side !== winner && s.pts >= 12) {
-      cands.push(
-        `${who(side)}'s ${pickupLabel(s.kind)} ${s.name} justified the claim with ${s.pts} in a losing cause.`,
-      )
+      return `${who(side)}'s ${pickupLabel(s.kind)} ${s.name} justified the claim with ${s.pts} in a losing cause.`
     }
   }
-
-  // A pickup that blanked — the decision that aged badly.
   const flopSide = [m.home, m.away].find((s) => s?.pickup?.flop)
   if (flopSide) {
     const f = flopSide.pickup.flop
-    cands.push(
-      pick(
-        [
-          `The ${puntLabel(f.kind)} on ${f.name} backfired for ${who(flopSide)} — ${f.pts} off a projected ${f.xp}.`,
-          `${who(flopSide)} won't want to relive the ${puntLabel(f.kind)}: ${f.name} returned just ${f.pts}.`,
-        ],
-        key,
-      ),
+    return pick(
+      [
+        `The ${puntLabel(f.kind)} on ${f.name} backfired for ${who(flopSide)} — ${f.pts} off a projected ${f.xp}.`,
+        `${who(flopSide)} won't want to relive the ${puntLabel(f.kind)}: ${f.name} returned just ${f.pts}.`,
+      ],
+      key,
     )
   }
-
-  return cands.length ? cands[0] : null
+  return null
 }
 
-/**
- * Season head-to-head rivalry line between the two managers, once they've met
- * more than once (so it's a series, not a debut). Reads from `m.h2h`
- * (`homeWins` / `awayWins` / `draws`, oriented home/away). Null otherwise.
- */
-function rivalrySentence(m) {
+function recapReport(m, key) {
+  const player = playerReport(m, `${key}-p`)
+  const waiver = waiverReport(m, `${key}-w`)
+  if (player && waiver) {
+    const a = String(player).replace(/\.$/, '')
+    const b = asFollowOn(waiver)
+    return `${a}; ${b}.`
+  }
+  return player || waiver
+}
+
+function seriesClause(m) {
   const h = m.h2h
   if (!h || h.games < 2) return null
   const drawn = h.draws ? ` (${h.draws} drawn)` : ''
   const { winner, loser } = sides(m)
-  // Two managers can share a first name (real leagues have brothers, repeats),
-  // which makes "Nick vs Nick" gibberish — fall back to team names then.
   const hn = who(m.home)
   const an = who(m.away)
   const ambiguous =
     hn != null && an != null && String(hn).toLowerCase() === String(an).toLowerCase()
   const label = (side) => (ambiguous ? side.name : who(side))
   if (!winner) {
-    return `Honours even again — the season series between ${label(m.home)} and ${label(m.away)} stays level at ${h.homeWins}–${h.awayWins}${drawn}.`
+    return `the season series between ${label(m.home)} and ${label(m.away)} stays level at ${h.homeWins}–${h.awayWins}${drawn}`
   }
   const winnerIsHome = winner === m.home
   const wWins = winnerIsHome ? h.homeWins : h.awayWins
   const lWins = winnerIsHome ? h.awayWins : h.homeWins
   if (wWins > lWins) {
-    return `Bragging rights to ${label(winner)}: the season head-to-head with ${label(loser)} now reads ${wWins}–${lWins}${drawn}.`
+    return `bragging rights to ${label(winner)}, the season head-to-head with ${label(loser)} now ${wWins}–${lWins}${drawn}`
   }
   if (wWins === lWins) {
-    return `That squares their season series — ${label(m.home)} and ${label(m.away)} are locked at ${h.homeWins}–${h.awayWins}${drawn}.`
+    return `that squares the season series — ${label(m.home)} and ${label(m.away)} locked at ${h.homeWins}–${h.awayWins}${drawn}`
   }
-  return `${label(winner)} got one back, but ${label(loser)} still lead the season series ${lWins}–${wWins}${drawn}.`
+  return `${label(winner)} got one back, but ${label(loser)} still lead the season series ${lWins}–${wWins}${drawn}`
 }
 
-const capitalize = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s)
+function recapKicker(m, key) {
+  const { winner, loser } = sides(m)
+  const series = seriesClause(m)
+  const spec = recapSpeculation(m, key)
 
-/**
- * Named-fixture lead — when the two managers have a grudge-match nickname (see
- * leagueLore.js) it opens the recap, every single time they meet. Uses the
- * running meeting count for a "Round N" flavour when the series is known.
- */
-function namedFixtureSentence(m, key) {
-  const name = namedFixtureFor(m.home?.manager, m.away?.manager)
-  if (!name) return null
-  const round = m.h2h && Number.isFinite(m.h2h.games) ? m.h2h.games : null
+  if (!winner) {
+    const parked = `${m.home.name} ${ordinal(m.home.rank)} at ${rec(m.home)} and ${m.away.name} ${ordinal(m.away.rank)} at ${rec(m.away)}`
+    if (series && spec) return `The point leaves ${parked}; ${series}, and ${spec}.`
+    if (series) return `The point leaves ${parked}; ${series}.`
+    if (spec) return `The point leaves ${parked} — ${spec}.`
+    return pick(
+      [
+        `The point leaves ${parked}, a week that asked a question and then shrugged.`,
+        `In the table that parks ${parked}. You wouldn't call it a statement from either side.`,
+      ],
+      key,
+    )
+  }
+
+  let table
+  if (winner.rank === 1 && winner.prevRank != null && winner.prevRank !== winner.rank) {
+    table = `the win sends ${winner.name} top at ${rec(winner)}`
+  } else if (winner.rank === 1) {
+    table = `the win keeps ${winner.name} top of the pile at ${rec(winner)}`
+  } else if (winner.prevRank != null && winner.rank < winner.prevRank) {
+    table = `the win lifts ${winner.name} to ${ordinal(winner.rank)} at ${rec(winner)}`
+  } else {
+    table = `${winner.name} sit ${ordinal(winner.rank)} at ${rec(winner)}`
+  }
+  const loserBit =
+    loser.prevRank != null && loser.rank > loser.prevRank
+      ? `${loser.name} drop to ${ordinal(loser.rank)} at ${rec(loser)}`
+      : `${loser.name} are ${ordinal(loser.rank)} at ${rec(loser)}`
+
+  const extra = series || spec
+  if (extra) {
+    return pick(
+      [
+        `${capitalize(table)}, while ${loserBit}; ${extra}.`,
+        `${capitalize(table)}. ${capitalize(loserBit)}; ${extra}.`,
+      ],
+      key,
+    )
+  }
   return pick(
     [
-      `Another edition of ${name}.`,
-      `${capitalize(name)} is back on the fixture list.`,
-      round ? `Round ${round} of ${name}.` : `${capitalize(name)}, renewed.`,
+      `${capitalize(table)}, while ${loserBit} — three points in the bag, and a week to think about how it happened.`,
+      `${capitalize(table)}; ${loserBit}. ${winner.name} will take it; ${loser.name} will spend the week picking at the tape.`,
     ],
     key,
   )
 }
 
-/**
- * Manager jokes. Mottershead always gets the vegan line, plus one extra
- * when the week hooks him. Everyone else is still a sprinkle (~1 in 3).
- */
+function recapSpeculation(m, key) {
+  const { winner, loser } = sides(m)
+  if (loser?.rank === 8) {
+    return pick(
+      [
+        'the trapdoor is already making a noise',
+        'last place after a week like that is a long way back',
+      ],
+      `${key}-last`,
+    )
+  }
+  if (winner?.streak?.type === 'W' && winner.streak.len >= 3) {
+    return `that's ${winner.streak.len} on the spin for ${winner.name}, which is how a season starts to look deliberate`
+  }
+  if (loser?.streak?.type === 'L' && loser.streak.len >= 3) {
+    return `alarm bells for ${loser.name} — ${loser.streak.len} defeats on the spin now`
+  }
+  if (winner?.isWeekHigh) {
+    return `nobody in the league scored more than ${winner.name}'s ${winner.points} this week, and if that's their floor the rest have a problem`
+  }
+  if (winner?.isSeasonHigh && m.gw > 2) {
+    return `${winner.name}'s ${winner.points} is their best week of the season so far, a template worth repeating`
+  }
+  for (const t of [m.home, m.away]) {
+    const o = t.titleOdds
+    if (o && Number.isFinite(o.before) && Number.isFinite(o.after) && Math.abs(o.after - o.before) >= 5) {
+      return `the result moved ${t.name}'s title odds ${o.after > o.before ? 'up' : 'down'} from ${o.before}% to ${o.after}%, the board finally paying attention`
+    }
+  }
+  if (Number.isFinite(m.leagueAvg) && m.leagueAvg > 0) {
+    const sum = m.home.points + m.away.points
+    const par = m.leagueAvg * 2
+    if (sum >= par + 12) {
+      return `at ${sum} combined points this was the week's heavyweight, and it played like one`
+    }
+    if (sum <= par - 12) {
+      return `one for the purists at ${sum} combined, well under par — you wouldn't want a season of them`
+    }
+  }
+  if (m.gw <= 2) {
+    return pick(
+      [
+        'one week is a small sample, but templates have a way of sticking',
+        "early days, though you wouldn't fancy the beaten side to reverse this in a hurry",
+      ],
+      `${key}-early`,
+    )
+  }
+  return null
+}
+
 function managerFunFactSentences(m, key) {
   return matchupPersonalitySentences(m, pick, key, variantIndex, {
     gate: 3,
@@ -429,41 +448,24 @@ function managerFunFactSentences(m, key) {
 }
 
 /**
- * The recap paragraph for one matchup: 3–7 sentences depending on whether the
- * fixture has a nickname, a pre-match model call, a player or roster-move
- * story, a manager running joke, and a season rivalry.
+ * The recap paragraph for one matchup: a lead, optional reporting, a kicker,
+ * then any personality asides. Not a checklist of independent facts.
  *
  * @param {{
  *   gw: number,
- *   home: object, away: object,   // team facts (points, rank, record, streak,
- *                                 //  titleOdds, players via sidePlayerFacts, …)
+ *   home: object, away: object,
  *   odds: { favoriteSide: 'home'|'away', favoritePct: number } | null,
- *   leagueAvg?: number | null,    // average team score this GW
- *   h2h?: { games, homeWins, awayWins, draws } | null,  // season series so far
+ *   leagueAvg?: number | null,
+ *   h2h?: { games, homeWins, awayWins, draws } | null,
  * }} m
- *
- * Sides may also carry `manager` (human name) and `pickup` (waiver/free-agent
- * storyline via sidePickupFacts) — both optional and used only for flavour.
  */
 export function matchupRecapSentences(m) {
   const key = `${m.home.entryId}-${m.away.entryId}-gw${m.gw}-${m.home.points}-${m.away.points}`
-  const out = []
-  const named = namedFixtureSentence(m, `${key}-n`)
-  if (named) out.push(named)
-  out.push(resultSentence(m, `${key}-r`))
-  const odds = oddsSentence(m, `${key}-o`)
-  if (odds) out.push(odds)
-  out.push(contextSentence(m, `${key}-c`))
-  const players = playerSentence(m, `${key}-p`)
-  if (players) out.push(players)
-  const waiver = waiverSentence(m, `${key}-w`)
-  if (waiver) out.push(waiver)
-  const jokes = managerFunFactSentences(m, `${key}-mff`)
-  const sprinkled = sprinkleInto(out, jokes, variantIndex, `${key}-mff`)
-  // The season rivalry is the freshest bit of colour once it exists; otherwise
-  // fall back to the best available fun fact.
-  sprinkled.push(rivalrySentence(m) ?? funFactSentence(m, `${key}-f`))
-  return sprinkled
+  const out = [recapLead(m, `${key}-lead`)]
+  const report = recapReport(m, `${key}-rep`)
+  if (report) out.push(report)
+  out.push(recapKicker(m, `${key}-kick`))
+  return sprinkleInto(out, managerFunFactSentences(m, `${key}-mff`), variantIndex, `${key}-mff`)
 }
 
 /** Winner/loser orientation for one matchup; both null for draws. */
@@ -490,13 +492,22 @@ export function weekDerbySentence(matchups, key) {
   if (!names.length) return null
   if (names.length === 1) {
     return pick(
-      [`This week features ${names[0]}.`, `${capitalize(names[0])} is on the card.`],
+      [
+        `Headline fixture was ${names[0]}.`,
+        `${capitalize(names[0])} sat in the middle of the card.`,
+      ],
       key,
     )
   }
   const last = names[names.length - 1]
   const head = names.slice(0, -1).map(capitalize).join(', ')
-  return `${head} and ${last} headline the week.`
+  return pick(
+    [
+      `${head} and ${last} dotted the card.`,
+      `Named derbies all week: ${head} and ${last}.`,
+    ],
+    key,
+  )
 }
 
 /**
