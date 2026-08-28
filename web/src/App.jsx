@@ -2632,9 +2632,10 @@ function App() {
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
     /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} */ (null),
   )
-  /** FPL Live Recap/Preview tab label. Idle (looking back) → Recap; looking
-   * ahead from starting XIs → Preview. WeeklyRecap updates this when mounted. */
-  const [recapMenuLabel, setRecapMenuLabel] = useState(/** @type {'Preview' | 'Recap'} */ ('Recap'))
+  /** FPL Live Recap/Preview tab label. Looking ahead (XIs in, recap not
+   * written) → Preview; looking back on a finished GW → Recap.
+   * WeeklyRecap updates this when mounted. */
+  const [recapMenuLabel, setRecapMenuLabel] = useState(/** @type {'Preview' | 'Recap'} */ ('Preview'))
   const setFplLiveTab = useCallback((next) => {
     setFplLiveTabRaw(next === 'vibes' || next === 'forecast' ? 'live' : next)
   }, [])

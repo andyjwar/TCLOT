@@ -10,42 +10,46 @@ const gw1 = { gw: 1, recap: {}, preview: {} }
 const gw2 = { gw: 2, recap: null, preview: {} }
 const options = [gw1, gw2]
 
-test('menu label is Recap when idle, Preview otherwise', () => {
-  assert.equal(recapMenuLabelForStatus('idle'), 'Recap')
+test('unmounted menu fallback is Preview (looking ahead until a recap is shown)', () => {
+  assert.equal(recapMenuLabelForStatus('idle'), 'Preview')
   assert.equal(recapMenuLabelForStatus('live'), 'Preview')
   assert.equal(recapMenuLabelForStatus('pre-season'), 'Preview')
-  assert.equal(recapMenuLabelForStatus('unknown'), 'Preview')
-  assert.equal(recapMenuLabelForStatus(null), 'Preview')
 })
 
-test('live / pre-season default to the upcoming GW preview', () => {
-  assert.deepEqual(
-    defaultRecapView({
-      lastFinishedGw: 1,
-      upcomingGw: 2,
-      liveStatus: 'live',
-      options,
-    }),
-    { gw: 2, mode: 'preview', menuLabel: 'Preview' },
-  )
-  assert.equal(
-    defaultRecapView({
-      lastFinishedGw: 1,
-      upcomingGw: 2,
-      liveStatus: 'pre-season',
-      options,
-    }).mode,
-    'preview',
-  )
+test('unfinished upcoming preview is the default, even when idle between GWs', () => {
+  for (const liveStatus of ['idle', 'live', 'pre-season', null]) {
+    assert.deepEqual(
+      defaultRecapView({
+        lastFinishedGw: 1,
+        upcomingGw: 2,
+        liveStatus,
+        options,
+      }),
+      { gw: 2, mode: 'preview', menuLabel: 'Preview' },
+      liveStatus,
+    )
+  }
 })
 
-test('idle defaults to the last finished recap, not the next preview', () => {
+test('upcoming recap written → Recap of that week', () => {
   assert.deepEqual(
     defaultRecapView({
-      lastFinishedGw: 1,
+      lastFinishedGw: 2,
       upcomingGw: 2,
       liveStatus: 'idle',
-      options,
+      options: [{ gw: 2, recap: {}, preview: {} }],
+    }),
+    { gw: 2, mode: 'recap', menuLabel: 'Recap' },
+  )
+})
+
+test('no upcoming week uses last finished recap', () => {
+  assert.deepEqual(
+    defaultRecapView({
+      lastFinishedGw: 1,
+      upcomingGw: null,
+      liveStatus: 'idle',
+      options: [gw1],
     }),
     { gw: 1, mode: 'recap', menuLabel: 'Recap' },
   )
@@ -58,30 +62,6 @@ test('no last recap falls through to upcoming preview', () => {
       upcomingGw: 2,
       liveStatus: 'idle',
       options: [gw2],
-    }),
-    { gw: 2, mode: 'preview', menuLabel: 'Preview' },
-  )
-})
-
-test('season complete (no upcoming) uses last recap', () => {
-  assert.deepEqual(
-    defaultRecapView({
-      lastFinishedGw: 1,
-      upcomingGw: null,
-      liveStatus: 'idle',
-      options: [gw1],
-    }),
-    { gw: 1, mode: 'recap', menuLabel: 'Recap' },
-  )
-})
-
-test('missing status prefers upcoming preview, not last recap', () => {
-  assert.deepEqual(
-    defaultRecapView({
-      lastFinishedGw: 1,
-      upcomingGw: 2,
-      liveStatus: null,
-      options,
     }),
     { gw: 2, mode: 'preview', menuLabel: 'Preview' },
   )
