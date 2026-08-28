@@ -34,27 +34,28 @@ const base = {
   leagueAvg: 52,
 }
 
-test('four sentences with a model call, deterministic for same inputs', () => {
+const joined = (m) => matchupRecapSentences(m).join(' ')
+
+test('deterministic newspaper copy, two to four core sentences', () => {
   const a = matchupRecapSentences(base)
   const b = matchupRecapSentences(base)
-  assert.equal(a.length, 4)
   assert.deepEqual(a, b)
+  assert.ok(a.length >= 2 && a.length <= 6, `unexpected length ${a.length}: ${JSON.stringify(a)}`)
   for (const s of a) assert.ok(s.length > 10, `sentence too short: "${s}"`)
 })
 
-test('three sentences when no pre-match call exists', () => {
+test('no pre-match call still produces a recap', () => {
   const out = matchupRecapSentences({ ...base, odds: null })
-  assert.equal(out.length, 3)
+  assert.ok(out.length >= 2)
+  assert.doesNotMatch(out.join(' '), /\d+%/)
 })
 
-test('result sentence: winner first with winner-first score', () => {
-  const [result] = matchupRecapSentences(base)
-  assert.match(result, /61–45/)
-  assert.ok(
-    result.indexOf('Mordor') < result.indexOf('Seoul'),
-    `winner named first: "${result}"`,
-  )
-  // Away winner flips both order and score
+test('lead weaves winner, score, and how the pre-match call aged', () => {
+  const [lead] = matchupRecapSentences(base)
+  assert.match(lead, /61–45/)
+  assert.ok(lead.indexOf('Mordor') < lead.indexOf('Seoul'), `winner named first: "${lead}"`)
+  assert.match(lead, /62%|lean/i)
+
   const flipped = matchupRecapSentences({
     ...base,
     home: team({ points: 45 }),
@@ -65,74 +66,67 @@ test('result sentence: winner first with winner-first score', () => {
   assert.ok(flipped[0].indexOf('Seoul') < flipped[0].indexOf('Mordor'))
 })
 
-test('odds sentence: favourite winning is called expected/lean, upset flagged', () => {
-  const [, favLine] = matchupRecapSentences({
-    ...base,
-    odds: { favoriteSide: 'home', favoritePct: 71 },
-  })
-  assert.match(favLine, /71%/)
-  const [, upset] = matchupRecapSentences({
-    ...base,
-    odds: { favoriteSide: 'away', favoritePct: 70 },
-  })
-  assert.match(upset, /upset|script/i)
+test('heavy favourite winning stays in the lead, not a second odds sentence', () => {
+  const text = joined({ ...base, odds: { favoriteSide: 'home', favoritePct: 71 } })
+  assert.match(text, /71%/)
+  const upset = joined({ ...base, odds: { favoriteSide: 'away', favoritePct: 70 } })
+  assert.match(upset, /script|tore up|still lost/i)
 })
 
-test('draw: stalemate result and no-side odds sentence', () => {
+test('draw: stalemate and the pre-match lean live in the same breath', () => {
   const drawn = matchupRecapSentences({
     ...base,
     home: team({ points: 50 }),
     away: { ...base.away, points: 50 },
   })
   assert.match(drawn[0], /50–50/)
-  assert.match(drawn[1], /refused to pick a side/)
+  assert.match(drawn[0], /stalemate|couldn't be separated|Deadlock|Nothing in it/i)
+  assert.match(drawn.join(' '), /62%|leaned/i)
 })
 
-test('context sentence covers both teams with ranks and records', () => {
-  const out = matchupRecapSentences(base)
-  const context = out[2]
-  assert.match(context, /2-0-1/)
-  assert.match(context, /1-0-2/)
-  assert.match(context, /2nd/)
-  assert.match(context, /7th/)
+test('kicker covers both teams with ranks and records', () => {
+  const text = joined(base)
+  assert.match(text, /2-0-1/)
+  assert.match(text, /1-0-2/)
+  assert.match(text, /2nd/)
+  assert.match(text, /7th/)
 })
 
-test('fun fact priority: season-high wins (from GW3), title swing next', () => {
-  const [, , , seasonHigh] = matchupRecapSentences({
+test('season-high from GW3 lands in the kicker; title swing wins on GW2', () => {
+  const seasonHigh = joined({
     ...base,
     home: team({ isSeasonHigh: true, points: 80 }),
   })
   assert.match(seasonHigh, /best week of the season/)
-  // GW2 season-highs are too trivial to mention
-  const gw2 = matchupRecapSentences({
+  const gw2 = joined({
     ...base,
     gw: 2,
     home: team({ isSeasonHigh: true, points: 80, titleOdds: { before: 20, after: 31 } }),
   })
-  assert.doesNotMatch(gw2[3], /best week/)
-  assert.match(gw2[3], /title odds/)
+  assert.doesNotMatch(gw2, /best week/)
+  assert.match(gw2, /title odds/)
 })
 
-test('fun fact: long losing streak raises alarm bells', () => {
-  const out = matchupRecapSentences({
+test('long losing streak raises alarm bells', () => {
+  const text = joined({
     ...base,
     away: { ...base.away, streak: { type: 'L', len: 4 } },
   })
-  assert.match(out[3], /4 defeats on the spin/)
+  assert.match(text, /4 defeats on the spin/)
 })
 
-test('fun fact: heavyweight fixture when combined points run high', () => {
-  const out = matchupRecapSentences({
+test('heavyweight fixture when combined points run high', () => {
+  const text = joined({
     ...base,
     home: team({ points: 78 }),
     away: { ...base.away, points: 70 },
     leagueAvg: 50,
   })
-  assert.match(out[3], /148 combined points/)
+  assert.match(text, /148 combined/)
 })
 
-test('player sentence: winner carried by one player', () => {
-  const out = matchupRecapSentences({
+test('player reporting: winner carried by one player', () => {
+  const text = joined({
     ...base,
     home: team({
       points: 55,
@@ -143,14 +137,12 @@ test('player sentence: winner carried by one player', () => {
       players: { top: { name: 'Watkins', pts: 8 }, share: 0.18, haul: null, flop: null },
     },
   })
-  assert.equal(out.length, 5)
-  const player = out[3]
-  assert.match(player, /Salah/)
-  assert.match(player, /single-handed|one-man-army/)
+  assert.match(text, /Salah/)
+  assert.match(text, /single-handed|one-man-army/)
 })
 
-test('player sentence: haul against a headline blank names both', () => {
-  const out = matchupRecapSentences({
+test('player reporting: haul against a headline blank names both', () => {
+  const text = joined({
     ...base,
     home: team({
       players: { top: { name: 'Haaland', pts: 17 }, share: 0.28, haul: { name: 'Haaland', pts: 17 }, flop: null },
@@ -160,36 +152,34 @@ test('player sentence: haul against a headline blank names both', () => {
       players: { top: { name: 'Gabriel', pts: 6 }, share: 0.13, haul: null, flop: { name: 'Isak', pts: 1, xp: 6.2 } },
     },
   })
-  const player = out[3]
-  assert.match(player, /Haaland hauled 17/)
-  assert.match(player, /Isak/)
-  assert.match(player, /just 1/)
+  assert.match(text, /Haaland hauled 17/)
+  assert.match(text, /Isak/)
+  assert.match(text, /just 1/)
 })
 
-test('player sentence omitted when nothing notable happened', () => {
+test('player reporting omitted when nothing notable happened', () => {
   const quiet = { top: { name: 'A', pts: 8 }, share: 0.15, haul: null, flop: null }
-  const out = matchupRecapSentences({
+  const text = joined({
     ...base,
     home: team({ players: quiet }),
     away: { ...base.away, players: { ...quiet, top: { name: 'B', pts: 7 } } },
   })
-  assert.equal(out.length, 4)
-  for (const s of out) assert.doesNotMatch(s, /\bA\b \(8\)/)
+  assert.doesNotMatch(text, /\bA\b \(8\)/)
 })
 
-test('player sentence: losing side haul reads as wasted', () => {
-  const out = matchupRecapSentences({
+test('player reporting: losing side haul reads as wasted', () => {
+  const text = joined({
     ...base,
     away: {
       ...base.away,
       players: { top: { name: 'Palmer', pts: 19 }, share: 0.42, haul: { name: 'Palmer', pts: 19 }, flop: null },
     },
   })
-  assert.match(out[3], /Palmer's 19 .* deserved more/)
+  assert.match(text, /Palmer's 19 .* deserved more/)
 })
 
-test('waiver sentence: winning side rode a claimed player to the result', () => {
-  const out = matchupRecapSentences({
+test('waiver reporting: winning side rode a claimed player to the result', () => {
+  const text = joined({
     ...base,
     home: team({
       manager: 'Nick Mottershead',
@@ -197,14 +187,14 @@ test('waiver sentence: winning side rode a claimed player to the result', () => 
       pickup: { star: { name: 'Mbeumo', pts: 16, kind: 'w', gw: 3, recent: true, wasHaul: true } },
     }),
   })
-  const waiver = out.find((s) => /Mbeumo/.test(s) && /waiver|wire/.test(s))
-  assert.ok(waiver, `expected a waiver line, got: ${JSON.stringify(out)}`)
-  assert.match(waiver, /Nick/)
-  assert.match(waiver, /16/)
+  assert.match(text, /Mbeumo/)
+  assert.match(text, /waiver|wire/)
+  assert.match(text, /Nick/)
+  assert.match(text, /16/)
 })
 
-test('waiver sentence: free-agent flop is called out', () => {
-  const out = matchupRecapSentences({
+test('waiver reporting: free-agent flop is called out', () => {
+  const text = joined({
     ...base,
     away: {
       ...base.away,
@@ -213,51 +203,46 @@ test('waiver sentence: free-agent flop is called out', () => {
       pickup: { flop: { name: 'Isak', pts: 1, xp: 6.5, kind: 'f', gw: 2, recent: false } },
     },
   })
-  const waiver = out.find((s) => /Isak/.test(s) && /free-agent/.test(s))
-  assert.ok(waiver, `expected a free-agent flop line, got: ${JSON.stringify(out)}`)
-  assert.match(waiver, /Luke/)
+  assert.match(text, /Isak/)
+  assert.match(text, /free-agent/)
+  assert.match(text, /Luke/)
 })
 
-test('rivalry sentence: appears from the second meeting, replaces fun fact', () => {
-  const withRivalry = matchupRecapSentences({
+test('rivalry is a clause from the second meeting, not a standalone sentence', () => {
+  const withRivalry = joined({
     ...base,
     h2h: { games: 2, homeWins: 2, awayWins: 0, draws: 0 },
   })
-  const rivalry = withRivalry[withRivalry.length - 1]
-  assert.match(rivalry, /season head-to-head|season series|Bragging rights/i)
-  assert.match(rivalry, /2–0|2-0/)
-  // First-ever meeting (games: 1) → no rivalry line, fun fact instead.
-  const firstMeeting = matchupRecapSentences({
+  assert.match(withRivalry, /season head-to-head|season series|bragging rights/i)
+  assert.match(withRivalry, /2–0|2-0/)
+  const firstMeeting = joined({
     ...base,
     h2h: { games: 1, homeWins: 1, awayWins: 0, draws: 0 },
   })
-  assert.doesNotMatch(firstMeeting[firstMeeting.length - 1], /head-to-head/i)
+  assert.doesNotMatch(firstMeeting, /head-to-head/i)
 })
 
-test('rivalry sentence: falls back to team names when managers share a first name', () => {
-  const out = matchupRecapSentences({
+test('rivalry falls back to team names when managers share a first name', () => {
+  const text = joined({
     ...base,
     home: team({ name: 'Mordor S.F.G', manager: 'Nick Mottershead' }),
     away: { ...base.away, name: 'Atlético Bilbo', manager: 'Nick Goodacre' },
     h2h: { games: 2, homeWins: 2, awayWins: 0, draws: 0 },
   })
-  const rivalry = out[out.length - 1]
-  // Must not read "Nick ... with Nick"; disambiguate with team names.
-  assert.match(rivalry, /Mordor/)
-  assert.match(rivalry, /Atlético/)
-  assert.doesNotMatch(rivalry, /Nick.*Nick/)
+  assert.match(text, /Mordor/)
+  assert.match(text, /Atlético/)
+  assert.doesNotMatch(text, /Nick.*Nick/)
 })
 
-test('rivalry sentence: draw keeps the series level and uses managers', () => {
-  const out = matchupRecapSentences({
+test('draw keeps the series level and uses managers', () => {
+  const text = joined({
     ...base,
     home: team({ points: 50, manager: 'Nick Mottershead' }),
     away: { ...base.away, points: 50, manager: 'Luke Butcher' },
     h2h: { games: 3, homeWins: 1, awayWins: 1, draws: 1 },
   })
-  const rivalry = out[out.length - 1]
-  assert.match(rivalry, /series|honours even/i)
-  assert.match(rivalry, /Nick|Luke/)
+  assert.match(text, /series|honours even/i)
+  assert.match(text, /Nick|Luke/)
 })
 
 test('named fixture leads the recap every time the pair meets', () => {
@@ -266,39 +251,37 @@ test('named fixture leads the recap every time the pair meets', () => {
     home: team({ name: 'Toronto Gimli', manager: 'Andy Ward' }),
     away: { ...base.away, name: 'Suffolk Sméagol', manager: 'Jon Ward' },
   }
-  // First meeting (no series yet) still gets the name.
   const first = matchupRecapSentences({ ...warderloo, h2h: { games: 1, homeWins: 1, awayWins: 0, draws: 0 } })
   assert.match(first[0], /Battle of Warderloo/)
-  // And on the rematch.
   const second = matchupRecapSentences({ ...warderloo, h2h: { games: 2, homeWins: 1, awayWins: 1, draws: 0 } })
   assert.match(second[0], /Battle of Warderloo/)
 })
 
 test('named fixture: Andy vs Goodacre is the Bad Blood Derby', () => {
-  const out = matchupRecapSentences({
+  const [lead] = matchupRecapSentences({
     ...base,
     home: team({ name: 'Toronto Gimli', manager: 'Andy Ward' }),
     away: { ...base.away, name: 'Atlético Bilbo', manager: 'Nick Goodacre' },
   })
-  assert.match(out[0], /Bad Blood Derby/)
+  assert.match(lead, /Bad Blood Derby/)
 })
 
 test('named fixture: Higman vs Sutton is the Respect Derby', () => {
-  const out = matchupRecapSentences({
+  const [lead] = matchupRecapSentences({
     ...base,
     home: team({ name: 'Rokesly Regorasu', manager: 'David Higman' }),
     away: { ...base.away, name: 'Hackney Rohirrim', manager: 'Mike Sutton' },
   })
-  assert.match(out[0], /Respect Derby/)
+  assert.match(lead, /Respect Derby/)
 })
 
 test('no named-fixture lead for an ordinary pairing', () => {
-  const out = matchupRecapSentences({
+  const [lead] = matchupRecapSentences({
     ...base,
     home: team({ manager: 'Nick Mottershead' }),
     away: { ...base.away, manager: 'Mike Sutton' },
   })
-  assert.doesNotMatch(out[0], /Battle|derby/i)
+  assert.doesNotMatch(lead, /Battle|derby/i)
 })
 
 test('Mottershead recap always has a vegan joke, plus one extra when hooked', () => {
@@ -325,8 +308,8 @@ test('Mottershead recap always has a vegan joke, plus one extra when hooked', ()
 
 test('no manager fun fact when neither manager has lore', () => {
   for (let gw = 1; gw <= 10; gw++) {
-    const out = matchupRecapSentences({ ...base, gw })
-    assert.doesNotMatch(out.join(' '), /vegan|Samsung|twins|Titanic Duo/i)
+    const text = joined({ ...base, gw })
+    assert.doesNotMatch(text, /vegan|Samsung|twins|Titanic Duo/i)
   }
 })
 
@@ -361,9 +344,9 @@ test('week wrap always names derbies on the card', () => {
       },
     ],
   })
-  const joined = wrap.join(' ')
-  assert.match(joined, /Bad Blood Derby/)
-  assert.match(joined, /East Asian Derby/)
+  const text = wrap.join(' ')
+  assert.match(text, /Bad Blood Derby/)
+  assert.match(text, /East Asian Derby/)
 })
 
 test('week wrap is empty when there are no named fixtures or hooks', () => {

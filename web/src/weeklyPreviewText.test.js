@@ -93,7 +93,7 @@ test('preview sentences are deterministic and skip restated percents / xP / proj
   const a = matchupPreviewSentences(base)
   const b = matchupPreviewSentences(base)
   assert.deepEqual(a, b)
-  assert.ok(a.length >= 4)
+  assert.ok(a.length >= 2 && a.length <= 6)
   const joined = a.join(' ')
   assert.match(joined, /Mordor/)
   assert.match(joined, /Bilbo/)
@@ -107,7 +107,7 @@ test('preview sentences are deterministic and skip restated percents / xP / proj
 test('heavy favourite gets a short-price line and an underdog path, without restating the points call', () => {
   const out = matchupPreviewSentences(base)
   const joined = out.join(' ')
-  assert.match(joined, /short 1\/4|Clear favourite/)
+  assert.match(joined, /short 1\/4|clear favourite/i)
   assert.doesNotMatch(joined, /44 to 31|Projected points/)
   assert.match(joined, /João Pedro/)
   assert.match(joined, /Enzo/)
@@ -134,8 +134,8 @@ test('tight matchup is called a coin flip, not a clear favourite', () => {
     }),
   })
   const joined = out.join(' ')
-  assert.match(joined, /tight|Coin-flip/i)
-  assert.doesNotMatch(joined, /short |Clear favourite/)
+  assert.match(joined, /tight|coin-flip/i)
+  assert.doesNotMatch(joined, /short |clear favourite/i)
 })
 
 test('named fixture leads the preview', () => {
