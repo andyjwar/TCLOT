@@ -511,6 +511,7 @@ import { TradeTool } from './TradeTool.jsx'
 import { SeasonPredictions } from './SeasonPredictions'
 import { BookieView } from './BookieView'
 import { WeeklyRecap } from './WeeklyRecap'
+import { recapMenuLabelForStatus } from './weeklyRecapView.js'
 import { ThemeToggle } from './ThemeToggle'
 import { DashboardNav, DashboardMorePanel } from './DashboardNav'
 import { MobileBottomNav } from './MobileBottomNav'
@@ -2631,6 +2632,10 @@ function App() {
   const [fplLiveTabRaw, setFplLiveTabRaw] = useState(
     /** @type {null | 'squads' | 'live' | 'recap' | 'predictions' | 'bookie'} */ (null),
   )
+  /** FPL Live Recap/Preview tab label. Looking ahead (XIs in, recap not
+   * written) → Preview; looking back on a finished GW → Recap.
+   * WeeklyRecap updates this when mounted. */
+  const [recapMenuLabel, setRecapMenuLabel] = useState(/** @type {'Preview' | 'Recap'} */ ('Preview'))
   const setFplLiveTab = useCallback((next) => {
     setFplLiveTabRaw(next === 'vibes' || next === 'forecast' ? 'live' : next)
   }, [])
@@ -2923,6 +2928,11 @@ function App() {
       : brandHeaderStatus?.status === 'pre-season'
         ? 'predictions'
         : 'live')
+
+  useEffect(() => {
+    if (fplLiveTab === 'recap') return
+    setRecapMenuLabel(recapMenuLabelForStatus(brandHeaderStatus?.status))
+  }, [fplLiveTab, brandHeaderStatus?.status])
 
   const rankByEntryId = useMemo(() => {
     const m = new Map()
@@ -4214,7 +4224,7 @@ function App() {
                   }
                   onClick={() => setFplLiveTab('recap')}
                 >
-                  Recap
+                  {recapMenuLabel}
                 </button>
                 <button
                   type="button"
@@ -4277,6 +4287,8 @@ function App() {
                   <WeeklyRecap
                     teamLogoMap={teamLogoMap}
                     kitIndexByEntry={kitIndexByEntry}
+                    liveStatus={brandHeaderStatus}
+                    onMenuLabelChange={setRecapMenuLabel}
                   />
                 </div>
               ) : null}

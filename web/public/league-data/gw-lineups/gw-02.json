@@ -1,0 +1,560 @@
+{
+  "schemaVersion": 1,
+  "gw": 2,
+  "generatedAt": "2026-08-28T14:19:33.150Z",
+  "source": "prior-xi",
+  "teams": [
+    {
+      "leagueEntryId": 4259,
+      "fplEntryId": 4258,
+      "starters": [
+        {
+          "id": 496,
+          "position": 1
+        },
+        {
+          "id": 230,
+          "position": 2
+        },
+        {
+          "id": 423,
+          "position": 3
+        },
+        {
+          "id": 149,
+          "position": 4
+        },
+        {
+          "id": 427,
+          "position": 5
+        },
+        {
+          "id": 155,
+          "position": 6
+        },
+        {
+          "id": 41,
+          "position": 7
+        },
+        {
+          "id": 337,
+          "position": 8
+        },
+        {
+          "id": 79,
+          "position": 9
+        },
+        {
+          "id": 379,
+          "position": 10
+        },
+        {
+          "id": 222,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 31,
+          "position": 12
+        },
+        {
+          "id": 400,
+          "position": 13
+        },
+        {
+          "id": 566,
+          "position": 14
+        },
+        {
+          "id": 61,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    },
+    {
+      "leagueEntryId": 4898,
+      "fplEntryId": 4895,
+      "starters": [
+        {
+          "id": 412,
+          "position": 1
+        },
+        {
+          "id": 10,
+          "position": 2
+        },
+        {
+          "id": 112,
+          "position": 3
+        },
+        {
+          "id": 305,
+          "position": 4
+        },
+        {
+          "id": 393,
+          "position": 5
+        },
+        {
+          "id": 13,
+          "position": 6
+        },
+        {
+          "id": 366,
+          "position": 7
+        },
+        {
+          "id": 236,
+          "position": 8
+        },
+        {
+          "id": 94,
+          "position": 9
+        },
+        {
+          "id": 411,
+          "position": 10
+        },
+        {
+          "id": 439,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 526,
+          "position": 12
+        },
+        {
+          "id": 208,
+          "position": 13
+        },
+        {
+          "id": 109,
+          "position": 14
+        },
+        {
+          "id": 152,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    },
+    {
+      "leagueEntryId": 5220,
+      "fplEntryId": 5217,
+      "starters": [
+        {
+          "id": 1,
+          "position": 1
+        },
+        {
+          "id": 358,
+          "position": 2
+        },
+        {
+          "id": 200,
+          "position": 3
+        },
+        {
+          "id": 417,
+          "position": 4
+        },
+        {
+          "id": 233,
+          "position": 5
+        },
+        {
+          "id": 259,
+          "position": 6
+        },
+        {
+          "id": 154,
+          "position": 7
+        },
+        {
+          "id": 15,
+          "position": 8
+        },
+        {
+          "id": 260,
+          "position": 9
+        },
+        {
+          "id": 43,
+          "position": 10
+        },
+        {
+          "id": 223,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 464,
+          "position": 12
+        },
+        {
+          "id": 25,
+          "position": 13
+        },
+        {
+          "id": 385,
+          "position": 14
+        },
+        {
+          "id": 157,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    },
+    {
+      "leagueEntryId": 6849,
+      "fplEntryId": 6845,
+      "starters": [
+        {
+          "id": 82,
+          "position": 1
+        },
+        {
+          "id": 8,
+          "position": 2
+        },
+        {
+          "id": 388,
+          "position": 3
+        },
+        {
+          "id": 389,
+          "position": 4
+        },
+        {
+          "id": 471,
+          "position": 5
+        },
+        {
+          "id": 426,
+          "position": 6
+        },
+        {
+          "id": 67,
+          "position": 7
+        },
+        {
+          "id": 95,
+          "position": 8
+        },
+        {
+          "id": 367,
+          "position": 9
+        },
+        {
+          "id": 26,
+          "position": 10
+        },
+        {
+          "id": 346,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 140,
+          "position": 12
+        },
+        {
+          "id": 239,
+          "position": 13
+        },
+        {
+          "id": 6,
+          "position": 14
+        },
+        {
+          "id": 569,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    },
+    {
+      "leagueEntryId": 10173,
+      "fplEntryId": 10168,
+      "starters": [
+        {
+          "id": 384,
+          "position": 1
+        },
+        {
+          "id": 4,
+          "position": 2
+        },
+        {
+          "id": 498,
+          "position": 3
+        },
+        {
+          "id": 356,
+          "position": 4
+        },
+        {
+          "id": 418,
+          "position": 5
+        },
+        {
+          "id": 452,
+          "position": 6
+        },
+        {
+          "id": 481,
+          "position": 7
+        },
+        {
+          "id": 542,
+          "position": 8
+        },
+        {
+          "id": 335,
+          "position": 9
+        },
+        {
+          "id": 415,
+          "position": 10
+        },
+        {
+          "id": 55,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 448,
+          "position": 12
+        },
+        {
+          "id": 226,
+          "position": 13
+        },
+        {
+          "id": 401,
+          "position": 14
+        },
+        {
+          "id": 582,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    },
+    {
+      "leagueEntryId": 18279,
+      "fplEntryId": 18269,
+      "starters": [
+        {
+          "id": 529,
+          "position": 1
+        },
+        {
+          "id": 229,
+          "position": 2
+        },
+        {
+          "id": 11,
+          "position": 3
+        },
+        {
+          "id": 469,
+          "position": 4
+        },
+        {
+          "id": 390,
+          "position": 5
+        },
+        {
+          "id": 480,
+          "position": 6
+        },
+        {
+          "id": 428,
+          "position": 7
+        },
+        {
+          "id": 398,
+          "position": 8
+        },
+        {
+          "id": 237,
+          "position": 9
+        },
+        {
+          "id": 165,
+          "position": 10
+        },
+        {
+          "id": 316,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 198,
+          "position": 12
+        },
+        {
+          "id": 68,
+          "position": 13
+        },
+        {
+          "id": 445,
+          "position": 14
+        },
+        {
+          "id": 463,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    },
+    {
+      "leagueEntryId": 30728,
+      "fplEntryId": 30692,
+      "starters": [
+        {
+          "id": 350,
+          "position": 1
+        },
+        {
+          "id": 387,
+          "position": 2
+        },
+        {
+          "id": 502,
+          "position": 3
+        },
+        {
+          "id": 142,
+          "position": 4
+        },
+        {
+          "id": 514,
+          "position": 5
+        },
+        {
+          "id": 12,
+          "position": 6
+        },
+        {
+          "id": 40,
+          "position": 7
+        },
+        {
+          "id": 399,
+          "position": 8
+        },
+        {
+          "id": 554,
+          "position": 9
+        },
+        {
+          "id": 552,
+          "position": 10
+        },
+        {
+          "id": 125,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 357,
+          "position": 12
+        },
+        {
+          "id": 5,
+          "position": 13
+        },
+        {
+          "id": 351,
+          "position": 14
+        },
+        {
+          "id": 465,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    },
+    {
+      "leagueEntryId": 44904,
+      "fplEntryId": 44841,
+      "starters": [
+        {
+          "id": 467,
+          "position": 1
+        },
+        {
+          "id": 391,
+          "position": 2
+        },
+        {
+          "id": 449,
+          "position": 3
+        },
+        {
+          "id": 201,
+          "position": 4
+        },
+        {
+          "id": 397,
+          "position": 5
+        },
+        {
+          "id": 368,
+          "position": 6
+        },
+        {
+          "id": 124,
+          "position": 7
+        },
+        {
+          "id": 453,
+          "position": 8
+        },
+        {
+          "id": 106,
+          "position": 9
+        },
+        {
+          "id": 491,
+          "position": 10
+        },
+        {
+          "id": 249,
+          "position": 11
+        }
+      ],
+      "bench": [
+        {
+          "id": 250,
+          "position": 12
+        },
+        {
+          "id": 499,
+          "position": 13
+        },
+        {
+          "id": 512,
+          "position": 14
+        },
+        {
+          "id": 504,
+          "position": 15
+        }
+      ],
+      "source": "prior-xi"
+    }
+  ]
+}

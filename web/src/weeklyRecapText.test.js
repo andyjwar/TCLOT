@@ -1,6 +1,6 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { matchupRecapSentences, variantIndex, ordinal } from './weeklyRecapText.js'
+import { matchupRecapSentences, variantIndex, ordinal, recapWeekWrapSentences } from './weeklyRecapText.js'
 
 const team = (over = {}) => ({
   entryId: 1,
@@ -65,12 +65,12 @@ test('result sentence: winner first with winner-first score', () => {
   assert.ok(flipped[0].indexOf('Seoul') < flipped[0].indexOf('Mordor'))
 })
 
-test('odds sentence: favorite winning is called chalk/lean, upset flagged', () => {
-  const [, chalk] = matchupRecapSentences({
+test('odds sentence: favourite winning is called expected/lean, upset flagged', () => {
+  const [, favLine] = matchupRecapSentences({
     ...base,
     odds: { favoriteSide: 'home', favoritePct: 71 },
   })
-  assert.match(chalk, /71%/)
+  assert.match(favLine, /71%/)
   const [, upset] = matchupRecapSentences({
     ...base,
     odds: { favoriteSide: 'away', favoritePct: 70 },
@@ -274,13 +274,22 @@ test('named fixture leads the recap every time the pair meets', () => {
   assert.match(second[0], /Battle of Warderloo/)
 })
 
-test('named fixture: the two Nicks get the Battle of the Nicks', () => {
+test('named fixture: Andy vs Goodacre is the Bad Blood Derby', () => {
   const out = matchupRecapSentences({
     ...base,
-    home: team({ name: 'Mordor S.F.G', manager: 'Nick Mottershead' }),
+    home: team({ name: 'Toronto Gimli', manager: 'Andy Ward' }),
     away: { ...base.away, name: 'Atlético Bilbo', manager: 'Nick Goodacre' },
   })
-  assert.match(out[0], /Battle of the Nicks/)
+  assert.match(out[0], /Bad Blood Derby/)
+})
+
+test('named fixture: Higman vs Sutton is the Respect Derby', () => {
+  const out = matchupRecapSentences({
+    ...base,
+    home: team({ name: 'Rokesly Regorasu', manager: 'David Higman' }),
+    away: { ...base.away, name: 'Hackney Rohirrim', manager: 'Mike Sutton' },
+  })
+  assert.match(out[0], /Respect Derby/)
 })
 
 test('no named-fixture lead for an ordinary pairing', () => {
@@ -293,8 +302,7 @@ test('no named-fixture lead for an ordinary pairing', () => {
 })
 
 test('manager fun facts are woven in sometimes and stay deterministic', () => {
-  // Sweep GWs to find at least one where the joke fires (it is gated ~1/3).
-  let sawVegan = false
+  let sawPersonality = false
   for (let gw = 1; gw <= 20; gw++) {
     const out = matchupRecapSentences({
       ...base,
@@ -302,17 +310,18 @@ test('manager fun facts are woven in sometimes and stay deterministic', () => {
       home: team({ manager: 'Nick Mottershead' }),
     })
     const joined = out.join(' ')
-    if (/vegan|tofu|plant|oat milk/i.test(joined)) sawVegan = true
-    // Deterministic: same inputs → same output.
+    if (/vegan|Titanic|arts school|swagger|big-move|fallen-empire|trade flurry|extremely sure/i.test(joined)) {
+      sawPersonality = true
+    }
     assert.deepEqual(out, matchupRecapSentences({ ...base, gw, home: team({ manager: 'Nick Mottershead' }) }))
   }
-  assert.ok(sawVegan, 'expected the vegan joke to surface at least once across 20 GWs')
+  assert.ok(sawPersonality, 'expected Mottershead personality to surface at least once across 20 GWs')
 })
 
 test('no manager fun fact when neither manager has lore', () => {
   for (let gw = 1; gw <= 10; gw++) {
     const out = matchupRecapSentences({ ...base, gw })
-    assert.doesNotMatch(out.join(' '), /vegan|Boxhead|twins/i)
+    assert.doesNotMatch(out.join(' '), /vegan|Samsung|twins|Titanic Duo/i)
   }
 })
 
@@ -330,5 +339,37 @@ test('ordinal', () => {
   assert.equal(ordinal(3), '3rd')
   assert.equal(ordinal(4), '4th')
   assert.equal(ordinal(11), '11th')
-  assert.equal(ordinal(22), '22nd')
+  assert.equal(ordinal(21), '21st')
+})
+
+test('week wrap always names derbies on the card', () => {
+  const wrap = recapWeekWrapSentences({
+    gw: 2,
+    matchups: [
+      {
+        home: { manager: 'Andy Ward', rank: 4, record: { w: 1, d: 0, l: 0 } },
+        away: { manager: 'Nick Goodacre', rank: 8, record: { w: 0, d: 0, l: 1 } },
+      },
+      {
+        home: { manager: 'David Higman', rank: 1, record: { w: 1, d: 0, l: 0 } },
+        away: { manager: 'Luke Butcher', rank: 3, record: { w: 1, d: 0, l: 0 } },
+      },
+    ],
+  })
+  const joined = wrap.join(' ')
+  assert.match(joined, /Bad Blood Derby/)
+  assert.match(joined, /East Asian Derby/)
+})
+
+test('week wrap is empty when there are no named fixtures or hooks', () => {
+  const wrap = recapWeekWrapSentences({
+    gw: 99,
+    matchups: [
+      {
+        home: { manager: 'Mike Sutton', rank: 3, record: { w: 2, d: 0, l: 0 } },
+        away: { manager: 'Luke Butcher', rank: 4, record: { w: 1, d: 0, l: 1 } },
+      },
+    ],
+  })
+  assert.deepEqual(wrap, [])
 })

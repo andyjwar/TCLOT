@@ -71,6 +71,11 @@ const TCLOT_TERMS = [
   { term: 'Grumpy Goodacre',      def: "Declaring your chances in a GW over when they're clearly not." },
   { term: 'Dr Ward',              def: 'Declaring a player heading off injured in a wildly incorrect manner.' },
   { term: 'TTAT',                 def: 'Tery Talks About Tery — when Webster pops up to chime in about his own team in spite of the chatter at the time.' },
+  { term: 'Battle of Warderloo',  def: 'Andy Ward vs Jon Ward. Brother vs brother. Always on when they play.' },
+  { term: 'Bad Blood Derby',      def: 'Andy Ward vs Nick Goodacre.' },
+  { term: 'Respect Derby',        def: 'David Higman vs Mike Sutton. Two of the nicest men in the league, unusually civil.' },
+  { term: 'East Asian Derby',     def: 'David Higman vs Luke Butcher.' },
+  { term: 'The Titanic Duo',      def: 'Andy Ward and Nick Mottershead: historic league titans, iceberg optional.' },
 ]
 
 /**
