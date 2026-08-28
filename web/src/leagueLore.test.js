@@ -9,6 +9,7 @@ import {
   isTitanicPair,
   loreTagsFromSide,
   matchupPersonalitySentence,
+  matchupPersonalitySentences,
   derbyChipLabel,
   uniqueDerbies,
 } from './leagueLore.js'
@@ -80,6 +81,34 @@ test('matchupPersonalitySentence is gated and deterministic', () => {
   const b = matchupPersonalitySentence(m, pick, 'k', variant, { gate: 2 })
   assert.equal(a, b)
   assert.ok(a == null || typeof a === 'string')
+})
+
+test('preview lore lands on every fixture when both managers have notes', () => {
+  const m = {
+    home: { manager: 'Jon Ward' },
+    away: { manager: 'Eddy Webster' },
+  }
+  const lines = matchupPersonalitySentences(m, pick, 'gw2-smeagol', variant, {
+    gate: 1,
+    both: true,
+  })
+  assert.equal(lines.length, 2)
+  assert.match(lines.join(' '), /Jon|Brother Ward|commentary|take on this claim/i)
+  assert.match(lines.join(' '), /Eddy|thesis|timezone|puzzle|waiver|children/i)
+})
+
+test('preview lore still fires on a named derby fixture', () => {
+  const m = {
+    home: { manager: 'Andy Ward' },
+    away: { manager: 'Nick Goodacre' },
+  }
+  const lines = matchupPersonalitySentences(m, pick, 'gw2-badblood', variant, {
+    gate: 1,
+    both: true,
+  })
+  assert.equal(lines.length, 2)
+  assert.match(lines.join(' '), /Andy|comeback|big game|Titanic|battle|Canada/i)
+  assert.match(lines.join(' '), /lampshade|conservative|spreadsheet|Nick Goodacre|Northern/i)
 })
 
 test('Titanic Duo line can fire when Andy plays Mottershead', () => {

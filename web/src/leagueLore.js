@@ -7,7 +7,8 @@
  * matches "Andy Ward" and so on.
  *
  * Statistical story always leads. These lines are seasoning: short, affectionate,
- * mates taking the piss. Named fixtures ALWAYS fire. Personality jokes do not.
+ * mates taking the piss. Named fixtures ALWAYS fire. Preview personality is
+ * sprinkled on every fixture that has lore; recap personality stays gated.
  */
 
 /** Normalise a manager name for matching: trim, collapse spaces, lowercase. */
@@ -247,35 +248,61 @@ export function hasManagerLore(manager) {
 }
 
 /**
- * One personality aside for a matchup, or null.
+ * Personality asides for a matchup.
  *
- * Titanic Duo lines only when Andy Ward plays Nick Mottershead, and only some
- * weeks. Otherwise at most one manager joke, gated so a GW is not a checklist.
+ * Named derbies live elsewhere and always fire. Here: Titanic Duo only when
+ * Andy Ward plays Nick Mottershead, and only some weeks. Otherwise one joke
+ * per manager who has lore (`both: true`), or a single pick (`both: false`).
+ * `gate` 1 = every fixture; higher = skip some weeks so a recap is not a
+ * checklist.
  *
  * @param {{ home?: object, away?: object }} m
  * @param {(arr: string[], key: string) => string} pick
  * @param {string} key
  * @param {(key: string, n: number) => number} variantIndex
- * @param {{ gate?: number }} [opts]  fire when variantIndex(key-gate, gate)===0
+ * @param {{ gate?: number, both?: boolean }} [opts]
+ * @returns {string[]}
  */
-export function matchupPersonalitySentence(m, pick, key, variantIndex, { gate = 2 } = {}) {
+export function matchupPersonalitySentences(
+  m,
+  pick,
+  key,
+  variantIndex,
+  { gate = 2, both = false } = {},
+) {
   const home = m?.home?.manager
   const away = m?.away?.manager
   if (isTitanicPair(home, away) && variantIndex(`${key}-titanic`, 3) === 0) {
-    return pick(TITANIC_LINES, `${key}-titanic-line`)
+    return [pick(TITANIC_LINES, `${key}-titanic-line`)].filter(Boolean)
   }
-  const homeHas = hasManagerLore(home)
-  const awayHas = hasManagerLore(away)
-  if (!homeHas && !awayHas) return null
-  if (variantIndex(`${key}-gate`, gate) !== 0) return null
-  let manager = home
-  let side = m.home
-  if (homeHas && awayHas) {
-    manager = variantIndex(`${key}-side`, 2) === 0 ? home : away
-    side = manager === home ? m.home : m.away
-  } else if (awayHas) {
-    manager = away
-    side = m.away
+  const sides = []
+  if (hasManagerLore(home)) sides.push({ manager: home, side: m.home, which: 'home' })
+  if (hasManagerLore(away)) sides.push({ manager: away, side: m.away, which: 'away' })
+  if (!sides.length) return []
+  if (gate > 1 && variantIndex(`${key}-gate`, gate) !== 0) return []
+
+  const chosen =
+    both || sides.length === 1
+      ? sides
+      : [sides[variantIndex(`${key}-side`, sides.length)]]
+
+  const out = []
+  for (const s of chosen) {
+    const line = managerFunFact(
+      s.manager,
+      pick,
+      `${key}-${s.which}`,
+      loreTagsFromSide(s.side),
+    )
+    if (line) out.push(line)
   }
-  return managerFunFact(manager, pick, key, loreTagsFromSide(side))
+  return out
+}
+
+/**
+ * One personality aside for a matchup, or null.
+ * Recaps use this (gated). Previews use `matchupPersonalitySentences`.
+ */
+export function matchupPersonalitySentence(m, pick, key, variantIndex, opts) {
+  return matchupPersonalitySentences(m, pick, key, variantIndex, opts)[0] ?? null
 }
