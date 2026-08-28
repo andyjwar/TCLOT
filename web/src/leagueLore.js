@@ -71,18 +71,18 @@ export function isTitanicPair(managerA, managerB) {
 }
 
 const TITANIC_LINES = [
-  'Civil war in the Titanic Duo.',
-  'The Titanic Duo go at each other; the iceberg can wait.',
-  'Historic titans, present-day collision: the Duo play themselves.',
+  'Civil war in the Titanic Duo, the sort of fixture where both skippers insist they spotted the iceberg first.',
+  'The Titanic Duo are on the same card again, which historically ends with someone pointing at an iceberg and calling it a tactic.',
+  'Historic titans, present-day listing: the Titanic Duo play, and the band has started packing.',
 ]
 
 /** Always-on Mottershead vegan asides. Rotated so it is not the same sentence every week. */
 export const VEGAN_LINES = [
-  'Nick Mottershead presents as if he invented veganism. He did not, but try telling him.',
-  'Plant-based and extremely sure: Mottershead is still talking like he invented veganism.',
-  'Somewhere a tofu scramble is being treated as a tactical innovation. That is Mottershead.',
-  'The XI may have meat in it. Mottershead is giving the vegan lecture anyway.',
-  'Mottershead has a take. It is about veganism. It always is.',
+  'Mottershead is still treating oat milk as a set-piece routine, which is a lot of conviction for a plant-based beverage.',
+  'Somewhere a tofu scramble has been named captain, and Mottershead is giving the vegan team talk as if it were a team meeting.',
+  'The vegan sermon arrived before the team sheet, as it does every week Mottershead is involved.',
+  'If there is meat in the XI, Mottershead has already filed a dissenting footnote about tofu and the moral arc of the midfield.',
+  'Plant-based certainty from Mottershead, who talks as if the Food Standards Agency reports directly to him on veganism.',
 ]
 
 /**
@@ -93,80 +93,80 @@ export const VEGAN_LINES = [
 export const MANAGER_LORE = {
   'eddy webster': {
     facts: [
-      { tags: ['generic'], text: `Eddy will have a thesis for this. It will not be the obvious one.` },
-      { tags: ['generic', 'overthink'], text: `Eddy talked himself out of the sensible option again; the minutes of the meeting were longer than the decision.` },
-      { tags: ['waiver'], text: `Classic Eddy waiver: pick the wrong one, then explain he was actually going for somebody else.` },
-      { tags: ['waiver'], text: `Eddy has already started the post-waiver debrief, which is usually how you know the claim was a mistake.` },
-      { tags: ['last'], text: `The people's favourite to finish last is at it again. Surely he hasn't done it again.` },
-      { tags: ['generic'], text: `Eddy blamed the children, the timezone, and the puzzle brain — in that order.` },
-      { tags: ['generic'], text: `British, lives in Canada, sounds Canadian. Eddy's accent has gone native; his league position has not.` },
-      { tags: ['generic'], text: `Eddy once spent twenty hours on a puzzle and got about 5%. This was quicker.` },
+      { tags: ['generic'], text: `Eddy will have a 3,000-word thesis for this, and the match will still have been decided by a defender on nobody's list.` },
+      { tags: ['generic', 'overthink'], text: `Eddy talked himself out of the sensible option in committee, then blamed the minutes for being too long to reread.` },
+      { tags: ['waiver'], text: `Classic Eddy waiver: he claimed the wrong one and is already explaining, with slides, that he meant somebody else.` },
+      { tags: ['waiver'], text: `Eddy opened the post-waiver debrief before the player had a shirt on, which is usually how you know the claim was a mistake.` },
+      { tags: ['last'], text: `The people's favourite to finish last has the look of a man who has seen this film and still bought a ticket.` },
+      { tags: ['generic'], text: `Eddy blamed the children, then the timezone, then a puzzle brain that has not clocked off since 2019.` },
+      { tags: ['generic'], text: `British, lives in Canada, sounds Canadian: Eddy's accent has gone native, and the league position is still waiting for its passport.` },
+      { tags: ['generic'], text: `Eddy once spent twenty hours on a puzzle and got about 5%; this selection took longer and scored about the same.` },
     ],
   },
   'nick goodacre': {
     facts: [
-      { tags: ['generic', 'conservative'], text: `Nick Goodacre's plan remains undefeated: do not finish last, do not do anything rash.` },
-      { tags: ['conservative', 'bench'], text: `Nick G. ran the numbers, then picked the safest available human.` },
-      { tags: ['generic'], text: `Somewhere a spreadsheet nodded, and Nick Goodacre made the conservative call anyway.` },
-      { tags: ['generic'], text: `The lampshade era continues: movement is theoretically possible, just not this week.` },
-      { tags: ['trade'], text: `A trade from Nick Goodacre would be news. This was not news.` },
-      { tags: ['generic'], text: `Northern caution in full: lots of analysis, very little leaping.` },
+      { tags: ['generic', 'conservative'], text: `Nick Goodacre's plan remains undefeated: do not finish last, and do not do anything rash enough to require a second slide.` },
+      { tags: ['conservative', 'bench'], text: `Nick Goodacre ran the numbers twice, then started the safest available human, as if adventure were a booking offence.` },
+      { tags: ['generic'], text: `Somewhere a spreadsheet cleared its throat, and Nick Goodacre still made the conservative call as if it had tenure.` },
+      { tags: ['generic'], text: `The lampshade era continues: movement is theoretically possible, in the way a parked bus theoretically has an engine.` },
+      { tags: ['trade'], text: `A trade from Nick Goodacre would lead the bulletin, and this week produced no bulletin.` },
+      { tags: ['generic'], text: `Northern caution in full, which is to say a lot of frowning at the spreadsheet and very little leaping.` },
     ],
   },
   'david higman': {
     facts: [
-      { tags: ['generic'], text: `David could not let the group simply agree. Somebody had to play devil's advocate.` },
-      { tags: ['generic'], text: `David would like it noted that the BBC has this one covered.` },
-      { tags: ['generic'], text: `Filed with the licence-fee ambassador: David, unofficial BBC fantasy correspondent.` },
-      { tags: ['generic'], text: `David is treating this like Glastonbury: a pilgrimage, a crowd, and a very long set.` },
-      { tags: ['generic'], text: `The people's champion, cheerfully refusing to sit with the consensus.` },
+      { tags: ['generic'], text: `David could not let a group chat agree in peace; somebody had to play devil's advocate, and it was never going to be anyone else.` },
+      { tags: ['generic'], text: `David would like it minuted that the BBC already had this angle, and better lighting.` },
+      { tags: ['generic'], text: `Filed from the licence-fee desk: David, still covering the league as if it were a Today programme two-way.` },
+      { tags: ['generic'], text: `David is treating the gameweek like Glastonbury, which is to say he arrived early, stayed late, and has notes on the sound.` },
+      { tags: ['generic'], text: `The people's champion, cheerfully ruining the consensus because somebody had to, and the BBC were not going to do it for him.` },
     ],
   },
   'nick mottershead': {
     facts: [
-      { tags: ['generic'], text: `Swagger first, evidence later: Mottershead remains extremely sure.` },
-      { tags: ['trade'], text: `Nick Mottershead is on another big-move kick.` },
-      { tags: ['generic', 'titanic'], text: `The Titanic Duo energy is still there. The iceberg evidence is mounting.` },
-      { tags: ['generic'], text: `Nick Mottershead is doing this from a girls' arts school, which remains a deeply improbable sentence.` },
-      { tags: ['generic'], text: `Fallen-empire energy from Mottershead: the old swagger, a newer set of results.` },
-      { tags: ['trade'], text: `Another Mottershead trade flurry. Historic titans, present-day volume.` },
+      { tags: ['generic'], text: `Swagger first, evidence in the post: Mottershead remains extremely sure, which is both a personality and a formation.` },
+      { tags: ['trade'], text: `Nick Mottershead is on another big-move kick, the kind that fills the wire and the group chat in the same hour.` },
+      { tags: ['generic', 'titanic'], text: `The Titanic Duo energy is still there; only the iceberg has started answering emails.` },
+      { tags: ['generic'], text: `Nick Mottershead is running this from a girls' arts school, a sentence that has not become less improbable with repetition.` },
+      { tags: ['generic'], text: `Fallen-empire Mottershead: the old swagger, a newer set of bruises, and no interest in a quiet week.` },
+      { tags: ['trade'], text: `Another Mottershead trade flurry, historic-titan energy applied to whoever was still on the wire at midnight.` },
     ],
   },
   'andy ward': {
     facts: [
-      { tags: ['generic'], text: `Andy has declared this fixture essential to the comeback. The comeback remains imminent.` },
-      { tags: ['generic'], text: `Andy talks a big game. The league table is taking notes.` },
-      { tags: ['trade'], text: `Andy is in full battle mode: if it can be traded, it will be discussed at volume.` },
-      { tags: ['last'], text: `Andy is not taking this lying down, which is the emotional register even on a quiet week.` },
-      { tags: ['generic', 'titanic'], text: `Titanic Duo confidence from Andy; the ship has hit something, but the band is still playing.` },
-      { tags: ['generic'], text: `Andy Ward, British in Canada, at war with the fixture list again.` },
+      { tags: ['generic'], text: `Andy has declared this the week the comeback becomes official, and as ever the comeback remains imminent.` },
+      { tags: ['generic'], text: `Andy talks a big game, and the league table has taken to highlighting in the margins.` },
+      { tags: ['trade'], text: `Andy is in full battle mode, which means if it can be traded it will be discussed at a volume the neighbours can follow.` },
+      { tags: ['last'], text: `Andy is not taking this lying down, even when the week offered a perfectly good sofa.` },
+      { tags: ['generic', 'titanic'], text: `Titanic Duo confidence from Andy: the ship has hit something, but he is still rearranging the deckchairs into a 3-4-3.` },
+      { tags: ['generic'], text: `Andy Ward, British in Canada, still at war with a fixture list that did not read the manifesto.` },
     ],
   },
   'luke butcher': {
     facts: [
-      { tags: ['generic'], text: `Luke has notes on everyone else's manifesto. His own remains in draft.` },
-      { tags: ['generic'], text: `Luke Butcher for Prime Minister — just as soon as he publishes a definite opinion.` },
-      { tags: ['generic'], text: `The league's South Korean ambassador is in. Samsung would like a word about the XI.` },
-      { tags: ['generic'], text: `Norfolk to Seoul: Luke remains the nicest man ever to judge your politics.` },
-      { tags: ['generic'], text: `Luke would like harmony, and also for you to be more left-wing about it.` },
+      { tags: ['generic'], text: `Luke has notes on everyone else's manifesto, and a draft of his own that is now on its fourth working title.` },
+      { tags: ['generic'], text: `Luke Butcher for Prime Minister, just as soon as he lands on an opinion he is prepared to defend after lunch.` },
+      { tags: ['generic'], text: `The league's man in Seoul is in; Samsung would like a word about the XI, and possibly the Wi-Fi.` },
+      { tags: ['generic'], text: `Norfolk to Seoul: Luke remains the nicest man ever to mark your politics homework in public.` },
+      { tags: ['generic'], text: `Luke would like harmony, and also for you to be more left-wing about the left-back.` },
     ],
   },
   'mike sutton': {
     facts: [
-      { tags: ['generic'], text: `Mike did all this on whatever sleep the twins were prepared to grant him.` },
-      { tags: ['generic'], text: `Twins at home, a wildcard in the XI, and no visible spreadsheet.` },
-      { tags: ['waiver'], text: `Mike has claimed someone nobody else had on a list. That is the whole method.` },
-      { tags: ['generic'], text: `While everyone else theorised, Mike simply existed, and somehow posted a score.` },
-      { tags: ['generic'], text: `Mike's selection process remains classified. Possibly there isn't one.` },
+      { tags: ['generic'], text: `Mike posted this on whatever sleep the twins were prepared to grant, which was not a lot and apparently enough.` },
+      { tags: ['generic'], text: `Twins at home, a wildcard in the XI, and still no spreadsheet anyone has actually seen.` },
+      { tags: ['waiver'], text: `Mike has claimed someone nobody else had on a list, which remains the entire method and most of the charm.` },
+      { tags: ['generic'], text: `While everyone else theorised, Mike simply existed, made a cup of tea, and somehow posted a number.` },
+      { tags: ['generic'], text: `Mike's selection process remains classified, possibly because there isn't one and the twins ate the notes.` },
     ],
   },
   'jon ward': {
     facts: [
-      { tags: ['generic'], text: `Jon has notes on everyone else's management. His own table position is the obvious reply.` },
-      { tags: ['generic'], text: `Jon poked the bear, then poked it again in case the first poke had healed.` },
-      { tags: ['last'], text: `Jon is down the bottom again, which has never once slowed the commentary.` },
-      { tags: ['generic'], text: `Brother Ward, league provocateur, available for unsolicited strategy reviews.` },
-      { tags: ['waiver'], text: `Jon will have a take on this claim. It will not be complimentary.` },
+      { tags: ['generic'], text: `Jon has notes on everyone else's management, and his own table position continues to file a dissenting report.` },
+      { tags: ['generic'], text: `Jon poked the bear, then poked it again in case the first poke had been taken as a compliment.` },
+      { tags: ['last'], text: `Jon is down the bottom again, which has never once been treated as a reason to lower the commentary.` },
+      { tags: ['generic'], text: `Brother Ward, league provocateur, still available for unsolicited strategy reviews at volume.` },
+      { tags: ['waiver'], text: `Jon will have a take on this claim, and it will not be complimentary, or short.` },
     ],
   },
 }

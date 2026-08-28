@@ -13,6 +13,8 @@ import {
   derbyChipLabel,
   uniqueDerbies,
   sprinkleInto,
+  VEGAN_LINES,
+  MANAGER_LORE,
 } from './leagueLore.js'
 
 const pick = (arr) => arr[0]
@@ -162,6 +164,18 @@ test('sprinkleInto never steals the lead sentence', () => {
   assert.equal(out[0], 'Lead.')
   assert.ok(out.includes('Joke.'))
   assert.deepEqual(sprinkleInto(['Lead.'], [], () => 0, 'k'), ['Lead.'])
+})
+
+test('joke lines are one sentence, not a stacked take', () => {
+  for (const line of VEGAN_LINES) {
+    assert.match(line, /vegan|tofu|plant-based/i)
+    assert.doesNotMatch(line.replace(/\.$/, ''), /\. /)
+  }
+  for (const { facts } of Object.values(MANAGER_LORE)) {
+    for (const f of facts) {
+      assert.doesNotMatch(String(f.text).replace(/\.$/, ''), /\. /)
+    }
+  }
 })
 
 test('derbyChipLabel and uniqueDerbies', () => {
