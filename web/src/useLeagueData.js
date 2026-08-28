@@ -302,13 +302,12 @@ export function useLeagueData() {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(true);
-  /** Bumped by refresh() to re-run the load effect (pull-to-refresh). */
+  /** Bumped by refresh() to re-run the load effect. */
   const [reloadToken, setReloadToken] = useState(0);
   /** Whether a successful load has ever completed — a failed *refresh* must
    * not replace a working dashboard with the error screen. */
   const hasDataRef = useRef(false);
-  /** Promises handed out by refresh(), resolved when the reload finishes so
-   * the pull-to-refresh spinner knows when to retract. */
+  /** Promises handed out by refresh(), resolved when the reload finishes. */
   const refreshResolversRef = useRef([]);
 
   useEffect(() => {

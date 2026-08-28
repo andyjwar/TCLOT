@@ -22,6 +22,7 @@ import {
   useNarrow560,
 } from './fplElementNames.js';
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx';
+import { subscribeTclotRefresh } from './tclotRefresh.js';
 
 /** PL badge URL by FPL team `code` (same source as LiveScores). */
 function plBadgeUrl(code) {
@@ -1275,6 +1276,10 @@ export function PremWindow({
     if (typeof refreshLive === 'function') void refreshLive();
     void doPremWindowFetch({ forceRefresh: true });
   }, [refreshLive, doPremWindowFetch]);
+
+  useEffect(() => {
+    return subscribeTclotRefresh(handleManualRefresh);
+  }, [handleManualRefresh]);
 
   /**
    * Refetch lineups when the tab returns to the foreground — the poll pauses

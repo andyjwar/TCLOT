@@ -52,3 +52,15 @@ self.addEventListener('notificationclick', (event) => {
     })(),
   )
 })
+
+/* Navigate requests must hit the network. This worker is only registered
+ * when the user enables push, but once it controls the page a default
+ * fetch handler can pin a stale index.html. Network-first on navigations
+ * so pull-to-refresh's `?_r=` reload is not served from Cache Storage. */
+self.addEventListener('fetch', (event) => {
+  const req = event.request
+  if (req.mode !== 'navigate') return
+  event.respondWith(
+    fetch(req, { cache: 'no-store' }).catch(() => fetch(req)),
+  )
+})
