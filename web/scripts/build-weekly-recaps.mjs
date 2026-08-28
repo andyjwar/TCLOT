@@ -10,7 +10,7 @@
  *  - `derby` on each matchup when the pairing has a nickname
  *
  * Preview entries (`previews`) — one per finished GW (frozen from the archive)
- * and the next unfinished GW (starting XIs when present):
+ * and the next unfinished GW only after that GW's lineup deadline:
  *  - win/draw/win percents, projected XI points, watch-list from the locked 11
  *  - bookie fractions, recent waivers, last-week form
  *  - injuries / bench-vs-XI questions when they actually change the week
@@ -53,6 +53,7 @@ import {
   sumStarterXp,
   watchableXi,
 } from '../src/weeklyPreviewLineup.js'
+import { gwDeadlineHasPassed } from '../src/weeklyRecapView.js'
 import { decimalOddsToFraction, probToFractionalOdds } from '../src/oddsFormat.js'
 import {
   pickTopScorer,
@@ -899,7 +900,9 @@ function buildPreviewForGw(gw) {
 
 const previewGws = new Set()
 for (const g of gameweeks) previewGws.add(g.gw)
-if (Number.isFinite(upcomingGw)) previewGws.add(upcomingGw)
+if (Number.isFinite(upcomingGw) && gwDeadlineHasPassed(bootstrapDraft, upcomingGw)) {
+  previewGws.add(upcomingGw)
+}
 const previews = [...previewGws]
   .sort((a, b) => a - b)
   .map((gw) => buildPreviewForGw(gw))

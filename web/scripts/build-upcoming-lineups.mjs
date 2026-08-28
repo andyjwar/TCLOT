@@ -2,6 +2,9 @@
 /**
  * Snapshot the upcoming GW's selected starting XIs for the Recap look-forward.
  *
+ * Only runs after that GW's FPL lineup deadline. Before lock, Draft still
+ * serves last week's XI as the default 11 — that is not "lineups are set".
+ *
  * Prefers live draft picks (`/entry/{id}/event/{gw}`). When that fetch fails
  * (offline, egress, empty payload), copies last week's archived XI forward and
  * treats leftover owned players as the bench — the same default FPL Draft uses
@@ -16,6 +19,7 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { parseDraftPicks, hasFullXi, lineupFromPriorXi } from '../src/weeklyPreviewLineup.js'
 import { archivedXi } from '../src/seasonPredictionsModel.js'
+import { gwDeadlineHasPassed } from '../src/weeklyRecapView.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -120,6 +124,17 @@ async function main() {
   const gw = upcomingGw(matches, lastDone)
   if (!Number.isFinite(gw)) {
     console.log('build-upcoming-lineups: skip — no upcoming gameweek')
+    return
+  }
+
+  let bootstrap = null
+  try {
+    bootstrap = read('bootstrap_draft.json')
+  } catch {
+    /* deadline unknown */
+  }
+  if (!gwDeadlineHasPassed(bootstrap, gw)) {
+    console.log(`build-upcoming-lineups: skip — GW${gw} lineup deadline has not passed`)
     return
   }
 
