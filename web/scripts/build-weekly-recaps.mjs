@@ -641,7 +641,7 @@ function buildPreviewForGw(gw) {
     }
   })
 
-  const chalk = [...matchups].sort(
+  const favourite = [...matchups].sort(
     (a, b) => (b.odds?.favoritePct ?? 0) - (a.odds?.favoritePct ?? 0),
   )[0]
   const closest = [...matchups].sort(
@@ -652,10 +652,10 @@ function buildPreviewForGw(gw) {
     gw,
     source: history ? 'archive' : 'live',
     superlatives: {
-      chalk: chalk
+      favourite: favourite
         ? {
-            name: chalk.odds.favoriteSide === 'home' ? chalk.home.name : chalk.away.name,
-            pct: chalk.odds.favoritePct,
+            name: favourite.odds.favoriteSide === 'home' ? favourite.home.name : favourite.away.name,
+            pct: favourite.odds.favoritePct,
           }
         : null,
       closest: closest

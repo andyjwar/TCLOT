@@ -275,7 +275,7 @@ function RecapHeader({ recapGw, decided }) {
 }
 
 function PreviewHeader({ preview }) {
-  const chalk = preview.superlatives?.chalk
+  const favourite = preview.superlatives?.favourite
   const closest = preview.superlatives?.closest
   return (
     <>
@@ -284,12 +284,12 @@ function PreviewHeader({ preview }) {
         underdog&apos;s path.
       </p>
       <div className="weekly-recap__superlatives">
-        {chalk ? (
+        {favourite ? (
           <span className="weekly-recap__superlative">
-            <span className="weekly-recap__superlative-label">Chalk</span>
+            <span className="weekly-recap__superlative-label">Favourite</span>
             <span className="weekly-recap__superlative-value">
-              {standingsMobileTeamName(chalk.name)} ·{' '}
-              <span className="tabular">{chalk.pct}%</span>
+              {standingsMobileTeamName(favourite.name)} ·{' '}
+              <span className="tabular">{favourite.pct}%</span>
             </span>
           </span>
         ) : null}

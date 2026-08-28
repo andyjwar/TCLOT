@@ -7,11 +7,11 @@
  * Prose therefore does not restate those numbers. It weaves:
  *  1. Named fixture — when the pairing has a nickname, it leads.
  *  2. Bookie lean — fractional prices (from the bookie sheet when present).
- *  3. Stakes — must-win / last-place / title chalk, when that actually matters.
+ *  3. Stakes — must-win / last-place / title favourite, when that actually matters.
  *  4. Waivers — a recent claim or free-agent add.
  *  5. Form — last week's over/underperformers.
  *  6. Watch list — names only (xP lives in the footer).
- *  7. Underdog path — qualitative, and only when it's a real chalk.
+ *  7. Underdog path — qualitative, and only when it's a real short favourite.
  *  8. Manager joke — vegan always-on for Mottershead; otherwise ~half the time.
  */
 
@@ -211,12 +211,12 @@ function favoriteSentence(m, key) {
       return pick(
         [
           `The book has ${fav.name} as a short ${favFrac}; ${dog.name} are the long shot at ${dogFrac}.`,
-          `Clear chalk on the board: ${fav.name} ${favFrac}, ${dog.name} ${dogFrac}.`,
+          `Clear favourite on the board: ${fav.name} ${favFrac}, ${dog.name} ${dogFrac}.`,
         ],
         key,
       )
     }
-    return `Clear chalk: ${fav.name} over ${dog.name}.`
+    return `Clear favourite: ${fav.name} over ${dog.name}.`
   }
   if (p >= 58) {
     if (favFrac && dogFrac) {
@@ -287,7 +287,7 @@ function stakesSentence(m, key) {
   if (price) {
     return pick(
       [
-        `${lead.name} are the title chalk at ${price}.`,
+        `${lead.name} are the title favourite at ${price}.`,
         `Title board still has ${lead.name} out in front at ${price}; ${trail.name} are chasing.`,
       ],
       key,

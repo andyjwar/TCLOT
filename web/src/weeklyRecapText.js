@@ -103,7 +103,7 @@ function oddsSentence(m, key) {
       return pick(
         [
           `No drama for the model — it had ${fav.name} at ${p}% and they delivered.`,
-          `Chalk: the model gave ${fav.name} ${p}% pre-match, and that's how it went.`,
+          `As expected: the model gave ${fav.name} ${p}% pre-match, and that's how it went.`,
         ],
         key,
       )

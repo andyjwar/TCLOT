@@ -65,12 +65,12 @@ test('result sentence: winner first with winner-first score', () => {
   assert.ok(flipped[0].indexOf('Seoul') < flipped[0].indexOf('Mordor'))
 })
 
-test('odds sentence: favorite winning is called chalk/lean, upset flagged', () => {
-  const [, chalk] = matchupRecapSentences({
+test('odds sentence: favourite winning is called expected/lean, upset flagged', () => {
+  const [, favLine] = matchupRecapSentences({
     ...base,
     odds: { favoriteSide: 'home', favoritePct: 71 },
   })
-  assert.match(chalk, /71%/)
+  assert.match(favLine, /71%/)
   const [, upset] = matchupRecapSentences({
     ...base,
     odds: { favoriteSide: 'away', favoritePct: 70 },

@@ -104,10 +104,10 @@ test('preview sentences are deterministic and skip restated percents / xP / proj
   assert.doesNotMatch(joined, /\d+–\d+/, 'preview must not leak a final score')
 })
 
-test('heavy favourite gets a chalk line and an underdog path, without restating the points call', () => {
+test('heavy favourite gets a short-price line and an underdog path, without restating the points call', () => {
   const out = matchupPreviewSentences(base)
   const joined = out.join(' ')
-  assert.match(joined, /short 1\/4|Clear chalk/)
+  assert.match(joined, /short 1\/4|Clear favourite/)
   assert.doesNotMatch(joined, /44 to 31|Projected points/)
   assert.match(joined, /João Pedro/)
   assert.match(joined, /Enzo/)
@@ -115,7 +115,7 @@ test('heavy favourite gets a chalk line and an underdog path, without restating 
   assert.match(joined, /last|bottom/)
 })
 
-test('tight matchup is called a coin flip, not chalk', () => {
+test('tight matchup is called a coin flip, not a clear favourite', () => {
   const out = matchupPreviewSentences({
     ...base,
     odds: { favoriteSide: 'away', favoritePct: 52, home: 46, draw: 2, away: 52 },
@@ -135,7 +135,7 @@ test('tight matchup is called a coin flip, not chalk', () => {
   })
   const joined = out.join(' ')
   assert.match(joined, /tight|Coin-flip/i)
-  assert.doesNotMatch(joined, /short |Clear chalk/)
+  assert.doesNotMatch(joined, /short |Clear favourite/)
 })
 
 test('named fixture leads the preview', () => {
@@ -267,7 +267,7 @@ test('recent waiver and last-week form land in the blurb', () => {
   assert.match(joined, /11/)
 })
 
-test('title chalk uses the outright bookie price, not a restated percent', () => {
+test('title favourite uses the outright bookie price, not a restated percent', () => {
   const out = matchupPreviewSentences({
     ...base,
     home: team({
@@ -296,6 +296,6 @@ test('title chalk uses the outright bookie price, not a restated percent', () =>
   })
   const joined = out.join(' ')
   assert.match(joined, /15\/8/)
-  assert.match(joined, /title chalk|title board/i)
+  assert.match(joined, /title favourite|title board/i)
   assert.doesNotMatch(joined, /31\.9%/)
 })
