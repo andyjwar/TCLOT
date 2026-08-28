@@ -8,15 +8,17 @@
  *  - `superlatives`: week high, closest match, star player, best waiver, dud
  *
  * Preview entries (`previews`) — one per finished GW (frozen from the archive)
- * and the next unfinished GW (live model / bookie sheet):
- *  - win/draw/win percents, projected points, watch-list players
+ * and the next unfinished GW (starting XIs when present):
+ *  - win/draw/win percents, projected XI points, watch-list from the locked 11
  *  - bookie fractions, recent waivers, last-week form
- *  - template look-forward paragraph (bookie lean / stakes / waivers / form / lore)
+ *  - injuries / bench-vs-XI questions when they actually change the week
+ *  - template look-forward paragraph (bookie lean / stakes / XI / lore)
  *
  * Fully regenerated each build from details.json + season-predictions.json —
  * historical recaps stay deterministic once a GW is done.
  *
- * Run AFTER build-season-predictions.mjs (and bookie-markets when present):
+ * Run AFTER build-upcoming-lineups.mjs + build-season-predictions.mjs
+ * (and bookie-markets when present):
  *   node scripts/build-weekly-recaps.mjs
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
@@ -38,9 +40,16 @@ import {
   matchupPreviewSentences,
   oddsPercents,
   watchPlayersFromXi,
-  watchPlayersFromForecasts,
   formFromXi,
 } from '../src/weeklyPreviewText.js'
+import {
+  playerAvailability,
+  lineupFromPriorXi,
+  pickInjuryImpacts,
+  pickBenchBlunder,
+  sumStarterXp,
+  watchableXi,
+} from '../src/weeklyPreviewLineup.js'
 import { decimalOddsToFraction, probToFractionalOdds } from '../src/oddsFormat.js'
 import {
   pickTopScorer,
@@ -411,6 +420,88 @@ for (const row of elementStatus?.element_status ?? []) {
   ownedByLeagueEntry.get(owner).push(Number(row.element))
 }
 const predById = new Map((playerPredictions?.players ?? []).map((p) => [Number(p.id), p]))
+const POS_FROM_TYPE = { 1: 'GK', 2: 'DEF', 3: 'MID', 4: 'FWD' }
+const bootstrapElById = new Map(
+  (bootstrapDraft?.elements ?? []).map((e) => [Number(e.id), e]),
+)
+
+function loadGwLineups(gw) {
+  const p = join(dataDir, 'gw-lineups', `gw-${String(gw).padStart(2, '0')}.json`)
+  if (!existsSync(p)) return null
+  try {
+    return JSON.parse(readFileSync(p, 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+function priorXiFor(history, leagueId) {
+  if (!history) return null
+  for (const row of history.h2h ?? []) {
+    if (Number(row.league_entry_1) === leagueId || Number(row.league_entry_2) === leagueId) {
+      return archivedXi(row, leagueId)
+    }
+  }
+  return null
+}
+
+/** Upcoming-GW selected XI: live snapshot file, else last week's archive copied forward. */
+function lineupDocForGw(gw) {
+  const file = loadGwLineups(gw)
+  if (Array.isArray(file?.teams) && file.teams.length) return file
+  if (!Number.isFinite(gw) || gw <= lastFinishedGw) return null
+  const prevHistory = gw > 1 ? loadHistory(gw - 1) : null
+  const teams = []
+  for (const e of leagueEntries) {
+    const leagueEntryId = Number(e.id)
+    const row = lineupFromPriorXi({
+      leagueEntryId,
+      fplEntryId: Number(e.entry_id),
+      priorXi: priorXiFor(prevHistory, leagueEntryId),
+      ownedIds: ownedByLeagueEntry.get(leagueEntryId) ?? [],
+    })
+    if (row.starters.length === 11) teams.push(row)
+  }
+  return teams.length
+    ? { gw, source: 'prior-xi', teams }
+    : null
+}
+
+function enrichPickRow(pick) {
+  const id = Number(pick.id ?? pick.element)
+  const pred = predById.get(id)
+  const el = bootstrapElById.get(id)
+  const avail = playerAvailability(el)
+  const xp = Number(pred?.forecast?.totalPoints)
+  return {
+    id,
+    pickPosition: Number(pick.position) || null,
+    name: pred?.name || el?.web_name || elementNameById.get(id) || `#${id}`,
+    pos: pred?.position || POS_FROM_TYPE[Number(el?.element_type)] || '',
+    xp: Number.isFinite(xp) ? +xp.toFixed(1) : null,
+    flag: avail.flag,
+    status: avail.status,
+    chance: avail.chance,
+    news: avail.news,
+  }
+}
+
+function enrichLineupTeam(raw, prevHistory) {
+  if (!raw || !Array.isArray(raw.starters) || raw.starters.length !== 11) return null
+  const starters = raw.starters.map(enrichPickRow)
+  const bench = (raw.bench ?? []).map(enrichPickRow)
+  const prevXi = priorXiFor(prevHistory, Number(raw.leagueEntryId))
+  const prevStartIds = (prevXi || []).map((p) => Number(p.id)).filter((n) => Number.isFinite(n))
+  return {
+    leagueEntryId: Number(raw.leagueEntryId),
+    source: raw.source || 'xi',
+    starters,
+    bench,
+    injuries: pickInjuryImpacts(starters, bench, { prevStartIds }),
+    benchCall: pickBenchBlunder(starters, bench),
+    predicted: sumStarterXp(starters),
+  }
+}
 
 const strengthById = new Map(
   (predictions.current?.teams ?? []).map((t) => [
@@ -422,24 +513,6 @@ const strengthById = new Map(
 const bookieByPair = new Map()
 for (const row of bookie?.weekly?.matches ?? []) {
   bookieByPair.set(`${Number(row.homeEntryId)}-${Number(row.awayEntryId)}`, row)
-}
-
-function liveWatchKeys(leagueEntryId) {
-  const owned = ownedByLeagueEntry.get(Number(leagueEntryId)) ?? []
-  const players = owned
-    .map((id) => {
-      const pred = predById.get(id)
-      const xp = Number(pred?.forecast?.totalPoints)
-      if (!pred || !Number.isFinite(xp) || xp <= 0) return null
-      return {
-        id,
-        name: pred.name ?? String(id),
-        pos: pred.position ?? '',
-        xp,
-      }
-    })
-    .filter(Boolean)
-  return watchPlayersFromForecasts(players, 2)
 }
 
 function playerNameFor(elementId) {
@@ -672,6 +745,12 @@ function buildPreviewForGw(gw) {
   const prevHistory = gw > 1 ? loadHistory(gw - 1) : null
   const asOfGw = gw - 1
   const bookieGw = Number(bookie?.weekly?.gw) === gw ? bookie.weekly : null
+  const lineupDoc = history ? null : lineupDocForGw(gw)
+  const lineupByLeague = new Map()
+  for (const t of lineupDoc?.teams ?? []) {
+    const enriched = enrichLineupTeam(t, prevHistory)
+    if (enriched) lineupByLeague.set(enriched.leagueEntryId, enriched)
+  }
 
   const matchups = gwMatches.map((match) => {
     const homeId = Number(match.league_entry_1)
@@ -703,19 +782,29 @@ function buildPreviewForGw(gw) {
         }
 
     const arch = priced?.arch ?? findArchivedH2hRow(history, homeId, awayId)
+    const homeLu = lineupByLeague.get(homeId) ?? null
+    const awayLu = lineupByLeague.get(awayId) ?? null
     const homeKeys = watchPlayersFromXi(archivedXi(arch, homeId), 2)
     const awayKeys = watchPlayersFromXi(archivedXi(arch, awayId), 2)
     const home = {
       ...previewTeam(homeId, asOfGw),
-      keys: homeKeys.length ? homeKeys : liveWatchKeys(homeId),
+      keys: homeKeys.length
+        ? homeKeys
+        : watchPlayersFromXi(watchableXi(homeLu?.starters), 2),
       recentPickups: recentPickupsFor(homeId, gw),
       form: formFromXi(findSideXi(prevHistory, homeId)),
+      injuries: homeLu?.injuries ?? [],
+      benchCall: homeLu?.benchCall ?? null,
     }
     const away = {
       ...previewTeam(awayId, asOfGw),
-      keys: awayKeys.length ? awayKeys : liveWatchKeys(awayId),
+      keys: awayKeys.length
+        ? awayKeys
+        : watchPlayersFromXi(watchableXi(awayLu?.starters), 2),
       recentPickups: recentPickupsFor(awayId, gw),
       form: formFromXi(findSideXi(prevHistory, awayId)),
+      injuries: awayLu?.injuries ?? [],
+      benchCall: awayLu?.benchCall ?? null,
     }
 
     let predicted = null
@@ -725,6 +814,8 @@ function buildPreviewForGw(gw) {
         home: homeIsE1 ? Number(arch.xPtsXi1) : Number(arch.xPtsXi2),
         away: homeIsE1 ? Number(arch.xPtsXi2) : Number(arch.xPtsXi1),
       }
+    } else if (Number.isFinite(homeLu?.predicted) && Number.isFinite(awayLu?.predicted)) {
+      predicted = { home: homeLu.predicted, away: awayLu.predicted }
     } else if (Number.isFinite(home.strength) && Number.isFinite(away.strength)) {
       predicted = { home: home.strength, away: away.strength }
     }
@@ -769,9 +860,14 @@ function buildPreviewForGw(gw) {
 
   const fun = playerFunStats(gw, { history, prevHistory, useActual: false })
 
+  let source = 'live'
+  if (history) source = 'archive'
+  else if (lineupDoc?.source === 'draft-api' || lineupDoc?.source === 'mixed') source = 'xi'
+  else if (lineupDoc?.source === 'prior-xi' || lineupByLeague.size) source = 'xi'
+
   return {
     gw,
-    source: history ? 'archive' : 'live',
+    source,
     superlatives: {
       favourite: favourite
         ? {
@@ -814,7 +910,7 @@ for (const recap of gameweeks) {
 }
 
 const output = {
-  schemaVersion: 5,
+  schemaVersion: 6,
   generatedAt: new Date().toISOString(),
   season: predictions.season,
   lastFinishedGw,

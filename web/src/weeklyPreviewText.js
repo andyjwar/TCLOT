@@ -8,11 +8,13 @@
  *  1. Named fixture — when the pairing has a nickname, it leads.
  *  2. Bookie lean — fractional prices (from the bookie sheet when present).
  *  3. Stakes — must-win / last-place / title favourite, when that actually matters.
- *  4. Waivers — a recent claim or free-agent add.
- *  5. Form — last week's over/underperformers.
- *  6. Watch list — names only (xP lives in the footer).
- *  7. Underdog path — qualitative, and only when it's a real short favourite.
- *  8. Manager joke — vegan always-on for Mottershead; otherwise ~half the time.
+ *  4. Injuries — a started-while-out player, or a missing star, when it matters.
+ *  5. Bench — question the manager if a healthy higher-xP option sits.
+ *  6. Waivers — a recent claim or free-agent add.
+ *  7. Form — last week's over/underperformers.
+ *  8. Watch list — names only (xP lives in the footer), from the starting XI.
+ *  9. Underdog path — qualitative, and only when it's a real short favourite.
+ *  10. Manager joke — vegan always-on for Mottershead; otherwise ~half the time.
  */
 
 import { namedFixtureFor, managerFunFact, hasManagerLore, normManager } from './leagueLore.js'
@@ -455,8 +457,81 @@ function mentionedPlayers(m) {
     }
     if (side?.form?.over?.name) names.add(side.form.over.name)
     if (side?.form?.under?.name) names.add(side.form.under.name)
+    for (const inj of side?.injuries ?? []) {
+      if (inj?.name) names.add(inj.name)
+    }
+    if (side?.benchCall?.bench?.name) names.add(side.benchCall.bench.name)
+    if (side?.benchCall?.starter?.name) names.add(side.benchCall.starter.name)
   }
   return names
+}
+
+function topInjury(side) {
+  const list = Array.isArray(side?.injuries) ? side.injuries : []
+  return list.find((p) => p?.name) ?? null
+}
+
+function injurySentence(m, key) {
+  const packed = [
+    { side: m.home, hit: topInjury(m.home) },
+    { side: m.away, hit: topInjury(m.away) },
+  ].filter((row) => row.hit)
+  if (packed.length === 0) return null
+
+  const rank = { 'starting-out': 0, 'starting-doubt': 1, missing: 2 }
+  packed.sort(
+    (a, b) =>
+      (rank[a.hit.kind] ?? 9) - (rank[b.hit.kind] ?? 9) ||
+      (Number(b.hit.xp) || 0) - (Number(a.hit.xp) || 0),
+  )
+  const { side, hit } = packed[0]
+  const label = hit.injury || 'injury'
+  if (hit.kind === 'starting-out') {
+    return pick(
+      [
+        `${who(side)} is starting ${hit.name} through a ${label}.`,
+        `${hit.name} is injured and still in the ${side.name} XI.`,
+      ],
+      key,
+    )
+  }
+  if (hit.kind === 'starting-doubt') {
+    return pick(
+      [
+        `${hit.name} is a doubt (${label}) in the ${side.name} XI.`,
+        `${who(side)} is rolling the dice on ${hit.name} (${label}).`,
+      ],
+      key,
+    )
+  }
+  return pick(
+    [
+      `${side.name} are without ${hit.name} (${label}).`,
+      `${hit.name} is out of ${who(side)}'s XI (${label}).`,
+    ],
+    key,
+  )
+}
+
+function benchSentence(m, key) {
+  const packed = [
+    { side: m.home, call: m.home?.benchCall },
+    { side: m.away, call: m.away?.benchCall },
+  ].filter((row) => row.call?.bench?.name && row.call?.starter?.name)
+  if (packed.length === 0) return null
+  packed.sort((a, b) => (Number(b.call.gap) || 0) - (Number(a.call.gap) || 0))
+  const { side, call } = packed[0]
+  const first = firstName(side.manager)
+  if (first) {
+    return pick(
+      [
+        `Question for ${first}: ${call.bench.name} sits on the bench while ${call.starter.name} starts.`,
+        `${first} has ${call.bench.name} on the bench and ${call.starter.name} in the XI.`,
+      ],
+      key,
+    )
+  }
+  return `The ${side.name} XI looks off: ${call.bench.name} benched, ${call.starter.name} starting.`
 }
 
 /**
@@ -479,6 +554,10 @@ export function matchupPreviewSentences(m) {
   out.push(favoriteSentence(m, `${key}-f`))
   const stakes = stakesSentence(m, `${key}-s`)
   if (stakes) out.push(stakes)
+  const injury = injurySentence(m, `${key}-inj`)
+  if (injury) out.push(injury)
+  const bench = benchSentence(m, `${key}-b`)
+  if (bench) out.push(bench)
   const waiver = waiverSentence(m, `${key}-w`)
   if (waiver) out.push(waiver)
   const form = formSentence(m)

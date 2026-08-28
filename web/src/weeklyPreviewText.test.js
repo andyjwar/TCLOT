@@ -299,3 +299,79 @@ test('title favourite uses the outright bookie price, not a restated percent', (
   assert.match(joined, /title favourite|title board/i)
   assert.doesNotMatch(joined, /31\.9%/)
 })
+
+test('injury copy names a started-while-out player without restating xP', () => {
+  const out = matchupPreviewSentences({
+    ...base,
+    home: team({
+      injuries: [
+        {
+          name: 'Isak',
+          kind: 'starting-out',
+          inXi: true,
+          injury: 'groin injury',
+          xp: 1.7,
+        },
+      ],
+    }),
+  })
+  const joined = out.join(' ')
+  assert.match(joined, /Isak/)
+  assert.match(joined, /injured|groin/i)
+  assert.doesNotMatch(joined, /\(1\.7\)/)
+})
+
+test('bench copy questions the manager when a healthy option sits', () => {
+  const out = matchupPreviewSentences({
+    ...base,
+    away: team({
+      entryId: 2,
+      name: 'Atlético Bilbo',
+      manager: 'Nick Goodacre',
+      rank: 8,
+      record: { w: 0, d: 0, l: 1 },
+      lastPct: 41.6,
+      lastPrice: '6/5',
+      keys: [{ id: 20, name: 'Enzo', pos: 'MID', xp: 5.3 }],
+      benchCall: {
+        bench: { name: 'Konsa', pos: 'DEF', xp: 5.5, flag: 'ok' },
+        starter: { name: 'Colwill', pos: 'DEF', xp: 0.6, flag: 'ok' },
+        gap: 4.9,
+      },
+    }),
+  })
+  const joined = out.join(' ')
+  assert.match(joined, /Question for Nick|has Konsa on the bench/)
+  assert.match(joined, /Konsa/)
+  assert.match(joined, /Colwill/)
+  assert.doesNotMatch(joined, /5\.5/)
+})
+
+test('missing-star injury copy when a notable player is out of the XI', () => {
+  const out = matchupPreviewSentences({
+    ...base,
+    away: team({
+      entryId: 2,
+      name: 'Seoul Shire',
+      manager: 'Luke Butcher',
+      rank: 4,
+      record: { w: 1, d: 0, l: 0 },
+      titlePct: 5.1,
+      lastPct: 13.9,
+      keys: [{ name: 'Saka', xp: 6.2 }],
+      injuries: [
+        {
+          name: 'J.Timber',
+          kind: 'missing',
+          inXi: false,
+          injury: 'groin injury',
+          xp: 4.8,
+        },
+      ],
+    }),
+    h2h: null,
+  })
+  const joined = out.join(' ')
+  assert.match(joined, /J\.Timber/)
+  assert.match(joined, /without|out of/)
+})

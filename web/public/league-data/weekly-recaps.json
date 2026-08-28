@@ -1,6 +1,6 @@
 {
- "schemaVersion": 5,
- "generatedAt": "2026-08-28T13:57:30.660Z",
+ "schemaVersion": 6,
+ "generatedAt": "2026-08-28T14:20:37.618Z",
  "season": "2026-27",
  "lastFinishedGw": 1,
  "upcomingGw": 2,
@@ -574,7 +574,9 @@
        }
       ],
       "recentPickups": [],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "away": {
       "entryId": 4259,
@@ -607,7 +609,9 @@
        }
       ],
       "recentPickups": [],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "odds": {
       "home": 73,
@@ -674,7 +678,9 @@
         "gw": 1
        }
       ],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "away": {
       "entryId": 10173,
@@ -713,7 +719,9 @@
         "gw": 1
        }
       ],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "odds": {
       "home": 21,
@@ -783,7 +791,9 @@
         "gw": 1
        }
       ],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "away": {
       "entryId": 6849,
@@ -816,7 +826,9 @@
        }
       ],
       "recentPickups": [],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "odds": {
       "home": 47,
@@ -881,7 +893,9 @@
         "gw": 1
        }
       ],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "away": {
       "entryId": 5220,
@@ -920,7 +934,9 @@
         "gw": 1
        }
       ],
-      "form": null
+      "form": null,
+      "injuries": [],
+      "benchCall": null
      },
      "odds": {
       "home": 39,
@@ -951,7 +967,7 @@
   },
   {
    "gw": 2,
-   "source": "live",
+   "source": "xi",
    "superlatives": {
     "favourite": {
      "name": "Rokesly Regorasu",
@@ -1029,6 +1045,24 @@
         "pts": 1,
         "xp": 5.1
        }
+      },
+      "injuries": [],
+      "benchCall": {
+       "bench": {
+        "id": 31,
+        "name": "Konsa",
+        "pos": "DEF",
+        "xp": 5.5,
+        "flag": "ok"
+       },
+       "starter": {
+        "id": 149,
+        "name": "Colwill",
+        "pos": "DEF",
+        "xp": 0.6,
+        "flag": "ok"
+       },
+       "gap": 4.9
       }
      },
      "away": {
@@ -1058,10 +1092,10 @@
         "xp": 6.6
        },
        {
-        "id": 208,
-        "name": "Sarr",
+        "id": 366,
+        "name": "Wirtz",
         "pos": "MID",
-        "xp": 6
+        "xp": 5.5
        }
       ],
       "recentPickups": [
@@ -1082,7 +1116,9 @@
         "pts": 1,
         "xp": 5.7
        }
-      }
+      },
+      "injuries": [],
+      "benchCall": null
      },
      "odds": {
       "home": 39,
@@ -1098,13 +1134,14 @@
       "away": "8/13"
      },
      "predicted": {
-      "home": 38.3,
-      "away": 42.3
+      "home": 30.2,
+      "away": 41.7
      },
      "h2h": null,
      "sentences": [
       "The book fancies Toronto Gimli at 8/13; Atlético Bilbo are 6/4.",
       "Atlético Bilbo sit last at 0-0-1 — 6/5 with the book to go last, so this one matters.",
+      "Question for Nick: Konsa sits on the bench while Colwill starts.",
       "Schade is the new waiver piece for Toronto Gimli.",
       "White already overdelivered for Andy last week (11); Shaw returned 1 from 5.1 for Nick.",
       "The hinge is Enzo against Haaland."
@@ -1132,15 +1169,15 @@
       "strength": 42.6,
       "keys": [
        {
-        "id": 223,
-        "name": "Mateta",
-        "pos": "FWD",
-        "xp": 6.5
-       },
-       {
         "id": 154,
         "name": "Palmer",
         "pos": "MID",
+        "xp": 6.5
+       },
+       {
+        "id": 223,
+        "name": "Mateta",
+        "pos": "FWD",
         "xp": 6.5
        }
       ],
@@ -1162,6 +1199,24 @@
         "pts": 1,
         "xp": 5.4
        }
+      },
+      "injuries": [],
+      "benchCall": {
+       "bench": {
+        "id": 25,
+        "name": "Gyökeres",
+        "pos": "FWD",
+        "xp": 5.2,
+        "flag": "ok"
+       },
+       "starter": {
+        "id": 259,
+        "name": "Diop",
+        "pos": "DEF",
+        "xp": 1.5,
+        "flag": "ok"
+       },
+       "gap": 3.7
       }
      },
      "away": {
@@ -1220,7 +1275,9 @@
         "pts": 0,
         "xp": 4.3
        }
-      }
+      },
+      "injuries": [],
+      "benchCall": null
      },
      "odds": {
       "home": 53,
@@ -1236,15 +1293,15 @@
       "away": "11/10"
      },
      "predicted": {
-      "home": 42.6,
-      "away": 40.7
+      "home": 43.9,
+      "away": 44.1
      },
      "h2h": null,
      "sentences": [
       "Coin-flip prices: Suffolk Sméagol 4/5 and Brampton Balrogs 11/10.",
+      "Jon has Gyökeres on the bench and Diop in the XI.",
       "Jon claimed Mykolenko; Eddy added N.Jackson.",
-      "Palmer already overdelivered for Jon last week (13); Thiago returned 0 from 4.3 for Eddy.",
-      "Mateta is the one to watch for Suffolk Sméagol."
+      "Palmer already overdelivered for Jon last week (13); Thiago returned 0 from 4.3 for Eddy."
      ]
     },
     {
@@ -1293,7 +1350,23 @@
         "pts": 2,
         "xp": 5.2
        }
-      }
+      },
+      "injuries": [
+       {
+        "id": 6,
+        "name": "Saliba",
+        "pos": "DEF",
+        "xp": 4.2,
+        "flag": "out",
+        "status": "i",
+        "chance": 0,
+        "news": "Back injury - Unknown return date",
+        "kind": "missing",
+        "inXi": false,
+        "injury": "back injury"
+       }
+      ],
+      "benchCall": null
      },
      "away": {
       "entryId": 30728,
@@ -1346,7 +1419,23 @@
         "pts": 0,
         "xp": 4
        }
-      }
+      },
+      "injuries": [
+       {
+        "id": 5,
+        "name": "J.Timber",
+        "pos": "DEF",
+        "xp": 4.8,
+        "flag": "out",
+        "status": "i",
+        "chance": 0,
+        "news": "Groin injury - Unknown return date",
+        "kind": "missing",
+        "inXi": false,
+        "injury": "groin injury"
+       }
+      ],
+      "benchCall": null
      },
      "odds": {
       "home": 61,
@@ -1362,14 +1451,15 @@
       "away": "13/8"
      },
      "predicted": {
-      "home": 45.6,
-      "away": 40.6
+      "home": 46.4,
+      "away": 41.7
      },
      "h2h": null,
      "sentences": [
       "The East Asian derby returns.",
       "The book fancies Rokesly Regorasu at 4/7; Seoul Shire are 13/8.",
       "Title board still has Rokesly Regorasu out in front at 15/8; Seoul Shire are chasing.",
+      "J.Timber is out of Luke's XI (groin injury).",
       "Tel is the new free-agent piece for Seoul Shire.",
       "Gakpo already overdelivered for David last week (12); James returned 0 from 4 for Luke.",
       "The hinge is Guéhi against Cherki."
@@ -1427,7 +1517,9 @@
         "pts": 0,
         "xp": 4.8
        }
-      }
+      },
+      "injuries": [],
+      "benchCall": null
      },
      "away": {
       "entryId": 18279,
@@ -1456,9 +1548,9 @@
         "xp": 5.2
        },
        {
-        "id": 398,
-        "name": "Foden",
-        "pos": "MID",
+        "id": 529,
+        "name": "Roefs",
+        "pos": "GK",
         "xp": 5.1
        }
       ],
@@ -1474,6 +1566,24 @@
         "pts": 1,
         "xp": 5.4
        }
+      },
+      "injuries": [],
+      "benchCall": {
+       "bench": {
+        "id": 463,
+        "name": "Woltemade",
+        "pos": "FWD",
+        "xp": 3.9,
+        "flag": "ok"
+       },
+       "starter": {
+        "id": 316,
+        "name": "Emersonn",
+        "pos": "FWD",
+        "xp": 0.5,
+        "flag": "ok"
+       },
+       "gap": 3.4
       }
      },
      "odds": {
@@ -1490,13 +1600,14 @@
       "away": "8/11"
      },
      "predicted": {
-      "home": 43.5,
-      "away": 45.5
+      "home": 42.4,
+      "away": 39.9
      },
      "h2h": null,
      "sentences": [
       "Tight on the board: Mordor S.F.G 8/11, Hackney Rohirrim 6/5.",
       "Title board still has Mordor S.F.G out in front at 9/4; Hackney Rohirrim are chasing.",
+      "Question for Nick: Woltemade sits on the bench while Emersonn starts.",
       "Dorgu is the new waiver piece for Hackney Rohirrim.",
       "Stach already overdelivered for Mike last week (13); Roefs returned 1 from 5.4 for Nick.",
       "The hinge is Gabriel against João Pedro.",
