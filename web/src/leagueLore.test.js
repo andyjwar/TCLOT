@@ -12,6 +12,7 @@ import {
   matchupPersonalitySentences,
   derbyChipLabel,
   uniqueDerbies,
+  sprinkleInto,
 } from './leagueLore.js'
 
 const pick = (arr) => arr[0]
@@ -83,18 +84,43 @@ test('matchupPersonalitySentence is gated and deterministic', () => {
   assert.ok(a == null || typeof a === 'string')
 })
 
-test('preview lore lands on every fixture when both managers have notes', () => {
+test('preview lore sprinkles one manager, not a line each', () => {
   const m = {
     home: { manager: 'Jon Ward' },
     away: { manager: 'Eddy Webster' },
   }
   const lines = matchupPersonalitySentences(m, pick, 'gw2-smeagol', variant, {
     gate: 1,
-    both: true,
+    veganAlways: true,
   })
-  assert.equal(lines.length, 2)
-  assert.match(lines.join(' '), /Jon|Brother Ward|commentary|take on this claim/i)
-  assert.match(lines.join(' '), /Eddy|thesis|timezone|puzzle|waiver|children/i)
+  assert.equal(lines.length, 1)
+  assert.match(lines[0], /Jon|Brother Ward|commentary|take on this claim|Eddy|thesis|timezone|puzzle|waiver|children/i)
+})
+
+test('Mottershead always gets a vegan joke, plus an extra when the week hooks him', () => {
+  const quiet = matchupPersonalitySentences(
+    { home: { manager: 'Nick Mottershead' }, away: { manager: 'Mike Sutton' } },
+    pick,
+    'quiet',
+    variant,
+    { veganAlways: true },
+  )
+  assert.equal(quiet.length, 1)
+  assert.match(quiet[0], /vegan|tofu|plant-based/i)
+
+  const hooked = matchupPersonalitySentences(
+    {
+      home: { manager: 'Nick Mottershead', recentPickups: [{ name: 'X' }, { name: 'Y' }] },
+      away: { manager: 'Mike Sutton' },
+    },
+    pick,
+    'hooked',
+    variant,
+    { veganAlways: true },
+  )
+  assert.equal(hooked.length, 2)
+  assert.match(hooked[0], /vegan|tofu|plant-based/i)
+  assert.doesNotMatch(hooked[1], /vegan|tofu|plant-based/i)
 })
 
 test('preview lore still fires on a named derby fixture', () => {
@@ -104,11 +130,10 @@ test('preview lore still fires on a named derby fixture', () => {
   }
   const lines = matchupPersonalitySentences(m, pick, 'gw2-badblood', variant, {
     gate: 1,
-    both: true,
+    veganAlways: true,
   })
-  assert.equal(lines.length, 2)
-  assert.match(lines.join(' '), /Andy|comeback|big game|Titanic|battle|Canada/i)
-  assert.match(lines.join(' '), /lampshade|conservative|spreadsheet|Nick Goodacre|Northern/i)
+  assert.equal(lines.length, 1)
+  assert.match(lines[0], /Andy|comeback|big game|Titanic|battle|Canada|lampshade|conservative|spreadsheet|Nick Goodacre|Northern/i)
 })
 
 test('Titanic Duo line can fire when Andy plays Mottershead', () => {
@@ -118,6 +143,25 @@ test('Titanic Duo line can fire when Andy plays Mottershead', () => {
   }
   const line = matchupPersonalitySentence(m, pick, 'k', variant, { gate: 2 })
   assert.match(line, /Titanic/)
+})
+
+test('Titanic pairing gives Mottershead vegan plus one extra, not an Andy checklist', () => {
+  const m = {
+    home: { manager: 'Andy Ward' },
+    away: { manager: 'Nick Mottershead' },
+  }
+  const lines = matchupPersonalitySentences(m, pick, 'k', variant, { veganAlways: true })
+  assert.equal(lines.length, 2)
+  assert.match(lines[0], /vegan|tofu|plant-based/i)
+  assert.match(lines[1], /Titanic/)
+  assert.doesNotMatch(lines.join(' '), /comeback|talks a big game|battle mode/i)
+})
+
+test('sprinkleInto never steals the lead sentence', () => {
+  const out = sprinkleInto(['Lead.', 'Stats.'], ['Joke.'], () => 0, 'k')
+  assert.equal(out[0], 'Lead.')
+  assert.ok(out.includes('Joke.'))
+  assert.deepEqual(sprinkleInto(['Lead.'], [], () => 0, 'k'), ['Lead.'])
 })
 
 test('derbyChipLabel and uniqueDerbies', () => {

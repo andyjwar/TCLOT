@@ -14,13 +14,15 @@
  *  7. Form — last week's over/underperformers.
  *  8. Watch list — names only (xP lives in the footer), from the starting XI.
  *  9. Underdog path — qualitative, and only when it's a real short favourite.
- *  10. Manager jokes — one per manager with lore, on every fixture.
+ *  10. Manager jokes — sprinkled, not a per-manager checklist. Mottershead
+ *      always gets a vegan line, plus one more when the week gives him a hook.
  */
 
 import {
   namedFixtureFor,
   matchupPersonalitySentences,
   canonicalManager,
+  sprinkleInto,
 } from './leagueLore.js'
 import { variantIndex } from './weeklyRecapText.js'
 import { probToFractionalOdds } from './oddsFormat.js'
@@ -404,12 +406,16 @@ function underdogSentence(m, key) {
 }
 
 /**
- * Manager running jokes. One line per manager who has lore, every fixture.
- * Titanic Duo still only some weeks when those two play each other.
+ * Manager running jokes. Sprinkled, at most one other manager. Mottershead
+ * always gets a vegan line, plus a second when the week actually hooks him.
  */
 function managerFunFactSentences(m, key) {
-  return matchupPersonalitySentences(m, pick, key, variantIndex, { gate: 1, both: true })
+  return matchupPersonalitySentences(m, pick, key, variantIndex, {
+    gate: 1,
+    veganAlways: true,
+  })
 }
+
 
 function rivalrySentence(m) {
   const h = m.h2h
@@ -555,9 +561,7 @@ export function matchupPreviewSentences(m) {
   if (keys) out.push(keys)
   const dog = underdogSentence(m, `${key}-u`)
   if (dog) out.push(dog)
-  const jokes = managerFunFactSentences(m, `${key}-mff`)
-  for (const joke of jokes) out.push(joke)
   const series = rivalrySentence(m)
   if (series) out.push(series)
-  return out
+  return sprinkleInto(out, managerFunFactSentences(m, `${key}-mff`), variantIndex, `${key}-mff`)
 }

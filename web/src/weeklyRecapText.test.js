@@ -301,21 +301,26 @@ test('no named-fixture lead for an ordinary pairing', () => {
   assert.doesNotMatch(out[0], /Battle|derby/i)
 })
 
-test('manager fun facts are woven in sometimes and stay deterministic', () => {
-  let sawPersonality = false
-  for (let gw = 1; gw <= 20; gw++) {
-    const out = matchupRecapSentences({
+test('Mottershead recap always has a vegan joke, plus one extra when hooked', () => {
+  for (let gw = 1; gw <= 16; gw++) {
+    const quiet = matchupRecapSentences({
       ...base,
       gw,
       home: team({ manager: 'Nick Mottershead' }),
     })
-    const joined = out.join(' ')
-    if (/vegan|Titanic|arts school|swagger|big-move|fallen-empire|trade flurry|extremely sure/i.test(joined)) {
-      sawPersonality = true
-    }
-    assert.deepEqual(out, matchupRecapSentences({ ...base, gw, home: team({ manager: 'Nick Mottershead' }) }))
+    assert.match(quiet.join(' '), /vegan|tofu|plant-based/i)
+    assert.deepEqual(quiet, matchupRecapSentences({ ...base, gw, home: team({ manager: 'Nick Mottershead' }) }))
   }
-  assert.ok(sawPersonality, 'expected Mottershead personality to surface at least once across 20 GWs')
+
+  const hooked = matchupRecapSentences({
+    ...base,
+    home: team({ manager: 'Nick Mottershead', pickup: { name: 'Schade' } }),
+  })
+  assert.match(hooked.join(' '), /vegan|tofu|plant-based/i)
+  const mott = hooked.filter((s) =>
+    /vegan|tofu|plant-based|swagger|arts school|big-move|fallen-empire|trade flurry|extremely sure|Titanic/i.test(s),
+  )
+  assert.ok(mott.length >= 2)
 })
 
 test('no manager fun fact when neither manager has lore', () => {
