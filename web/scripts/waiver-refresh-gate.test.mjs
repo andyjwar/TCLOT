@@ -4,7 +4,7 @@ import {
   postDeadlineIngestEvent,
   preWaiverRefreshEvent,
 } from './waiver-refresh-gate.mjs'
-import { burstWaiverRefreshEvent } from '../src/waiverRefreshSchedule.js'
+import { burstWaiverRefreshEvent, postLineupLockRefreshEvent } from '../src/waiverRefreshSchedule.js'
 
 test('postDeadlineIngestEvent — allows ingest after GW deadline (finished not required)', () => {
   const dl = '2026-05-01T17:30:00Z'
@@ -103,4 +103,19 @@ test('burstWaiverRefreshEvent — allows inside 90-min post-waiver burst only', 
   assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 30 * 60_000)?.id, 4) // burst
   assert.equal(burstWaiverRefreshEvent([{ id: 4, waivers_time: WT }], wt + 120 * 60_000), null) // past burst
   assert.equal(burstWaiverRefreshEvent(null, wt + 30 * 60_000), null)
+})
+
+const GW2_DL = '2026-08-28T17:30:00Z'
+
+test('postLineupLockRefreshEvent — allows from deadline until +3h', () => {
+  const dl = Date.parse(GW2_DL)
+  const events = [
+    { id: 1, finished: true, deadline_time: '2026-08-21T17:30:00Z' },
+    { id: 2, finished: false, deadline_time: GW2_DL },
+  ]
+  assert.equal(postLineupLockRefreshEvent(events, dl - 1), null)
+  assert.equal(postLineupLockRefreshEvent(events, dl)?.id, 2)
+  assert.equal(postLineupLockRefreshEvent(events, dl + 30 * 60_000)?.id, 2)
+  assert.equal(postLineupLockRefreshEvent(events, dl + 3 * 60 * 60_000), null)
+  assert.equal(postLineupLockRefreshEvent(null, dl), null)
 })

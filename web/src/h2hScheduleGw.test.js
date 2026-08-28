@@ -40,6 +40,27 @@ test('resolveLiveGameweek — bootstrap alone rolls Live to new GW', () => {
   )
 })
 
+test('resolveLiveGameweek — lineup deadline rolls Live to next GW while current lags', () => {
+  assert.equal(
+    resolveLiveGameweek({
+      matches: [
+        { event: 1, finished: true, league_entry_1: 1, league_entry_2: 2 },
+        { event: 2, finished: false, league_entry_1: 1, league_entry_2: 3 },
+      ],
+      bootstrapCurrent: 1,
+      fplLiveLandingGw: 1,
+      nextEvent: 2,
+      previousGameweek: 1,
+      events: [
+        { id: 1, finished: true, deadline_time: '2026-08-21T17:30:00Z' },
+        { id: 2, finished: false, deadline_time: '2026-08-28T17:30:00Z' },
+      ],
+      now: Date.parse('2026-08-28T17:31:00Z'),
+    }),
+    2,
+  )
+})
+
 test('resolveLiveGameweek — respects explicit pick', () => {
   assert.equal(
     resolveLiveGameweek({

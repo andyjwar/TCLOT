@@ -3,6 +3,8 @@
  * when FPL bootstrap `events.current` / `events.next` run ahead of finished H2H rows.
  */
 
+import { pickDeadlinePassedLiveGw } from './fplLiveCalendar.js'
+
 /**
  * @param {object[] | null | undefined} matches
  * @returns {number | null}
@@ -49,6 +51,8 @@ export function waiverAnalyticsHasGameweek(rows, gw) {
  *   nextEvent?: number | null,
  *   fplLiveLandingGw?: number | null,
  *   explicitLiveGw?: number | null,
+ *   events?: object[] | { data?: object[] } | null,
+ *   now?: Date | number,
  * }} p
  */
 export function resolveLiveGameweek({
@@ -58,9 +62,19 @@ export function resolveLiveGameweek({
   nextEvent,
   fplLiveLandingGw,
   explicitLiveGw,
+  events,
+  now,
 }) {
   const explicit = Number(explicitLiveGw)
   if (Number.isFinite(explicit) && explicit >= 1) return explicit
+
+  /**
+   * Lineup lock wins over a lagging `events.current`. FPL often leaves current
+   * on last week until after the next deadline; the Live tab should already
+   * be on the locked GW so confirmed XIs can poll.
+   */
+  const deadlineGw = pickDeadlinePassedLiveGw(events, now ?? Date.now())
+  if (deadlineGw != null) return deadlineGw
 
   /**
    * Live tab must track draft `event/{gw}/live`, which follows FPL `events.current`.

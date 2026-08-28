@@ -28,6 +28,12 @@ export const POST_DEADLINE_INGEST_DELAY_MS = 2 * 60 * 60 * 1000
 /** Stop hourly post-deadline ingests once the next GW deadline is this close. */
 export const POST_DEADLINE_STOP_BEFORE_NEXT_DEADLINE_MS = 3 * 60 * 60 * 1000
 /**
+ * After the lineup deadline, bake locked XIs into weekly-recaps Preview.
+ * The 2h post-deadline ingest wait is for H2H `finished` rows — Preview must
+ * go live at lock, not two hours later. Burst cron also uses this window.
+ */
+export const LINEUP_LOCK_WINDOW_MS = 3 * 60 * 60 * 1000
+/**
  * Daily catch-all crons (`30 5/13/21 * * *`, ~05:30/13:30/21:30 UTC) always allow full refresh.
  * Accept a few minutes' drift around each slot.
  */
@@ -94,6 +100,34 @@ export function postDeadlineIngestEvent(eventList, nowMs) {
     }
 
     best = { id: cur.id, deadline: cur.deadline }
+  }
+  return best
+}
+
+/**
+ * GW whose lineup-lock refresh window is active: from `deadline_time` until
+ * deadline + 3h. Used so weekly Preview (and upcoming XI snapshots) deploy as
+ * soon as FPL XIs lock, instead of waiting for the 2h post-deadline ingest.
+ *
+ * @param {object[]} eventList — bootstrap `events.data`
+ * @param {number} nowMs
+ * @returns {{ id: number, deadline: string } | null}
+ */
+export function postLineupLockRefreshEvent(eventList, nowMs) {
+  if (!Array.isArray(eventList)) return null
+  const now = Number(nowMs)
+  if (!Number.isFinite(now)) return null
+
+  let best = null
+  for (const e of eventList) {
+    const id = Number(e?.id)
+    const deadline = e?.deadline_time
+    if (!Number.isFinite(id) || typeof deadline !== 'string' || !deadline) continue
+    const dl = Date.parse(deadline)
+    if (!Number.isFinite(dl)) continue
+    if (now < dl) continue
+    if (now >= dl + LINEUP_LOCK_WINDOW_MS) continue
+    if (!best || id > best.id) best = { id, deadline }
   }
   return best
 }

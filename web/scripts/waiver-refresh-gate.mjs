@@ -2,8 +2,9 @@
 /**
  * GitHub Actions scheduled deploy gate: only "proceed" when a full ingest/build is worth
  * doing — i.e. soon after a gameweek's FPL `waivers_time` (so transactions land in
- * `drops-gw-live` after build-waiver-gw-analytics), every 3 hours in the 24h leading
- * up to `waivers_time`, or at one of the thrice-daily UTC catch-alls.
+ * `drops-gw-live` after build-waiver-gw-analytics), in the 3h after a lineup deadline
+ * (locked XIs + weekly Preview), every 3 hours in the 24h leading up to `waivers_time`,
+ * or at one of the thrice-daily UTC catch-alls.
  *
  * Not invoked for push / workflow_dispatch (the workflow skips this logic there).
  * Data: draft bootstrap-static { events: { data: [{ id, waivers_time }, ...] } }.
@@ -14,6 +15,7 @@ import {
   burstWaiverRefreshEvent,
   inDailyCatchAllWindow,
   postDeadlineIngestEvent,
+  postLineupLockRefreshEvent,
   postWaiverRefreshEvent,
   preWaiverRefreshEvent,
 } from '../src/waiverRefreshSchedule.js'
@@ -49,14 +51,22 @@ async function fetchEventList() {
  */
 async function burstGate() {
   const list = await fetchEventList()
-  const burst = burstWaiverRefreshEvent(list, Date.now())
+  const now = Date.now()
+  const burst = burstWaiverRefreshEvent(list, now)
   if (burst) {
     console.log(
       `waiver-refresh-gate: burst window for GW${burst.id} (waivers_time ${burst.waiversTime}) — run deploy`,
     )
     process.exit(0)
   }
-  console.log('waiver-refresh-gate: burst cron outside any post-waiver burst window — skip deploy')
+  const lineup = postLineupLockRefreshEvent(list, now)
+  if (lineup) {
+    console.log(
+      `waiver-refresh-gate: burst lineup-lock window for GW${lineup.id} (deadline ${lineup.deadline}) — run deploy`,
+    )
+    process.exit(0)
+  }
+  console.log('waiver-refresh-gate: burst cron outside any post-waiver or lineup-lock burst window — skip deploy')
   process.exit(1)
 }
 
@@ -91,6 +101,14 @@ async function main() {
     process.exit(0)
   }
 
+  const lineup = postLineupLockRefreshEvent(list, now)
+  if (lineup) {
+    console.log(
+      `waiver-refresh-gate: past GW${lineup.id} lineup deadline (${lineup.deadline}) — run deploy for locked XIs / Preview`,
+    )
+    process.exit(0)
+  }
+
   const postGw = postDeadlineIngestEvent(list, now)
   if (postGw) {
     console.log(
@@ -100,7 +118,7 @@ async function main() {
   }
 
   console.log(
-    'waiver-refresh-gate: not in post-waivers, pre-waivers, post-deadline, or daily window — skip deploy',
+    'waiver-refresh-gate: not in post-waivers, pre-waivers, lineup-lock, post-deadline, or daily window — skip deploy',
   )
   process.exit(1)
 }
