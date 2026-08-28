@@ -134,8 +134,8 @@
 .weekly-recap__superlatives {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px 16px;
-  margin: 2px 0 0;
+  gap: 6px 14px;
+  margin: 6px 0 0;
 }
 .weekly-recap__superlative {
   display: inline-flex;

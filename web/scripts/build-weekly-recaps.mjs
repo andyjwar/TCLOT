@@ -5,7 +5,7 @@
  * Recap entries (`gameweeks`) — one per finished gameweek:
  *  - `model`: odds vs reality for the week
  *  - `matchups`: score, pre-match call, template recap paragraph, table context
- *  - `superlatives`: week high, closest match, star player
+ *  - `superlatives`: week high, closest match, star player, best waiver, dud
  *
  * Preview entries (`previews`) — one per finished GW (frozen from the archive)
  * and the next unfinished GW (live model / bookie sheet):
@@ -42,6 +42,11 @@ import {
   formFromXi,
 } from '../src/weeklyPreviewText.js'
 import { decimalOddsToFraction, probToFractionalOdds } from '../src/oddsFormat.js'
+import {
+  pickTopScorer,
+  pickBestWaiver,
+  pickDraftDud,
+} from '../src/weeklyRecapSuperlatives.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -366,6 +371,7 @@ const bookie = readOptional('bookie-markets.json')
 const playerPredictions = readOptional('predictions.json')
 const elementStatus = readOptional('element_status.json')
 const bootstrapDraft = readOptional('bootstrap_draft.json')
+const draftPicks = readOptional('draft_picks.json')
 
 const elementNameById = new Map(
   (bootstrapDraft?.elements ?? []).map((e) => [
@@ -482,6 +488,119 @@ function findSideXi(history, entryId) {
     }
   }
   return null
+}
+
+function flattenArchivedPlayers(history) {
+  const out = []
+  for (const row of history?.h2h ?? []) {
+    const sides = [
+      [row.xi1, row.teamName1, row.league_entry_1],
+      [row.xi2, row.teamName2, row.league_entry_2],
+    ]
+    for (const [xi, teamName, entryId] of sides) {
+      if (!Array.isArray(xi)) continue
+      for (const p of xi) {
+        if (!p?.name) continue
+        out.push({
+          id: p.id ?? null,
+          name: p.name,
+          pts: p.pts,
+          xp: p.xp,
+          teamName,
+          entryId,
+        })
+      }
+    }
+  }
+  return out
+}
+
+const ownedFplByElement = new Map()
+for (const row of elementStatus?.element_status ?? []) {
+  if (row.owner == null) continue
+  ownedFplByElement.set(Number(row.element), Number(row.owner))
+}
+
+function xpForElement(elementId, archivedPlayers) {
+  const fromXi = archivedPlayers.find((p) => Number(p.id) === Number(elementId))
+  if (fromXi && Number.isFinite(Number(fromXi.xp))) return Number(fromXi.xp)
+  const xp = Number(predById.get(Number(elementId))?.forecast?.totalPoints)
+  return Number.isFinite(xp) ? xp : null
+}
+
+/**
+ * Header chips: last week's top scorer (preview), best-looking recent waiver,
+ * and the earliest draft pick looking poor.
+ */
+function playerFunStats(gw, { history, prevHistory, useActual }) {
+  const thisPlayers = flattenArchivedPlayers(history)
+  const prevPlayers = flattenArchivedPlayers(prevHistory)
+  const ptsById = new Map(
+    thisPlayers.filter((p) => p.id != null).map((p) => [Number(p.id), p]),
+  )
+
+  const pickupRows = []
+  for (const [leagueId, list] of acquisitionsByLeagueId) {
+    const teamName = nameById.get(Number(leagueId)) ?? null
+    for (const a of list) {
+      if (useActual) {
+        if (a.gw > gw) continue
+      } else if (a.gw !== gw && a.gw !== gw - 1) {
+        continue
+      }
+      const arch = ptsById.get(a.elementIn)
+      pickupRows.push({
+        id: a.elementIn,
+        name: playerNameFor(a.elementIn),
+        kind: a.kind,
+        xp: useActual ? null : xpForElement(a.elementIn, thisPlayers),
+        pts: Number.isFinite(Number(arch?.pts)) ? Number(arch.pts) : null,
+        teamName,
+      })
+    }
+  }
+
+  const drafted = (draftPicks?.picks ?? [])
+    .filter((pk) => ownedFplByElement.get(Number(pk.element)) === Number(pk.entryId))
+    .map((pk) => {
+      const arch = ptsById.get(Number(pk.element))
+      return {
+        name: pk.playerName || playerNameFor(pk.element),
+        overallPick: pk.overallPick,
+        round: pk.round,
+        xp: xpForElement(pk.element, thisPlayers),
+        pts: Number.isFinite(Number(arch?.pts)) ? Number(arch.pts) : null,
+        teamName: pk.teamName,
+        id: pk.element,
+      }
+    })
+
+  const top = pickTopScorer(useActual ? thisPlayers : prevPlayers)
+  const waiver = pickBestWaiver(pickupRows)
+  const dud = pickDraftDud(drafted, { useActual: !!useActual })
+  return {
+    topScorer: top
+      ? { name: top.name, pts: top.pts, teamName: top.teamName }
+      : null,
+    bestWaiver: waiver
+      ? {
+          name: waiver.name,
+          kind: waiver.kind,
+          xp: waiver.xp,
+          pts: waiver.pts,
+          teamName: waiver.teamName,
+        }
+      : null,
+    dud: dud
+      ? {
+          name: dud.name,
+          overallPick: dud.overallPick,
+          xp: dud.xp,
+          pts: dud.pts,
+          teamName: dud.teamName,
+        }
+      : null,
+  }
 }
 
 function previewTeam(entryId, asOfGw) {
@@ -648,6 +767,8 @@ function buildPreviewForGw(gw) {
     (a, b) => Math.abs(50 - (a.odds?.favoritePct ?? 50)) - Math.abs(50 - (b.odds?.favoritePct ?? 50)),
   )[0]
 
+  const fun = playerFunStats(gw, { history, prevHistory, useActual: false })
+
   return {
     gw,
     source: history ? 'archive' : 'live',
@@ -665,6 +786,9 @@ function buildPreviewForGw(gw) {
             favoritePct: closest.odds.favoritePct,
           }
         : null,
+      topScorer: fun.topScorer,
+      bestWaiver: fun.bestWaiver,
+      dud: fun.dud,
     },
     matchups,
   }
@@ -678,8 +802,19 @@ const previews = [...previewGws]
   .map((gw) => buildPreviewForGw(gw))
   .filter(Boolean)
 
+for (const recap of gameweeks) {
+  const history = loadHistory(recap.gw)
+  const fun = playerFunStats(recap.gw, {
+    history,
+    prevHistory: recap.gw > 1 ? loadHistory(recap.gw - 1) : null,
+    useActual: true,
+  })
+  recap.superlatives.bestWaiver = fun.bestWaiver
+  recap.superlatives.dud = fun.dud
+}
+
 const output = {
-  schemaVersion: 4,
+  schemaVersion: 5,
   generatedAt: new Date().toISOString(),
   season: predictions.season,
   lastFinishedGw,

@@ -225,6 +225,8 @@ function RecapHeader({ recapGw, decided }) {
             </span>
           </span>
         ) : null}
+        <WaiverChip waiver={recapGw.superlatives.bestWaiver} usePts />
+        <DudChip dud={recapGw.superlatives.dud} usePts />
       </div>
 
       {decided > 0 || recapGw.model.draws > 0 ? (
@@ -274,9 +276,78 @@ function RecapHeader({ recapGw, decided }) {
   )
 }
 
+function Superlative({ label, title, children }) {
+  if (!children) return null
+  return (
+    <span className="weekly-recap__superlative" title={title}>
+      <span className="weekly-recap__superlative-label">{label}</span>
+      <span className="weekly-recap__superlative-value">{children}</span>
+    </span>
+  )
+}
+
+function teamHint(name) {
+  return name ? ` (${standingsMobileTeamName(name)})` : ''
+}
+
+function WaiverChip({ waiver, usePts = false }) {
+  if (!waiver?.name) return null
+  const n = usePts ? waiver.pts : waiver.xp
+  return (
+    <Superlative
+      label="Best waiver"
+      title={
+        usePts
+          ? 'Recent claim who scored the most this week'
+          : 'Recent claim with the highest projected points this week'
+      }
+    >
+      {waiver.name}
+      {Number.isFinite(n) ? (
+        <>
+          {' · '}
+          <span className="tabular">{n}</span>
+        </>
+      ) : null}
+      {teamHint(waiver.teamName)}
+    </Superlative>
+  )
+}
+
+function DudChip({ dud, usePts = false }) {
+  if (!dud?.name) return null
+  const n = usePts ? dud.pts : dud.xp
+  return (
+    <Superlative
+      label="Dud"
+      title={
+        usePts
+          ? 'Highest-drafted player with the fewest points this week'
+          : 'Highest-drafted player with the lowest projected points this week'
+      }
+    >
+      {dud.name}
+      {Number.isFinite(dud.overallPick) ? (
+        <>
+          {' · pick '}
+          <span className="tabular">{dud.overallPick}</span>
+        </>
+      ) : null}
+      {Number.isFinite(n) ? (
+        <>
+          {' · '}
+          <span className="tabular">{n}</span>
+        </>
+      ) : null}
+      {teamHint(dud.teamName)}
+    </Superlative>
+  )
+}
+
 function PreviewHeader({ preview }) {
   const favourite = preview.superlatives?.favourite
   const closest = preview.superlatives?.closest
+  const topScorer = preview.superlatives?.topScorer
   return (
     <>
       <p className="weekly-recap__note">
@@ -303,8 +374,18 @@ function PreviewHeader({ preview }) {
             </span>
           </span>
         ) : null}
+        {topScorer ? (
+          <Superlative label="Top scorer" title="Highest player score last week">
+            {topScorer.name} · <span className="tabular">{topScorer.pts}</span>
+            {teamHint(topScorer.teamName)}
+          </Superlative>
+        ) : null}
+        <WaiverChip waiver={preview.superlatives?.bestWaiver} />
+        <DudChip dud={preview.superlatives?.dud} />
       </div>
     </>
+  )
+}
   )
 }
 

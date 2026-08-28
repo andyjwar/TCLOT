@@ -1,6 +1,6 @@
 {
- "schemaVersion": 4,
- "generatedAt": "2026-08-28T13:42:55.693Z",
+ "schemaVersion": 5,
+ "generatedAt": "2026-08-28T13:57:30.660Z",
  "season": "2026-27",
  "lastFinishedGw": 1,
  "upcomingGw": 2,
@@ -61,6 +61,20 @@
     "starPlayer": {
      "name": "Stach",
      "pts": 13,
+     "teamName": "Hackney Rohirrim"
+    },
+    "bestWaiver": {
+     "name": "Barry",
+     "kind": "f",
+     "xp": null,
+     "pts": 8,
+     "teamName": "Brampton Balrogs"
+    },
+    "dud": {
+     "name": "Watkins",
+     "overallPick": 8,
+     "xp": 3.7,
+     "pts": 0,
      "teamName": "Hackney Rohirrim"
     }
    },
@@ -510,6 +524,21 @@
      "homeName": "Brampton Balrogs",
      "awayName": "Rokesly Regorasu",
      "favoritePct": 50
+    },
+    "topScorer": null,
+    "bestWaiver": {
+     "name": "Schade",
+     "kind": "w",
+     "xp": 4.2,
+     "pts": 3,
+     "teamName": "Toronto Gimli"
+    },
+    "dud": {
+     "name": "Isak",
+     "overallPick": 3,
+     "xp": 1.2,
+     "pts": 2,
+     "teamName": "Atlético Bilbo"
     }
    },
    "matchups": [
@@ -932,6 +961,25 @@
      "homeName": "Suffolk Sméagol",
      "awayName": "Brampton Balrogs",
      "favoritePct": 53
+    },
+    "topScorer": {
+     "name": "Stach",
+     "pts": 13,
+     "teamName": "Hackney Rohirrim"
+    },
+    "bestWaiver": {
+     "name": "Schade",
+     "kind": "w",
+     "xp": 5.5,
+     "pts": null,
+     "teamName": "Toronto Gimli"
+    },
+    "dud": {
+     "name": "Isak",
+     "overallPick": 3,
+     "xp": 1.7,
+     "pts": null,
+     "teamName": "Atlético Bilbo"
     }
    },
    "matchups": [
