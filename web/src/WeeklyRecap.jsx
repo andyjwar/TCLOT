@@ -386,8 +386,6 @@ function PreviewHeader({ preview }) {
     </>
   )
 }
-  )
-}
 
 function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
   const homeWon = m.winner === m.home.entryId
