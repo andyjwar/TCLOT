@@ -1,6 +1,6 @@
 {
- "schemaVersion": 3,
- "generatedAt": "2026-08-28T13:08:27.965Z",
+ "schemaVersion": 4,
+ "generatedAt": "2026-08-28T13:35:53.511Z",
  "season": "2026-27",
  "lastFinishedGw": 1,
  "upcomingGw": 2,
@@ -526,6 +526,9 @@
       },
       "streak": null,
       "titlePct": 25.6,
+      "lastPct": 4,
+      "titlePrice": "9/4",
+      "lastPrice": "50/1",
       "strength": 45.5,
       "keys": [
        {
@@ -540,7 +543,9 @@
         "pos": "MID",
         "xp": 4.2
        }
-      ]
+      ],
+      "recentPickups": [],
+      "form": null
      },
      "away": {
       "entryId": 4259,
@@ -554,6 +559,9 @@
       },
       "streak": null,
       "titlePct": 3.2,
+      "lastPct": 27,
+      "titlePrice": "100/1",
+      "lastPrice": "6/5",
       "strength": 38.3,
       "keys": [
        {
@@ -568,7 +576,9 @@
         "pos": "MID",
         "xp": 5.1
        }
-      ]
+      ],
+      "recentPickups": [],
+      "form": null
      },
      "odds": {
       "home": 73,
@@ -578,6 +588,11 @@
       "favoritePct": 73,
       "source": "engine"
      },
+     "bookie": {
+      "home": "4/11",
+      "draw": "33/1",
+      "away": "3/1"
+     },
      "predicted": {
       "home": 38.4,
       "away": 30.6
@@ -585,9 +600,10 @@
      "h2h": null,
      "sentences": [
       "This week's edition of the Battle of the Nicks.",
-      "Clear chalk: Mordor S.F.G at 73%, Atlético Bilbo the long shot. Projected points: 38 to 31.",
-      "Players to watch: Roefs (5.4) for Mordor S.F.G, Shaw (5.1) for Atlético Bilbo. Also in the mix: Cunha (4.2) and Mbeumo (5.1).",
-      "For Atlético Bilbo to win, they need Shaw (5.1) to haul and Cunha (4.2) to blank. The model is not waiting up.",
+      "Clear chalk on the board: Mordor S.F.G 4/11, Atlético Bilbo 3/1.",
+      "Mordor S.F.G are the title chalk at 9/4.",
+      "Players to watch: Roefs for Mordor S.F.G, Shaw for Atlético Bilbo.",
+      "For Atlético Bilbo to win, they need Shaw to haul and Cunha to blank.",
       "Nick Mottershead insists it was all plant-powered; nobody asked, but he told us anyway."
      ]
     },
@@ -604,6 +620,9 @@
       },
       "streak": null,
       "titlePct": 5.3,
+      "lastPct": 18,
+      "titlePrice": "16/1",
+      "lastPrice": "11/2",
       "strength": 40.6,
       "keys": [
        {
@@ -618,7 +637,15 @@
         "pos": "MID",
         "xp": 4.6
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Tel",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": null
      },
      "away": {
       "entryId": 10173,
@@ -632,6 +659,9 @@
       },
       "streak": null,
       "titlePct": 13,
+      "lastPct": 6.6,
+      "titlePrice": "7/1",
+      "lastPrice": "14/1",
       "strength": 43.5,
       "keys": [
        {
@@ -646,7 +676,15 @@
         "pos": "DEF",
         "xp": 5.6
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Dorgu",
+        "kind": "w",
+        "gw": 1
+       }
+      ],
+      "form": null
      },
      "odds": {
       "home": 21,
@@ -656,15 +694,21 @@
       "favoritePct": 77,
       "source": "engine"
      },
+     "bookie": {
+      "home": "4/1",
+      "draw": "50/1",
+      "away": "3/10"
+     },
      "predicted": {
       "home": 35.5,
       "away": 45.6
      },
      "h2h": null,
      "sentences": [
-      "The model has Hackney Rohirrim as heavy favourites at 77%. Projected points: 46 to 36.",
-      "The model's scoring runs through Saka (6.1) for Seoul Shire and Gabriel (5.6) for Hackney Rohirrim. Also in the mix: Cherki (4.6) and Maguire (5.6).",
-      "Luke's path is ugly: Gabriel (5.6) to blank, plus Saka (6.1) to haul."
+      "The book has Hackney Rohirrim as a short 3/10; Seoul Shire are the long shot at 4/1.",
+      "Luke claimed Tel; Mike added Dorgu.",
+      "The hinge is Saka against Gabriel.",
+      "Luke's path is ugly: Gabriel to blank, plus Saka to haul."
      ]
     },
     {
@@ -680,6 +724,9 @@
       },
       "streak": null,
       "titlePct": 6.2,
+      "lastPct": 17.8,
+      "titlePrice": "25/1",
+      "lastPrice": "4/1",
       "strength": 40.7,
       "keys": [
        {
@@ -694,7 +741,20 @@
         "pos": "MID",
         "xp": 4.2
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "N.Jackson",
+        "kind": "w",
+        "gw": 1
+       },
+       {
+        "name": "Barry",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": null
      },
      "away": {
       "entryId": 6849,
@@ -708,6 +768,9 @@
       },
       "streak": null,
       "titlePct": 25.5,
+      "lastPct": 3.9,
+      "titlePrice": "15/8",
+      "lastPrice": "66/1",
       "strength": 45.6,
       "keys": [
        {
@@ -722,7 +785,9 @@
         "pos": "MID",
         "xp": 5.2
        }
-      ]
+      ],
+      "recentPickups": [],
+      "form": null
      },
      "odds": {
       "home": 47,
@@ -732,15 +797,21 @@
       "favoritePct": 50,
       "source": "engine"
      },
+     "bookie": {
+      "home": "11/10",
+      "draw": "33/1",
+      "away": "Evs"
+     },
      "predicted": {
       "home": 39.1,
       "away": 39.6
      },
      "h2h": null,
      "sentences": [
-      "This one's tight. Rokesly Regorasu just shade it at 50%. Title odds: Rokesly Regorasu 25.5% vs Brampton Balrogs 6.2%.",
-      "The model's scoring runs through Thiago (4.3) for Brampton Balrogs and Calafiori (5.5) for Rokesly Regorasu. Also in the mix: Barnes (4.2) and B.Fernandes (5.2).",
-      "Not much in it: Eddy just needs their XI to actually play."
+      "Tight on the board: Rokesly Regorasu Evs, Brampton Balrogs 11/10.",
+      "Title board still has Rokesly Regorasu out in front at 15/8; Brampton Balrogs are chasing.",
+      "N.Jackson is the new waiver piece for Brampton Balrogs.",
+      "The hinge is Thiago against Calafiori."
      ]
     },
     {
@@ -756,6 +827,9 @@
       },
       "streak": null,
       "titlePct": 11,
+      "lastPct": 10.6,
+      "titlePrice": "12/1",
+      "lastPrice": "15/2",
       "strength": 42.3,
       "keys": [
        {
@@ -770,7 +844,15 @@
         "pos": "FWD",
         "xp": 5.2
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Schade",
+        "kind": "w",
+        "gw": 1
+       }
+      ],
+      "form": null
      },
      "away": {
       "entryId": 5220,
@@ -784,6 +866,9 @@
       },
       "streak": null,
       "titlePct": 10.2,
+      "lastPct": 12,
+      "titlePrice": "7/1",
+      "lastPrice": "14/1",
       "strength": 42.6,
       "keys": [
        {
@@ -798,7 +883,15 @@
         "pos": "GK",
         "xp": 4.9
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Mykolenko",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": null
      },
      "odds": {
       "home": 39,
@@ -808,6 +901,11 @@
       "favoritePct": 58,
       "source": "engine"
      },
+     "bookie": {
+      "home": "13/8",
+      "draw": "33/1",
+      "away": "8/11"
+     },
      "predicted": {
       "home": 38.5,
       "away": 41.6
@@ -815,9 +913,9 @@
      "h2h": null,
      "sentences": [
       "The Battle of Warderloo returns.",
-      "The model fancies Suffolk Sméagol (58%) over Toronto Gimli. Projected points: 42 to 39.",
-      "The model's scoring runs through Lammens (5.7) for Toronto Gimli and Dalot (5.4) for Suffolk Sméagol. Also in the mix: Haaland (5.2) and Raya (4.9).",
-      "The gap is about 3 extra points — doable if Andy's Haaland turns up, or Dalot (5.4) to have a quiet one."
+      "The book fancies Suffolk Sméagol at 8/11; Toronto Gimli are 13/8.",
+      "Andy claimed Schade; Jon added Mykolenko.",
+      "The hinge is Lammens against Dalot."
      ]
     }
    ]
@@ -853,6 +951,9 @@
        "len": 1
       },
       "titlePct": 0.8,
+      "lastPct": 41.6,
+      "titlePrice": "100/1",
+      "lastPrice": "6/5",
       "strength": 38.3,
       "keys": [
        {
@@ -867,7 +968,20 @@
         "pos": "MID",
         "xp": 5.7
        }
-      ]
+      ],
+      "recentPickups": [],
+      "form": {
+       "over": {
+        "name": "Branthwaite",
+        "pts": 6,
+        "xp": 1.2
+       },
+       "under": {
+        "name": "Shaw",
+        "pts": 1,
+        "xp": 5.1
+       }
+      }
      },
      "away": {
       "entryId": 4898,
@@ -884,6 +998,9 @@
        "len": 1
       },
       "titlePct": 7.1,
+      "lastPct": 10.6,
+      "titlePrice": "12/1",
+      "lastPrice": "15/2",
       "strength": 42.3,
       "keys": [
        {
@@ -898,7 +1015,26 @@
         "pos": "MID",
         "xp": 6
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Schade",
+        "kind": "w",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "White",
+        "pts": 11,
+        "xp": 2.3
+       },
+       "under": {
+        "name": "Lammens",
+        "pts": 1,
+        "xp": 5.7
+       }
+      }
      },
      "odds": {
       "home": 39,
@@ -908,15 +1044,22 @@
       "favoritePct": 59,
       "source": "strength"
      },
+     "bookie": {
+      "home": "6/4",
+      "draw": "40/1",
+      "away": "8/13"
+     },
      "predicted": {
       "home": 38.3,
       "away": 42.3
      },
      "h2h": null,
      "sentences": [
-      "The model fancies Toronto Gimli (59%) over Atlético Bilbo. Projected points: 42 to 38.",
-      "The model's scoring runs through Enzo (5.8) for Atlético Bilbo and Haaland (6.6) for Toronto Gimli. Also in the mix: Mbeumo (5.7) and Sarr (6).",
-      "The gap is about 4 extra points — doable if Nick's Enzo turns up, or Haaland (6.6) to have a quiet one."
+      "The book fancies Toronto Gimli at 8/13; Atlético Bilbo are 6/4.",
+      "Atlético Bilbo sit last at 0-0-1 — 6/5 with the book to go last, so this one matters.",
+      "Schade is the new waiver piece for Toronto Gimli.",
+      "White already overdelivered for Andy last week (11); Shaw returned 1 from 5.1 for Nick.",
+      "The hinge is Enzo against Haaland."
      ]
     },
     {
@@ -935,6 +1078,9 @@
        "len": 1
       },
       "titlePct": 11.6,
+      "lastPct": 5.8,
+      "titlePrice": "7/1",
+      "lastPrice": "14/1",
       "strength": 42.6,
       "keys": [
        {
@@ -949,7 +1095,26 @@
         "pos": "MID",
         "xp": 6.5
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Mykolenko",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Palmer",
+        "pts": 13,
+        "xp": 4.5
+       },
+       "under": {
+        "name": "Dalot",
+        "pts": 1,
+        "xp": 5.4
+       }
+      }
      },
      "away": {
       "entryId": 44904,
@@ -966,6 +1131,9 @@
        "len": 1
       },
       "titlePct": 3.6,
+      "lastPct": 18.5,
+      "titlePrice": "25/1",
+      "lastPrice": "4/1",
       "strength": 40.7,
       "keys": [
        {
@@ -980,7 +1148,31 @@
         "pos": "MID",
         "xp": 4.9
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "N.Jackson",
+        "kind": "w",
+        "gw": 1
+       },
+       {
+        "name": "Barry",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Gvardiol",
+        "pts": 9,
+        "xp": 3.2
+       },
+       "under": {
+        "name": "Thiago",
+        "pts": 0,
+        "xp": 4.3
+       }
+      }
      },
      "odds": {
       "home": 53,
@@ -990,15 +1182,21 @@
       "favoritePct": 53,
       "source": "strength"
      },
+     "bookie": {
+      "home": "4/5",
+      "draw": "40/1",
+      "away": "11/10"
+     },
      "predicted": {
       "home": 42.6,
       "away": 40.7
      },
      "h2h": null,
      "sentences": [
-      "Coin-flip territory: Suffolk Sméagol 53%, Brampton Balrogs 47%. Projected points: 43 to 41.",
-      "Players to watch: Mateta (6.5) for Suffolk Sméagol, Thiago (5.6) for Brampton Balrogs. Also in the mix: Palmer (6.5) and Szoboszlai (4.9).",
-      "Brampton Balrogs need roughly 2 extra points on the projection, or Mateta (6.5) to have a quiet one."
+      "Coin-flip prices: Suffolk Sméagol 4/5 and Brampton Balrogs 11/10.",
+      "Jon claimed Mykolenko; Eddy added N.Jackson.",
+      "Palmer already overdelivered for Jon last week (13); Thiago returned 0 from 4.3 for Eddy.",
+      "Mateta is the one to watch for Suffolk Sméagol."
      ]
     },
     {
@@ -1017,6 +1215,9 @@
        "len": 1
       },
       "titlePct": 31.9,
+      "lastPct": 1.5,
+      "titlePrice": "15/8",
+      "lastPrice": "66/1",
       "strength": 45.6,
       "keys": [
        {
@@ -1031,7 +1232,20 @@
         "pos": "MID",
         "xp": 5.7
        }
-      ]
+      ],
+      "recentPickups": [],
+      "form": {
+       "over": {
+        "name": "Gakpo",
+        "pts": 12,
+        "xp": 3.5
+       },
+       "under": {
+        "name": "B.Fernandes",
+        "pts": 2,
+        "xp": 5.2
+       }
+      }
      },
      "away": {
       "entryId": 30728,
@@ -1048,6 +1262,9 @@
        "len": 1
       },
       "titlePct": 5.1,
+      "lastPct": 13.9,
+      "titlePrice": "16/1",
+      "lastPrice": "11/2",
       "strength": 40.6,
       "keys": [
        {
@@ -1062,7 +1279,26 @@
         "pos": "DEF",
         "xp": 6.7
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Tel",
+        "kind": "f",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Tzolis",
+        "pts": 6,
+        "xp": 0.5
+       },
+       "under": {
+        "name": "James",
+        "pts": 0,
+        "xp": 4
+       }
+      }
      },
      "odds": {
       "home": 61,
@@ -1072,6 +1308,11 @@
       "favoritePct": 61,
       "source": "strength"
      },
+     "bookie": {
+      "home": "4/7",
+      "draw": "40/1",
+      "away": "13/8"
+     },
      "predicted": {
       "home": 45.6,
       "away": 40.6
@@ -1079,9 +1320,11 @@
      "h2h": null,
      "sentences": [
       "The East Asian derby returns.",
-      "The model fancies Rokesly Regorasu (61%) over Seoul Shire. Projected points: 46 to 41.",
-      "The model's scoring runs through Guéhi (6.9) for Rokesly Regorasu and Cherki (7.7) for Seoul Shire. Also in the mix: O.Dango (5.7) and O'Reilly (6.7).",
-      "The gap is about 5 extra points — doable if Luke's Cherki turns up, or Guéhi (6.9) to have a quiet one."
+      "The book fancies Rokesly Regorasu at 4/7; Seoul Shire are 13/8.",
+      "Title board still has Rokesly Regorasu out in front at 15/8; Seoul Shire are chasing.",
+      "Tel is the new free-agent piece for Seoul Shire.",
+      "Gakpo already overdelivered for David last week (12); James returned 0 from 4 for Luke.",
+      "The hinge is Guéhi against Cherki."
      ]
     },
     {
@@ -1100,6 +1343,9 @@
        "len": 1
       },
       "titlePct": 11.4,
+      "lastPct": 6.2,
+      "titlePrice": "7/1",
+      "lastPrice": "14/1",
       "strength": 43.5,
       "keys": [
        {
@@ -1114,7 +1360,26 @@
         "pos": "DEF",
         "xp": 4.9
        }
-      ]
+      ],
+      "recentPickups": [
+       {
+        "name": "Dorgu",
+        "kind": "w",
+        "gw": 1
+       }
+      ],
+      "form": {
+       "over": {
+        "name": "Stach",
+        "pts": 13,
+        "xp": 3.4
+       },
+       "under": {
+        "name": "Bruno G.",
+        "pts": 0,
+        "xp": 4.8
+       }
+      }
      },
      "away": {
       "entryId": 18279,
@@ -1131,6 +1396,9 @@
        "len": 1
       },
       "titlePct": 28.5,
+      "lastPct": 1.8,
+      "titlePrice": "9/4",
+      "lastPrice": "50/1",
       "strength": 45.5,
       "keys": [
        {
@@ -1145,7 +1413,20 @@
         "pos": "MID",
         "xp": 5.1
        }
-      ]
+      ],
+      "recentPickups": [],
+      "form": {
+       "over": {
+        "name": "Emersonn",
+        "pts": 9,
+        "xp": 0.5
+       },
+       "under": {
+        "name": "Roefs",
+        "pts": 1,
+        "xp": 5.4
+       }
+      }
      },
      "odds": {
       "home": 43,
@@ -1155,15 +1436,22 @@
       "favoritePct": 54,
       "source": "strength"
      },
+     "bookie": {
+      "home": "6/5",
+      "draw": "33/1",
+      "away": "8/11"
+     },
      "predicted": {
       "home": 43.5,
       "away": 45.5
      },
      "h2h": null,
      "sentences": [
-      "This one's tight. Mordor S.F.G just shade it at 54%. Projected points: 46 to 44.",
-      "The model's scoring runs through Gabriel (5.5) for Hackney Rohirrim and João Pedro (5.2) for Mordor S.F.G. Also in the mix: Maguire (4.9) and Foden (5.1).",
-      "The gap is about 2 extra points — doable if Mike's Gabriel turns up, or João Pedro (5.2) to have a quiet one.",
+      "Tight on the board: Mordor S.F.G 8/11, Hackney Rohirrim 6/5.",
+      "Title board still has Mordor S.F.G out in front at 9/4; Hackney Rohirrim are chasing.",
+      "Dorgu is the new waiver piece for Hackney Rohirrim.",
+      "Stach already overdelivered for Mike last week (13); Roefs returned 1 from 5.4 for Nick.",
+      "The hinge is Gabriel against João Pedro.",
       "Even Nick Mottershead's oat milk has more bite than some of these benches."
      ]
     }

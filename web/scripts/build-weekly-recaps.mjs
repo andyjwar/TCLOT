@@ -10,7 +10,8 @@
  * Preview entries (`previews`) — one per finished GW (frozen from the archive)
  * and the next unfinished GW (live model / bookie sheet):
  *  - win/draw/win percents, projected points, watch-list players
- *  - template look-forward paragraph (favourite / keys / underdog path / lore)
+ *  - bookie fractions, recent waivers, last-week form
+ *  - template look-forward paragraph (bookie lean / stakes / waivers / form / lore)
  *
  * Fully regenerated each build from details.json + season-predictions.json —
  * historical recaps stay deterministic once a GW is done.
@@ -38,7 +39,9 @@ import {
   oddsPercents,
   watchPlayersFromXi,
   watchPlayersFromForecasts,
+  formFromXi,
 } from '../src/weeklyPreviewText.js'
+import { decimalOddsToFraction, probToFractionalOdds } from '../src/oddsFormat.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -184,6 +187,12 @@ function titleOddsAt(asOfGw, entryId) {
   const snap = snapshotByGw.get(asOfGw)
   const row = snap?.teams.find((t) => Number(t.leagueEntryId) === Number(entryId))
   return row ? Number(row.titlePct) : null
+}
+
+function lastPctAt(asOfGw, entryId) {
+  const snap = snapshotByGw.get(asOfGw)
+  const row = snap?.teams.find((t) => Number(t.leagueEntryId) === Number(entryId))
+  return row ? Number(row.lastPct) : null
 }
 
 function teamOut(facts, gw) {
@@ -356,6 +365,27 @@ function readOptional(name) {
 const bookie = readOptional('bookie-markets.json')
 const playerPredictions = readOptional('predictions.json')
 const elementStatus = readOptional('element_status.json')
+const bootstrapDraft = readOptional('bootstrap_draft.json')
+
+const elementNameById = new Map(
+  (bootstrapDraft?.elements ?? []).map((e) => [
+    Number(e.id),
+    e.web_name || e.second_name || String(e.id),
+  ]),
+)
+
+const outrightPriceById = new Map(
+  (bookie?.outright?.selections ?? []).map((s) => [
+    Number(s.entryId),
+    decimalOddsToFraction(s.odds),
+  ]),
+)
+const lastPriceById = new Map(
+  (bookie?.last?.selections ?? []).map((s) => [
+    Number(s.entryId),
+    decimalOddsToFraction(s.odds),
+  ]),
+)
 
 const upcomingGw = (() => {
   const unfinished = (matches ?? [])
@@ -406,6 +436,54 @@ function liveWatchKeys(leagueEntryId) {
   return watchPlayersFromForecasts(players, 2)
 }
 
+function playerNameFor(elementId) {
+  const id = Number(elementId)
+  return elementNameById.get(id) || predById.get(id)?.name || `#${id}`
+}
+
+/** Accepted waivers / free-agent adds for this GW or the one before. */
+function recentPickupsFor(leagueId, gw, n = 2) {
+  const list = acquisitionsByLeagueId.get(Number(leagueId)) ?? []
+  return list
+    .filter((a) => a.gw === gw || a.gw === gw - 1)
+    .sort((a, b) => b.gw - a.gw || (a.kind === 'w' ? -1 : 1))
+    .slice(0, n)
+    .map((a) => ({
+      name: playerNameFor(a.elementIn),
+      kind: a.kind,
+      gw: a.gw,
+    }))
+}
+
+function bookieFractionsFor(bookieRow, homeId, pcts) {
+  const fromPcts = {
+    home: probToFractionalOdds(pcts.home),
+    draw: probToFractionalOdds(pcts.draw),
+    away: probToFractionalOdds(pcts.away),
+  }
+  if (!bookieRow?.odds) return fromPcts
+  const swapped = Number(bookieRow.homeEntryId) !== Number(homeId)
+  const homeDec = swapped ? bookieRow.odds.away : bookieRow.odds.home
+  const awayDec = swapped ? bookieRow.odds.home : bookieRow.odds.away
+  return {
+    home: decimalOddsToFraction(homeDec) || fromPcts.home,
+    draw: decimalOddsToFraction(bookieRow.odds.draw) || fromPcts.draw,
+    away: decimalOddsToFraction(awayDec) || fromPcts.away,
+  }
+}
+
+/** Last week's XI for a side, regardless of who they played. */
+function findSideXi(history, entryId) {
+  if (!history) return null
+  const id = Number(entryId)
+  for (const row of history.h2h ?? []) {
+    if (Number(row.league_entry_1) === id || Number(row.league_entry_2) === id) {
+      return archivedXi(row, id)
+    }
+  }
+  return null
+}
+
 function previewTeam(entryId, asOfGw) {
   const id = Number(entryId)
   const through = Math.max(0, asOfGw)
@@ -416,6 +494,7 @@ function previewTeam(entryId, asOfGw) {
     (t) => Number(t.leagueEntryId) === id,
   )
   const titleBefore = titleOddsAt(through, id)
+  const lastBefore = lastPctAt(through, id)
   return {
     entryId: id,
     name: nameById.get(id) ?? String(id),
@@ -428,6 +507,13 @@ function previewTeam(entryId, asOfGw) {
       : Number.isFinite(Number(predRow?.titlePct))
         ? Number(predRow.titlePct)
         : null,
+    lastPct: Number.isFinite(lastBefore)
+      ? lastBefore
+      : Number.isFinite(Number(predRow?.lastPct))
+        ? Number(predRow.lastPct)
+        : null,
+    titlePrice: outrightPriceById.get(id) ?? null,
+    lastPrice: lastPriceById.get(id) ?? null,
     strength: Number.isFinite(Number(predRow?.strength)) ? Number(predRow.strength) : null,
   }
 }
@@ -464,15 +550,17 @@ function buildPreviewForGw(gw) {
   const gwMatches = (matches ?? []).filter((m) => Number(m.event) === gw)
   if (gwMatches.length === 0) return null
   const history = loadHistory(gw)
+  const prevHistory = gw > 1 ? loadHistory(gw - 1) : null
   const asOfGw = gw - 1
   const bookieGw = Number(bookie?.weekly?.gw) === gw ? bookie.weekly : null
 
   const matchups = gwMatches.map((match) => {
     const homeId = Number(match.league_entry_1)
     const awayId = Number(match.league_entry_2)
-    const bookieRow =
-      bookieByPair.get(`${homeId}-${awayId}`) ?? bookieByPair.get(`${awayId}-${homeId}`)
-    const priced = previewOddsFor(match, history, bookieGw ? bookieRow : null)
+    const bookieRow = bookieGw
+      ? (bookieByPair.get(`${homeId}-${awayId}`) ?? bookieByPair.get(`${awayId}-${homeId}`))
+      : null
+    const priced = previewOddsFor(match, history, bookieRow)
     const pcts = priced
       ? oddsPercents({ home: priced.hw, draw: priced.dw, away: priced.aw })
       : { home: 50, draw: 0, away: 50 }
@@ -501,10 +589,14 @@ function buildPreviewForGw(gw) {
     const home = {
       ...previewTeam(homeId, asOfGw),
       keys: homeKeys.length ? homeKeys : liveWatchKeys(homeId),
+      recentPickups: recentPickupsFor(homeId, gw),
+      form: formFromXi(findSideXi(prevHistory, homeId)),
     }
     const away = {
       ...previewTeam(awayId, asOfGw),
       keys: awayKeys.length ? awayKeys : liveWatchKeys(awayId),
+      recentPickups: recentPickupsFor(awayId, gw),
+      form: formFromXi(findSideXi(prevHistory, awayId)),
     }
 
     let predicted = null
@@ -528,10 +620,13 @@ function buildPreviewForGw(gw) {
         }
       : null
 
+    const bookiePrices = bookieFractionsFor(bookieRow, homeId, pcts)
+
     return {
       home,
       away,
       odds,
+      bookie: bookiePrices,
       predicted,
       h2h,
       sentences: matchupPreviewSentences({
@@ -539,6 +634,7 @@ function buildPreviewForGw(gw) {
         home,
         away,
         odds,
+        bookie: bookiePrices,
         predicted,
         h2h,
       }),
@@ -583,7 +679,7 @@ const previews = [...previewGws]
   .filter(Boolean)
 
 const output = {
-  schemaVersion: 3,
+  schemaVersion: 4,
   generatedAt: new Date().toISOString(),
   season: predictions.season,
   lastFinishedGw,
