@@ -1099,6 +1099,9 @@ body[data-tclot-theme='ceefax'] .weekly-recap__empty {
 body[data-tclot-theme='ceefax'] .weekly-recap__select {
   font-size: 16px !important;
 }
+body[data-tclot-theme='ceefax'] .weekly-recap__mode-btn {
+  font-size: 15px !important;
+}
 body[data-tclot-theme='ceefax'] .weekly-recap__odds-label,
 body[data-tclot-theme='ceefax'] .weekly-recap__superlative-label {
   font-size: 14px !important;
@@ -1116,6 +1119,15 @@ body[data-tclot-theme='ceefax'] .weekly-recap-matchup__side-mgr {
 }
 body[data-tclot-theme='ceefax'] .weekly-recap-matchup__score {
   font-size: 24px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__odds-leg {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__odds-leg--fav {
+  font-size: 24px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__odds-leg--draw {
+  font-size: 14px !important;
 }
 body[data-tclot-theme='ceefax'] .weekly-recap-matchup__precall {
   font-size: 15px !important;
@@ -1517,6 +1529,9 @@ body[data-tclot-theme='ceefax'] .weekly-recap__empty {
 body[data-tclot-theme='ceefax'] .weekly-recap__select {
   font-size: 16px !important;
 }
+body[data-tclot-theme='ceefax'] .weekly-recap__mode-btn {
+  font-size: 15px !important;
+}
 body[data-tclot-theme='ceefax'] .weekly-recap__odds-label,
 body[data-tclot-theme='ceefax'] .weekly-recap__superlative-label {
   font-size: 14px !important;
@@ -1534,6 +1549,15 @@ body[data-tclot-theme='ceefax'] .weekly-recap-matchup__side-mgr {
 }
 body[data-tclot-theme='ceefax'] .weekly-recap-matchup__score {
   font-size: 24px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__odds-leg {
+  font-size: 20px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__odds-leg--fav {
+  font-size: 24px !important;
+}
+body[data-tclot-theme='ceefax'] .weekly-recap-matchup__odds-leg--draw {
+  font-size: 14px !important;
 }
 body[data-tclot-theme='ceefax'] .weekly-recap-matchup__precall {
   font-size: 15px !important;

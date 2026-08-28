@@ -1,21 +1,21 @@
 #!/usr/bin/env node
 /**
- * Weekly recaps (web/public/league-data/weekly-recaps.json), matchup-centric.
+ * Weekly recaps + pre-match look-forwards (web/public/league-data/weekly-recaps.json).
  *
- * One entry per finished gameweek:
- *  - `model`: odds vs reality for the week — each pre-match call scored
- *    against the actual result (hits/misses, the biggest upset, avg points
- *    miss when the engine archive has one).
- *  - `matchups`: one card per fixture with both teams' facts (score, rank +
- *    move, record, streak, season avg, title-odds swing), the pre-match call,
- *    the engine's points call when archived, and a template recap paragraph
- *    (result / odds vs reality / table context / fun fact).
- *  - `superlatives`: week high & closest match.
+ * Recap entries (`gameweeks`) — one per finished gameweek:
+ *  - `model`: odds vs reality for the week
+ *  - `matchups`: score, pre-match call, template recap paragraph, table context
+ *  - `superlatives`: week high, closest match, star player
+ *
+ * Preview entries (`previews`) — one per finished GW (frozen from the archive)
+ * and the next unfinished GW (live model / bookie sheet):
+ *  - win/draw/win percents, projected points, watch-list players
+ *  - template look-forward paragraph (favourite / keys / underdog path / lore)
  *
  * Fully regenerated each build from details.json + season-predictions.json —
- * deterministic, so historical recaps never change once a GW is done.
+ * historical recaps stay deterministic once a GW is done.
  *
- * Run AFTER build-season-predictions.mjs (odds + model record come from it):
+ * Run AFTER build-season-predictions.mjs (and bookie-markets when present):
  *   node scripts/build-weekly-recaps.mjs
  */
 import { readFileSync, writeFileSync, existsSync } from 'node:fs'
@@ -27,8 +27,18 @@ import {
   archivedXi,
   sidePlayerFacts,
   h2hSeriesAsOf,
+  ranksAsOf,
+  bankedTable,
+  streakAsOf,
+  matchFavorite,
 } from '../src/seasonPredictionsModel.js'
 import { matchupRecapSentences } from '../src/weeklyRecapText.js'
+import {
+  matchupPreviewSentences,
+  oddsPercents,
+  watchPlayersFromXi,
+  watchPlayersFromForecasts,
+} from '../src/weeklyPreviewText.js'
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dataDir = join(root, 'public/league-data')
@@ -333,13 +343,256 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
   })
 }
 
+/* ---- pre-match look-forwards (finished GWs from archive + next GW live) ---- */
+
+function readOptional(name) {
+  try {
+    return read(name)
+  } catch {
+    return null
+  }
+}
+
+const bookie = readOptional('bookie-markets.json')
+const playerPredictions = readOptional('predictions.json')
+const elementStatus = readOptional('element_status.json')
+
+const upcomingGw = (() => {
+  const unfinished = (matches ?? [])
+    .map((m) => Number(m.event))
+    .filter((ev) => Number.isFinite(ev) && ev > lastFinishedGw)
+  return unfinished.length ? Math.min(...unfinished) : null
+})()
+
+const leagueEntryByFpl = new Map(
+  (details.league_entries ?? []).map((e) => [Number(e.entry_id), Number(e.id)]),
+)
+const ownedByLeagueEntry = new Map()
+for (const row of elementStatus?.element_status ?? []) {
+  const owner = leagueEntryByFpl.get(Number(row.owner))
+  if (owner == null) continue
+  if (!ownedByLeagueEntry.has(owner)) ownedByLeagueEntry.set(owner, [])
+  ownedByLeagueEntry.get(owner).push(Number(row.element))
+}
+const predById = new Map((playerPredictions?.players ?? []).map((p) => [Number(p.id), p]))
+
+const strengthById = new Map(
+  (predictions.current?.teams ?? []).map((t) => [
+    Number(t.leagueEntryId),
+    { mu: Number(t.strength) || 0, sigma: 11, se: 3 },
+  ]),
+)
+
+const bookieByPair = new Map()
+for (const row of bookie?.weekly?.matches ?? []) {
+  bookieByPair.set(`${Number(row.homeEntryId)}-${Number(row.awayEntryId)}`, row)
+}
+
+function liveWatchKeys(leagueEntryId) {
+  const owned = ownedByLeagueEntry.get(Number(leagueEntryId)) ?? []
+  const players = owned
+    .map((id) => {
+      const pred = predById.get(id)
+      const xp = Number(pred?.forecast?.totalPoints)
+      if (!pred || !Number.isFinite(xp) || xp <= 0) return null
+      return {
+        id,
+        name: pred.name ?? String(id),
+        pos: pred.position ?? '',
+        xp,
+      }
+    })
+    .filter(Boolean)
+  return watchPlayersFromForecasts(players, 2)
+}
+
+function previewTeam(entryId, asOfGw) {
+  const id = Number(entryId)
+  const through = Math.max(0, asOfGw)
+  const table = bankedTable(matches, entryIds, through)
+  const ranks = through > 0 ? ranksAsOf(matches, entryIds, through) : null
+  const row = table.get(id)
+  const predRow = (predictions.current?.teams ?? []).find(
+    (t) => Number(t.leagueEntryId) === id,
+  )
+  const titleBefore = titleOddsAt(through, id)
+  return {
+    entryId: id,
+    name: nameById.get(id) ?? String(id),
+    manager: managerById.get(id) ?? null,
+    rank: ranks ? ranks.get(id) ?? null : null,
+    record: row ? { w: row.w, d: row.d, l: row.l } : { w: 0, d: 0, l: 0 },
+    streak: through > 0 ? streakAsOf(matches, id, through) : null,
+    titlePct: Number.isFinite(titleBefore)
+      ? titleBefore
+      : Number.isFinite(Number(predRow?.titlePct))
+        ? Number(predRow.titlePct)
+        : null,
+    strength: Number.isFinite(Number(predRow?.strength)) ? Number(predRow.strength) : null,
+  }
+}
+
+function previewOddsFor(match, history, bookieRow) {
+  const h = Number(match.league_entry_1)
+  const a = Number(match.league_entry_2)
+  const arch = findArchivedH2hRow(history, h, a)
+  const mc = arch?.xPtsMc
+  if (mc && Number.isFinite(Number(mc.homeWinPct)) && Number.isFinite(Number(mc.awayWinPct))) {
+    const homeIsH = Number(arch.league_entry_1) === h
+    const hw = homeIsH ? Number(mc.homeWinPct) : Number(mc.awayWinPct)
+    const aw = homeIsH ? Number(mc.awayWinPct) : Number(mc.homeWinPct)
+    const dw = Number.isFinite(Number(mc.drawPct)) ? Number(mc.drawPct) : 0
+    return { hw, dw, aw, source: 'engine', arch }
+  }
+  if (bookieRow?.probs) {
+    return {
+      hw: Number(bookieRow.probs.home) * 100,
+      dw: Number(bookieRow.probs.draw) * 100,
+      aw: Number(bookieRow.probs.away) * 100,
+      source: 'strength',
+      arch: null,
+    }
+  }
+  const fav = matchFavorite(match, history, strengthById)
+  if (Number.isFinite(fav.homePct) && Number.isFinite(fav.awayPct)) {
+    return { hw: fav.homePct, dw: 0, aw: fav.awayPct, source: fav.source, arch: null }
+  }
+  return null
+}
+
+function buildPreviewForGw(gw) {
+  const gwMatches = (matches ?? []).filter((m) => Number(m.event) === gw)
+  if (gwMatches.length === 0) return null
+  const history = loadHistory(gw)
+  const asOfGw = gw - 1
+  const bookieGw = Number(bookie?.weekly?.gw) === gw ? bookie.weekly : null
+
+  const matchups = gwMatches.map((match) => {
+    const homeId = Number(match.league_entry_1)
+    const awayId = Number(match.league_entry_2)
+    const bookieRow =
+      bookieByPair.get(`${homeId}-${awayId}`) ?? bookieByPair.get(`${awayId}-${homeId}`)
+    const priced = previewOddsFor(match, history, bookieGw ? bookieRow : null)
+    const pcts = priced
+      ? oddsPercents({ home: priced.hw, draw: priced.dw, away: priced.aw })
+      : { home: 50, draw: 0, away: 50 }
+    const favoriteSide = pcts.home === pcts.away ? null : pcts.home > pcts.away ? 'home' : 'away'
+    const odds = favoriteSide
+      ? {
+          home: pcts.home,
+          draw: pcts.draw,
+          away: pcts.away,
+          favoriteSide,
+          favoritePct: favoriteSide === 'home' ? pcts.home : pcts.away,
+          source: priced?.source ?? 'strength',
+        }
+      : {
+          home: pcts.home,
+          draw: pcts.draw,
+          away: pcts.away,
+          favoriteSide: 'home',
+          favoritePct: 50,
+          source: priced?.source ?? 'strength',
+        }
+
+    const arch = priced?.arch ?? findArchivedH2hRow(history, homeId, awayId)
+    const homeKeys = watchPlayersFromXi(archivedXi(arch, homeId), 2)
+    const awayKeys = watchPlayersFromXi(archivedXi(arch, awayId), 2)
+    const home = {
+      ...previewTeam(homeId, asOfGw),
+      keys: homeKeys.length ? homeKeys : liveWatchKeys(homeId),
+    }
+    const away = {
+      ...previewTeam(awayId, asOfGw),
+      keys: awayKeys.length ? awayKeys : liveWatchKeys(awayId),
+    }
+
+    let predicted = null
+    if (arch && Number.isFinite(Number(arch.xPtsXi1)) && Number.isFinite(Number(arch.xPtsXi2))) {
+      const homeIsE1 = Number(arch.league_entry_1) === homeId
+      predicted = {
+        home: homeIsE1 ? Number(arch.xPtsXi1) : Number(arch.xPtsXi2),
+        away: homeIsE1 ? Number(arch.xPtsXi2) : Number(arch.xPtsXi1),
+      }
+    } else if (Number.isFinite(home.strength) && Number.isFinite(away.strength)) {
+      predicted = { home: home.strength, away: away.strength }
+    }
+
+    const series = h2hSeriesAsOf(matches, homeId, awayId, asOfGw)
+    const h2h = series
+      ? {
+          games: series.games,
+          homeWins: series.aWins,
+          awayWins: series.bWins,
+          draws: series.draws,
+        }
+      : null
+
+    return {
+      home,
+      away,
+      odds,
+      predicted,
+      h2h,
+      sentences: matchupPreviewSentences({
+        gw,
+        home,
+        away,
+        odds,
+        predicted,
+        h2h,
+      }),
+    }
+  })
+
+  const chalk = [...matchups].sort(
+    (a, b) => (b.odds?.favoritePct ?? 0) - (a.odds?.favoritePct ?? 0),
+  )[0]
+  const closest = [...matchups].sort(
+    (a, b) => Math.abs(50 - (a.odds?.favoritePct ?? 50)) - Math.abs(50 - (b.odds?.favoritePct ?? 50)),
+  )[0]
+
+  return {
+    gw,
+    source: history ? 'archive' : 'live',
+    superlatives: {
+      chalk: chalk
+        ? {
+            name: chalk.odds.favoriteSide === 'home' ? chalk.home.name : chalk.away.name,
+            pct: chalk.odds.favoritePct,
+          }
+        : null,
+      closest: closest
+        ? {
+            homeName: closest.home.name,
+            awayName: closest.away.name,
+            favoritePct: closest.odds.favoritePct,
+          }
+        : null,
+    },
+    matchups,
+  }
+}
+
+const previewGws = new Set()
+for (const g of gameweeks) previewGws.add(g.gw)
+if (Number.isFinite(upcomingGw)) previewGws.add(upcomingGw)
+const previews = [...previewGws]
+  .sort((a, b) => a - b)
+  .map((gw) => buildPreviewForGw(gw))
+  .filter(Boolean)
+
 const output = {
-  schemaVersion: 2,
+  schemaVersion: 3,
   generatedAt: new Date().toISOString(),
   season: predictions.season,
   lastFinishedGw,
+  upcomingGw,
   gameweeks,
+  previews,
 }
 
 writeFileSync(join(dataDir, 'weekly-recaps.json'), JSON.stringify(output, null, 1))
-console.log(`weekly-recaps.json written: ${gameweeks.length} gameweek(s)`)
+console.log(
+  `weekly-recaps.json written: ${gameweeks.length} recap(s), ${previews.length} preview(s)`,
+)
