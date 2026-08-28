@@ -14,12 +14,12 @@
  *  7. Form — last week's over/underperformers.
  *  8. Watch list — names only (xP lives in the footer), from the starting XI.
  *  9. Underdog path — qualitative, and only when it's a real short favourite.
- *  10. Manager joke — occasional personality, never a trait checklist.
+ *  10. Manager jokes — one per manager with lore, on every fixture.
  */
 
 import {
   namedFixtureFor,
-  matchupPersonalitySentence,
+  matchupPersonalitySentences,
   canonicalManager,
 } from './leagueLore.js'
 import { variantIndex } from './weeklyRecapText.js'
@@ -404,11 +404,11 @@ function underdogSentence(m, key) {
 }
 
 /**
- * Manager running joke. Seasoning only: gated, at most one line, tagged to
- * the week when a waiver/bench/last-place hook exists.
+ * Manager running jokes. One line per manager who has lore, every fixture.
+ * Titanic Duo still only some weeks when those two play each other.
  */
-function managerFunFactSentence(m, key) {
-  return matchupPersonalitySentence(m, pick, key, variantIndex, { gate: 2 })
+function managerFunFactSentences(m, key) {
+  return matchupPersonalitySentences(m, pick, key, variantIndex, { gate: 1, both: true })
 }
 
 function rivalrySentence(m) {
@@ -555,8 +555,8 @@ export function matchupPreviewSentences(m) {
   if (keys) out.push(keys)
   const dog = underdogSentence(m, `${key}-u`)
   if (dog) out.push(dog)
-  const joke = managerFunFactSentence(m, `${key}-mff`)
-  if (joke) out.push(joke)
+  const jokes = managerFunFactSentences(m, `${key}-mff`)
+  for (const joke of jokes) out.push(joke)
   const series = rivalrySentence(m)
   if (series) out.push(series)
   return out

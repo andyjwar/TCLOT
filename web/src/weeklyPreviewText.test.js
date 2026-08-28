@@ -212,16 +212,70 @@ test('no vegan joke when Mottershead is not playing', () => {
   assert.doesNotMatch(out.join(' '), /vegan|tofu|plant|oat milk/i)
 })
 
-test('East Asian Derby always leads; Luke/David personality can appear', () => {
-  let sawDerby = false
-  let sawPersonality = false
-  for (let gw = 1; gw <= 16; gw++) {
-    const joined = matchupPreviewSentences({
-      ...base,
-      gw,
-      home: team({ manager: 'David Higman', name: 'Rokesly Regorasu', lastPct: 1.5, rank: 1 }),
+test('East Asian Derby always leads; Luke and David personality both land', () => {
+  const out = matchupPreviewSentences({
+    ...base,
+    gw: 2,
+    home: team({ manager: 'David Higman', name: 'Rokesly Regorasu', lastPct: 1.5, rank: 1 }),
+    away: team({
+      entryId: 2,
+      name: 'Seoul Shire',
+      manager: 'Luke Butcher',
+      rank: 4,
+      record: { w: 1, d: 0, l: 0 },
+      titlePct: 5.1,
+      lastPct: 13.9,
+      keys: [{ name: 'Saka', xp: 6.8 }],
+    }),
+    h2h: null,
+  })
+  const joined = out.join(' ')
+  assert.match(out[0], /East Asian Derby/)
+  assert.match(joined, /BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil|people's champion|licence-fee/i)
+  assert.match(joined, /manifesto|Prime Minister|Samsung|Norfolk|harmony|left-wing/i)
+})
+
+test('every GW2-style fixture gets personality, including non-derbies', () => {
+  const fixtures = [
+    {
+      home: team({ manager: 'Nick Goodacre', name: 'Atlético Bilbo', entryId: 1 }),
       away: team({
         entryId: 2,
+        name: 'Toronto Gimli',
+        manager: 'Andy Ward',
+        rank: 4,
+        record: { w: 1, d: 0, l: 0 },
+        titlePct: 12,
+        lastPct: 8,
+        keys: [{ name: 'Haaland', xp: 7.1 }],
+      }),
+    },
+    {
+      home: team({
+        entryId: 3,
+        name: 'Suffolk Sméagol',
+        manager: 'Jon Ward',
+        rank: 5,
+        record: { w: 0, d: 0, l: 1 },
+        titlePct: 4,
+        lastPct: 18,
+        keys: [{ name: 'Palmer', xp: 6.2 }],
+      }),
+      away: team({
+        entryId: 4,
+        name: 'Brampton Balrogs',
+        manager: 'Eddy Webster',
+        rank: 6,
+        record: { w: 0, d: 1, l: 0 },
+        titlePct: 3,
+        lastPct: 20,
+        keys: [{ name: 'Saka', xp: 5.8 }],
+      }),
+    },
+    {
+      home: team({ manager: 'David Higman', name: 'Rokesly Regorasu', lastPct: 1.5, rank: 1, entryId: 5 }),
+      away: team({
+        entryId: 6,
         name: 'Seoul Shire',
         manager: 'Luke Butcher',
         rank: 4,
@@ -230,15 +284,45 @@ test('East Asian Derby always leads; Luke/David personality can appear', () => {
         lastPct: 13.9,
         keys: [{ name: 'Saka', xp: 6.8 }],
       }),
-      h2h: null,
-    }).join(' ')
-    if (/East Asian Derby/i.test(joined)) sawDerby = true
-    if (/BBC|Glastonbury|manifesto|Prime Minister|Samsung|Norfolk|devil/i.test(joined)) {
-      sawPersonality = true
-    }
+    },
+    {
+      home: team({
+        entryId: 7,
+        name: 'Hackney Rohirrim',
+        manager: 'Mike Sutton',
+        rank: 2,
+        record: { w: 1, d: 0, l: 0 },
+        titlePct: 10,
+        lastPct: 6,
+        keys: [{ name: 'Stach', xp: 5.4 }],
+      }),
+      away: team({
+        entryId: 8,
+        name: 'Mordor S.F.G',
+        manager: 'Nick Mottershead',
+        rank: 3,
+        record: { w: 1, d: 0, l: 0 },
+        titlePct: 28.5,
+        lastPct: 1.8,
+        keys: [{ name: 'João Pedro', xp: 6.4 }],
+      }),
+    },
+  ]
+  const lore = [
+    /lampshade|conservative|spreadsheet|Nick Goodacre|Northern|safest/i,
+    /Andy|comeback|big game|Titanic|battle|Canada/i,
+    /Jon|Brother Ward|commentary|poke/i,
+    /Eddy|thesis|timezone|puzzle|children|Canada/i,
+    /BBC|Glastonbury|devil|people's champion|licence-fee/i,
+    /manifesto|Prime Minister|Samsung|Norfolk|harmony|left-wing/i,
+    /twins|wildcard|theorised|classified|sleep/i,
+    /vegan|Titanic|arts school|swagger|big-move|fallen-empire|extremely sure/i,
+  ]
+  for (const fx of fixtures) {
+    const joined = matchupPreviewSentences({ ...base, gw: 2, h2h: null, ...fx }).join(' ')
+    const hits = lore.filter((re) => re.test(joined))
+    assert.ok(hits.length >= 1, `expected lore on ${fx.home.manager} vs ${fx.away.manager}: ${joined}`)
   }
-  assert.ok(sawDerby, 'named fixture should lead')
-  assert.ok(sawPersonality, 'David or Luke personality should fire on some GWs')
 })
 
 test('round-two rivalry line when they have already met', () => {
