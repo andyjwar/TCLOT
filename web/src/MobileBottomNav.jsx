@@ -22,9 +22,9 @@
  *     mono "FT GW{n}" chip (option E of the sheet), where {n} is
  *     `liveStatus.lastFinishedGw` — the same field the brand header's
  *     "GW {n} complete" strip uses. Falls back to a bare "FT" when the GW
- *     number is unavailable. No pulse; label "Preview" (next week's XIs
- *     are set; the Recap tab opens looking ahead). Routes to FPL Live on
- *     the weekly Recap / Preview tab.
+ *     number is unavailable. No pulse; label "Recap" (looking back on the
+ *     finished week until the next lineup deadline). Routes to FPL Live on
+ *     the weekly Recap tab.
  *
  * Heritage ('hall') and Settings ('settings') live behind More (the existing
  * `'more'` dashboardView page / DashboardMorePanel). The Bookie is an FPL
@@ -64,7 +64,7 @@ const TABS = [
 const CENTER_BY_STATE = {
   pre:  { label: 'Preview', view: /** @type {const} */ ('fplLive'), tab: 'predictions', aria: 'Season predictions' },
   live: { label: 'Live',    view: /** @type {const} */ ('fplLive'), tab: 'live',        aria: 'FPL Live scores' },
-  over: { label: 'Preview', view: /** @type {const} */ ('fplLive'), tab: 'recap',     aria: 'Weekly preview' },
+  over: { label: 'Recap',   view: /** @type {const} */ ('fplLive'), tab: 'recap',     aria: 'Weekly recap' },
 }
 
 /**

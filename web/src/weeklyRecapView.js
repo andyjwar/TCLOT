@@ -1,14 +1,59 @@
 /**
  * Default GW + mode for the Recap / Preview tab.
  *
- * If an unfinished week has a starting-XI preview, that is the default
- * (looking ahead). Once that week's recap is written, the default is Recap
- * (looking back). The FPL Live menu label follows the view.
+ * An unfinished week's look-forward is only a Preview after the FPL lineup
+ * deadline (status `live`). Until then the default is last week's Recap.
+ * FPL Draft copies last week's XI forward automatically, so a full 11 before
+ * the deadline is not "lineups are set".
  */
 
-/** Fallback label when the Recap tab is not mounted (always looking ahead). */
-export function recapMenuLabelForStatus(_status) {
-  return 'Preview'
+/** Draft bootstrap stores events as `{ data: [] }` or a bare array. */
+export function draftEventsList(bootstrap) {
+  const ev = bootstrap?.events
+  if (Array.isArray(ev)) return ev
+  if (Array.isArray(ev?.data)) return ev.data
+  return []
+}
+
+/**
+ * True once this GW's `deadline_time` has elapsed (XIs locked).
+ * @param {object | null | undefined} bootstrap
+ * @param {number | null | undefined} gw
+ * @param {number} [now]
+ */
+export function gwDeadlineHasPassed(bootstrap, gw, now = Date.now()) {
+  const id = Number(gw)
+  if (!Number.isFinite(id)) return false
+  const ev = draftEventsList(bootstrap).find((e) => Number(e?.id) === id)
+  const t = Date.parse(String(ev?.deadline_time ?? ''))
+  return Number.isFinite(t) && Number(now) >= t
+}
+
+/** Unfinished-week Preview is valid only while a GW is live (deadline passed). */
+export function lineupsAreLocked(status) {
+  return status === 'live'
+}
+
+/** Fallback label when the Recap tab is not mounted. */
+export function recapMenuLabelForStatus(status) {
+  return status === 'live' ? 'Preview' : 'Recap'
+}
+
+/**
+ * Drop the upcoming week's copied-forward preview until lineups lock.
+ *
+ * @param {Array<{ gw: number, recap?: object | null, preview?: object | null }>} options
+ * @param {{ upcomingGw?: number | null, liveStatus?: string | null }} [p]
+ */
+export function visibleRecapOptions(options, { upcomingGw = null, liveStatus = null } = {}) {
+  const locked = lineupsAreLocked(liveStatus)
+  return (options || [])
+    .map((g) => {
+      const upcomingUnfinished = Number(g.gw) === Number(upcomingGw) && !g.recap
+      if (upcomingUnfinished && !locked) return { ...g, preview: null }
+      return g
+    })
+    .filter((g) => g.recap || g.preview)
 }
 
 /**
@@ -26,15 +71,14 @@ export function defaultRecapView({
   liveStatus = null,
   options = [],
 } = {}) {
-  const byGw = new Map((options || []).map((g) => [Number(g.gw), g]))
+  const visible = visibleRecapOptions(options, { upcomingGw, liveStatus })
+  const byGw = new Map(visible.map((g) => [Number(g.gw), g]))
   const upcoming = byGw.get(Number(upcomingGw))
   const last = byGw.get(Number(lastFinishedGw))
 
-  // Lineups are set and the recap is not written yet → Preview.
   if (upcoming?.preview && !upcoming.recap) {
     return { gw: upcoming.gw, mode: 'preview', menuLabel: 'Preview' }
   }
-  // That week is done (or there is no upcoming) → Recap.
   if (upcoming?.recap) {
     return { gw: upcoming.gw, mode: 'recap', menuLabel: 'Recap' }
   }
@@ -44,7 +88,7 @@ export function defaultRecapView({
   if (upcoming?.preview) {
     return { gw: upcoming.gw, mode: 'preview', menuLabel: 'Preview' }
   }
-  const tail = options[options.length - 1]
+  const tail = visible[visible.length - 1]
   if (!tail) {
     return { gw: null, mode: 'recap', menuLabel: recapMenuLabelForStatus(liveStatus) }
   }
