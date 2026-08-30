@@ -18,6 +18,10 @@ import {
   resolveDisplayedMinutes,
   retickRowMinutes,
 } from './livePlayerMinutes.js';
+import {
+  resolveDisplayedPoints,
+  retickRowPoints,
+} from './livePlayerPoints.js';
 import { shouldPollLiveGw } from './liveGwPollGate.js';
 import {
   FPL_DIRECT,
@@ -229,6 +233,7 @@ export function mapPickRows(
   gwFixtures,
   espnPremRows,
   nowMs = Date.now(),
+  scoring = null,
 ) {
   const rows = (picks || []).map((p) => {
     const pid = Number(p.element);
@@ -292,6 +297,39 @@ export function mapPickRows(
       pid,
       tid
     );
+    const displayedMinutes = resolveDisplayedMinutes({
+      fplMinutes: mins,
+      liveFullRow: liveRow,
+      teamId: tid,
+      elementId: pid,
+      gwFixtures,
+      premRows: espnPremRows,
+      matchdayRole: espnMatchdayRole,
+      redCards,
+      nowMs,
+    });
+    const displayedPoints = resolveDisplayedPoints({
+      fpl: {
+        minutes: mins,
+        goals: goalsScored,
+        assists,
+        yellows: yellowCards,
+        reds: redCards,
+        ownGoals: Number(st.own_goals) || 0,
+        cleanSheets,
+        goalsConceded,
+        saves,
+        totalPoints: pts,
+        bonusApi,
+      },
+      displayedMinutes,
+      elementId: pid,
+      elementTypeId: el?.element_type,
+      teamId: tid,
+      premRows: espnPremRows,
+      liveFullRow: liveRow,
+      scoring,
+    });
     return {
       element: pid,
       web_name: webName,
@@ -309,31 +347,31 @@ export function mapPickRows(
       badgeUrl: badgeUrl(tm?.code),
       /** Official FPL minutes — kept so the Lineups MIN column can retick. */
       fplMinutes: mins,
+      fplGoals: goalsScored,
+      fplAssists: assists,
+      fplYellows: yellowCards,
+      fplReds: redCards,
+      fplOwnGoals: Number(st.own_goals) || 0,
+      fplCleanSheets: cleanSheets,
+      fplGoalsConceded: goalsConceded,
+      fplSaves: saves,
+      fplTotalPoints: pts,
       teamId: tid,
+      elementTypeId: el?.element_type != null ? Number(el.element_type) : null,
       /**
        * FPL live minutes lag the match clock (often stuck at 7–9 well into
        * the first half). Lift on-pitch players to Prem / kickoff clock.
        */
-      minutes: resolveDisplayedMinutes({
-        fplMinutes: mins,
-        liveFullRow: liveRow,
-        teamId: tid,
-        elementId: pid,
-        gwFixtures,
-        premRows: espnPremRows,
-        matchdayRole: espnMatchdayRole,
-        redCards,
-        nowMs,
-      }),
-      goalsScored,
-      assists,
-      cleanSheets,
-      /** Goals conceded by this player's club so far (live element stat) — drives time-aware clean-sheet projection. */
-      goalsConceded,
+      minutes: displayedMinutes,
+      goalsScored: displayedPoints.goalsScored,
+      assists: displayedPoints.assists,
+      cleanSheets: displayedPoints.cleanSheets,
+      /** Goals conceded by this player's club so far — Prem event log when FPL is stale. */
+      goalsConceded: displayedPoints.goalsConceded,
       saves,
-      yellowCards,
-      redCards,
-      total_points: pts,
+      yellowCards: displayedPoints.yellowCards,
+      redCards: displayedPoints.redCards,
+      total_points: displayedPoints.total_points,
       bps,
       bonusApi,
       bonus: bonusApi,
@@ -632,10 +670,12 @@ export function useLiveScores({
       }
       if (loadGen !== loadGenerationRef.current) return;
       const nowMs = Date.now();
+      const draftScoring = boot?.settings?.scoring ?? null;
       minuteCtxRef.current = {
         gwFixtures,
         premRows: espnPremRows,
         liveFullByElementId: liveFullNumeric,
+        scoring: draftScoring,
       };
 
       /** Picks were fetched concurrently with bootstrap/live/fixtures above; this only assembles rows. */
@@ -671,6 +711,7 @@ export function useLiveScores({
             gwFixtures,
             espnPremRows,
             nowMs,
+            draftScoring,
           );
           const withBonus = applyBonusColumn(
             rows,
@@ -759,7 +800,7 @@ export function useLiveScores({
         /** PL teams with a fixture this GW — used to include all players in contribution deltas. */
         gwTeamIds: [...gwTeamIdSet],
         /** Draft `settings.scoring` — points per goal/assist/cards etc. */
-        draftScoring: boot?.settings?.scoring ?? null,
+        draftScoring,
       });
       setLastUpdated(new Date().toISOString());
     } catch (e) {
@@ -823,7 +864,8 @@ export function useLiveScores({
       const nowMs = Date.now();
       setSquads((prev) => {
         if (!Array.isArray(prev) || !prev.length) return prev;
-        const tick = (r) => retickRowMinutes(r, { ...ctx, nowMs });
+        const tick = (r) =>
+          retickRowPoints(retickRowMinutes(r, { ...ctx, nowMs }), ctx);
         return prev.map((s) => ({
           ...s,
           starters: (s.starters || []).map(tick),
