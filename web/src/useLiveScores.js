@@ -14,6 +14,7 @@ import { fetchEspnPremWindow } from './espnPremWindow.js';
 import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
 import { mergePremWindowSources } from './premWindowMerger.js';
 import { computeEspnMatchdayRole } from './espnMatchdayRoleForAutosub.js';
+import { resolveDisplayedMinutes } from './livePlayerMinutes.js';
 import { shouldPollLiveGw } from './liveGwPollGate.js';
 import {
   FPL_DIRECT,
@@ -302,7 +303,20 @@ export function mapPickRows(
       posSingular: typ?.singular_name_short ?? '—',
       shirtUrl: fplShirtImageUrl(tm?.code, el?.element_type),
       badgeUrl: badgeUrl(tm?.code),
-      minutes: mins,
+      /**
+       * FPL live minutes lag the match clock (often stuck at 7–9 well into
+       * the first half). Lift on-pitch players to the Pulselive/ESPN clock.
+       */
+      minutes: resolveDisplayedMinutes({
+        fplMinutes: mins,
+        liveFullRow: liveRow,
+        teamId: tid,
+        elementId: pid,
+        gwFixtures,
+        premRows: espnPremRows,
+        matchdayRole: espnMatchdayRole,
+        redCards,
+      }),
       goalsScored,
       assists,
       cleanSheets,

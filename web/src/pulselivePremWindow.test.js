@@ -4,6 +4,7 @@ import {
   parsePulseliveEvents,
   parsePulseliveLineups,
   parsePulseliveScore,
+  parsePulseliveSubstitutions,
 } from './pulselivePremWindow.js';
 import {
   collectPulseliveFixtures,
@@ -675,6 +676,56 @@ test('parsePulseliveScore — half-time', () => {
   };
   const s = parsePulseliveScore(fx, fplFixture, pulseToFpl);
   assert.equal(s.statusText, 'Half Time');
+  assert.equal(s.liveMinute, "45'");
+});
+
+test('parsePulseliveSubstitutions — ON/OFF pair with names from teamLists', () => {
+  const fplFixture = { team_h: 11, team_a: 1 };
+  const pulseToFpl = new Map([[10, 11], [1, 1]]);
+  const fx = {
+    teamLists: [
+      {
+        teamId: 10,
+        lineup: [
+          { id: 4002, name: { display: 'Off Player' } },
+          { id: 4001, name: { display: 'Stays On' } },
+        ],
+        substitutes: [{ id: 4099, name: { display: 'On Player' } }],
+      },
+      {
+        teamId: 1,
+        lineup: [{ id: 5001, name: { display: 'Away XI' } }],
+        substitutes: [],
+      },
+    ],
+    events: [
+      {
+        id: 705,
+        type: 'S',
+        description: 'ON',
+        personId: 4099,
+        teamId: 10,
+        clock: { secs: 540, label: "9'00" },
+      },
+      {
+        id: 705,
+        type: 'S',
+        description: 'OFF',
+        personId: 4002,
+        teamId: 10,
+        clock: { secs: 540, label: "9'00" },
+      },
+    ],
+  };
+  const subs = parsePulseliveSubstitutions(fx, fplFixture, pulseToFpl);
+  assert.equal(subs.length, 2);
+  assert.deepEqual(
+    subs.map((s) => ({ action: s.action, playerName: s.playerName, minute: s.minute })),
+    [
+      { action: 'on', playerName: 'On Player', minute: 9 },
+      { action: 'off', playerName: 'Off Player', minute: 9 },
+    ],
+  );
 });
 
 test('parsePulseliveScore — null on malformed payload', () => {

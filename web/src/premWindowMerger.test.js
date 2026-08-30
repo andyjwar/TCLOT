@@ -61,6 +61,20 @@ test('pickPreferredRow — events: primary non-empty wins', () => {
   assert.deepEqual(merged.events, [{ kind: 'goal', playerName: 'A' }]);
 });
 
+test('pickPreferredRow — substitutions follow the same source as events', () => {
+  const p = row(1, {
+    events: [{ kind: 'goal' }],
+    matchId: 100,
+  });
+  p.substitutions = [{ action: 'off', elementId: 8, minute: 9 }];
+  const f = row(1, { events: [], matchId: 200 });
+  f.substitutions = [{ action: 'off', elementId: 99, minute: 1 }];
+  const merged = pickPreferredRow(p, f, LABELS);
+  assert.deepEqual(merged.substitutions, [
+    { action: 'off', elementId: 8, minute: 9 },
+  ]);
+});
+
 test('pickPreferredRow — events: fallback used when primary empty', () => {
   const p = row(1, { events: [], matchId: 100 });
   const f = row(1, { events: [{ kind: 'goal', playerName: 'B' }], matchId: 200 });

@@ -96,6 +96,17 @@ export function pickPreferredRow(primary, fallback, labels = {}) {
     eventSource = fLabel;
   }
 
+  /** Substitutions travel with the same source preference as events (live minutes). */
+  let substitutions = [];
+  if (Array.isArray(primary?.substitutions) && primary.substitutions.length > 0) {
+    substitutions = primary.substitutions;
+  } else if (
+    Array.isArray(fallback?.substitutions) &&
+    fallback.substitutions.length > 0
+  ) {
+    substitutions = fallback.substitutions;
+  }
+
   /** Score: same rule — primary first, then fallback. */
   let score = null;
   let scoreSource = 'none';
@@ -135,6 +146,7 @@ export function pickPreferredRow(primary, fallback, labels = {}) {
     matchId,
     score,
     events,
+    substitutions,
     lineups,
     fetchError,
     detailsBlockedReason: null,
