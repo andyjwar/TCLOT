@@ -2,9 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   blendLivePlayerMinutes,
+  elapsedMatchMinutesFromKickoff,
   fixtureLiveClockMinutes,
+  isFixtureInPlay,
   parseLiveClockMinutes,
   resolveDisplayedMinutes,
+  retickRowMinutes,
   substitutionStateForElement,
 } from './livePlayerMinutes.js';
 
@@ -38,6 +41,71 @@ test('fixtureLiveClockMinutes — HT status without liveMinute → 45', () => {
 test('fixtureLiveClockMinutes — falls back to FPL fixture minutes', () => {
   assert.equal(fixtureLiveClockMinutes(null, { minutes: 12 }), 12);
   assert.equal(fixtureLiveClockMinutes({}, { minutes: 0 }), null);
+});
+
+test('elapsedMatchMinutesFromKickoff — first half / HT / second half', () => {
+  const ko = Date.parse('2026-08-30T13:00:00Z');
+  assert.equal(elapsedMatchMinutesFromKickoff('2026-08-30T13:00:00Z', ko + 36 * 60_000), 36);
+  assert.equal(elapsedMatchMinutesFromKickoff('2026-08-30T13:00:00Z', ko + 50 * 60_000), 45);
+  assert.equal(elapsedMatchMinutesFromKickoff('2026-08-30T13:00:00Z', ko + 75 * 60_000), 60);
+  assert.equal(elapsedMatchMinutesFromKickoff('2026-08-30T13:00:00Z', ko - 60_000), null);
+  assert.equal(elapsedMatchMinutesFromKickoff('2026-08-30T13:00:00Z', ko + 200 * 60_000), null);
+  assert.equal(elapsedMatchMinutesFromKickoff(null, ko), null);
+});
+
+test('fixtureLiveClockMinutes — kickoff clock beats stalled FPL 9 (Aaronson)', () => {
+  const ko = '2026-08-30T13:00:00Z';
+  const now = Date.parse(ko) + 36 * 60_000;
+  assert.equal(
+    fixtureLiveClockMinutes(null, { minutes: 9, kickoff_time: ko }, now),
+    36,
+  );
+  assert.equal(
+    fixtureLiveClockMinutes(
+      { score: { liveMinute: "36'00" } },
+      { minutes: 9, kickoff_time: ko },
+      now,
+    ),
+    36,
+  );
+});
+
+test('isFixtureInPlay — kickoff in the past even when FPL started is still false', () => {
+  const ko = '2026-08-30T13:00:00Z';
+  const now = Date.parse(ko) + 36 * 60_000;
+  assert.equal(
+    isFixtureInPlay(
+      {
+        started: false,
+        finished: false,
+        finished_provisional: false,
+        minutes: 9,
+        kickoff_time: ko,
+      },
+      now,
+    ),
+    true,
+  );
+  assert.equal(
+    isFixtureInPlay(
+      {
+        started: false,
+        finished: false,
+        finished_provisional: false,
+        minutes: 0,
+        kickoff_time: ko,
+      },
+      now,
+    ),
+    true,
+  );
+  assert.equal(
+    isFixtureInPlay(
+      { started: true, finished: true, finished_provisional: true, minutes: 90 },
+      now,
+    ),
+    false,
+  );
 });
 
 test('blendLivePlayerMinutes — starter FPL 9 + clock 36 → 36 (the reported bug)', () => {
@@ -189,6 +257,66 @@ function liveFx(id, teamId, minutes = 9) {
     minutes,
   };
 }
+
+test('resolveDisplayedMinutes — Aaronson: no Prem clock, FPL started false, kickoff 36 ago', () => {
+  const ko = '2026-08-30T13:00:00Z';
+  const now = Date.parse(ko) + 36 * 60_000;
+  const gw = [
+    {
+      id: 501,
+      team_h: 7,
+      team_a: 4,
+      started: false,
+      finished: false,
+      finished_provisional: false,
+      minutes: 9,
+      kickoff_time: ko,
+    },
+  ];
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 9,
+      teamId: 7,
+      elementId: 1,
+      gwFixtures: gw,
+      premRows: [],
+      matchdayRole: 'absent',
+      nowMs: now,
+    }),
+    36,
+  );
+});
+
+test('retickRowMinutes — advances from stored official FPL minutes', () => {
+  const ko = '2026-08-30T13:00:00Z';
+  const now = Date.parse(ko) + 40 * 60_000;
+  const row = {
+    element: 1,
+    teamId: 7,
+    fplMinutes: 9,
+    minutes: 9,
+    espnMatchdayRole: 'xi',
+    redCards: 0,
+  };
+  const out = retickRowMinutes(row, {
+    gwFixtures: [
+      {
+        id: 501,
+        team_h: 7,
+        team_a: 4,
+        started: true,
+        finished: false,
+        finished_provisional: false,
+        minutes: 9,
+        kickoff_time: ko,
+      },
+    ],
+    premRows: [],
+    nowMs: now,
+  });
+  assert.equal(out.minutes, 40);
+  assert.equal(out.fplMinutes, 9);
+});
 
 test('resolveDisplayedMinutes — screenshot case: Collins/Gomez/Aaronson at 7–9, clock 36', () => {
   const gw = [liveFx(501, 7, 9)];

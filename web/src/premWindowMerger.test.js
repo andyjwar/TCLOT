@@ -83,6 +83,26 @@ test('pickPreferredRow — events: fallback used when primary empty', () => {
   assert.deepEqual(merged.events, [{ kind: 'goal', playerName: 'B' }]);
 });
 
+test('pickPreferredRow — Pulselive Live without a minute borrows ESPN 36\'', () => {
+  const p = row(1, {
+    score: { homeScore: 0, awayScore: 0, statusText: 'Live', liveMinute: null },
+    matchId: 100,
+  });
+  const f = row(1, {
+    score: {
+      homeScore: 0,
+      awayScore: 0,
+      statusText: "36'",
+      liveMinute: "36'",
+    },
+    matchId: 200,
+  });
+  const merged = pickPreferredRow(p, f, LABELS);
+  assert.equal(merged.scoreSource, 'pulselive');
+  assert.equal(merged.score.liveMinute, "36'");
+  assert.equal(merged.score.homeScore, 0);
+});
+
 test('pickPreferredRow — score: 0–0 from primary still wins over null fallback', () => {
   const p = row(1, { score: { homeScore: 0, awayScore: 0, statusText: 'HT' }, matchId: 100 });
   const f = row(1, { score: null, matchId: 200 });
