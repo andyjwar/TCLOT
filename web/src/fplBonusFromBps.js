@@ -442,7 +442,139 @@ export function bpsForElementInFixture(el, liveRow, fixtureId, gwFixtures) {
 }
 
 /**
+ * Official `bonus` line for one fixture from `explain` (draft + classic).
+ *
+ * @returns {number | null} null if that fixture block has no bonus identifier
+ */
+export function bonusForFixtureFromExplain(liveRow, fixtureId) {
+  const fid = Number(fixtureId);
+  if (!Number.isFinite(fid)) return null;
+  const ex = liveRow?.explain;
+  if (!Array.isArray(ex) || ex.length === 0) return null;
+  const first = ex[0];
+
+  const scanStats = (statsArr) => {
+    let found = null;
+    for (const s of statsArr || []) {
+      const id = s.identifier ?? s.stat;
+      if (id !== 'bonus') continue;
+      found = (found ?? 0) + (Number(s.value) || 0);
+    }
+    return found;
+  };
+
+  if (Array.isArray(first) && first.length === 2 && typeof first[1] === 'number') {
+    for (const pair of ex) {
+      const [statList, f] = pair;
+      if (Number(f) !== fid) continue;
+      const r = scanStats(statList);
+      if (r != null) return r;
+    }
+    return null;
+  }
+
+  if (first && first.fixture != null) {
+    for (const block of ex) {
+      if (Number(block.fixture) !== fid) continue;
+      const r = scanStats(block.stats);
+      if (r != null) return r;
+    }
+  }
+  return null;
+}
+
+/**
+ * Official bonus slate from classic `fixtures[]`.stats (`identifier: "bonus"`).
+ * @param {object | null | undefined} fx
+ * @returns {Map<number, number>}
+ */
+export function officialBonusFromFixtureStats(fx) {
+  const m = new Map();
+  const blocks = fx?.stats;
+  if (!Array.isArray(blocks)) return m;
+  for (const block of blocks) {
+    if ((block?.identifier ?? block?.stat) !== 'bonus') continue;
+    for (const side of ['h', 'a']) {
+      for (const row of block[side] || []) {
+        const id = Number(row.element);
+        const val = Number(row.value) || 0;
+        if (!Number.isFinite(id) || val <= 0) continue;
+        m.set(id, (m.get(id) || 0) + val);
+      }
+    }
+  }
+  return m;
+}
+
+/**
+ * Sum official fixture-stats bonus per element across the GW.
+ * @param {object[]} gwFixtures
+ * @returns {Map<number, number>}
+ */
+export function officialGwBonusByElementId(gwFixtures) {
+  const m = new Map();
+  for (const fx of gwFixtures || []) {
+    for (const [id, pts] of officialBonusFromFixtureStats(fx)) {
+      m.set(id, (m.get(id) || 0) + pts);
+    }
+  }
+  return m;
+}
+
+/**
+ * True once FPL has published official bonus for this fixture — the 3/2/1
+ * slate on `fixtures[].stats`, a live `explain` bonus line, or (single-fixture
+ * GW) a teammate/opponent with `stats.bonus > 0`.
+ *
+ * BPS estimates must not keep awarding medals to everyone else after that
+ * (Collins still on a BPS +2 after Schade’s official 3).
+ *
+ * @param {object} fx
+ * @param {object[]} bootElements
+ * @param {Record<number, object>} liveFullByElementId
+ * @param {object[]} gwFixtures
+ */
+export function fixtureHasOfficialBonus(
+  fx,
+  bootElements,
+  liveFullByElementId,
+  gwFixtures
+) {
+  if (officialBonusFromFixtureStats(fx).size > 0) return true;
+  const fid = Number(fx?.id);
+  const fh = Number(fx?.team_h);
+  const fa = Number(fx?.team_a);
+  if (!Number.isFinite(fid) || !Number.isFinite(fh) || !Number.isFinite(fa)) {
+    return false;
+  }
+
+  for (const el of bootElements || []) {
+    const tid = Number(el.team);
+    if (tid !== fh && tid !== fa) continue;
+    const id = Number(el.id);
+    const liveRow = liveFullByElementId?.[id];
+    if (!liveRow) continue;
+
+    const fromExplain = bonusForFixtureFromExplain(liveRow, fid);
+    if (typeof fromExplain === 'number' && fromExplain > 0) return true;
+
+    const api = Number(liveRow?.stats?.bonus) || 0;
+    if (api <= 0) continue;
+    const played = participatingFixtureIdsForElement(el, liveRow, gwFixtures);
+    if (played.length === 1 && played[0] === fid) return true;
+    if (played.length === 0) {
+      const tf = fixturesForTeamInGw(gwFixtures, tid);
+      if (tf.length === 1 && Number(tf[0].id) === fid) return true;
+    }
+  }
+  return false;
+}
+
+/**
  * Sum provisional bonus per element across all fixtures in the GW.
+ *
+ * Skips fixtures that already have an official bonus slate so BPS ranks
+ * cannot overwrite or sit alongside confirmed medals.
  *
  * @param {object[]} bootElements — bootstrap.elements
  * @param {Record<number, object>} liveFullByElementId — id → full live row
@@ -460,6 +592,9 @@ export function computeProvisionalGwBonusByElementId(
     const fh = Number(fx.team_h);
     const fa = Number(fx.team_a);
     if (!Number.isFinite(fh) || !Number.isFinite(fa)) continue;
+    if (fixtureHasOfficialBonus(fx, bootElements, liveFullByElementId, gwFixtures)) {
+      continue;
+    }
 
     const pool = [];
     for (const el of bootElements || []) {
@@ -492,12 +627,13 @@ export function allFixturesFinished(fixtureIds, fixtureById) {
 }
 
 /**
- * One column: prefer FPL `stats.bonus` once it is non-zero; otherwise keep BPS-based projection
- * while matches are live or in provisional full-time. Once **all** of the player’s club’s GW
- * fixtures are hard-finished (`finished === true`) and FPL still reports `bonus === 0`,
- * stop showing stale BPS bonus (matches official site when no bonus is awarded).
+ * One column: prefer FPL `stats.bonus` / fixture-stats slate once it is non-zero;
+ * otherwise keep BPS-based projection while matches are live or in provisional
+ * full-time. Once **all** of the player’s club’s GW fixtures are hard-finished
+ * (`finished === true`) and FPL still reports `bonus === 0`, or official bonus
+ * has already been posted on that fixture, stop showing stale BPS bonus.
  *
- * @param {number} apiBonus — stats.bonus
+ * @param {number} apiBonus — stats.bonus or fixture-stats official value
  * @param {number} provisionalSum — sum across GW fixtures from BPS tiers
  * @param {{ trustApiZero?: boolean }} [opts]
  */
@@ -508,4 +644,42 @@ export function selectDisplayBonus(apiBonus, provisionalSum, opts = {}) {
   if (opts.trustApiZero && safeApi === 0) return 0;
   const p = Number(provisionalSum);
   return Number.isFinite(p) ? p : 0;
+}
+
+/**
+ * Apply the live Bonus column + fold it into `total_points`.
+ * `bonusConfirmed` is true only when the displayed value comes from FPL’s
+ * official bonus (player `stats.bonus` or fixture-stats slate), not a BPS guess.
+ *
+ * @param {object[]} rows
+ * @param {Map<number, number>} provisionalByElement
+ * @param {Record<number, object> | null | undefined} elementById
+ * @param {object[]} gwFixtures
+ * @param {Map<number, number>} [officialByElement] — fixture-stats slate
+ * @returns {object[]}
+ */
+export function applyBonusColumn(
+  rows,
+  provisionalByElement,
+  elementById,
+  gwFixtures,
+  officialByElement = new Map()
+) {
+  return (rows || []).map((r) => {
+    const official = officialByElement.get(r.element);
+    const apiBonus =
+      official != null ? Number(official) || 0 : Number(r.bonusApi) || 0;
+    const prov = provisionalByElement.get(r.element) ?? 0;
+    const el = elementById?.[r.element];
+    const trustApiZero =
+      official != null ||
+      (el != null &&
+        gwTeamFixturesAllHardFinished(el.team, gwFixtures) &&
+        apiBonus === 0);
+    const display = selectDisplayBonus(apiBonus, prov, { trustApiZero });
+    const bonusConfirmed = display > 0 && apiBonus === display;
+    const total_points =
+      Number(r.total_points) - (Number(r.bonusApi) || 0) + Number(display);
+    return { ...r, bonus: display, bonusConfirmed, total_points };
+  });
 }

@@ -6,8 +6,8 @@ import {
   enrichElementWithKnownName,
   fetchKnownNameMap,
 } from './fplElementNames.js'
+import { applyBonusColumn, officialGwBonusByElementId } from './fplBonusFromBps'
 import {
-  applyBonusColumn,
   classicResourceUrl,
   liveFullByElementId,
   liveStatsByElementId,
@@ -177,6 +177,7 @@ async function loadEntrySquad(gw, fplEntryId, leagueEntryId, teamName) {
       new Map(),
       ctx.elementById,
       ctx.gwFixtures,
+      officialGwBonusByElementId(ctx.gwFixtures),
     )
     const withCaptain = withBonus.map((r) => ({
       ...r,
