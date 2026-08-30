@@ -83,6 +83,20 @@ test('pickPreferredRow — events: fallback used when primary empty', () => {
   assert.deepEqual(merged.events, [{ kind: 'goal', playerName: 'B' }]);
 });
 
+test('pickPreferredRow — 0–0 headline lifts to event-log 1–1', () => {
+  const p = row(1, {
+    events: [
+      { kind: 'goal', teamSide: 'home', isOwnGoal: false },
+      { kind: 'goal', teamSide: 'away', isOwnGoal: false },
+    ],
+    score: { homeScore: 0, awayScore: 0, statusText: 'Live' },
+    matchId: 100,
+  });
+  const merged = pickPreferredRow(p, row(1), LABELS);
+  assert.equal(merged.score.homeScore, 1);
+  assert.equal(merged.score.awayScore, 1);
+});
+
 test('pickPreferredRow — Pulselive Live without a minute borrows ESPN 36\'', () => {
   const p = row(1, {
     score: { homeScore: 0, awayScore: 0, statusText: 'Live', liveMinute: null },

@@ -1,4 +1,5 @@
 import { parseLiveClockMinutes } from './livePlayerMinutes.js';
+import { liftScoreFromEvents } from './livePlayerPoints.js';
 
 /**
  * Merge two same-shape PremWindow row arrays (one row per FPL fixture) into a single
@@ -147,6 +148,8 @@ export function pickPreferredRow(primary, fallback, labels = {}) {
     score = fallback.score;
     scoreSource = fLabel;
   }
+  /** Fixture log often has the goals before the headline score ticks (0–0 vs 1–1). */
+  score = liftScoreFromEvents(score, events) ?? score;
 
   /** matchId follows whichever source contributed the strongest signal — lineups > events > score. */
   let matchId = null;
