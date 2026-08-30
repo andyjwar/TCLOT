@@ -14,7 +14,10 @@ import { fetchEspnPremWindow } from './espnPremWindow.js';
 import { fetchPulselivePremWindow } from './pulselivePremWindow.js';
 import { mergePremWindowSources } from './premWindowMerger.js';
 import { computeEspnMatchdayRole } from './espnMatchdayRoleForAutosub.js';
-import { resolveDisplayedMinutes } from './livePlayerMinutes.js';
+import {
+  resolveDisplayedMinutes,
+  retickRowMinutes,
+} from './livePlayerMinutes.js';
 import { shouldPollLiveGw } from './liveGwPollGate.js';
 import {
   FPL_DIRECT,
@@ -224,7 +227,8 @@ export function mapPickRows(
   teamById,
   typeById,
   gwFixtures,
-  espnPremRows
+  espnPremRows,
+  nowMs = Date.now(),
 ) {
   const rows = (picks || []).map((p) => {
     const pid = Number(p.element);
@@ -303,9 +307,12 @@ export function mapPickRows(
       posSingular: typ?.singular_name_short ?? '—',
       shirtUrl: fplShirtImageUrl(tm?.code, el?.element_type),
       badgeUrl: badgeUrl(tm?.code),
+      /** Official FPL minutes — kept so the Lineups MIN column can retick. */
+      fplMinutes: mins,
+      teamId: tid,
       /**
        * FPL live minutes lag the match clock (often stuck at 7–9 well into
-       * the first half). Lift on-pitch players to the Pulselive/ESPN clock.
+       * the first half). Lift on-pitch players to Prem / kickoff clock.
        */
       minutes: resolveDisplayedMinutes({
         fplMinutes: mins,
@@ -316,6 +323,7 @@ export function mapPickRows(
         premRows: espnPremRows,
         matchdayRole: espnMatchdayRole,
         redCards,
+        nowMs,
       }),
       goalsScored,
       assists,
@@ -432,6 +440,9 @@ export function useLiveScores({
 
   /** Bumps on each load start so a slow stale request cannot overwrite newer squads (wrong players / GW). */
   const loadGenerationRef = useRef(0);
+
+  /** Prem + fixture snapshot so Lineups MIN can tick off kickoff between 90s polls. */
+  const minuteCtxRef = useRef(null);
 
   const [tabVisible, setTabVisible] = useState(() =>
     typeof document === 'undefined' ? true : !document.hidden,
@@ -620,6 +631,12 @@ export function useLiveScores({
         espnPremRows = [];
       }
       if (loadGen !== loadGenerationRef.current) return;
+      const nowMs = Date.now();
+      minuteCtxRef.current = {
+        gwFixtures,
+        premRows: espnPremRows,
+        liveFullByElementId: liveFullNumeric,
+      };
 
       /** Picks were fetched concurrently with bootstrap/live/fixtures above; this only assembles rows. */
       const picksResults = await picksPromise;
@@ -652,7 +669,8 @@ export function useLiveScores({
             teamById,
             typeById,
             gwFixtures,
-            espnPremRows
+            espnPremRows,
+            nowMs,
           );
           const withBonus = applyBonusColumn(
             rows,
@@ -791,6 +809,32 @@ export function useLiveScores({
     }, ms);
     return () => window.clearInterval(id);
   }, [enabled, canPollLiveGw, pollIntervalMs, load, tabVisible]);
+
+  /**
+   * Advance displayed minutes from kickoff every 30s so a stalled FPL/Prem
+   * flush (Aaronson stuck on 9') does not sit still until the next 90s poll.
+   */
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    if (!enabled || !canPollLiveGw) return undefined;
+    const id = window.setInterval(() => {
+      const ctx = minuteCtxRef.current;
+      if (!ctx) return;
+      const nowMs = Date.now();
+      setSquads((prev) => {
+        if (!Array.isArray(prev) || !prev.length) return prev;
+        const tick = (r) => retickRowMinutes(r, { ...ctx, nowMs });
+        return prev.map((s) => ({
+          ...s,
+          starters: (s.starters || []).map(tick),
+          bench: (s.bench || []).map(tick),
+          displayStarters: (s.displayStarters || []).map(tick),
+          displayBench: (s.displayBench || []).map(tick),
+        }));
+      });
+    }, 30_000);
+    return () => window.clearInterval(id);
+  }, [enabled, canPollLiveGw]);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;

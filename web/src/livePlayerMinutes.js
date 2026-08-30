@@ -56,21 +56,72 @@ export function parseLiveClockMinutes(raw) {
 }
 
 /**
+ * Wall-clock stand-in when Pulselive/ESPN/FPL all stall on the same 7–9'
+ * flush. Models a 45' half + 15' interval; ignores first-half stoppage
+ * (reads 45 from HT until the second half starts).
+ *
+ * Returns null outside a plausible live window (before kickoff, or more
+ * than 3 hours after) so a stale unfinished fixture cannot mint 90+ mins
+ * the next morning.
+ *
+ * @param {unknown} kickoffIso
+ * @param {number} [nowMs]
+ * @returns {number | null}
+ */
+export function elapsedMatchMinutesFromKickoff(kickoffIso, nowMs = Date.now()) {
+  const ko = Date.parse(String(kickoffIso || ''));
+  if (!Number.isFinite(ko)) return null;
+  const wall = (Number(nowMs) - ko) / 60_000;
+  if (!Number.isFinite(wall) || wall < 0 || wall > 180) return null;
+  if (wall <= 45) return Math.floor(wall);
+  if (wall <= 60) return 45;
+  return Math.min(120, Math.floor(45 + (wall - 60)));
+}
+
+/**
+ * True when this classic fixture should be treated as in-play for minute
+ * blending. FPL's `started` flag (and `fixtures[].minutes`) lag the same
+ * way player minutes do, so kickoff-in-the-past is enough.
+ *
+ * @param {object | null | undefined} f
+ * @param {number} [nowMs]
+ * @returns {boolean}
+ */
+export function isFixtureInPlay(f, nowMs = Date.now()) {
+  if (f == null || isFixtureFullyDone(f)) return false;
+  if (f.started === true) return true;
+  if (Number(f.minutes) > 0) return true;
+  const ko = Date.parse(String(f.kickoff_time || ''));
+  if (!Number.isFinite(ko)) return false;
+  const wall = (Number(nowMs) - ko) / 60_000;
+  return Number.isFinite(wall) && wall >= 0 && wall <= 180;
+}
+
+/**
  * Best available in-play clock for one fixture: Prem `liveMinute` / status,
- * then FPL classic `fixtures[].minutes`.
+ * then the later of FPL classic `fixtures[].minutes` and elapsed kickoff
+ * time. FPL's fixture minute counter stalls on the same 7–9' flush as
+ * player minutes, so it cannot be the only clock.
  *
  * @param {object | null | undefined} premRow
  * @param {object | null | undefined} fplFixture
+ * @param {number} [nowMs]
  * @returns {number | null}
  */
-export function fixtureLiveClockMinutes(premRow, fplFixture) {
+export function fixtureLiveClockMinutes(premRow, fplFixture, nowMs = Date.now()) {
   const fromPrem =
     parseLiveClockMinutes(premRow?.score?.liveMinute) ??
     parseLiveClockMinutes(premRow?.score?.statusText);
   if (fromPrem != null) return fromPrem;
   if (/half\s*time/i.test(String(premRow?.score?.statusText || ''))) return 45;
   const m = Number(fplFixture?.minutes);
-  if (Number.isFinite(m) && m > 0) return m;
+  const fromFpl = Number.isFinite(m) && m > 0 ? m : null;
+  const kickoffIso =
+    premRow?.score?.kickoffIso || fplFixture?.kickoff_time || null;
+  const fromKick = elapsedMatchMinutesFromKickoff(kickoffIso, nowMs);
+  if (fromFpl != null && fromKick != null) return Math.max(fromFpl, fromKick);
+  if (fromKick != null) return fromKick;
+  if (fromFpl != null) return fromFpl;
   return null;
 }
 
@@ -144,9 +195,12 @@ export function blendLivePlayerMinutes({
   if (!Number.isFinite(clock) || clock <= 0) return fpl;
   if ((Number(redCards) || 0) > 0) return fpl;
   if (subbedOff) return fpl;
-  /** FPL has not recorded them on the pitch — do not invent a start. */
+  /**
+   * FPL has not recorded them on the pitch — do not invent a start.
+   * `absent` is only an ESPN name-match hint for autosub; once FPL has
+   * minutes they are on the pitch and the clock may lift them.
+   */
   if (fpl <= 0) return fpl;
-  if (matchdayRole === 'absent') return fpl;
   /**
    * Named sub who came on: without an ON event, FPL's cameo minutes are more
    * honest than `clock` (which would treat them as a 0' starter).
@@ -174,6 +228,7 @@ export function blendLivePlayerMinutes({
  *   premRows: object[],
  *   matchdayRole?: 'xi' | 'bench' | 'absent' | null,
  *   redCards?: number,
+ *   nowMs?: number,
  * }} opts
  * @returns {number}
  */
@@ -186,15 +241,14 @@ export function resolveDisplayedMinutes({
   premRows,
   matchdayRole = null,
   redCards = 0,
+  nowMs = Date.now(),
 }) {
   const fpl = Math.max(0, Number(fplMinutes) || 0);
   const tid = Number(teamId);
   if (!Number.isFinite(tid)) return fpl;
 
   const mine = fixturesForTeamInGw(gwFixtures || [], tid);
-  const liveFx = mine.filter(
-    (f) => f?.started === true && !isFixtureFullyDone(f),
-  );
+  const liveFx = mine.filter((f) => isFixtureInPlay(f, nowMs));
   if (liveFx.length !== 1) return fpl;
 
   const fx = liveFx[0];
@@ -218,7 +272,7 @@ export function resolveDisplayedMinutes({
   const prem = (premRows || []).find(
     (r) => Number(r?.fplFixture?.id) === Number(fx.id),
   );
-  const clock = fixtureLiveClockMinutes(prem, fx);
+  const clock = fixtureLiveClockMinutes(prem, fx, nowMs);
   const { subbedOff, cameOnMinute } = substitutionStateForElement(
     prem,
     elementId,
@@ -234,4 +288,36 @@ export function resolveDisplayedMinutes({
     cameOnMinute,
   });
   return banked + liveBlended;
+}
+
+/**
+ * Recompute one pick row's displayed minutes from stored official FPL
+ * minutes + the current Prem/kickoff clock. Used to tick the Lineups MIN
+ * column between 90s live polls.
+ *
+ * @param {object} row
+ * @param {{
+ *   gwFixtures?: object[],
+ *   premRows?: object[],
+ *   liveFullByElementId?: Record<number, object>,
+ *   nowMs?: number,
+ * }} ctx
+ * @returns {object}
+ */
+export function retickRowMinutes(row, ctx = {}) {
+  if (!row || row.teamId == null) return row;
+  return {
+    ...row,
+    minutes: resolveDisplayedMinutes({
+      fplMinutes: row.fplMinutes ?? 0,
+      liveFullRow: ctx.liveFullByElementId?.[row.element] ?? null,
+      teamId: row.teamId,
+      elementId: row.element,
+      gwFixtures: ctx.gwFixtures || [],
+      premRows: ctx.premRows || [],
+      matchdayRole: row.espnMatchdayRole,
+      redCards: row.redCards,
+      nowMs: ctx.nowMs,
+    }),
+  };
 }

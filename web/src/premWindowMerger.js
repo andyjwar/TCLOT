@@ -1,3 +1,5 @@
+import { parseLiveClockMinutes } from './livePlayerMinutes.js';
+
 /**
  * Merge two same-shape PremWindow row arrays (one row per FPL fixture) into a single
  * authoritative list, preferring the **primary** source per-fixture when it has any
@@ -37,6 +39,14 @@ function hasAnyScore(score) {
   /** Score field is meaningful even when 0–0; presence of a non-null score means the row
    *  has been populated from a real upstream response. */
   return score.homeScore != null || score.awayScore != null || !!score.statusText;
+}
+
+/** True when a Prem score object carries a minute we can blend into Lineups MIN. */
+export function scoreHasParseableClock(score) {
+  if (!score) return false;
+  if (parseLiveClockMinutes(score.liveMinute) != null) return true;
+  if (parseLiveClockMinutes(score.statusText) != null) return true;
+  return /half\s*time/i.test(String(score.statusText || ''));
 }
 
 function rowHasSignal(row) {
@@ -107,13 +117,33 @@ export function pickPreferredRow(primary, fallback, labels = {}) {
     substitutions = fallback.substitutions;
   }
 
-  /** Score: same rule — primary first, then fallback. */
+  /**
+   * Score: primary first, but borrow the fallback's live clock when Pulselive
+   * only has "Live" / a 0–0 and ESPN actually has `36'`. Otherwise a clock-less
+   * primary row pins every starter to FPL's stalled 7–9.
+   */
   let score = null;
   let scoreSource = 'none';
-  if (hasAnyScore(primary?.score)) {
+  const pHasScore = hasAnyScore(primary?.score);
+  const fHasScore = hasAnyScore(fallback?.score);
+  const pHasClock = scoreHasParseableClock(primary?.score);
+  const fHasClock = scoreHasParseableClock(fallback?.score);
+  if (pHasScore && pHasClock) {
     score = primary.score;
     scoreSource = pLabel;
-  } else if (hasAnyScore(fallback?.score)) {
+  } else if (pHasScore && fHasClock) {
+    score = {
+      ...primary.score,
+      liveMinute:
+        fallback.score.liveMinute ??
+        fallback.score.statusText ??
+        primary.score.liveMinute,
+    };
+    scoreSource = pLabel;
+  } else if (pHasScore) {
+    score = primary.score;
+    scoreSource = pLabel;
+  } else if (fHasScore) {
     score = fallback.score;
     scoreSource = fLabel;
   }
