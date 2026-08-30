@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
+  applyBonusColumn,
   computeProvisionalGwBonusByElementId,
   countElementGamesLeftToPlay,
   defensiveContributionCountFromLiveRow,
   fixturesForTeamInGw,
-  gwTeamFixturesAllHardFinished,
   isFixtureFullyDone,
-  selectDisplayBonus,
+  officialGwBonusByElementId,
 } from './fplBonusFromBps';
 import { buildEffectiveLineup } from './fplAutosubProjection';
 import { effectiveStarters } from './liveSquadEffective.js';
@@ -441,20 +441,7 @@ function xiRowsForLeftToPlayCount(starters, bench, displayStarters, displayBench
   return effectiveStarters({ starters, bench, displayStarters, displayBench });
 }
 
-export function applyBonusColumn(rows, provisionalByElement, elementById, gwFixtures) {
-  return rows.map((r) => {
-    const prov = provisionalByElement.get(r.element) ?? 0;
-    const el = elementById?.[r.element];
-    const trustApiZero =
-      el != null &&
-      gwTeamFixturesAllHardFinished(el.team, gwFixtures) &&
-      (Number(r.bonusApi) || 0) === 0;
-    const display = selectDisplayBonus(r.bonusApi, prov, { trustApiZero });
-    const total_points =
-      Number(r.total_points) - Number(r.bonusApi) + Number(display);
-    return { ...r, bonus: display, total_points };
-  });
-}
+export { applyBonusColumn };
 
 /**
  * Live GW data from **draft** FPL APIs (browser fetch).
@@ -644,6 +631,7 @@ export function useLiveScores({
         }
       }
 
+      const officialByElement = officialGwBonusByElementId(gwFixtures);
       const provisionalByElement = computeProvisionalGwBonusByElementId(
         elements,
         liveFullNumeric,
@@ -730,7 +718,8 @@ export function useLiveScores({
             rows,
             provisionalByElement,
             elementById,
-            gwFixtures
+            gwFixtures,
+            officialByElement
           );
           const withCaptain = withBonus.map((r) => ({
             ...r,

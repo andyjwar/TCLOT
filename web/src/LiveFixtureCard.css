@@ -753,6 +753,10 @@
   font-weight: 600;
   color: var(--fm-muted);
 }
+.lfc-events__x--prov {
+  font-style: italic;
+  color: #ca8a04;
+}
 .lfc-events__none {
   /* Subtle but visible in both themes (`--fm-border` alone disappeared in dark). */
   color: color-mix(in srgb, var(--fm-muted) 70%, transparent);

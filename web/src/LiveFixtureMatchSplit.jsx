@@ -151,9 +151,10 @@ function squadEvents(squad) {
     const saves = Number(row.saves) || 0;
     const yellows = Number(row.yellowCards) || 0;
     const reds = Number(row.redCards) || 0;
-    // Display bonus: provisional from live BPS until FPL posts official bonus
-    // (`applyBonusColumn` already resolved which to trust onto `row.bonus`).
+    // Display bonus: official when `bonusConfirmed`; otherwise a live BPS
+    // estimate (`applyBonusColumn` resolved which to trust onto `row.bonus`).
     const bonus = Number(row.bonus) || 0;
+    const bonusConfirmed = row.bonusConfirmed === true;
     if (goals > 0) ev.g.push({ name, tag: goals > 1 ? `×${goals}` : '' });
     if (assists > 0) ev.a.push({ name, tag: assists > 1 ? `×${assists}` : '' });
     if (played && dcThresholdReached(row.posSingular, dc)) {
@@ -167,7 +168,14 @@ function squadEvents(squad) {
     if (saves >= 3) ev.sv.push({ name, tag: `(${saves})` });
     if (yellows > 0) ev.y.push({ name, tag: yellows > 1 ? `×${yellows}` : '' });
     if (reds > 0) ev.r.push({ name, tag: '' });
-    if (bonus > 0) ev.b.push({ name, tag: `+${bonus}`, bonus });
+    if (bonus > 0) {
+      ev.b.push({
+        name,
+        tag: bonusConfirmed ? `+${bonus}` : `~+${bonus}`,
+        bonus,
+        bonusConfirmed,
+      });
+    }
   }
   // Biggest bonus first — the medal order is the story, not XI position.
   ev.b.sort((x, y) => y.bonus - x.bonus);
@@ -182,7 +190,16 @@ function EventNames({ entries }) {
     <span key={`${e.name}-${i}`} className="lfc-events__nm">
       {i > 0 ? <span className="lfc-events__sep">, </span> : null}
       {e.name}
-      {e.tag ? <span className="lfc-events__x"> {e.tag}</span> : null}
+      {e.tag ? (
+        <span
+          className={
+            'lfc-events__x' + (e.bonusConfirmed === false ? ' lfc-events__x--prov' : '')
+          }
+        >
+          {' '}
+          {e.tag}
+        </span>
+      ) : null}
     </span>
   ));
 }

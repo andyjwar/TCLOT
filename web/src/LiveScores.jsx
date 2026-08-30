@@ -251,7 +251,7 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
             <th
               scope="col"
               className="live-picks-col-num live-picks-col-bonus"
-              title="FPL stats.bonus when &gt;0; else BPS estimate while live. After all of this club’s GW fixtures are full-time, if FPL still shows 0 bonus the estimate is dropped so it won’t freeze vs the official site."
+              title="Confirmed FPL bonus when posted. A yellow ~n is a live BPS estimate only — not official yet. Once anyone in that match has official bonus, estimates for the rest of the fixture are dropped."
             >
               Bonus
             </th>
@@ -264,7 +264,7 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
             <th
               scope="col"
               className="live-picks-col-num live-picks-col-pts live-picks-col-pts--split"
-              title="Live FPL points; bonus in the total matches the Bonus column (including BPS estimate when not yet posted)."
+              title="Live FPL points; bonus in the total matches the Bonus column (confirmed official, or a ~ BPS estimate while that match has no official slate yet)."
             >
               Pts
             </th>
@@ -398,10 +398,21 @@ function PicksTable({ rows, autosubInElementIds, onPlayerClick, toneTable }) {
               <td
                 className={
                   'live-picks-col-num live-picks-col-bonus tabular' +
-                  ((Number(r.bonus) || 0) > 0 ? ' live-pick-cell--green' : '')
+                  ((Number(r.bonus) || 0) > 0
+                    ? r.bonusConfirmed
+                      ? ' live-pick-cell--green'
+                      : ' live-pick-cell--yellow'
+                    : '')
+                }
+                title={
+                  (Number(r.bonus) || 0) > 0 && !r.bonusConfirmed
+                    ? 'Provisional from live BPS — not confirmed by FPL yet'
+                    : undefined
                 }
               >
-                {r.bonus}
+                {(Number(r.bonus) || 0) > 0 && !r.bonusConfirmed
+                  ? `~${r.bonus}`
+                  : r.bonus}
               </td>
               <td className="live-picks-col-alarm tabular" />
               <td className="live-picks-col-num live-picks-col-pts live-picks-col-pts--split tabular">

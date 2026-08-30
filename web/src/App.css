@@ -12933,6 +12933,17 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, var(--tclot-logo-purple) 14%, transparent);
   color: var(--tclot-logo-purple);
 }
+/* BPS estimate — not FPL-confirmed. Amber so it does not read as a medal. */
+.live-xp__cell-num--b-prov {
+  display: inline-block;
+  min-width: 14px;
+  padding: 1px 2px;
+  border-radius: 4px;
+  text-align: center;
+  font-weight: 700;
+  background: rgba(234, 179, 8, 0.14);
+  color: #ca8a04;
+}
 /* Centre the whole DC/G/A/B columns (values, zeros, dashes) so chips and
    plain numbers share one axis — same alignment language as the MIN pill. */
 .live-xp__cell--dc,

@@ -101,6 +101,7 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
   const goals = Number(row.goalsScored) || 0;
   const assists = Number(row.assists) || 0;
   const bonus = Number(row.bonus) || 0;
+  const bonusConfirmed = row.bonusConfirmed === true;
   const pts = Number(row.total_points) || 0;
   // FPL live element stat `clean_sheets` (already mapped on the row). Dot only
   // when FPL has awarded CS points and the position can score them.
@@ -207,7 +208,24 @@ function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
         {numOrDash(assists, 'live-xp__cell-num--a')}
       </div>
       <div className="live-xp__cell live-xp__cell--num live-xp__cell--b">
-        {numOrDash(bonus, 'live-xp__cell-num--b')}
+        {!played ? (
+          <span className="live-xp__zero">—</span>
+        ) : bonus > 0 ? (
+          <span
+            className={
+              bonusConfirmed ? 'live-xp__cell-num live-xp__cell-num--b' : 'live-xp__cell-num live-xp__cell-num--b-prov'
+            }
+            title={
+              bonusConfirmed
+                ? undefined
+                : 'Provisional from live BPS — not confirmed by FPL yet'
+            }
+          >
+            {bonusConfirmed ? bonus : `~${bonus}`}
+          </span>
+        ) : (
+          <span className="live-xp__zero">0</span>
+        )}
       </div>
       <div
         className={
