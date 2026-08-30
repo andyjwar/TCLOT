@@ -129,7 +129,7 @@ test('blendLivePlayerMinutes — starter FPL 9 + clock 36 → 36 (the reported b
   );
 });
 
-test('blendLivePlayerMinutes — never invents minutes before FPL records a start', () => {
+test('blendLivePlayerMinutes — confirmed XI at FPL 0 lifts to the clock (Shaw / Mbeumo)', () => {
   assert.equal(
     blendLivePlayerMinutes({
       fplMinutes: 0,
@@ -137,7 +137,63 @@ test('blendLivePlayerMinutes — never invents minutes before FPL records a star
       fixtureLive: true,
       matchdayRole: 'xi',
     }),
+    36,
+  );
+});
+
+test('blendLivePlayerMinutes — never invents minutes for unused / unknown players', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 0,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'absent',
+    }),
     0,
+  );
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 0,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: null,
+    }),
+    0,
+  );
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 0,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'bench',
+    }),
+    0,
+  );
+});
+
+test('blendLivePlayerMinutes — FPL already banked PTS with 0 minutes still lifts (Shaw 3 PTS)', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 0,
+      clockMinutes: 40,
+      fixtureLive: true,
+      matchdayRole: null,
+      fplHasLiveReturn: true,
+    }),
+    40,
+  );
+});
+
+test('blendLivePlayerMinutes — bench ON event at FPL 0 still gets cameo minutes', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 0,
+      clockMinutes: 67,
+      fixtureLive: true,
+      matchdayRole: 'bench',
+      cameOnMinute: 60,
+    }),
+    7,
   );
 });
 
@@ -316,6 +372,28 @@ test('retickRowMinutes — advances from stored official FPL minutes', () => {
   });
   assert.equal(out.minutes, 40);
   assert.equal(out.fplMinutes, 9);
+});
+
+test('resolveDisplayedMinutes — Shaw/Mbeumo: FPL 0 minutes, confirmed XI, clock 40', () => {
+  const gw = [liveFx(610, 14, 0)];
+  const premRows = [
+    {
+      fplFixture: { id: 610 },
+      score: { liveMinute: "40'00", started: true, finished: false },
+      substitutions: [],
+    },
+  ];
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 0,
+      teamId: 14,
+      elementId: 233,
+      gwFixtures: gw,
+      premRows,
+      matchdayRole: 'xi',
+    }),
+    40,
+  );
 });
 
 test('resolveDisplayedMinutes — screenshot case: Collins/Gomez/Aaronson at 7–9, clock 36', () => {

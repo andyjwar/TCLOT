@@ -3,9 +3,11 @@
  * flushes. A starter at 36' often still shows 7–9 on the Lineups MIN column.
  *
  * Blend official FPL minutes with the Pulselive / ESPN match clock for players
- * still on the pitch. Never invent minutes for someone FPL has not yet recorded
- * as playing, and never overwrite a player who has already been subbed off
- * or sent off.
+ * still on the pitch. Confirmed XI (or a named sub with an ON event) may be
+ * lifted even when FPL still has 0 — the live feed often omits a whole
+ * fixture until the first scoring event (Shaw / Mbeumo). Never invent
+ * minutes for unknown / unused players, and never overwrite someone who
+ * has already been subbed off or sent off.
  */
 
 import {
@@ -177,6 +179,7 @@ export function substitutionStateForElement(premRow, elementId) {
  *   redCards?: number,
  *   subbedOff?: boolean,
  *   cameOnMinute?: number | null,
+ *   fplHasLiveReturn?: boolean,
  * }} opts
  * @returns {number}
  */
@@ -188,6 +191,7 @@ export function blendLivePlayerMinutes({
   redCards = 0,
   subbedOff = false,
   cameOnMinute = null,
+  fplHasLiveReturn = false,
 }) {
   const fpl = Math.max(0, Number(fplMinutes) || 0);
   if (!fixtureLive) return fpl;
@@ -195,19 +199,30 @@ export function blendLivePlayerMinutes({
   if (!Number.isFinite(clock) || clock <= 0) return fpl;
   if ((Number(redCards) || 0) > 0) return fpl;
   if (subbedOff) return fpl;
+  const cameOn = Number(cameOnMinute);
+  const hasOnEvent =
+    cameOnMinute != null && cameOnMinute !== '' && Number.isFinite(cameOn);
   /**
-   * FPL has not recorded them on the pitch — do not invent a start.
-   * `absent` is only an ESPN name-match hint for autosub; once FPL has
-   * minutes they are on the pitch and the clock may lift them.
+   * FPL often leaves a whole live XI at 0 minutes (Shaw / Mbeumo still
+   * show "—" while PTS is already 3). Lift when Prem lineups confirm they
+   * started, FPL has already banked G/A/PTS, or a substitution ON event
+   * puts them on. Unused / unknown stay at 0.
    */
-  if (fpl <= 0) return fpl;
+  if (
+    fpl <= 0 &&
+    matchdayRole !== 'xi' &&
+    !hasOnEvent &&
+    !fplHasLiveReturn
+  ) {
+    return fpl;
+  }
   /**
    * Named sub who came on: without an ON event, FPL's cameo minutes are more
    * honest than `clock` (which would treat them as a 0' starter).
    */
-  if (matchdayRole === 'bench' && cameOnMinute == null) return fpl;
+  if (matchdayRole === 'bench' && !hasOnEvent) return fpl;
 
-  const start = Number.isFinite(Number(cameOnMinute)) ? Number(cameOnMinute) : 0;
+  const start = hasOnEvent ? cameOn : 0;
   const estimated = Math.max(0, Math.min(120, clock - start));
   return Math.max(fpl, estimated);
 }
@@ -229,6 +244,7 @@ export function blendLivePlayerMinutes({
  *   matchdayRole?: 'xi' | 'bench' | 'absent' | null,
  *   redCards?: number,
  *   nowMs?: number,
+ *   fplHasLiveReturn?: boolean,
  * }} opts
  * @returns {number}
  */
@@ -242,6 +258,7 @@ export function resolveDisplayedMinutes({
   matchdayRole = null,
   redCards = 0,
   nowMs = Date.now(),
+  fplHasLiveReturn = false,
 }) {
   const fpl = Math.max(0, Number(fplMinutes) || 0);
   const tid = Number(teamId);
@@ -286,6 +303,7 @@ export function resolveDisplayedMinutes({
     redCards,
     subbedOff,
     cameOnMinute,
+    fplHasLiveReturn,
   });
   return banked + liveBlended;
 }
@@ -318,6 +336,10 @@ export function retickRowMinutes(row, ctx = {}) {
       matchdayRole: row.espnMatchdayRole,
       redCards: row.redCards,
       nowMs: ctx.nowMs,
+      fplHasLiveReturn:
+        (Number(row.fplTotalPoints) || 0) > 0 ||
+        (Number(row.fplGoals) || 0) > 0 ||
+        (Number(row.fplAssists) || 0) > 0,
     }),
   };
 }

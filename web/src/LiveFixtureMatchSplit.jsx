@@ -4,6 +4,7 @@ import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
   isCleanSheetEligible,
+  liveRowHasPlayed,
   minutesTone,
   playerLiveState,
   rowsByPointsContributed,
@@ -29,7 +30,7 @@ function dotKind(row) {
 
 function SplitRow({ row, onOpenPlayer }) {
   const pts = Number(row.total_points) || 0;
-  const played = (Number(row.minutes) || 0) > 0;
+  const played = liveRowHasPlayed(row);
   const displayName = row.displayName ?? row.web_name ?? `#${row.element}`;
   const inner = (
     <>
