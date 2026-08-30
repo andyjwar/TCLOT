@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {
   parseEspnScoreForFplFixture,
   parseEspnKeyEventsForPrem,
+  parseEspnSubstitutions,
 } from './espnPremWindow.js';
 
 const espnToFpl = new Map([
@@ -65,4 +66,27 @@ test('parseEspnKeyEventsForPrem — goal + assist from keyEvents', () => {
   assert.equal(ev[1].kind, 'assist');
   assert.equal(ev[1].playerName, 'B Assist');
   assert.equal(ev[0].teamSide, 'home');
+});
+
+test('parseEspnSubstitutions — on/off from participants', () => {
+  const summary = {
+    keyEvents: [
+      {
+        type: { type: 'substitution' },
+        team: { id: '368' },
+        clock: { value: 540, displayValue: "9'" },
+        participants: [
+          { athlete: { displayName: 'On Player' } },
+          { athlete: { displayName: 'Off Player' } },
+        ],
+      },
+    ],
+  };
+  const subs = parseEspnSubstitutions(summary, fplFixture, espnToFpl);
+  assert.equal(subs.length, 2);
+  assert.equal(subs[0].action, 'on');
+  assert.equal(subs[0].playerName, 'On Player');
+  assert.equal(subs[0].minute, 9);
+  assert.equal(subs[1].action, 'off');
+  assert.equal(subs[1].playerName, 'Off Player');
 });

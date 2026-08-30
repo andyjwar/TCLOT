@@ -1,0 +1,346 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {
+  blendLivePlayerMinutes,
+  fixtureLiveClockMinutes,
+  parseLiveClockMinutes,
+  resolveDisplayedMinutes,
+  substitutionStateForElement,
+} from './livePlayerMinutes.js';
+
+test('parseLiveClockMinutes — Pulselive and ESPN labels', () => {
+  assert.equal(parseLiveClockMinutes("36'00"), 36);
+  assert.equal(parseLiveClockMinutes("36'"), 36);
+  assert.equal(parseLiveClockMinutes("45+2'00"), 47);
+  assert.equal(parseLiveClockMinutes("90+4'"), 94);
+  assert.equal(parseLiveClockMinutes('1H 36\''), 36);
+  assert.equal(parseLiveClockMinutes('36:00'), 36);
+  assert.equal(parseLiveClockMinutes('HT'), 45);
+  assert.equal(parseLiveClockMinutes('Half Time'), 45);
+  assert.equal(parseLiveClockMinutes('FT'), null);
+  assert.equal(parseLiveClockMinutes(''), null);
+  assert.equal(parseLiveClockMinutes(null), null);
+});
+
+test('fixtureLiveClockMinutes — Prem clock beats stale FPL fixture minutes', () => {
+  const prem = { score: { liveMinute: "36'00", statusText: 'Live' } };
+  const fx = { minutes: 9, started: true };
+  assert.equal(fixtureLiveClockMinutes(prem, fx), 36);
+});
+
+test('fixtureLiveClockMinutes — HT status without liveMinute → 45', () => {
+  assert.equal(
+    fixtureLiveClockMinutes({ score: { liveMinute: null, statusText: 'Half Time' } }, {}),
+    45,
+  );
+});
+
+test('fixtureLiveClockMinutes — falls back to FPL fixture minutes', () => {
+  assert.equal(fixtureLiveClockMinutes(null, { minutes: 12 }), 12);
+  assert.equal(fixtureLiveClockMinutes({}, { minutes: 0 }), null);
+});
+
+test('blendLivePlayerMinutes — starter FPL 9 + clock 36 → 36 (the reported bug)', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 9,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'xi',
+    }),
+    36,
+  );
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 7,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'xi',
+    }),
+    36,
+  );
+});
+
+test('blendLivePlayerMinutes — never invents minutes before FPL records a start', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 0,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'xi',
+    }),
+    0,
+  );
+});
+
+test('blendLivePlayerMinutes — subbed-off starter keeps FPL minutes', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 9,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'xi',
+      subbedOff: true,
+    }),
+    9,
+  );
+});
+
+test('blendLivePlayerMinutes — red card keeps FPL minutes', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 22,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'xi',
+      redCards: 1,
+    }),
+    22,
+  );
+});
+
+test('blendLivePlayerMinutes — bench cameo without ON minute stays on FPL', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 4,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'bench',
+    }),
+    4,
+  );
+});
+
+test('blendLivePlayerMinutes — bench with ON at 60 + clock 67 → 7', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 2,
+      clockMinutes: 67,
+      fixtureLive: true,
+      matchdayRole: 'bench',
+      cameOnMinute: 60,
+    }),
+    7,
+  );
+});
+
+test('blendLivePlayerMinutes — finished / no clock leaves FPL alone', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 90,
+      clockMinutes: 36,
+      fixtureLive: false,
+      matchdayRole: 'xi',
+    }),
+    90,
+  );
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 9,
+      clockMinutes: null,
+      fixtureLive: true,
+      matchdayRole: 'xi',
+    }),
+    9,
+  );
+});
+
+test('blendLivePlayerMinutes — never steps backwards from official FPL minutes', () => {
+  assert.equal(
+    blendLivePlayerMinutes({
+      fplMinutes: 40,
+      clockMinutes: 36,
+      fixtureLive: true,
+      matchdayRole: 'xi',
+    }),
+    40,
+  );
+});
+
+test('substitutionStateForElement — last action wins', () => {
+  const prem = {
+    substitutions: [
+      { elementId: 10, action: 'off', minute: 9 },
+      { elementId: 11, action: 'on', minute: 9 },
+    ],
+  };
+  assert.deepEqual(substitutionStateForElement(prem, 10), {
+    subbedOff: true,
+    cameOnMinute: null,
+  });
+  assert.deepEqual(substitutionStateForElement(prem, 11), {
+    subbedOff: false,
+    cameOnMinute: 9,
+  });
+  assert.deepEqual(substitutionStateForElement(prem, 99), {
+    subbedOff: false,
+    cameOnMinute: null,
+  });
+});
+
+function liveFx(id, teamId, minutes = 9) {
+  return {
+    id,
+    team_h: teamId,
+    team_a: 99,
+    started: true,
+    finished: false,
+    finished_provisional: false,
+    minutes,
+  };
+}
+
+test('resolveDisplayedMinutes — screenshot case: Collins/Gomez/Aaronson at 7–9, clock 36', () => {
+  const gw = [liveFx(501, 7, 9)];
+  const premRows = [
+    {
+      fplFixture: { id: 501 },
+      score: { liveMinute: "36'00", started: true, finished: false },
+      substitutions: [],
+    },
+  ];
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 9,
+      teamId: 7,
+      elementId: 1,
+      gwFixtures: gw,
+      premRows,
+      matchdayRole: 'xi',
+    }),
+    36,
+  );
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 7,
+      teamId: 7,
+      elementId: 2,
+      gwFixtures: gw,
+      premRows,
+      matchdayRole: 'xi',
+    }),
+    36,
+  );
+});
+
+test('resolveDisplayedMinutes — early sub-off is not lifted to the clock', () => {
+  const gw = [liveFx(501, 7, 36)];
+  const premRows = [
+    {
+      fplFixture: { id: 501 },
+      score: { liveMinute: "36'00" },
+      substitutions: [{ elementId: 8, action: 'off', minute: 9 }],
+    },
+  ];
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 9,
+      teamId: 7,
+      elementId: 8,
+      gwFixtures: gw,
+      premRows,
+      matchdayRole: 'xi',
+    }),
+    9,
+  );
+});
+
+test('resolveDisplayedMinutes — no live fixture keeps official minutes', () => {
+  const gw = [
+    {
+      id: 1,
+      team_h: 7,
+      team_a: 2,
+      started: true,
+      finished: true,
+      finished_provisional: true,
+      minutes: 90,
+    },
+  ];
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 90,
+      teamId: 7,
+      elementId: 1,
+      gwFixtures: gw,
+      premRows: [],
+      matchdayRole: 'xi',
+    }),
+    90,
+  );
+});
+
+test('resolveDisplayedMinutes — DGW without explain does not invent a second-match clock', () => {
+  const gw = [
+    {
+      id: 1,
+      team_h: 7,
+      team_a: 2,
+      started: true,
+      finished: true,
+      finished_provisional: true,
+      minutes: 90,
+    },
+    liveFx(2, 7, 36),
+  ];
+  const premRows = [
+    {
+      fplFixture: { id: 2 },
+      score: { liveMinute: "36'00" },
+      substitutions: [],
+    },
+  ];
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 90,
+      liveFullRow: { stats: { minutes: 90 } },
+      teamId: 7,
+      elementId: 1,
+      gwFixtures: gw,
+      premRows,
+      matchdayRole: 'xi',
+    }),
+    90,
+  );
+});
+
+test('resolveDisplayedMinutes — DGW with explain lifts only the live slice', () => {
+  const gw = [
+    {
+      id: 1,
+      team_h: 7,
+      team_a: 2,
+      started: true,
+      finished: true,
+      finished_provisional: true,
+      minutes: 90,
+    },
+    liveFx(2, 7, 9),
+  ];
+  const premRows = [
+    {
+      fplFixture: { id: 2 },
+      score: { liveMinute: "36'00" },
+      substitutions: [],
+    },
+  ];
+  const liveFullRow = {
+    stats: { minutes: 99 },
+    explain: [
+      [[{ stat: 'minutes', value: 90 }], 1],
+      [[{ stat: 'minutes', value: 9 }], 2],
+    ],
+  };
+  assert.equal(
+    resolveDisplayedMinutes({
+      fplMinutes: 99,
+      liveFullRow,
+      teamId: 7,
+      elementId: 1,
+      gwFixtures: gw,
+      premRows,
+      matchdayRole: 'xi',
+    }),
+    126,
+  );
+});

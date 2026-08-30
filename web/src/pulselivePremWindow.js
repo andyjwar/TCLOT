@@ -19,6 +19,7 @@
  */
 
 import { enrichWithFplElements } from './fotmobPremWindow.js';
+import { matchFplElementId } from './fotmobPremTimeline.js';
 import {
   collectPulseliveFixtures,
   fetchPulseliveJson,
@@ -353,6 +354,64 @@ export function parsePulseliveEvents(fixtureJson, fplFixture, pulseToFpl) {
 }
 
 /**
+ * Pulselive `S` / `ON` / `OFF` (and `S:ON` / `S:OFF`) pairs. Kept off the
+ * contributions event list — live minutes uses them so a starter subbed at 9'
+ * is not lifted to the current clock.
+ *
+ * @returns {Array<{
+ *   action: 'on' | 'off',
+ *   playerName: string,
+ *   teamSide: 'home' | 'away' | null,
+ *   minute: number | null,
+ *   stoppage: number,
+ * }>}
+ */
+export function parsePulseliveSubstitutions(fixtureJson, fplFixture, pulseToFpl) {
+  if (!fixtureJson || typeof fixtureJson !== 'object') return [];
+  const events = Array.isArray(fixtureJson.events) ? fixtureJson.events : [];
+  if (!events.length) return [];
+
+  const th = Number(fplFixture?.team_h);
+  const ta = Number(fplFixture?.team_a);
+  if (!Number.isFinite(th) || !Number.isFinite(ta)) return [];
+
+  const personIdToName = buildPersonIdNameMap(fixtureJson);
+  const out = [];
+  for (const ev of events) {
+    const type = String(ev?.type || '').toUpperCase();
+    const desc = String(ev?.description || '').toUpperCase();
+    const combined = `${type}:${desc}`;
+    let action = null;
+    if (type === 'S' && desc === 'ON') action = 'on';
+    else if (type === 'S' && desc === 'OFF') action = 'off';
+    else if (combined.includes('S:ON') || type === 'S:ON') action = 'on';
+    else if (combined.includes('S:OFF') || type === 'S:OFF') action = 'off';
+    if (!action) continue;
+
+    const teamPulse = Number(ev?.teamId);
+    const fplT = pulseToFpl?.get?.(teamPulse);
+    let teamSide = null;
+    if (fplT === th) teamSide = 'home';
+    else if (fplT === ta) teamSide = 'away';
+
+    const personId = coerceInt(ev?.personId);
+    const playerName =
+      personId != null ? personIdToName.get(personId) || null : null;
+    if (!playerName) continue;
+
+    const clock = parsePulseliveClock(ev?.clock);
+    out.push({
+      action,
+      playerName,
+      teamSide,
+      minute: clock.minute,
+      stoppage: clock.stoppage,
+    });
+  }
+  return out;
+}
+
+/**
  * Pulselive `status` is single-letter (`U`=upcoming, `L`=live, `H`=half-time, `C`=complete,
  * `A`=abandoned). `phase` adds detail (`1`=first half, `H`=halftime, `2`=second half,
  * `F`=full-time). Translate to the started/finished/statusText flags ESPN exposes so the
@@ -421,10 +480,15 @@ export function parsePulseliveScore(fixtureJson, fplFixture, pulseToFpl) {
   const statusText = pulseliveStatusLabel(status, phase);
   const started = status === 'L' || status === 'H' || status === 'C';
   const finished = status === 'C' || phase === 'F';
-  const liveMinute =
-    status === 'L' && fixtureJson.clock?.label
-      ? String(fixtureJson.clock.label)
-      : null;
+  const isHt = status === 'H' || phase === 'H' || phase === 'HT';
+  const isInPlay = status === 'L' || status === 'H';
+  let liveMinute = null;
+  if (isInPlay && fixtureJson.clock?.label) {
+    liveMinute = String(fixtureJson.clock.label);
+  } else if (isHt) {
+    /** Half-time has no ticking clock; 45' is the minutes already played. */
+    liveMinute = "45'";
+  }
 
   const kickoffMs = coerceInt(fixtureJson.kickoff?.millis);
   const kickoffIso = kickoffMs != null ? new Date(kickoffMs).toISOString() : null;
@@ -461,6 +525,32 @@ export function parsePulseliveScore(fixtureJson, fplFixture, pulseToFpl) {
  *   detailsBlockedReason: null,
  * }>>}
  */
+/**
+ * Attach FPL `elementId` to substitution rows via the same name matcher
+ * used for Prem events / lineups.
+ *
+ * @param {Array<{ playerName: string, teamSide: 'home' | 'away' | null }>} subs
+ * @param {object} fplFixture
+ * @param {Record<number, object>} elementById
+ */
+export function enrichSubstitutionsWithFpl(subs, fplFixture, elementById) {
+  const homeFpl = Number(fplFixture?.team_h);
+  const awayFpl = Number(fplFixture?.team_a);
+  return (Array.isArray(subs) ? subs : []).map((s) => {
+    const teamFpl =
+      s?.teamSide === 'home'
+        ? homeFpl
+        : s?.teamSide === 'away'
+          ? awayFpl
+          : NaN;
+    const elementId =
+      s?.playerName && Number.isFinite(teamFpl)
+        ? matchFplElementId(teamFpl, s.playerName, elementById)
+        : null;
+    return { ...s, elementId };
+  });
+}
+
 export async function fetchPulselivePremWindow({
   gwFixtures,
   teamById,
@@ -486,6 +576,7 @@ export async function fetchPulselivePremWindow({
       score: null,
       events: [],
       lineups: null,
+      substitutions: [],
       fetchError: message,
       detailsBlockedReason: null,
     }));
@@ -536,6 +627,7 @@ export async function fetchPulselivePremWindow({
       score: null,
       events: [],
       lineups: null,
+      substitutions: [],
       fetchError: null,
       detailsBlockedReason: null,
     }));
@@ -556,6 +648,7 @@ export async function fetchPulselivePremWindow({
           score: null,
           events: [],
           lineups: null,
+          substitutions: [],
           fetchError: null,
           detailsBlockedReason: null,
         };
@@ -583,12 +676,20 @@ export async function fetchPulselivePremWindow({
         lineups,
         elementById,
       });
+      const substitutions = enrichSubstitutionsWithFpl(
+        fixtureJson
+          ? parsePulseliveSubstitutions(fixtureJson, fx, pulseToFpl)
+          : [],
+        fx,
+        elementById,
+      );
       return {
         fplFixture: fx,
         matchId: match.fixtureId,
         score: score || null,
         events: enriched.events,
         lineups: enriched.lineups,
+        substitutions,
         fetchError,
         detailsBlockedReason: null,
       };

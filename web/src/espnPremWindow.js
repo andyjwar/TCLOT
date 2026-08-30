@@ -6,6 +6,7 @@
 import { espnResourceUrl } from './espnUrl.js';
 import { fetchProxyJson } from './proxyJsonFetch.js';
 import { enrichWithFplElements } from './fotmobPremWindow.js';
+import { enrichSubstitutionsWithFpl } from './pulselivePremWindow.js';
 import {
   classifyEspnEvent,
   collectDayMatches,
@@ -201,6 +202,73 @@ export function parseEspnKeyEventsForPrem(
   }));
 }
 
+/**
+ * ESPN `keyEvents` substitutions (skipped from the contributions list).
+ * `participants[0]` is the player coming on, `[1]` the player going off when both exist.
+ *
+ * @returns {Array<{
+ *   action: 'on' | 'off',
+ *   playerName: string,
+ *   teamSide: 'home' | 'away' | null,
+ *   minute: number | null,
+ *   stoppage: number,
+ * }>}
+ */
+export function parseEspnSubstitutions(summary, fplFixture, espnToFpl) {
+  const keyEvents = Array.isArray(summary?.keyEvents) ? summary.keyEvents : [];
+  const th = Number(fplFixture?.team_h);
+  const ta = Number(fplFixture?.team_a);
+  if (!Number.isFinite(th) || !Number.isFinite(ta)) return [];
+
+  const out = [];
+  for (const ev of keyEvents) {
+    const ttype = String(ev?.type?.type || '').toLowerCase();
+    if (ttype !== 'substitution') continue;
+
+    const teamEspn = Number(ev?.team?.id);
+    const fplT = Number.isFinite(teamEspn) ? espnToFpl?.get?.(teamEspn) : null;
+    let teamSide = null;
+    if (fplT === th) teamSide = 'home';
+    else if (fplT === ta) teamSide = 'away';
+
+    const mm = espnClockToMinute(ev);
+    const names = [];
+    for (const p of ev?.participants || []) {
+      const n =
+        typeof p?.athlete?.displayName === 'string'
+          ? p.athlete.displayName.trim()
+          : '';
+      if (n) names.push(n);
+    }
+    if (names.length >= 2) {
+      out.push({
+        action: 'on',
+        playerName: names[0],
+        teamSide,
+        minute: mm.minute,
+        stoppage: mm.stoppage,
+      });
+      out.push({
+        action: 'off',
+        playerName: names[1],
+        teamSide,
+        minute: mm.minute,
+        stoppage: mm.stoppage,
+      });
+    } else if (names.length === 1) {
+      /** Text usually names the player coming on. */
+      out.push({
+        action: 'on',
+        playerName: names[0],
+        teamSide,
+        minute: mm.minute,
+        stoppage: mm.stoppage,
+      });
+    }
+  }
+  return out;
+}
+
 function rosterRowToPlayer(r) {
   const ath = r?.athlete;
   if (!ath) return null;
@@ -316,6 +384,7 @@ export async function fetchEspnPremWindow({
       score: null,
       events: [],
       lineups: null,
+      substitutions: [],
       fetchError: null,
       detailsBlockedReason: null,
     }));
@@ -339,6 +408,7 @@ export async function fetchEspnPremWindow({
           score: null,
           events: [],
           lineups: null,
+          substitutions: [],
           fetchError: null,
           detailsBlockedReason: null,
         };
@@ -367,6 +437,11 @@ export async function fetchEspnPremWindow({
         lineups,
         elementById,
       });
+      const substitutions = enrichSubstitutionsWithFpl(
+        summary ? parseEspnSubstitutions(summary, fx, espnToFpl) : [],
+        fx,
+        elementById,
+      );
       return {
         fplFixture: fx,
         matchId: eventId,
@@ -375,6 +450,7 @@ export async function fetchEspnPremWindow({
         score: score || null,
         events: enriched.events,
         lineups: enriched.lineups,
+        substitutions,
         fetchError,
         detailsBlockedReason: null,
       };
