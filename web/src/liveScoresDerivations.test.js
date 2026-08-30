@@ -8,6 +8,7 @@ import {
   formatLiveMatchupMargin,
   isCleanSheetEligible,
   liveFixtureLead,
+  liveRowHasPlayed,
   liveGwOutcomeDot,
   liveGwProgress,
   liveMatchupMargin,
@@ -100,6 +101,12 @@ test('playerXiPillKind — neutral until lineups announced, then role + live sta
     }),
     'absent',
   )
+})
+
+test('liveRowHasPlayed — Shaw/Mbeumo 3 PTS with 0 minutes still count as played', () => {
+  assert.equal(liveRowHasPlayed({ minutes: 0, total_points: 3 }), true)
+  assert.equal(liveRowHasPlayed({ minutes: 0, total_points: 0 }), false)
+  assert.equal(liveRowHasPlayed({ minutes: 9, total_points: 1 }), true)
 })
 
 test('playerLiveState — on pitch shows red minute counter', () => {

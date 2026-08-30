@@ -104,6 +104,21 @@ export function playerXiPillKind(row) {
  * }} row
  * @returns {{ kind: 'live' | 'ft' | 'dnp' | 'pre' | 'none', text: string }}
  */
+/**
+ * True when the Lineups row should show live stats instead of "—".
+ * FPL can bank PTS / G / A while `stats.minutes` is still 0 (Shaw, Mbeumo).
+ *
+ * @param {object | null | undefined} row
+ */
+export function liveRowHasPlayed(row) {
+  return (
+    (Number(row?.minutes) || 0) > 0 ||
+    (Number(row?.total_points) || 0) > 0 ||
+    (Number(row?.goalsScored) || 0) > 0 ||
+    (Number(row?.assists) || 0) > 0
+  );
+}
+
 export function playerLiveState(row) {
   const m = Number(row?.minutes) || 0;
   if (row?.hasGwFixture === false) {

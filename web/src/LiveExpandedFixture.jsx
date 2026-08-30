@@ -3,6 +3,7 @@ import { liveGwDisplayTotal } from './liveGwTotals.js';
 import {
   dcThresholdReached,
   isCleanSheetEligible,
+  liveRowHasPlayed,
   minutesTone,
   playerXiPillKind,
   rowsByPointsContributed,
@@ -93,7 +94,7 @@ function AutoSubsNote({ squad }) {
 function LiveExpandedTableRow({ row, bench, onOpenPlayer, autosubbed }) {
   const pillKind = playerXiPillKind(row);
   const mins = Number(row.minutes) || 0;
-  const played = mins > 0;
+  const played = liveRowHasPlayed(row);
   const tone = minutesTone(mins, played);
   const dc = Number(row.dcCount) || 0;
   const dcOn = played && dcThresholdReached(row.posSingular, dc);

@@ -266,16 +266,7 @@ export function mapPickRows(
         (f) => Number(f.team_h) === tid || Number(f.team_a) === tid
       );
     })();
-    const stillYetToPlayPl = computeStillYetToPlayPl(mins, tid, gwFixtures);
-    const leftToPlayStarter = p.position <= 11 && stillYetToPlayPl;
     const leftToPlayFixtureCount = countUnfinishedGwFixturesForTeam(tid, gwFixtures);
-    const playerGamesLeftToPlay = countElementGamesLeftToPlay(
-      el,
-      liveRow,
-      gwFixtures,
-      tid,
-      mins
-    );
     const teamGwFixturesThisEvent =
       tid != null && Number.isFinite(tid) && Array.isArray(gwFixtures) && gwFixtures.length
         ? fixturesForTeamInGw(gwFixtures, tid)
@@ -297,6 +288,10 @@ export function mapPickRows(
       pid,
       tid
     );
+    const fplHasLiveReturn =
+      (Number(pts) || 0) > 0 ||
+      (Number(goalsScored) || 0) > 0 ||
+      (Number(assists) || 0) > 0;
     const displayedMinutes = resolveDisplayedMinutes({
       fplMinutes: mins,
       liveFullRow: liveRow,
@@ -307,7 +302,25 @@ export function mapPickRows(
       matchdayRole: espnMatchdayRole,
       redCards,
       nowMs,
+      fplHasLiveReturn,
     });
+    const minutesForPlayed = Math.max(
+      displayedMinutes,
+      fplHasLiveReturn ? 1 : 0,
+    );
+    const stillYetToPlayPl = computeStillYetToPlayPl(
+      minutesForPlayed,
+      tid,
+      gwFixtures,
+    );
+    const leftToPlayStarter = p.position <= 11 && stillYetToPlayPl;
+    const playerGamesLeftToPlay = countElementGamesLeftToPlay(
+      el,
+      liveRow,
+      gwFixtures,
+      tid,
+      minutesForPlayed,
+    );
     const displayedPoints = resolveDisplayedPoints({
       fpl: {
         minutes: mins,
