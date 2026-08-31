@@ -32,6 +32,54 @@
   display: block;
 }
 
+/* More — same slot as search. Desktop hides it (Settings lives in the
+ * top nav). Mobile (≤1080px) shows it and hides the header search
+ * trigger; Search moves to the floating dock. */
+.brand-header__more {
+  display: none;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-left: auto;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  opacity: 0.72;
+  cursor: pointer;
+  transition: opacity 0.14s ease, background 0.14s ease, color 0.14s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.brand-header__more:hover,
+.brand-header__more:focus-visible,
+.brand-header__more.is-active {
+  opacity: 1;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+  outline: none;
+}
+.brand-header__more:focus-visible {
+  box-shadow: 0 0 0 2px var(--brand, #795bfb);
+}
+.brand-header__more svg {
+  display: block;
+}
+
+@media (max-width: 1080px) {
+  .brand-header__search {
+    display: none;
+  }
+  .brand-header__more {
+    display: inline-flex;
+  }
+  /* Pre-draft / no status strip: More is a row sibling after the
+   * crests, so add a fourth column on tablet-width mobile. */
+  .brand-header__row:has(> .brand-header__more) {
+    grid-template-columns: auto 1fr auto auto;
+  }
+}
+
 /* Status strip: push the search to the far right. */
 .brand-header__status-copy {
   flex: 1 1 auto;
@@ -41,7 +89,8 @@
   align-items: center;
   gap: inherit;
 }
-.brand-header__status-strip .brand-header__search {
+.brand-header__status-strip .brand-header__search,
+.brand-header__status-strip .brand-header__more {
   margin-left: auto;
   width: 28px;
   height: 28px;

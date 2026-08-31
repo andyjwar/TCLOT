@@ -321,7 +321,8 @@ body[data-tclot-theme='ceefax'] .tile--brand-header::before {
 /* Search: absolute so it never adds a control row of vertical space.
  * Default (no status strip, e.g. archive seasons) parks it on the
  * masthead row, top-right. */
-body[data-tclot-theme='ceefax'] .brand-header__search {
+body[data-tclot-theme='ceefax'] .brand-header__search,
+body[data-tclot-theme='ceefax'] .brand-header__more {
   position: absolute;
   top: 2px;
   right: 4px;
@@ -337,14 +338,18 @@ body[data-tclot-theme='ceefax'] .brand-header__search {
 /* With a status strip present, the icon rides the strip's far right,
  * pinned to the bottom edge so it shares the last wrapped line of the
  * status copy (the "Waivers in …" / deadline row). */
-body[data-tclot-theme='ceefax'] .brand-header__status-strip .brand-header__search {
+body[data-tclot-theme='ceefax'] .brand-header__status-strip .brand-header__search,
+body[data-tclot-theme='ceefax'] .brand-header__status-strip .brand-header__more {
   top: auto;
   bottom: 1px;
   width: 30px;
   height: 30px;
 }
 body[data-tclot-theme='ceefax'] .brand-header__search:hover,
-body[data-tclot-theme='ceefax'] .brand-header__search:focus-visible {
+body[data-tclot-theme='ceefax'] .brand-header__search:focus-visible,
+body[data-tclot-theme='ceefax'] .brand-header__more:hover,
+body[data-tclot-theme='ceefax'] .brand-header__more:focus-visible,
+body[data-tclot-theme='ceefax'] .brand-header__more.is-active {
   color: var(--cf-yellow) !important;
   background: transparent !important;
   box-shadow: none;
@@ -473,7 +478,8 @@ body[data-tclot-theme='ceefax'] .dashboard-nav {
 /* Pin the fastext bar to the bottom edge, always. The label bump below
  * must never let a word spill into the neighbouring slot's tap target
  * (that made "Preview" overlap Moves/Players and hard to hit), so every
- * slot clips its own content. */
+ * slot clips its own content. Ceefax keeps the classic full-width strip
+ * (no floating Liquid Glass dock). */
 body[data-tclot-theme='ceefax'] .mobile-tab-bar {
   position: fixed !important;
   left: 0 !important;
@@ -481,6 +487,24 @@ body[data-tclot-theme='ceefax'] .mobile-tab-bar {
   bottom: 0 !important;
   z-index: 200 !important;
   background: var(--cf-black) !important;
+  padding: 0 !important;
+  pointer-events: auto !important;
+  border: 0 !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__dock {
+  max-width: none !important;
+  gap: 0 !important;
+  align-items: stretch !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__pill {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  height: auto !important;
 }
 body[data-tclot-theme='ceefax'] .mobile-tab-bar__row {
   align-items: stretch !important;
@@ -489,10 +513,10 @@ body[data-tclot-theme='ceefax'] .mobile-tab-bar__row {
 /* Classic Ceefax fastext: coloured WORDS only — no icons, chips, or
  * button chrome. Red / green / yellow / cyan / white by slot, matching
  * the screenshot's "Next page · Football · Headlines · Sport" strip.
- * Each slot is an equal 1/5 column that clips its own label so words
- * can't bleed across into a neighbour's hit zone. */
+ * Four tabs live in the pill; Search is the fifth fastext column. */
 body[data-tclot-theme='ceefax'] .mobile-tab-bar__btn,
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__center {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__center,
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__search {
   flex: 1 1 0 !important;
   min-width: 0 !important;
   overflow: hidden !important;
@@ -503,6 +527,13 @@ body[data-tclot-theme='ceefax'] .mobile-tab-bar__center {
   min-height: 0 !important;
   padding: 12px 1px !important;
   gap: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  border-radius: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 body[data-tclot-theme='ceefax'] .mobile-tab-bar__center {
   position: relative;
@@ -792,22 +823,35 @@ body[data-tclot-theme='ceefax'] .latest-waivers__io-label {
   font-size: 0.95rem !important;
 }
 
-/* Colour the five slots (Table / Moves / centre / Players / More).
- * Centre uses the sibling `.mobile-tab-bar__label` under `.mobile-tab-bar__center`. */
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(1) .mobile-tab-bar__label {
+/* Colour the four pill slots (Table / Moves / centre / Players) plus
+ * Search as the fifth fastext word. Centre uses the sibling
+ * `.mobile-tab-bar__label` under `.mobile-tab-bar__center`. */
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__pill > :nth-child(1) .mobile-tab-bar__label {
   color: var(--cf-red) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(2) .mobile-tab-bar__label {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__pill > :nth-child(2) .mobile-tab-bar__label {
   color: var(--cf-green) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(3) .mobile-tab-bar__label {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__pill > :nth-child(3) .mobile-tab-bar__label {
   color: var(--cf-yellow) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(4) .mobile-tab-bar__label {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__pill > :nth-child(4) .mobile-tab-bar__label {
   color: var(--cf-cyan) !important;
 }
-body[data-tclot-theme='ceefax'] .mobile-tab-bar__row > :nth-child(5) .mobile-tab-bar__label {
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__search .mobile-tab-bar__label {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: auto !important;
+  clip-path: none !important;
+  white-space: nowrap !important;
   color: var(--cf-white) !important;
+}
+body[data-tclot-theme='ceefax'] .mobile-tab-bar__search .mobile-tab-bar__ico {
+  display: none !important;
 }
 /* Active tab: underline in its own colour (teletext has no pill chrome). */
 body[data-tclot-theme='ceefax'] .mobile-tab-bar__btn.is-active .mobile-tab-bar__label,
