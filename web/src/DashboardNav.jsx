@@ -76,10 +76,11 @@ export function DashboardNav({ variant, dashboardView, onSelect, navLocked = fal
   // Moves · Players · TCLOT Heritage · More. The cinematic 26/27 hub is
   // retired; Live stays available before GW1 so fixtures and squads are
   // ready. The new mobile bottom tab bar (MobileBottomNav.jsx) supplies its
-  // own slot list (Table · Moves · contextual centre · Players · More); the
-  // items defined here drive only the desktop top nav now. `More` is
-  // `bottomOnly` so it never renders on desktop; desktop gets a separate
-  // Settings gear button (rendered below the .map() loop).
+  // own slot list (Table · Moves · contextual centre · Players) plus a
+  // separate Search circle; More sits in the brand-header top-right on
+  // mobile. The items defined here drive only the desktop top nav now.
+  // `More` is `bottomOnly` so it never renders on desktop; desktop gets a
+  // separate Settings gear button (rendered below the .map() loop).
   const primaryItems = [
     {
       id: /** @type {const} */ ('fplLive'),
@@ -183,9 +184,10 @@ export function DashboardMorePanel({
 }) {
   // The persistent mobile bottom tab bar (MobileBottomNav.jsx) now surfaces
   // Table (Standings), Moves, Players, and a contextual centre (FPL Live)
-  // at the top level. That leaves Heritage and Settings to reach through
-  // More, so this panel lists exactly those two. (The Bookie lives inside
-  // FPL Live next to Predictions — no nav slot needed.)
+  // at the top level, with Search in the floating circle. That leaves
+  // Heritage and Settings to reach through More (header top-right on
+  // mobile), so this panel lists exactly those two. (The Bookie lives
+  // inside FPL Live next to Predictions — no nav slot needed.)
   // ('more' is effectively mobile-only — the desktop top nav filters it out.)
   const rows = [
     { id: /** @type {const} */ ('hall'),     label: 'Heritage', emoji: '🏛️' },

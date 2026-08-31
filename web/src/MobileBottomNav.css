@@ -1,12 +1,12 @@
 /* ================================================================== */
-/* Mobile bottom nav — persistent tab bar (design option 5e).          */
+/* Mobile bottom nav — FotMob-style floating Liquid Glass dock.        */
 /* ------------------------------------------------------------------ */
-/* A frosted, full-width bar pinned to the bottom edge on mobile       */
-/* (≤1080px). Five inline slots: Table · Moves · [centre] · Players ·  */
-/* More. The bar is OPAQUE (var(--fm-bg)) so scrolling content never   */
-/* bleeds through it. The centre is an inline chip (never raised)      */
-/* whose skin follows the season phase via the `data-gwstate` attr:    */
-/*   pre  → "26/27" film icon, no accent                               */
+/* A frosted pill + separate circular Search button that float above   */
+/* the home indicator on mobile (≤1080px). Four inline slots:          */
+/* Table · Moves · [centre] · Players. Search opens GlobalSearch.      */
+/* More / Settings lives in the brand-header top-right on mobile.      */
+/* The centre chip follows the season phase via `data-gwstate`:        */
+/*   pre  → "26/27" / GW{n} chip, no accent                            */
 /*   live → solid green Geist Mono "LIVE" chip + blinking tick         */
 /*   over → muted mono "FT GW{n}" chip, muted label                    */
 /* Desktop (≥1081px) hides it and uses `<DashboardNav variant="top"/>`.*/
@@ -16,60 +16,106 @@
 
 @media (max-width: 1080px) {
   .mobile-tab-bar {
+    --tab-live-chip-bg: var(--fm-win, #16a34a);
+    /* Dark default: near-black ink on the bright mint chip. */
+    --tab-live-chip-fg: #0c120e;
+    --tab-glass-bg: rgba(255, 255, 255, 0.58);
+    --tab-glass-border: rgba(255, 255, 255, 0.72);
+    --tab-glass-inset: rgba(255, 255, 255, 0.7);
+    --tab-glass-shadow:
+      0 10px 28px rgba(20, 16, 12, 0.16),
+      0 2px 6px rgba(20, 16, 12, 0.08);
+    --tab-glass-active: rgba(12, 12, 14, 0.08);
+
     position: fixed;
     left: 0;
     right: 0;
     bottom: 0;
     z-index: 100;
-    /* Opaque bar surface — kills content bleed-through. */
-    background: var(--fm-bg);
-    border-top: 1px solid var(--border);
-    /* A touch of blur for the safe-area strip below the row. */
-    backdrop-filter: blur(18px) saturate(160%);
-    -webkit-backdrop-filter: blur(18px) saturate(160%);
-    padding-bottom: min(env(safe-area-inset-bottom, 0px), 34px);
+    background: transparent;
+    border: 0;
+    padding: 0 12px calc(10px + env(safe-area-inset-bottom, 0px));
+    pointer-events: none;
+    transition: transform 0.22s ease, opacity 0.22s ease;
   }
 
-  .mobile-tab-bar__row {
+  .fotmob[data-theme='light'] .mobile-tab-bar {
+    --tab-live-chip-fg: #ffffff;
+  }
+
+  .fotmob[data-theme='dark'] .mobile-tab-bar {
+    --tab-glass-bg: rgba(32, 32, 36, 0.56);
+    --tab-glass-border: rgba(255, 255, 255, 0.14);
+    --tab-glass-inset: rgba(255, 255, 255, 0.12);
+    --tab-glass-shadow:
+      0 12px 32px rgba(0, 0, 0, 0.5),
+      0 2px 6px rgba(0, 0, 0, 0.32);
+    --tab-glass-active: rgba(255, 255, 255, 0.12);
+  }
+
+  .mobile-tab-bar__dock {
     display: flex;
-    align-items: flex-end;
-    /* Centre the brand FAB on the same baseline as the flanking tabs. */
+    align-items: stretch;
+    gap: 8px;
+    max-width: 560px;
+    margin: 0 auto;
+    pointer-events: auto;
   }
 
-  /* ---- Flanking tabs + More ---------------------------------------- */
+  .mobile-tab-bar__pill,
+  .mobile-tab-bar__search {
+    background: var(--tab-glass-bg);
+    border: 1px solid var(--tab-glass-border);
+    box-shadow:
+      var(--tab-glass-shadow),
+      inset 0 1px 0 var(--tab-glass-inset);
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+  }
+
+  .mobile-tab-bar__pill {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: stretch;
+    border-radius: 999px;
+    padding: 4px 4px;
+    height: var(--mobile-bottom-nav-h, 56px);
+    box-sizing: border-box;
+  }
+
+  /* ---- Flanking tabs ---------------------------------------------- */
   .mobile-tab-bar__btn {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 4px;
-    min-height: 44px;
-    padding: 8px 2px 9px;
+    gap: 3px;
+    min-width: 0;
+    min-height: 0;
+    padding: 4px 2px;
     border: 0;
+    border-radius: 999px;
     background: none;
     cursor: pointer;
     color: var(--text-muted);
     font: inherit;
     -webkit-tap-highlight-color: transparent;
-    transition: color 0.16s ease;
+    transition: color 0.16s ease, background-color 0.16s ease;
   }
 
   .mobile-tab-bar__btn.is-active {
     color: var(--tclot-logo-purple);
+    background: var(--tab-glass-active);
   }
 
   .mobile-tab-bar__ico {
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 28px;
+    width: 28px;
+    height: 24px;
     border-radius: 999px;
-    transition: background-color 0.16s ease;
-  }
-
-  .mobile-tab-bar__btn.is-active .mobile-tab-bar__ico {
-    background: var(--brand-tint);
   }
 
   .mobile-tab-bar__ico svg {
@@ -91,16 +137,22 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-end;
-    gap: 4px;
-    padding: 8px 2px 9px;
+    justify-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 4px 2px;
+    border-radius: 999px;
+  }
+
+  .mobile-tab-bar__center:has(.mobile-tab-bar__fab.is-active) {
+    background: var(--tab-glass-active);
   }
 
   .mobile-tab-bar__fab {
     display: grid;
     place-items: center;
     width: 30px;
-    height: 28px;
+    height: 24px;
     padding: 0;
     border: 0;
     border-radius: 50%;
@@ -123,26 +175,59 @@
     display: block;
   }
 
+  /* ---- Separate Search circle ------------------------------------- */
+  .mobile-tab-bar__search {
+    flex: 0 0 var(--mobile-bottom-nav-h, 56px);
+    width: var(--mobile-bottom-nav-h, 56px);
+    height: var(--mobile-bottom-nav-h, 56px);
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border-radius: 50%;
+    color: var(--text-strong);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    box-sizing: border-box;
+  }
+
+  .mobile-tab-bar__search:hover,
+  .mobile-tab-bar__search:focus-visible {
+    color: var(--tclot-logo-purple);
+    outline: none;
+  }
+
+  .mobile-tab-bar__search:focus-visible {
+    box-shadow:
+      var(--tab-glass-shadow),
+      inset 0 1px 0 var(--tab-glass-inset),
+      0 0 0 2px var(--brand, #795bfb);
+  }
+
+  /* Icon-only circle; Ceefax un-hides the word for fastext. */
+  .mobile-tab-bar__search .mobile-tab-bar__label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .mobile-tab-bar__search .mobile-tab-bar__ico {
+    width: 22px;
+    height: 22px;
+  }
+
   /* ---- Centre chip (live / FT) ------------------------------------ */
   /* Options D (live) + E (FT) from the scorestab mockup sheet
    * (web/mockup-shots/scorestab-options.html). A Geist Mono chip living
-   * in the same 28px content zone as the sibling icons — bar geometry
-   * and height are unchanged. Colours ride theme tokens: the live chip
-   * background tracks --fm-win (bright mint on the dark themes, deep
-   * pitch green on light — same mapping under the Scorebook paint), and
-   * the chip text colour is exposed as --tab-live-chip-fg so
-   * PaintPreview.css can recolour it cream/ink per paint theme. */
-  .mobile-tab-bar {
-    --tab-live-chip-bg: var(--fm-win, #16a34a);
-    /* Dark default: near-black ink on the bright mint chip. */
-    --tab-live-chip-fg: #0c120e;
-  }
-
-  .fotmob[data-theme='light'] .mobile-tab-bar {
-    /* Light default: white on the deep green chip. */
-    --tab-live-chip-fg: #ffffff;
-  }
-
+   * in the same content zone as the sibling icons. Colours ride theme
+   * tokens: the live chip background tracks --fm-win, and the chip
+   * text colour is --tab-live-chip-fg so PaintPreview.css can recolour
+   * it cream/ink per paint theme. */
   .mobile-tab-bar__chip {
     display: inline-flex;
     align-items: center;
@@ -183,7 +268,7 @@
   }
 
   /* Chip states let the fab hug its content (base is a 30px circle for
-   * the preseason film icon). Height stays 28px — bar height unchanged. */
+   * the preseason film icon). */
   .mobile-tab-bar[data-gwstate='live'] .mobile-tab-bar__fab,
   .mobile-tab-bar[data-gwstate='over'] .mobile-tab-bar__fab {
     width: auto;
@@ -222,6 +307,7 @@
 
   /* Reduced motion — drop the live blink (parity with the old FAB nav). */
   @media (prefers-reduced-motion: reduce) {
+    .mobile-tab-bar,
     .mobile-tab-bar__btn,
     .mobile-tab-bar__fab,
     .mobile-tab-bar__ico {
@@ -232,21 +318,31 @@
     }
   }
 
-  /* Backdrop-filter fallback — keep the bar fully opaque. */
+  /* Backdrop-filter fallback — keep a solid-enough glass so content
+   * underneath stays readable. */
   @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .mobile-tab-bar {
-      background: var(--fm-bg);
+      --tab-glass-bg: rgba(255, 255, 255, 0.94);
+    }
+    .fotmob[data-theme='dark'] .mobile-tab-bar {
+      --tab-glass-bg: rgba(28, 28, 32, 0.94);
     }
   }
 }
 
 @media (max-width: 1080px) {
-  .mobile-tab-bar--pre-draft .mobile-tab-bar__row {
+  .mobile-tab-bar--pre-draft .mobile-tab-bar__pill {
     justify-content: stretch;
   }
 
   .mobile-tab-bar--pre-draft .mobile-tab-bar__btn {
     flex: 1 1 0;
+  }
+
+  .app.fotmob[data-bottom-nav-hidden='true'] .mobile-tab-bar {
+    transform: translateY(calc(100% + 12px));
+    opacity: 0;
+    pointer-events: none;
   }
 }
 

@@ -19,6 +19,8 @@
  *   - close        : X — expanded-state trigger for the mobile FAB nav
  *   - film         : Clapperboard/film strip — the "26/27" preseason hub, used by
  *                    the contextual centre slot in the mobile bottom tab bar
+ *   - search       : Magnifying glass — floating search button next to the
+ *                    mobile Liquid Glass dock (FotMob-style)
  *
  * Stroke color is `currentColor` so the icon inherits CSS color from its
  * surrounding button (active vs. idle). pulsing-dot is the lone exception:
@@ -27,7 +29,7 @@
 
 /**
  * @param {{
- *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close' | 'film',
+ *   name: 'pulsing-dot' | 'bar-chart-3' | 'users' | 'shuffle' | 'column' | 'trophy' | 'more' | 'settings' | 'menu' | 'close' | 'film' | 'search',
  *   className?: string,
  *   size?: number,
  * }} props
@@ -169,6 +171,13 @@ export function NavIcon({ name, className, size = 20 }) {
           <path d="M17 9h4" />
           <path d="M3 15h4" />
           <path d="M17 15h4" />
+        </svg>
+      )
+    case 'search':
+      return (
+        <svg {...common}>
+          <circle cx="11" cy="11" r="7" />
+          <path d="m20 20-3.5-3.5" />
         </svg>
       )
     default:

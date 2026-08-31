@@ -1,41 +1,39 @@
 /**
- * Mobile bottom nav — persistent tab bar (design option 5e).
+ * Mobile bottom nav — FotMob-style floating Liquid Glass dock.
  *
- * Replaces the previous corner FAB "speed dial" on mobile (≤1080px) with a
- * frosted, full-width tab bar pinned to the bottom edge. Five slots, in order:
+ * Four tabs in a frosted pill, plus a separate circular Search button:
  *
- *   Table (standings) · Moves (teamSelection) · [CENTER] · Players · More
+ *   Table (standings) · Moves (teamSelection) · [CENTER] · Players   |  Search
  *
- * The CENTER slot is an inline circle (never raised — nothing pokes above the
- * bar) and is the "what matters now" hero. It is contextual on the season
- * phase, derived from the shared brand-header status (`deriveBrandHeaderStatus`,
- * passed in as `liveStatus`):
+ * The CENTER slot is contextual on the season phase, derived from the
+ * shared brand-header status (`deriveBrandHeaderStatus`, passed in as
+ * `liveStatus`):
  *
  *   - PRESEASON (status 'pre-season' / 'unknown'): label "Preview" with a
  *     muted mono "GW{next}" chip. Routes to FPL Live landing on the Season
  *     Predictions sub-tab.
  *   - LIVE GW (status 'live' — deadline passed, GW not finished): a solid
- *     green Geist Mono "LIVE" chip with a subtly blinking tick (option D of
- *     the scorestab mockup sheet); label "Live" (accent). Routes to FPL Live
- *     landing on Scores.
+ *     green Geist Mono "LIVE" chip with a subtly blinking tick; label
+ *     "Live" (accent). Routes to FPL Live landing on Scores.
  *   - GW OVER (status 'idle' — current GW finalized, between GWs): a muted
- *     mono "FT GW{n}" chip (option E of the sheet), where {n} is
- *     `liveStatus.lastFinishedGw` — the same field the brand header's
- *     "GW {n} complete" strip uses. Falls back to a bare "FT" when the GW
- *     number is unavailable. No pulse; label "Recap" (looking back on the
- *     finished week until the next lineup deadline). Routes to FPL Live on
- *     the weekly Recap tab.
+ *     mono "FT GW{n}" chip, where {n} is `liveStatus.lastFinishedGw` — the
+ *     same field the brand header's "GW {n} complete" strip uses. Falls
+ *     back to a bare "FT" when the GW number is unavailable. No pulse;
+ *     label "Recap". Routes to FPL Live on the weekly Recap tab.
  *
- * Heritage ('hall') and Settings ('settings') live behind More (the existing
- * `'more'` dashboardView page / DashboardMorePanel). The Bookie is an FPL
- * Live sub-tab next to Predictions, not a nav destination.
+ * Heritage ('hall') and Settings ('settings') live behind More, which sits
+ * in the brand-header top-right on mobile (replacing the old header search
+ * glyph). Search opens the existing GlobalSearch palette via
+ * `requestOpenGlobalSearch`. The Bookie is an FPL Live sub-tab next to
+ * Predictions, not a nav destination.
  *
  * Visuals are scoped to the `.mobile-tab-bar` class prefix (see
- * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses the
- * top `<DashboardNav variant="top" />`.
+ * `MobileBottomNav.css`). Desktop (≥1081px) hides the whole thing and uses
+ * the top `<DashboardNav variant="top" />`.
  */
 
 import { NavIcon } from './NavIcon'
+import { requestOpenGlobalSearch } from './GlobalSearch.jsx'
 import './MobileBottomNav.css'
 
 /**
@@ -94,13 +92,6 @@ export function MobileBottomNav({
     ? Number(liveStatus.lastFinishedGw)
     : null
 
-  // "More" stays lit while the user is on any destination reached through it
-  // (the More page itself, Heritage, or Settings).
-  const moreActive =
-    dashboardView === 'more' ||
-    dashboardView === 'hall' ||
-    dashboardView === 'settings'
-
   if (navLocked) {
     return (
       <nav
@@ -108,35 +99,38 @@ export function MobileBottomNav({
         aria-label="App navigation"
         data-gwstate="pre"
       >
-        <div className="mobile-tab-bar__row">
-          <button
-            type="button"
-            className={
-              'mobile-tab-bar__btn' + (dashboardView === 'teamSelection' ? ' is-active' : '')
-            }
-            onClick={() => onSelect('teamSelection')}
-            aria-current={dashboardView === 'teamSelection' ? 'page' : undefined}
-            aria-label="Draft board"
-          >
-            <span className="mobile-tab-bar__ico" aria-hidden>
-              <NavIcon name="users" size={22} />
-            </span>
-            <span className="mobile-tab-bar__label">Draft</span>
-          </button>
-          <button
-            type="button"
-            className={
-              'mobile-tab-bar__btn' + (dashboardView === 'hall' ? ' is-active' : '')
-            }
-            onClick={() => onSelect('hall')}
-            aria-current={dashboardView === 'hall' ? 'page' : undefined}
-            aria-label="TCLOT Heritage"
-          >
-            <span className="mobile-tab-bar__ico" aria-hidden>
-              <NavIcon name="column" size={22} />
-            </span>
-            <span className="mobile-tab-bar__label">Heritage</span>
-          </button>
+        <div className="mobile-tab-bar__dock">
+          <div className="mobile-tab-bar__pill">
+            <button
+              type="button"
+              className={
+                'mobile-tab-bar__btn' + (dashboardView === 'teamSelection' ? ' is-active' : '')
+              }
+              onClick={() => onSelect('teamSelection')}
+              aria-current={dashboardView === 'teamSelection' ? 'page' : undefined}
+              aria-label="Draft board"
+            >
+              <span className="mobile-tab-bar__ico" aria-hidden>
+                <NavIcon name="users" size={22} />
+              </span>
+              <span className="mobile-tab-bar__label">Draft</span>
+            </button>
+            <button
+              type="button"
+              className={
+                'mobile-tab-bar__btn' + (dashboardView === 'hall' ? ' is-active' : '')
+              }
+              onClick={() => onSelect('hall')}
+              aria-current={dashboardView === 'hall' ? 'page' : undefined}
+              aria-label="TCLOT Heritage"
+            >
+              <span className="mobile-tab-bar__ico" aria-hidden>
+                <NavIcon name="column" size={22} />
+              </span>
+              <span className="mobile-tab-bar__label">Heritage</span>
+            </button>
+          </div>
+          <SearchButton />
         </div>
       </nav>
     )
@@ -144,80 +138,87 @@ export function MobileBottomNav({
 
   return (
     <nav className="mobile-tab-bar" aria-label="App navigation" data-gwstate={gwState}>
-      <div className="mobile-tab-bar__row">
-        {TABS.slice(0, 2).map((tab) => (
+      <div className="mobile-tab-bar__dock">
+        <div className="mobile-tab-bar__pill">
+          {TABS.slice(0, 2).map((tab) => (
+            <TabButton
+              key={tab.id}
+              tab={tab}
+              active={dashboardView === tab.id}
+              onSelect={onSelect}
+            />
+          ))}
+
+          <div className="mobile-tab-bar__center">
+            <button
+              type="button"
+              className={
+                'mobile-tab-bar__fab' + (centerActive ? ' is-active' : '')
+              }
+              onClick={() =>
+                onCenterSelect
+                  ? onCenterSelect(center.view, center.tab)
+                  : onSelect(center.view)
+              }
+              aria-current={centerActive ? 'page' : undefined}
+              aria-label={center.aria}
+            >
+              {gwState === 'pre' ? (
+                <span
+                  className="mobile-tab-bar__chip mobile-tab-bar__chip--ft"
+                  aria-hidden
+                >
+                  {Number.isFinite(Number(liveStatus?.nextGw)) &&
+                  Number(liveStatus.nextGw) >= 1
+                    ? `GW${Number(liveStatus.nextGw)}`
+                    : '26/27'}
+                </span>
+              ) : gwState === 'live' ? (
+                <span
+                  className="mobile-tab-bar__chip mobile-tab-bar__chip--live"
+                  aria-hidden
+                >
+                  <i className="mobile-tab-bar__chip-tick" />
+                  LIVE
+                </span>
+              ) : (
+                <span
+                  className="mobile-tab-bar__chip mobile-tab-bar__chip--ft"
+                  aria-hidden
+                >
+                  {ftGw != null ? `FT GW${ftGw}` : 'FT'}
+                </span>
+              )}
+            </button>
+            <span className="mobile-tab-bar__label">{center.label}</span>
+          </div>
+
           <TabButton
-            key={tab.id}
-            tab={tab}
-            active={dashboardView === tab.id}
+            tab={TABS[2]}
+            active={dashboardView === TABS[2].id}
             onSelect={onSelect}
           />
-        ))}
-
-        <div className="mobile-tab-bar__center">
-          <button
-            type="button"
-            className={
-              'mobile-tab-bar__fab' + (centerActive ? ' is-active' : '')
-            }
-            onClick={() =>
-              onCenterSelect
-                ? onCenterSelect(center.view, center.tab)
-                : onSelect(center.view)
-            }
-            aria-current={centerActive ? 'page' : undefined}
-            aria-label={center.aria}
-          >
-            {gwState === 'pre' ? (
-              <span
-                className="mobile-tab-bar__chip mobile-tab-bar__chip--ft"
-                aria-hidden
-              >
-                {Number.isFinite(Number(liveStatus?.nextGw)) &&
-                Number(liveStatus.nextGw) >= 1
-                  ? `GW${Number(liveStatus.nextGw)}`
-                  : '26/27'}
-              </span>
-            ) : gwState === 'live' ? (
-              <span
-                className="mobile-tab-bar__chip mobile-tab-bar__chip--live"
-                aria-hidden
-              >
-                <i className="mobile-tab-bar__chip-tick" />
-                LIVE
-              </span>
-            ) : (
-              <span
-                className="mobile-tab-bar__chip mobile-tab-bar__chip--ft"
-                aria-hidden
-              >
-                {ftGw != null ? `FT GW${ftGw}` : 'FT'}
-              </span>
-            )}
-          </button>
-          <span className="mobile-tab-bar__label">{center.label}</span>
         </div>
-
-        <TabButton
-          tab={TABS[2]}
-          active={dashboardView === TABS[2].id}
-          onSelect={onSelect}
-        />
-
-        <button
-          type="button"
-          className={'mobile-tab-bar__btn' + (moreActive ? ' is-active' : '')}
-          onClick={() => onSelect('more')}
-          aria-current={moreActive ? 'page' : undefined}
-          aria-label="More"
-        >
-          <span className="mobile-tab-bar__ico" aria-hidden>
-            <NavIcon name="more" size={22} />
-          </span>
-          <span className="mobile-tab-bar__label">More</span>
-        </button>
+        <SearchButton />
       </div>
     </nav>
+  )
+}
+
+function SearchButton() {
+  return (
+    <button
+      type="button"
+      className="mobile-tab-bar__search"
+      onClick={requestOpenGlobalSearch}
+      aria-label="Search players and managers"
+      title="Search players & managers"
+    >
+      <span className="mobile-tab-bar__ico" aria-hidden>
+        <NavIcon name="search" size={22} />
+      </span>
+      <span className="mobile-tab-bar__label">Search</span>
+    </button>
   )
 }
 

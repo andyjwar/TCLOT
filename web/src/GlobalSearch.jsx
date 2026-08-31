@@ -19,6 +19,16 @@ import './GlobalSearch.css'
 const MAX_MANAGERS = 6
 const MAX_PLAYERS = 24
 
+/** Dispatched by the floating mobile Search button (and anything else
+ * that wants the palette without rendering a second trigger). */
+export const OPEN_GLOBAL_SEARCH_EVENT = 'tclot:open-search'
+
+/** Open the mounted GlobalSearch palette from outside the header trigger. */
+export function requestOpenGlobalSearch() {
+  if (typeof window === 'undefined') return
+  window.dispatchEvent(new CustomEvent(OPEN_GLOBAL_SEARCH_EVENT))
+}
+
 /** Small magnifying-glass glyph (inherits `currentColor`). */
 function SearchGlyph() {
   return (
@@ -137,6 +147,14 @@ export function GlobalSearch({
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
   }, [open, close])
+
+  // Floating mobile Search button (and any other caller) opens the same
+  // palette without mounting a second trigger.
+  useEffect(() => {
+    const onOpen = () => setOpen(true)
+    window.addEventListener(OPEN_GLOBAL_SEARCH_EVENT, onOpen)
+    return () => window.removeEventListener(OPEN_GLOBAL_SEARCH_EVENT, onOpen)
+  }, [])
 
   // Focus the input when the palette opens.
   useEffect(() => {

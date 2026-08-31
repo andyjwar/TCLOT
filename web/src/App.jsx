@@ -366,6 +366,22 @@ function SeasonSwitcher({ currentSeasonLabel, archivedSeasons = [] }) {
  *   teamsForFormSelect?: object[],
  * }} props
  */
+function BrandHeaderMore({ active = false, onSelect }) {
+  if (typeof onSelect !== 'function') return null
+  return (
+    <button
+      type="button"
+      className={'brand-header__more' + (active ? ' is-active' : '')}
+      aria-label="More"
+      title="More"
+      aria-current={active ? 'page' : undefined}
+      onClick={() => onSelect('more')}
+    >
+      <NavIcon name="more" size={18} />
+    </button>
+  )
+}
+
 function BrandHeader({
   tableRows,
   leagueEntries,
@@ -378,6 +394,8 @@ function BrandHeader({
   archivedSeasons = [],
   hideStatusStrip = false,
   teamsForFormSelect = [],
+  onMore,
+  moreActive = false,
 }) {
   const entryById = useMemo(() => {
     const m = new Map()
@@ -467,6 +485,9 @@ function BrandHeader({
             />
           ) : null}
         </span>
+        {!showStatusStrip ? (
+          <BrandHeaderMore active={moreActive} onSelect={onMore} />
+        ) : null}
       </div>
       {showStatusStrip ? (
         <div
@@ -486,6 +507,7 @@ function BrandHeader({
               import.meta.env.VITE_LEAGUE_DATA_REVISION ?? '',
             ).trim()}
           />
+          <BrandHeaderMore active={moreActive} onSelect={onMore} />
         </div>
       ) : null}
     </section>
@@ -3496,6 +3518,12 @@ function App() {
               archivedSeasons={seasonCatalog.archived}
               hideStatusStrip={hideMobileStatusStrip}
               teamsForFormSelect={teamsForFormSelect}
+              onMore={selectDashboardView}
+              moreActive={
+                dashboardView === 'more' ||
+                dashboardView === 'hall' ||
+                dashboardView === 'settings'
+              }
             />
             {fetchFailedDemo && (
               <div className="data-banner data-banner--error" role="alert">

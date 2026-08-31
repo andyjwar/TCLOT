@@ -8846,6 +8846,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
      * row legible at 375px. Status strip remains visible below. */
     grid-template-columns: auto auto;
   }
+  /* Pre-draft (no status strip): More sits on the brand row, so keep
+   * a third column for it on the far right. */
+  .brand-header__row:has(.brand-header__more) {
+    grid-template-columns: auto 1fr auto;
+  }
   .brand-header__pill {
     height: 30px;
     padding: 0 12px 0 8px;
