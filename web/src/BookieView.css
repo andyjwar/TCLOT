@@ -926,12 +926,12 @@
 }
 
 .bookie-winners__net--up {
-  color: #16a34a;
+  color: var(--data-positive, #12a15a);
   font-weight: 700;
 }
 
 .bookie-winners__net--down {
-  color: #ef4444;
+  color: var(--data-negative, #ef4444);
 }
 
 @media (max-width: 560px) {
