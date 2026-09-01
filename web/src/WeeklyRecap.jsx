@@ -8,6 +8,7 @@ import {
   defaultModeForGw,
   recapMenuLabelForStatus,
   visibleRecapOptions,
+  mergeRecapOptions,
 } from './weeklyRecapView.js'
 import './WeeklyRecap.css'
 
@@ -27,6 +28,8 @@ export function WeeklyRecap({
   kitIndexByEntry,
   liveStatus = null,
   onMenuLabelChange,
+  matches = [],
+  leagueEntries = [],
 }) {
   const [data, setData] = useState(null)
   const [failed, setFailed] = useState(false)
@@ -49,21 +52,39 @@ export function WeeklyRecap({
 
   const options = useMemo(
     () =>
-      visibleRecapOptions(mergeRecapOptions(data), {
-        upcomingGw: data?.upcomingGw,
-        liveStatus: liveStatus?.status,
-      }),
-    [data, liveStatus?.status],
+      visibleRecapOptions(
+        mergeRecapOptions(data, {
+          matches,
+          leagueEntries,
+          lastFinishedGw: liveStatus?.lastFinishedGw,
+        }),
+        {
+          upcomingGw: data?.upcomingGw,
+          liveStatus: liveStatus?.status,
+        },
+      ),
+    [data, liveStatus?.status, liveStatus?.lastFinishedGw, matches, leagueEntries],
   )
+  const lastFinishedGw = useMemo(() => {
+    const baked = Number(data?.lastFinishedGw)
+    const live = Number(liveStatus?.lastFinishedGw)
+    const fromOpts = options.filter((g) => g.recap).map((g) => Number(g.gw))
+    return Math.max(
+      0,
+      Number.isFinite(baked) ? baked : 0,
+      Number.isFinite(live) ? live : 0,
+      fromOpts.length ? Math.max(...fromOpts) : 0,
+    )
+  }, [data?.lastFinishedGw, liveStatus?.lastFinishedGw, options])
   const fallback = useMemo(
     () =>
       defaultRecapView({
-        lastFinishedGw: data?.lastFinishedGw,
+        lastFinishedGw: lastFinishedGw || null,
         upcomingGw: data?.upcomingGw,
         liveStatus: liveStatus?.status,
         options,
       }),
-    [data?.lastFinishedGw, data?.upcomingGw, liveStatus?.status, options],
+    [lastFinishedGw, data?.upcomingGw, liveStatus?.status, options],
   )
   const active = useMemo(() => {
     if (options.length === 0) return null
@@ -223,25 +244,11 @@ export function WeeklyRecap({
   )
 }
 
-function mergeRecapOptions(data) {
-  if (!data) return []
-  const recapByGw = new Map((data.gameweeks ?? []).map((g) => [g.gw, g]))
-  const previewByGw = new Map((data.previews ?? []).map((g) => [g.gw, g]))
-  const gws = new Set([...recapByGw.keys(), ...previewByGw.keys()])
-  return [...gws]
-    .sort((a, b) => a - b)
-    .map((gw) => ({
-      gw,
-      recap: recapByGw.get(gw) ?? null,
-      preview: previewByGw.get(gw) ?? null,
-    }))
-}
-
 function RecapHeader({ recapGw, decided }) {
   return (
     <>
       <div className="weekly-recap__superlatives">
-        {recapGw.superlatives.weekHigh ? (
+        {recapGw.superlatives?.weekHigh ? (
           <span className="weekly-recap__superlative">
             <span className="weekly-recap__superlative-label">Week high</span>
             <span className="weekly-recap__superlative-value">
@@ -250,7 +257,7 @@ function RecapHeader({ recapGw, decided }) {
             </span>
           </span>
         ) : null}
-        {recapGw.superlatives.closest ? (
+        {recapGw.superlatives?.closest ? (
           <span className="weekly-recap__superlative">
             <span className="weekly-recap__superlative-label">Closest</span>
             <span className="weekly-recap__superlative-value">
@@ -260,7 +267,7 @@ function RecapHeader({ recapGw, decided }) {
             </span>
           </span>
         ) : null}
-        {recapGw.superlatives.starPlayer ? (
+        {recapGw.superlatives?.starPlayer ? (
           <span className="weekly-recap__superlative">
             <span className="weekly-recap__superlative-label">Star player</span>
             <span className="weekly-recap__superlative-value">
@@ -270,8 +277,8 @@ function RecapHeader({ recapGw, decided }) {
             </span>
           </span>
         ) : null}
-        <WaiverChip waiver={recapGw.superlatives.bestWaiver} usePts />
-        <DudChip dud={recapGw.superlatives.dud} usePts />
+        <WaiverChip waiver={recapGw.superlatives?.bestWaiver} usePts />
+        <DudChip dud={recapGw.superlatives?.dud} usePts />
       </div>
 
       {decided > 0 || recapGw.model.draws > 0 ? (
@@ -544,7 +551,7 @@ function MatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
         </p>
       ) : null}
 
-      <p className="weekly-recap-matchup__prose">{m.sentences.join(' ')}</p>
+      <p className="weekly-recap-matchup__prose">{(m.sentences || []).join(' ')}</p>
 
       <TeamMetaRows
         home={m.home}
@@ -644,7 +651,7 @@ function PreviewMatchupCard({ matchup: m, teamLogoMap, kitIndexByEntry }) {
         </p>
       ) : null}
 
-      <p className="weekly-recap-matchup__prose">{m.sentences.join(' ')}</p>
+      <p className="weekly-recap-matchup__prose">{(m.sentences || []).join(' ')}</p>
 
       <TeamMetaRows
         home={m.home}

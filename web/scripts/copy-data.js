@@ -2,7 +2,11 @@
 import { existsSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFileSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import { normalizeMatchesFinished, deriveStandingsFromFinishedMatches } from '../src/h2hEffectiveFinished.js';
+import {
+  normalizeMatchesFinished,
+  deriveStandingsFromFinishedMatches,
+  finishedEventIdsFromEvents,
+} from '../src/h2hEffectiveFinished.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dataDir = join(__dirname, '../../data');
@@ -60,15 +64,38 @@ if (existsSync(ingestedDetails)) {
  * standings / recaps / form update when the gameweek closes — not a day later.
  * See web/src/h2hEffectiveFinished.js.
  */
+function readFinishedEventIds() {
+  const candidates = [
+    join(dataDir, 'bootstrap_draft.json'),
+    join(dest, 'bootstrap_draft.json'),
+  ];
+  for (const p of candidates) {
+    if (!existsSync(p)) continue;
+    try {
+      return finishedEventIdsFromEvents(JSON.parse(readFileSync(p, 'utf8')));
+    } catch {
+      /* try next */
+    }
+  }
+  return new Set();
+}
+
 function promoteFinishedMatches() {
   const detailsPath = join(dest, 'details.json');
   const fixturesPath = join(dest, 'fixtures.json');
-  if (!existsSync(detailsPath) || !existsSync(fixturesPath)) return;
+  if (!existsSync(detailsPath)) return;
   try {
     const details = JSON.parse(readFileSync(detailsPath, 'utf8'));
-    const fixtures = JSON.parse(readFileSync(fixturesPath, 'utf8'));
+    const fixtures = existsSync(fixturesPath)
+      ? JSON.parse(readFileSync(fixturesPath, 'utf8'))
+      : [];
+    const finishedEvents = readFinishedEventIds();
     const before = (details.matches || []).filter((m) => m?.finished === true).length;
-    const matches = normalizeMatchesFinished(details.matches || [], fixtures);
+    const matches = normalizeMatchesFinished(
+      details.matches || [],
+      fixtures,
+      finishedEvents,
+    );
     const after = matches.filter((m) => m?.finished === true).length;
     let changed = after !== before;
     if (changed) {

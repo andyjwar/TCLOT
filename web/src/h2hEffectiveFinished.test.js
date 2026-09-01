@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   completedFootballGameweeks,
+  finishedEventIdsFromEvents,
   matchEffectivelyFinished,
   normalizeMatchesFinished,
   deriveStandingsFromFinishedMatches,
@@ -105,6 +106,41 @@ test('normalizeMatchesFinished — no-op when no fixtures complete', () => {
     { event: 1, finished: false, finished_provisional: false },
   ])
   assert.equal(out, matches)
+})
+
+test('finishedEventIdsFromEvents — highest finished ids from bootstrap shapes', () => {
+  const fromObj = finishedEventIdsFromEvents({
+    events: {
+      current: 3,
+      data: [
+        { id: 1, finished: true },
+        { id: 2, finished: true },
+        { id: 3, finished: false },
+      ],
+    },
+  })
+  assert.equal(fromObj.has(1), true)
+  assert.equal(fromObj.has(2), true)
+  assert.equal(fromObj.has(3), false)
+  const fromList = finishedEventIdsFromEvents([{ id: 2, finished: true }])
+  assert.equal(fromList.has(2), true)
+  assert.equal(finishedEventIdsFromEvents(null).size, 0)
+})
+
+test('completedFootballGameweeks — bootstrap finished closes a GW fixtures still show open', () => {
+  const set = completedFootballGameweeks(fixturesGw1Done, [2])
+  assert.equal(set.has(1), true)
+  assert.equal(set.has(2), true)
+})
+
+test('normalizeMatchesFinished — event.finished promotes GW2 even if one PL fixture lags', () => {
+  const staleMondayNight = [
+    { event: 2, finished: false, finished_provisional: true },
+    { event: 2, finished: false, finished_provisional: false, started: false },
+  ]
+  const out = normalizeMatchesFinished(matches, staleMondayNight, new Set([2]))
+  assert.equal(out[2].finished, true)
+  assert.equal(out[3].finished, false)
 })
 
 test('deriveStandingsFromFinishedMatches — W/L/PF from finished H2H rows', () => {

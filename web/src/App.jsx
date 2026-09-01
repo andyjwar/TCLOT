@@ -4366,6 +4366,8 @@ function App() {
                     kitIndexByEntry={kitIndexByEntry}
                     liveStatus={brandHeaderStatus}
                     onMenuLabelChange={setRecapMenuLabel}
+                    matches={matches ?? []}
+                    leagueEntries={leagueEntries}
                   />
                 </div>
               ) : null}

@@ -1,6 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fplElementWebName } from './fplElementNames.js';
-import { normalizeMatchesFinished } from './h2hEffectiveFinished.js';
+import {
+  finishedEventIdsFromEvents,
+  normalizeMatchesFinished,
+} from './h2hEffectiveFinished.js';
+import { draftResourceUrl } from './fplDraftUrl.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
 import {
@@ -54,6 +58,17 @@ async function fetchJSON(path, cacheKey = '') {
     throw new Error(`${path} (${res.status}). Tried: ${abs}`);
   }
   return res.json();
+}
+
+/** Live draft bootstrap — same feed the header uses for "GW N complete". */
+async function fetchLiveDraftBootstrap() {
+  try {
+    const r = await fetch(draftResourceUrl('bootstrap-static'), { cache: 'no-store' });
+    if (r.ok) return await r.json();
+  } catch {
+    /* fall through — committed bootstrap_draft.json is the fallback */
+  }
+  return null;
 }
 
 async function fetchJSONOptional(path, cacheKey = '') {
@@ -330,7 +345,7 @@ export function useLeagueData() {
             throw fetchErr;
           }
         }
-        const [transactions, fplMini, waiverOutGw, waiverInTenureTop, tradesPanel, fixtures] =
+        const [transactions, fplMini, waiverOutGw, waiverInTenureTop, tradesPanel, fixtures, liveBootstrap] =
           await Promise.all([
             fetchJSONOptional('transactions.json', leagueDataV),
             fetchJSONOptional('fpl-mini.json', leagueDataV),
@@ -344,7 +359,11 @@ export function useLeagueData() {
             ),
             fetchJSONOptional('trades-panel.json', leagueDataV),
             fetchJSONOptional('fixtures.json', leagueDataV),
+            fetchLiveDraftBootstrap(),
           ]);
+        const finishedEventIds = finishedEventIdsFromEvents(
+          liveBootstrap ?? (await fetchJSONOptional('bootstrap_draft.json', leagueDataV)),
+        );
         let teamLogoMap = {};
         try {
           const r = await fetch(
@@ -387,6 +406,7 @@ export function useLeagueData() {
               waiverInTenureTop,
               tradesPanel,
               fixtures,
+              finishedEventIds,
               currentSeasonNameByManager,
             }),
             teamLogoMap,
@@ -747,7 +767,11 @@ function processLeagueData(raw, extras = {}) {
   // Promote `finished` on H2H rows once that GW's PL football is complete —
   // FPL's own `matches[].finished` lags by many hours after the games end, and
   // every results / standings / form path keys off it. See h2hEffectiveFinished.js.
-  const matches = normalizeMatchesFinished(details.matches || [], extras.fixtures);
+  const matches = normalizeMatchesFinished(
+    details.matches || [],
+    extras.fixtures,
+    extras.finishedEventIds,
+  );
   let standingsRaw = details.standings || [];
 
   const teams = buildTeamsMap(leagueEntries, extras.currentSeasonNameByManager);
