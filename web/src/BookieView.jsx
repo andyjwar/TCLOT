@@ -23,6 +23,11 @@ import { decimalOddsToFraction } from './oddsFormat.js'
 import { historyOpponentMetaForGw, loadLeagueFixtures } from './playerGwHistory.js'
 import { fetchLeagueJsonFile } from './playersBenchShared.js'
 import { highlightSettledOnLiveBoard, liveBoardGameweek, liveBoardTickets } from './bookieLiveBoard.js'
+import {
+  enrichLeaderboardRows,
+  nextLeaderboardSort,
+  sortLeaderboardRows,
+} from './bookieLeaderboardStats.js'
 import './BookieView.css'
 
 /** "Fri 28 Aug, 18:30" in the viewer's locale. */
@@ -1252,8 +1257,33 @@ function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntr
   )
 }
 
+function LbSortHead({ col, label, sortKey, sortDir, onSort, align = 'end' }) {
+  const active = sortKey === col
+  const ariaSort = active ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+  return (
+    <th className={`bookie-lb__th bookie-lb__th--${align}`} aria-sort={ariaSort} scope="col">
+      <button
+        type="button"
+        className={'bookie-lb__sort' + (active ? ' bookie-lb__sort--active' : '')}
+        onClick={() => onSort(col)}
+      >
+        {label}
+        {active ? <span className="bookie-lb__dir">{sortDir === 'desc' ? ' ▼' : ' ▲'}</span> : null}
+      </button>
+    </th>
+  )
+}
+
 function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEntry }) {
-  const leaderboard = state.leaderboard ?? []
+  const [sort, setSort] = useState({ sortKey: 'balance', sortDir: 'desc' })
+
+  const leaderboard = useMemo(() => {
+    const rows = enrichLeaderboardRows(state.leaderboard ?? [], [
+      ...(state.openBets ?? []),
+      ...(state.closedBets ?? []),
+    ])
+    return sortLeaderboardRows(rows, sort.sortKey, sort.sortDir)
+  }, [state.leaderboard, state.openBets, state.closedBets, sort])
 
   /** gw → biggest weekly winner (net P/L across that GW's settled bets). */
   const weeklyWinners = useMemo(() => {
@@ -1267,7 +1297,7 @@ function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEnt
       .map(([gw, row]) => ({ gw, ...row }))
   }, [state.weeklyNet])
 
-  if (leaderboard.length === 0) {
+  if ((state.leaderboard ?? []).length === 0) {
     return (
       <section className="tile tile--compact" aria-label="Leaderboards">
         <h3 className="bookie__section-title">Bankroll leaderboard</h3>
@@ -1276,32 +1306,81 @@ function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEnt
     )
   }
 
+  const onSort = (col) => setSort((cur) => nextLeaderboardSort(cur.sortKey, cur.sortDir, col))
+
   return (
     <section className="tile tile--compact" aria-label="Leaderboards">
       <h3 className="bookie__section-title">Bankroll leaderboard</h3>
-      <ol className="bookie-lb">
-        {leaderboard.map((u, i) => (
-          <li
-            key={u.entryId}
-            className={
-              'bookie-lb__row' + (me && Number(u.entryId) === Number(me.entryId) ? ' bookie-lb__row--me' : '')
-            }
-          >
-            <span className="bookie-lb__rank tabular">{i + 1}</span>
-            <span className="bookie-market__team">
-              <TeamAvatar
-                entryId={Number(u.entryId)}
-                name={u.name}
-                size="sm"
-                logoMap={teamLogoMap}
-                kitIndexByEntry={kitIndexByEntry}
-              />
-              <span>{standingsMobileTeamName(u.name)}</span>
-            </span>
-            <span className="bookie-lb__balance tabular">{fmtCoins(u.balance)}</span>
-          </li>
-        ))}
-      </ol>
+      <div className="bookie-lb-wrap">
+      <table className="bookie-lb">
+        <thead>
+          <tr className="bookie-lb__row bookie-lb__row--head">
+            <th className="bookie-lb__th bookie-lb__th--rank" scope="col">
+              <span className="visually-hidden">Rank</span>
+            </th>
+            <th className="bookie-lb__th bookie-lb__th--team" scope="col">
+              Team
+            </th>
+            <LbSortHead
+              col="balance"
+              label="Bank"
+              sortKey={sort.sortKey}
+              sortDir={sort.sortDir}
+              onSort={onSort}
+            />
+            <LbSortHead
+              col="won"
+              label="Won"
+              sortKey={sort.sortKey}
+              sortDir={sort.sortDir}
+              onSort={onSort}
+            />
+            <LbSortHead
+              col="lost"
+              label="Lost"
+              sortKey={sort.sortKey}
+              sortDir={sort.sortDir}
+              onSort={onSort}
+            />
+            <LbSortHead
+              col="live"
+              label="Live"
+              sortKey={sort.sortKey}
+              sortDir={sort.sortDir}
+              onSort={onSort}
+            />
+          </tr>
+        </thead>
+        <tbody>
+          {leaderboard.map((u, i) => (
+            <tr
+              key={u.entryId}
+              className={
+                'bookie-lb__row' + (me && Number(u.entryId) === Number(me.entryId) ? ' bookie-lb__row--me' : '')
+              }
+            >
+              <td className="bookie-lb__rank tabular">{i + 1}</td>
+              <td>
+                <span className="bookie-market__team">
+                  <TeamAvatar
+                    entryId={Number(u.entryId)}
+                    name={u.name}
+                    size="sm"
+                    logoMap={teamLogoMap}
+                    kitIndexByEntry={kitIndexByEntry}
+                  />
+                  <span>{standingsMobileTeamName(u.name)}</span>
+                </span>
+              </td>
+              <td className="bookie-lb__num bookie-lb__balance tabular">{fmtCoins(u.balance)}</td>
+              <td className="bookie-lb__num bookie-lb__won tabular">{fmtCoins(u.won)}</td>
+              <td className="bookie-lb__num bookie-lb__lost tabular">{fmtCoins(u.lost)}</td>
+              <td className="bookie-lb__num bookie-lb__live tabular">{fmtCoins(u.live)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      </div>
       {weeklyWinners.length > 0 ? (
         <>
           <h3 className="bookie__section-title bookie__section-title--sub">Weekly winners</h3>
