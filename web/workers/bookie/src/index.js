@@ -946,6 +946,33 @@ async function handleState(request, env, ctx, ch) {
     .bind(seasonNow)
     .all();
 
+  // Season won / lost / live per punter — the bankroll table columns.
+  // Won is net profit; lost is stake written off; live is still-open stake.
+  const ledger = await db
+    .prepare(
+      `SELECT b.entry_id,
+              SUM(CASE
+                    WHEN b.status = 'won' THEN MAX(0, b.payout - b.stake)
+                    WHEN b.status = 'cashed_out' AND b.payout > b.stake THEN b.payout - b.stake
+                    ELSE 0 END) AS won,
+              SUM(CASE
+                    WHEN b.status = 'lost' THEN b.stake
+                    WHEN b.status = 'cashed_out' AND b.payout < b.stake THEN b.stake - b.payout
+                    ELSE 0 END) AS lost,
+              SUM(CASE WHEN b.status = 'open' THEN b.stake ELSE 0 END) AS live
+       FROM bets b
+       WHERE b.season = ?
+       GROUP BY b.entry_id`,
+    )
+    .bind(seasonNow)
+    .all();
+  const ledgerByEntry = new Map(
+    (ledger.results ?? []).map((r) => [
+      Number(r.entry_id),
+      { won: Number(r.won) || 0, lost: Number(r.lost) || 0, live: Number(r.live) || 0 },
+    ]),
+  );
+
   // Weekly net P/L per punter per GW — the "who won the week" table.
   const weekly = await db
     .prepare(
@@ -983,11 +1010,17 @@ async function handleState(request, env, ctx, ch) {
     weeklyStipend: WEEKLY_STIPEND,
     minStake: MIN_STAKE,
     markets: marketRows,
-    leaderboard: (users.results ?? []).map((u) => ({
-      entryId: u.entry_id,
-      name: u.name,
-      balance: u.balance,
-    })),
+    leaderboard: (users.results ?? []).map((u) => {
+      const stats = ledgerByEntry.get(Number(u.entry_id)) ?? { won: 0, lost: 0, live: 0 };
+      return {
+        entryId: u.entry_id,
+        name: u.name,
+        balance: u.balance,
+        won: stats.won,
+        lost: stats.lost,
+        live: stats.live,
+      };
+    }),
     weeklyNet: (weekly.results ?? []).map((r) => ({
       entryId: r.entry_id,
       gw: r.gw,

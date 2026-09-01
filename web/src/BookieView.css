@@ -768,35 +768,97 @@
 
 /* --- leaderboards --- */
 
-.bookie-lb {
-  list-style: none;
+.bookie-lb-wrap {
+  overflow-x: auto;
   margin: 10px 0 0;
+}
+
+.bookie-lb {
+  width: 100%;
+  min-width: 320px;
+  border-collapse: separate;
+  border-spacing: 0 4px;
+  margin: 0;
   padding: 0;
-  display: grid;
-  gap: 4px;
+  font-size: 0.82rem;
 }
 
-.bookie-lb__row {
-  display: grid;
-  grid-template-columns: 24px 1fr auto;
-  align-items: center;
-  gap: 10px;
-  padding: 5px 8px;
-  border-radius: 8px;
-  font-size: 0.86rem;
+.bookie-lb__row td,
+.bookie-lb__row th {
+  padding: 5px 5px;
+  vertical-align: middle;
 }
 
-.bookie-lb__row--me {
+.bookie-lb__row--head th {
+  padding-bottom: 2px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--fm-muted);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.bookie-lb__th--rank {
+  width: 22px;
+}
+
+.bookie-lb__th--team {
+  text-align: left;
+}
+
+.bookie-lb__th--end {
+  text-align: right;
+}
+
+.bookie-lb__sort {
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  padding: 0;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.bookie-lb__sort--active {
+  color: var(--fm-text);
+}
+
+.bookie-lb__row--me td {
   background: color-mix(in srgb, var(--fm-pitch) 10%, transparent);
+}
+
+.bookie-lb__row--me td:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.bookie-lb__row--me td:last-child {
+  border-radius: 0 8px 8px 0;
 }
 
 .bookie-lb__rank {
   color: var(--fm-muted);
   font-size: 0.78rem;
+  text-align: right;
+}
+
+.bookie-lb__num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .bookie-lb__balance {
   font-weight: 700;
+}
+
+.bookie-lb__won {
+  color: #16a34a;
+}
+
+.bookie-lb__lost {
+  color: #ef4444;
 }
 
 .bookie-winners {
@@ -804,7 +866,12 @@
   margin: 8px 0 0;
   padding: 0;
   display: grid;
-  gap: 4px;
+  gap: 10px;
+}
+
+.bookie-winners__item {
+  display: grid;
+  gap: 6px;
 }
 
 .bookie-winners__row {
@@ -812,7 +879,46 @@
   grid-template-columns: 56px 1fr auto;
   gap: 10px;
   font-size: 0.84rem;
-  padding: 3px 0;
+  padding: 0;
+}
+
+.bookie-winners__bets {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0 56px;
+  display: grid;
+  gap: 6px;
+}
+
+.bookie-winners__slip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  min-width: 0;
+}
+
+.bookie-winners__pick {
+  flex: 1 1 8rem;
+  min-width: 0;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.bookie-winners__pills {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.bookie-winners__pill {
+  width: auto;
+  min-width: 2.6em;
+  padding: 0.12em 0.55em;
+  justify-self: auto;
 }
 
 .bookie-winners__gw {
