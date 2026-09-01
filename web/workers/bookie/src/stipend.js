@@ -1,9 +1,23 @@
 /**
- * Weekly stipend — a cushion for punters who had a ticket that gameweek,
- * not a free roll for sitting out. After every H2H market for a GW settles,
- * anyone who placed a weekly bet (H2H or player special) that GW gets paid
- * once. Season-long tickets do not count as playing the week.
+ * Weekly stipend — a floor, not a free roll. After every H2H market for a
+ * GW settles, anyone whose bankroll is below STIPEND_FLOOR gets WEEKLY_STIPEND
+ * once. Sitting out at a healthy balance pays nothing.
  */
+
+export const STIPEND_FLOOR = 250
+
+/** True when the post-settlement bankroll is below the stipend floor. */
+export function qualifiesForWeeklyStipend(balance, floor = STIPEND_FLOOR) {
+  if (balance == null || balance === '') return false
+  const n = Number(balance)
+  const f = Number(floor)
+  return Number.isFinite(n) && Number.isFinite(f) && n < f
+}
+
+/** Credits the stipend only to users already below the floor. */
+export const PAY_STIPEND_SQL = `UPDATE users SET balance = balance + ?
+             WHERE season = ?
+               AND balance < ?`
 
 export function sitoutClawbackKey(season) {
   return `stipendClawback:sitouts:${season}`
@@ -35,8 +49,9 @@ export function paidStipendGameweeks(metaKeys, season) {
 }
 
 /**
- * One-shot: debit the stipend from anyone who was paid for a GW they sat
- * out (no weekly ticket). Gated so later tab loads do not charge twice.
+ * Historical one-shot: debit the stipend from anyone who was paid for a
+ * GW they sat out under the old "anyone who bet" rule. No longer invoked
+ * — the stipend is now a below-floor top-up only.
  *
  * @returns {Promise<boolean>} true if this call performed the clawback
  */

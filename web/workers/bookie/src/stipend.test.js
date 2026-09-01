@@ -2,10 +2,29 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   applySitoutStipendClawback,
+  PAY_STIPEND_SQL,
   paidStipendGameweeks,
+  qualifiesForWeeklyStipend,
   sitoutClawbackKey,
+  STIPEND_FLOOR,
   weeklyBettorIds,
 } from './stipend.js'
+
+test('qualifiesForWeeklyStipend — only bankrolls below the floor', () => {
+  assert.equal(STIPEND_FLOOR, 250)
+  assert.equal(qualifiesForWeeklyStipend(249), true)
+  assert.equal(qualifiesForWeeklyStipend(0), true)
+  assert.equal(qualifiesForWeeklyStipend(250), false)
+  assert.equal(qualifiesForWeeklyStipend(1000), false)
+  assert.equal(qualifiesForWeeklyStipend('199'), true)
+  assert.equal(qualifiesForWeeklyStipend(null), false)
+})
+
+test('PAY_STIPEND_SQL — credits only balances below the floor', () => {
+  assert.match(PAY_STIPEND_SQL, /balance = balance \+ \?/)
+  assert.match(PAY_STIPEND_SQL, /balance < \?/)
+  assert.doesNotMatch(PAY_STIPEND_SQL, /entry_id IN/)
+})
 
 test('weeklyBettorIds — only tickets whose market gw matches', () => {
   const bets = [

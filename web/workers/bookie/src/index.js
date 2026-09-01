@@ -13,9 +13,9 @@
  * "effectively finished" rule as web/src/h2hEffectiveFinished.js: a GW counts
  * as final once every Premier League fixture for it is finished or
  * provisionally finished, or FPL's bootstrap `events[].finished` flag is
- * already true), grades bets, credits payouts, and pays a weekly stipend to
- * anyone who had a ticket that GW so a busted bankroll can come back —
- * sitting the week out does not pay.
+ * already true), grades bets, credits payouts, and pays a weekly stipend
+ * only when a bankroll is below 250 Clotcoins so a busted book can come
+ * back — healthy balances are left alone.
  *
  * Identity is honor-system-with-a-lock: each manager claims their league
  * entry once with a PIN (PBKDF2-hashed); sessions are HMAC-signed tokens.
@@ -36,7 +36,7 @@
 import { footballComplete, footballOfficial, finishedEventIdsFromEvents, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, desiredBetGrade, creditedPayout, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 import { applyFreshStart } from './freshStart.js';
-import { applySitoutStipendClawback } from './stipend.js';
+import { PAY_STIPEND_SQL, STIPEND_FLOOR } from './stipend.js';
 
 const STARTING_BALANCE = 1000;
 const WEEKLY_STIPEND = 50;
@@ -332,8 +332,8 @@ function marketIsLocked(market) {
 /**
  * Settle every due market: H2H markets whose gameweek's football is complete,
  * and the outright once all league matches are final. After a gameweek fully
- * settles, anyone who had a weekly ticket that GW gets the stipend (once)
- * so a busted bankroll can come back — sit-outs are not paid.
+ * settles, anyone whose bankroll is below 250 gets the stipend (once)
+ * so a busted book can come back — sit-outs above the floor are not paid.
  *
  * Weekly markets grade as soon as the football is effectively finished, then
  * stay unlocked until FPL's official finish (H2H `match.finished`, or every
@@ -481,8 +481,8 @@ async function settleDue(env) {
     }
 
     // Stipend: once per gameweek, after every H2H market for it has settled.
-    // Only punters who had a weekly ticket (H2H / player special) that GW —
-    // sitting it out is not a +50 free roll.
+    // Only bankrolls that have fallen below the floor — not a +50 free roll
+    // for anyone still sitting on a healthy stack.
     const remaining = await db
       .prepare(`SELECT COUNT(*) AS n FROM markets WHERE kind = 'h2h' AND gw = ? AND status = 'open'`)
       .bind(gw)
@@ -494,16 +494,8 @@ async function settleDue(env) {
       const stipendKey = `stipend:${season}:${gw}`;
       if (season && !(await metaGet(db, stipendKey))) {
         await db
-          .prepare(
-            `UPDATE users SET balance = balance + ?
-             WHERE season = ?
-               AND entry_id IN (
-                 SELECT DISTINCT b.entry_id FROM bets b
-                 JOIN markets m ON m.id = b.market_id
-                 WHERE b.season = ? AND m.gw = ?
-               )`,
-          )
-          .bind(WEEKLY_STIPEND, season, season, gw)
+          .prepare(PAY_STIPEND_SQL)
+          .bind(WEEKLY_STIPEND, season, STIPEND_FLOOR)
           .run();
         await metaSet(db, stipendKey, nowIso);
       }
@@ -931,15 +923,6 @@ async function handleState(request, env, ctx, ch) {
   });
   if (wiped) console.log('bookie: fresh start — bets cleared, balances reset to', STARTING_BALANCE);
 
-  const clawed = await applySitoutStipendClawback(db, {
-    season: seasonNow,
-    stipend: WEEKLY_STIPEND,
-    nowIso: new Date().toISOString(),
-    metaGet,
-    metaSet,
-  });
-  if (clawed) console.log('bookie: clawed sit-out stipends for', seasonNow);
-
   const nowMs = Date.now();
   const markets = await db
     .prepare(
@@ -1036,6 +1019,7 @@ async function handleState(request, env, ctx, ch) {
     season: seasonNow,
     startingBalance: STARTING_BALANCE,
     weeklyStipend: WEEKLY_STIPEND,
+    stipendFloor: STIPEND_FLOOR,
     minStake: MIN_STAKE,
     markets: marketRows,
     leaderboard: (users.results ?? []).map((u) => {
