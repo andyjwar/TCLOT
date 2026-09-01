@@ -3,9 +3,11 @@ import assert from 'node:assert/strict'
 import {
   aggregateLeaderboardStats,
   betResultBuckets,
+  betWinnings,
   enrichLeaderboardRows,
   nextLeaderboardSort,
   sortLeaderboardRows,
+  winningWeeklyBets,
 } from './bookieLeaderboardStats.js'
 
 test('betResultBuckets — open stake is live, won is net, lost is stake', () => {
@@ -107,4 +109,22 @@ test('nextLeaderboardSort — new column starts desc, same column flips', () => 
   assert.deepEqual(nextLeaderboardSort('balance', 'desc', 'won'), { sortKey: 'won', sortDir: 'desc' })
   assert.deepEqual(nextLeaderboardSort('won', 'desc', 'won'), { sortKey: 'won', sortDir: 'asc' })
   assert.deepEqual(nextLeaderboardSort('lost', 'asc', 'lost'), { sortKey: 'lost', sortDir: 'desc' })
+})
+
+test('winningWeeklyBets — H2H wins for that entry and GW only', () => {
+  const bets = [
+    { id: 1, entry_id: 99, gw: 2, kind: 'h2h', status: 'won', stake: 50, payout: 190 },
+    { id: 2, entry_id: 99, gw: 2, kind: 'h2h', status: 'lost', stake: 10 },
+    { id: 3, entry_id: 99, gw: 1, kind: 'h2h', status: 'won', stake: 20, payout: 40 },
+    { id: 4, entry_id: 7, gw: 2, kind: 'h2h', status: 'won', stake: 10, payout: 20 },
+    { id: 5, entry_id: 99, gw: 2, kind: 'scorer', status: 'won', stake: 10, payout: 80 },
+    { id: 6, entry_id: 99, gw: 2, kind: 'h2h', status: 'cashed_out', stake: 40, payout: 55 },
+  ]
+  const wins = winningWeeklyBets(bets, { entryId: 99, gw: 2 })
+  assert.deepEqual(
+    wins.map((b) => b.id),
+    [1, 6],
+  )
+  assert.equal(betWinnings(wins[0]), 140)
+  assert.equal(betWinnings(wins[1]), 15)
 })

@@ -95,3 +95,35 @@ export function nextLeaderboardSort(currentKey, currentDir, clickedKey) {
   }
   return { sortKey: clickedKey, sortDir: defaultSortDir(clickedKey) }
 }
+
+/** Ticket that paid (or cashed out ahead) — listed under Weekly winners. */
+export function isWinningWeeklyBet(bet) {
+  if (!bet) return false
+  if (bet.status === 'won') return true
+  if (bet.status === 'cashed_out') return Number(bet.payout) > Number(bet.stake)
+  return false
+}
+
+/**
+ * Winning H2H tickets for the weekly-winner row (same GW + entry as
+ * `weeklyNet`). Player specials and season-long slips stay off this list
+ * so it matches the +N that week.
+ */
+export function winningWeeklyBets(bets, { entryId, gw } = {}) {
+  const id = Number(entryId)
+  const week = Number(gw)
+  if (!Number.isFinite(id) || !Number.isFinite(week)) return []
+  return (Array.isArray(bets) ? bets : []).filter((b) => {
+    if (Number(b.entry_id ?? b.entryId) !== id) return false
+    if (Number(b.gw) !== week) return false
+    if (b.kind != null && b.kind !== 'h2h') return false
+    return isWinningWeeklyBet(b)
+  })
+}
+
+/** Net profit on a winning ticket (what the green winnings pill shows). */
+export function betWinnings(bet) {
+  const stake = Number(bet?.stake) || 0
+  const payout = Number(bet?.payout) || 0
+  return Math.max(0, payout - stake)
+}

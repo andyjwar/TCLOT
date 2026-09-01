@@ -24,9 +24,11 @@ import { historyOpponentMetaForGw, loadLeagueFixtures } from './playerGwHistory.
 import { fetchLeagueJsonFile } from './playersBenchShared.js'
 import { highlightSettledOnLiveBoard, liveBoardGameweek, liveBoardTickets } from './bookieLiveBoard.js'
 import {
+  betWinnings,
   enrichLeaderboardRows,
   nextLeaderboardSort,
   sortLeaderboardRows,
+  winningWeeklyBets,
 } from './bookieLeaderboardStats.js'
 import './BookieView.css'
 
@@ -1277,13 +1279,21 @@ function LbSortHead({ col, label, sortKey, sortDir, onSort, align = 'end' }) {
 function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEntry }) {
   const [sort, setSort] = useState({ sortKey: 'balance', sortDir: 'desc' })
 
+  const allBets = useMemo(
+    () => [...(state.openBets ?? []), ...(state.closedBets ?? [])],
+    [state.openBets, state.closedBets],
+  )
+
+  const marketById = useMemo(() => {
+    const map = new Map()
+    for (const m of state.markets ?? []) map.set(Number(m.id), m)
+    return map
+  }, [state.markets])
+
   const leaderboard = useMemo(() => {
-    const rows = enrichLeaderboardRows(state.leaderboard ?? [], [
-      ...(state.openBets ?? []),
-      ...(state.closedBets ?? []),
-    ])
+    const rows = enrichLeaderboardRows(state.leaderboard ?? [], allBets)
     return sortLeaderboardRows(rows, sort.sortKey, sort.sortDir)
-  }, [state.leaderboard, state.openBets, state.closedBets, sort])
+  }, [state.leaderboard, allBets, sort])
 
   /** gw → biggest weekly winner (net P/L across that GW's settled bets). */
   const weeklyWinners = useMemo(() => {
@@ -1294,8 +1304,12 @@ function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEnt
     }
     return [...byGw.entries()]
       .sort((a, b) => b[0] - a[0])
-      .map(([gw, row]) => ({ gw, ...row }))
-  }, [state.weeklyNet])
+      .map(([gw, row]) => ({
+        gw,
+        ...row,
+        tickets: winningWeeklyBets(allBets, { entryId: row.entryId, gw }),
+      }))
+  }, [state.weeklyNet, allBets])
 
   if ((state.leaderboard ?? []).length === 0) {
     return (
@@ -1386,19 +1400,53 @@ function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEnt
           <h3 className="bookie__section-title bookie__section-title--sub">Weekly winners</h3>
           <ul className="bookie-winners">
             {weeklyWinners.map((w) => (
-              <li key={w.gw} className="bookie-winners__row">
-                <span className="bookie-winners__gw tabular">GW{w.gw}</span>
-                <span>
-                  {standingsMobileTeamName(nameByEntry.get(Number(w.entryId)) ?? String(w.entryId))}
-                </span>
-                <span
-                  className={
-                    'bookie-winners__net tabular ' +
-                    (Number(w.net) >= 0 ? 'bookie-winners__net--up' : 'bookie-winners__net--down')
-                  }
-                >
-                  {fmtNet(w.net)}
-                </span>
+              <li key={w.gw} className="bookie-winners__item">
+                <div className="bookie-winners__row">
+                  <span className="bookie-winners__gw tabular">GW{w.gw}</span>
+                  <span>
+                    {standingsMobileTeamName(nameByEntry.get(Number(w.entryId)) ?? String(w.entryId))}
+                  </span>
+                  <span
+                    className={
+                      'bookie-winners__net tabular ' +
+                      (Number(w.net) >= 0 ? 'bookie-winners__net--up' : 'bookie-winners__net--down')
+                    }
+                  >
+                    {fmtNet(w.net)}
+                  </span>
+                </div>
+                {w.tickets.length > 0 ? (
+                  <ul className="bookie-winners__bets">
+                    {w.tickets.map((b) => {
+                      const { pick, detail } = describeBetCompact(b, marketById, nameByEntry)
+                      return (
+                        <li key={b.id} className="bookie-winners__slip">
+                          <span
+                            className="bookie-winners__pick"
+                            title={describeBet(b, marketById, nameByEntry)}
+                          >
+                            <strong>{pick}</strong>
+                            {detail ? ` ${detail}` : ''}
+                          </span>
+                          <span className="bookie-winners__pills">
+                            <span
+                              className="bookie-bet__pill bookie-bet__pill--won bookie-winners__pill tabular"
+                              title={`decimal ${Number(b.odds).toFixed(2)}`}
+                            >
+                              {fmtOdds(b.odds)}
+                            </span>
+                            <span className="bookie-bet__pill bookie-bet__pill--won bookie-winners__pill tabular">
+                              {fmtCoins(b.stake)}
+                            </span>
+                            <span className="bookie-bet__pill bookie-bet__pill--won bookie-winners__pill tabular">
+                              {fmtNet(betWinnings(b))}
+                            </span>
+                          </span>
+                        </li>
+                      )
+                    })}
+                  </ul>
+                ) : null}
               </li>
             ))}
           </ul>
