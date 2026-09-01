@@ -23,9 +23,11 @@ against the official FPL Draft results.
   (title, top 4, bottom 4, last) and repriced after every banked gameweek.
   Bets lock the odds they were placed at. Titan and Minnow can pay four
   tickets; last place pays only 8th.
-- **Settlement** — a gameweek counts as final once every Premier League fixture
-  for it is finished or provisionally finished (same rule the site uses), so
-  payouts land hours before FPL's own "data checked" flag.
+- **Settlement** — a gameweek grades once every Premier League fixture for it
+  is finished or provisionally finished (same rule the site uses), so payouts
+  land hours before FPL's own "data checked" flag. Markets stay unlocked until
+  that official finish so a bonus-point flip can re-grade a ticket (and the
+  bankroll) instead of leaving a provisional result stuck.
 - **Bankroll** — everyone starts a season with 1,000 Clotcoins (the TCLOT
   currency); a 50-Clotcoin stipend
   lands after each settled gameweek so going bust is never terminal.
