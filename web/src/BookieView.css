@@ -613,8 +613,7 @@
 }
 
 .bookie-bet__pill--return,
-.bookie-bet__pill--open,
-.bookie-bet__pill--won {
+.bookie-bet__pill--open {
   color: var(--fm-text-strong, inherit);
   background: color-mix(in srgb, var(--tclot-logo-purple, #795bfb) 15%, transparent);
   box-shadow: 0 0 0 0.15em
@@ -636,7 +635,30 @@
 }
 
 .bookie-bet__pill--won {
+  color: #166534;
+  background: color-mix(in srgb, #22c55e 22%, transparent);
+  box-shadow: 0 0 0 0.12em color-mix(in srgb, #22c55e 22%, transparent);
   font-weight: 800;
+}
+
+.fotmob[data-theme='light'] .bookie-bet__pill--won {
+  color: #14532d;
+}
+
+/* Just-settled weekly tickets stay on My bets / the live board until the
+ * next GW's markets print — a green wash so they don't read as still live. */
+.bookie-bet--settled {
+  background: color-mix(in srgb, #16a34a 16%, transparent);
+  border-radius: 8px;
+  border-bottom-color: transparent;
+  padding-left: 8px;
+  padding-right: 8px;
+  margin-left: -8px;
+  margin-right: -8px;
+}
+
+.fotmob[data-theme='light'] .bookie-bet--settled {
+  background: color-mix(in srgb, #16a34a 12%, transparent);
 }
 
 /* The tempter's button — a blue pill in the Cash out column, matching the
@@ -815,12 +837,12 @@
 }
 
 .bookie-winners__net--up {
-  color: #16a34a;
+  color: var(--data-positive, #12a15a);
   font-weight: 700;
 }
 
 .bookie-winners__net--down {
-  color: #ef4444;
+  color: var(--data-negative, #ef4444);
 }
 
 @media (max-width: 560px) {

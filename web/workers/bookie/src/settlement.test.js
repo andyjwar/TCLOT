@@ -3,6 +3,7 @@ import assert from 'node:assert/strict'
 import {
   footballComplete,
   footballOfficial,
+  finishedEventIdsFromEvents,
   h2hResultForMarket,
   championFromMatches,
   playerMarketOutcome,
@@ -65,6 +66,34 @@ test('creditedPayout: only terminal paying statuses return coins', () => {
   assert.equal(creditedPayout({ status: 'won', payout: 21 }), 21)
   assert.equal(creditedPayout({ status: 'void', payout: 10 }), 10)
   assert.equal(creditedPayout({ status: 'cashed_out', payout: 12 }), 12)
+})
+
+test('footballComplete: bootstrap event.finished closes a GW fixtures still show open', () => {
+  const staleMondayNight = [
+    { event: 2, finished: false, finished_provisional: true },
+    { event: 2, finished: false, finished_provisional: false },
+  ]
+  assert.equal(footballComplete(staleMondayNight, 2), false)
+  assert.equal(footballComplete(staleMondayNight, 2, [2]), true)
+  assert.equal(footballComplete(staleMondayNight, 2, new Set([1])), false)
+})
+
+test('finishedEventIdsFromEvents — draft { current, data } and bare list', () => {
+  const fromObj = finishedEventIdsFromEvents({
+    events: {
+      current: 3,
+      data: [
+        { id: 1, finished: true },
+        { id: 2, finished: true },
+        { id: 3, finished: false },
+      ],
+    },
+  })
+  assert.equal(fromObj.has(1), true)
+  assert.equal(fromObj.has(2), true)
+  assert.equal(fromObj.has(3), false)
+  assert.equal(finishedEventIdsFromEvents([{ id: 2, finished: true }]).has(2), true)
+  assert.equal(finishedEventIdsFromEvents(null).size, 0)
 })
 
 /* h2hResultForMarket — grade a market against its FPL Draft match row */

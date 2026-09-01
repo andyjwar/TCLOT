@@ -1,78 +1,62 @@
-import { PLAYER_MARKET_KINDS, SEASON_PLACE_KINDS } from './bookieBetLabel.js'
+import { PLAYER_MARKET_KINDS } from './bookieBetLabel.js'
 
-/** Weekly tickets — H2H plus the per-matchup player specials. */
-export const WEEKLY_MARKET_KINDS = ['h2h', ...PLAYER_MARKET_KINDS]
-
-export const SETTLED_BET_STATUSES = ['won', 'lost', 'void', 'cashed_out']
-
-export function isOpenBet(bet) {
-  return bet?.status === 'open' || bet?.status == null
+/** Weekly tickets (H2H + player specials). Season-place boards stay open all year. */
+export function isWeeklyBetKind(kind) {
+  return kind === 'h2h' || PLAYER_MARKET_KINDS.includes(kind)
 }
 
-export function isSettledBet(bet) {
-  return SETTLED_BET_STATUSES.includes(bet?.status)
+export function isSettledBetStatus(status) {
+  return status != null && status !== 'open'
 }
 
 /**
- * Deadline (ms) of the next weekly H2H board after `afterGw`, or null when
- * no later week has been ingested yet. That deadline is when the next
- * gameweek starts for the bookie — last week's settled tickets drop off.
- */
-export function nextWeeklyDeadlineMs(markets, afterGw) {
-  const gw = Number(afterGw)
-  if (!Number.isFinite(gw)) return null
-  let nextGw = Infinity
-  let deadline = null
-  for (const m of Array.isArray(markets) ? markets : []) {
-    if (m?.kind !== 'h2h') continue
-    const marketGw = Number(m.gw)
-    if (!Number.isFinite(marketGw) || marketGw <= gw) continue
-    const closes = Date.parse(m.closesAt ?? '')
-    if (!Number.isFinite(closes)) continue
-    if (marketGw < nextGw || (marketGw === nextGw && closes < deadline)) {
-      nextGw = marketGw
-      deadline = closes
-    }
-  }
-  return deadline
-}
-
-/**
- * Whether a ticket belongs on the league-wide live board.
+ * Gameweek whose tickets still belong on the live board.
  *
- * Open tickets always show (season boards included). Settled weekly tickets
- * stay until the next gameweek's deadline, then drop off. Settled season
- * tickets never linger — those boards resolve at the end of the year.
+ * Prefer a weekly market that is still taking bets. After that deadline
+ * passes, keep the newest weekly board on the sheet so just-settled GW N
+ * tickets stay visible until GW N+1's markets print.
+ *
+ * @param {Array<{ kind?: string, gw?: number, open?: boolean }> | null | undefined} markets
+ * @returns {number | null}
  */
-export function isLiveBoardBet(bet, markets, nowMs) {
-  if (!bet) return false
-  if (isOpenBet(bet)) return true
-  if (!isSettledBet(bet)) return false
-  const kind = bet.kind
-  if (SEASON_PLACE_KINDS.includes(kind)) return false
-  if (!WEEKLY_MARKET_KINDS.includes(kind)) return false
-  const gw = Number(bet.gw)
-  if (!Number.isFinite(gw)) return false
-  const nextDeadline = nextWeeklyDeadlineMs(markets, gw)
-  if (nextDeadline == null) return true
-  return Number(nowMs) < nextDeadline
+export function liveBoardGameweek(markets) {
+  const weekly = (Array.isArray(markets) ? markets : []).filter((m) => isWeeklyBetKind(m?.kind))
+  const stillOpen = weekly.find((m) => m.open)
+  if (stillOpen != null && Number.isFinite(Number(stillOpen.gw))) return Number(stillOpen.gw)
+  let max = null
+  for (const m of weekly) {
+    const gw = Number(m.gw)
+    if (!Number.isFinite(gw)) continue
+    if (max == null || gw > max) max = gw
+  }
+  return max
 }
 
-/** Open bets plus this-week settled tickets, newest first. */
-export function liveBoardBets({
-  openBets = [],
-  closedBets = [],
-  markets = [],
-  nowMs = Date.now(),
-} = {}) {
-  const seen = new Set()
-  const out = []
-  for (const bet of [...openBets, ...closedBets]) {
-    const id = bet?.id
-    if (id != null && seen.has(id)) continue
-    if (!isLiveBoardBet(bet, markets, nowMs)) continue
-    if (id != null) seen.add(id)
-    out.push(bet)
-  }
-  return out.sort((a, b) => Number(b.id) - Number(a.id))
+/**
+ * Settled weekly tickets stay highlighted on My bets / the live board until
+ * the next gameweek's markets replace this one.
+ */
+export function highlightSettledOnLiveBoard(bet, liveGw) {
+  if (!bet || !isSettledBetStatus(bet.status) || !isWeeklyBetKind(bet.kind)) return false
+  if (liveGw == null || !Number.isFinite(Number(liveGw))) return false
+  return Number(bet.gw) === Number(liveGw)
+}
+
+/**
+ * League-wide live board: every still-open ticket (including season-long)
+ * plus this week's settled weekly tickets.
+ *
+ * @param {{
+ *   openBets?: object[],
+ *   closedBets?: object[],
+ *   markets?: object[],
+ * }} state
+ * @returns {object[]}
+ */
+export function liveBoardTickets(state) {
+  const open = Array.isArray(state?.openBets) ? state.openBets : []
+  const closed = Array.isArray(state?.closedBets) ? state.closedBets : []
+  const liveGw = liveBoardGameweek(state?.markets)
+  const settledThisWeek = closed.filter((b) => highlightSettledOnLiveBoard(b, liveGw))
+  return [...open, ...settledThisWeek]
 }

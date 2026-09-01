@@ -1,89 +1,104 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  isLiveBoardBet,
-  liveBoardBets,
-  nextWeeklyDeadlineMs,
+  highlightSettledOnLiveBoard,
+  isSettledBetStatus,
+  isWeeklyBetKind,
+  liveBoardGameweek,
+  liveBoardTickets,
 } from './bookieLiveBoard.js'
 
-const GW2_DEADLINE = Date.parse('2026-08-28T17:30:00Z')
-const GW3_DEADLINE = Date.parse('2026-09-04T17:30:00Z')
-
-const markets = [
-  { kind: 'h2h', gw: 2, closesAt: '2026-08-28T17:30:00Z' },
-  { kind: 'h2h', gw: 3, closesAt: '2026-09-04T17:30:00Z' },
-  { kind: 'last', closesAt: '2027-05-30T13:30:00Z' },
-]
-
-test('nextWeeklyDeadlineMs: first later H2H board, ignore season markets', () => {
-  assert.equal(nextWeeklyDeadlineMs(markets, 2), GW3_DEADLINE)
-  assert.equal(nextWeeklyDeadlineMs(markets, 3), null)
-  assert.equal(nextWeeklyDeadlineMs(markets, 1), GW2_DEADLINE)
+test('isWeeklyBetKind — H2H and player specials only', () => {
+  assert.equal(isWeeklyBetKind('h2h'), true)
+  assert.equal(isWeeklyBetKind('scorer'), true)
+  assert.equal(isWeeklyBetKind('toppoints'), true)
+  assert.equal(isWeeklyBetKind('last'), false)
+  assert.equal(isWeeklyBetKind('outright'), false)
 })
 
-test('isLiveBoardBet: open tickets always stay, including season boards', () => {
+test('isSettledBetStatus — anything but open', () => {
+  assert.equal(isSettledBetStatus('open'), false)
+  assert.equal(isSettledBetStatus(null), false)
+  assert.equal(isSettledBetStatus('won'), true)
+  assert.equal(isSettledBetStatus('lost'), true)
+  assert.equal(isSettledBetStatus('void'), true)
+  assert.equal(isSettledBetStatus('cashed_out'), true)
+})
+
+test('liveBoardGameweek — open weekly market wins even if an older GW exists', () => {
+  const markets = [
+    { kind: 'h2h', gw: 2, open: false },
+    { kind: 'h2h', gw: 3, open: true },
+    { kind: 'last', gw: null, open: true },
+  ]
+  assert.equal(liveBoardGameweek(markets), 3)
+})
+
+test('liveBoardGameweek — after the deadline, keep the newest weekly board', () => {
+  const markets = [
+    { kind: 'h2h', gw: 1, open: false },
+    { kind: 'scorer', gw: 2, open: false },
+    { kind: 'h2h', gw: 2, open: false },
+    { kind: 'last', open: true },
+  ]
+  assert.equal(liveBoardGameweek(markets), 2)
+})
+
+test('liveBoardGameweek — empty / no weekly markets', () => {
+  assert.equal(liveBoardGameweek([]), null)
+  assert.equal(liveBoardGameweek([{ kind: 'outright', open: true }]), null)
+  assert.equal(liveBoardGameweek(null), null)
+})
+
+test('highlightSettledOnLiveBoard — this week only', () => {
   assert.equal(
-    isLiveBoardBet({ status: 'open', kind: 'last', gw: null }, markets, GW3_DEADLINE - 1),
+    highlightSettledOnLiveBoard({ status: 'lost', kind: 'h2h', gw: 2 }, 2),
     true,
   )
   assert.equal(
-    isLiveBoardBet({ status: 'open', kind: 'h2h', gw: 3 }, markets, GW3_DEADLINE + 1),
-    true,
+    highlightSettledOnLiveBoard({ status: 'won', kind: 'h2h', gw: 1 }, 2),
+    false,
   )
-})
-
-test('isLiveBoardBet: settled weekly tickets stay until the next GW deadline', () => {
-  const won = { status: 'won', kind: 'h2h', gw: 2 }
-  assert.equal(isLiveBoardBet(won, markets, GW3_DEADLINE - 1), true)
-  assert.equal(isLiveBoardBet(won, markets, GW3_DEADLINE), false)
-  assert.equal(isLiveBoardBet({ status: 'lost', kind: 'h2h', gw: 2 }, markets, GW3_DEADLINE - 60_000), true)
-  assert.equal(isLiveBoardBet({ status: 'void', kind: 'scorer', gw: 2 }, markets, GW3_DEADLINE - 1), true)
-})
-
-test('isLiveBoardBet: settled weekly tickets stay while no later week exists', () => {
-  const onlyGw2 = [{ kind: 'h2h', gw: 2, closesAt: '2026-08-28T17:30:00Z' }]
   assert.equal(
-    isLiveBoardBet({ status: 'won', kind: 'h2h', gw: 2 }, onlyGw2, Date.parse('2026-09-10T00:00:00Z')),
-    true,
+    highlightSettledOnLiveBoard({ status: 'open', kind: 'h2h', gw: 2 }, 2),
+    false,
   )
-})
-
-test('isLiveBoardBet: settled season tickets never linger on the live board', () => {
   assert.equal(
-    isLiveBoardBet({ status: 'won', kind: 'last', gw: null }, markets, GW3_DEADLINE - 1),
+    highlightSettledOnLiveBoard({ status: 'won', kind: 'last', gw: null }, 2),
     false,
   )
 })
 
-test('liveBoardBets: mixes open + this-week settled, drops last week after next deadline', () => {
-  const openBets = [
-    { id: 10, status: 'open', kind: 'last', gw: null },
-    { id: 9, status: 'open', kind: 'h2h', gw: 3 },
-  ]
-  const closedBets = [
-    { id: 8, status: 'won', kind: 'h2h', gw: 2 },
-    { id: 7, status: 'lost', kind: 'h2h', gw: 2 },
-    { id: 6, status: 'won', kind: 'h2h', gw: 1 },
-  ]
-  const midweek = liveBoardBets({
-    openBets,
-    closedBets,
-    markets,
-    nowMs: Date.parse('2026-09-01T12:00:00Z'),
-  })
+test('liveBoardTickets — open tickets plus this week\'s settled weekly ones', () => {
+  const state = {
+    markets: [
+      { kind: 'h2h', gw: 2, open: false },
+      { kind: 'last', open: true },
+    ],
+    openBets: [
+      { id: 1, status: 'open', kind: 'last', gw: null },
+      { id: 2, status: 'open', kind: 'h2h', gw: 2 },
+    ],
+    closedBets: [
+      { id: 3, status: 'lost', kind: 'h2h', gw: 2 },
+      { id: 4, status: 'won', kind: 'h2h', gw: 1 },
+      { id: 5, status: 'won', kind: 'scorer', gw: 2 },
+    ],
+  }
   assert.deepEqual(
-    midweek.map((b) => b.id),
-    [10, 9, 8, 7],
+    liveBoardTickets(state).map((b) => b.id),
+    [1, 2, 3, 5],
   )
+})
 
-  const afterGw3 = liveBoardBets({
-    openBets,
-    closedBets,
-    markets,
-    nowMs: GW3_DEADLINE,
-  })
+test('liveBoardTickets — next GW markets drop last week\'s settled tickets', () => {
+  const state = {
+    markets: [{ kind: 'h2h', gw: 3, open: true }],
+    openBets: [{ id: 10, status: 'open', kind: 'h2h', gw: 3 }],
+    closedBets: [{ id: 3, status: 'lost', kind: 'h2h', gw: 2 }],
+  }
   assert.deepEqual(
-    afterGw3.map((b) => b.id),
-    [10, 9],
+    liveBoardTickets(state).map((b) => b.id),
+    [10],
   )
 })

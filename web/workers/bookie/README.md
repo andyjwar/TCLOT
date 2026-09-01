@@ -23,14 +23,18 @@ against the official FPL Draft results.
   (title, top 4, bottom 4, last) and repriced after every banked gameweek.
   Bets lock the odds they were placed at. Titan and Minnow can pay four
   tickets; last place pays only 8th.
-- **Settlement** — a gameweek grades once every Premier League fixture for it
-  is finished or provisionally finished (same rule the site uses), so payouts
-  land hours before FPL's own "data checked" flag. Markets stay unlocked until
-  that official finish so a bonus-point flip can re-grade a ticket (and the
-  bankroll) instead of leaving a provisional result stuck.
+- **Settlement** — a gameweek counts as final once every Premier League fixture
+  for it is finished or provisionally finished, or FPL's bootstrap
+  `events[].finished` flag is already true (same rule the site uses), so
+  payouts land hours before FPL's own "data checked" flag. Markets stay
+  unlocked until the official finish so a bonus-point flip can re-grade a
+  ticket (and the bankroll) instead of leaving a provisional result stuck.
+  Settled weekly tickets stay on the live bets board (green row) until the
+  next gameweek's markets open.
 - **Bankroll** — everyone starts a season with 1,000 Clotcoins (the TCLOT
   currency); a 50-Clotcoin stipend
-  lands after each settled gameweek so going bust is never terminal.
+  lands after each settled gameweek you had a weekly ticket in, so going
+  bust is never terminal. Sitting the week out does not pay.
   A one-shot restart (`fresh-start.sql` / `applyFreshStart`) can wipe the
   ticket ledger and put every bankroll back at 1,000 without touching PINs
   or markets. It is gated by the `freshStart:2026-08-27` meta key so it

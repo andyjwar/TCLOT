@@ -9,7 +9,12 @@
  * finished) — the same effective-finish rule as web/src/h2hEffectiveFinished.js,
  * bridging FPL Draft's slow post-GW "data checked" lag.
  */
-export function footballComplete(fixtures, gw) {
+export function footballComplete(fixtures, gw, extraFinishedGws) {
+  if (extraFinishedGws) {
+    for (const raw of extraFinishedGws) {
+      if (Number(raw) === gw) return true;
+    }
+  }
   const rows = (Array.isArray(fixtures) ? fixtures : []).filter((f) => Number(f?.event) === gw);
   if (rows.length === 0) return false;
   return rows.every((f) => f?.finished === true || f?.finished_provisional === true);
@@ -60,6 +65,26 @@ export function creditedPayout(bet) {
     return Number(bet.payout) || 0;
   }
   return 0;
+}
+
+/**
+ * Event ids FPL has already marked `finished` on draft/classic bootstrap.
+ * Same shapes as web/src/h2hEffectiveFinished.js — used so settlement does
+ * not wait on a stale fixtures.json after the gameweek is banked.
+ *
+ * @param {object | object[] | null | undefined} bootstrapOrEvents
+ * @returns {Set<number>}
+ */
+export function finishedEventIdsFromEvents(bootstrapOrEvents) {
+  const ev = bootstrapOrEvents?.events ?? bootstrapOrEvents;
+  const list = Array.isArray(ev) ? ev : Array.isArray(ev?.data) ? ev.data : [];
+  const out = new Set();
+  for (const e of list) {
+    if (e?.finished !== true) continue;
+    const id = Number(e?.id);
+    if (Number.isFinite(id) && id >= 1) out.add(id);
+  }
+  return out;
 }
 
 /**
