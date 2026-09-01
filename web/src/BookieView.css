@@ -862,16 +862,18 @@
 }
 
 .bookie-winners {
-  list-style: none;
-  margin: 8px 0 0;
-  padding: 0;
   display: grid;
   gap: 14px;
+  margin-top: 4px;
 }
 
 .bookie-winners__week {
   display: grid;
-  gap: 8px;
+  gap: 0;
+}
+
+.bookie-punters--winners {
+  margin-top: 6px;
 }
 
 .bookie-winners__week-label {
@@ -882,57 +884,9 @@
   color: var(--fm-muted);
 }
 
-.bookie-winners__teams {
-  list-style: none;
+.bookie-winners__empty {
   margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.bookie-winners__item {
-  display: grid;
-  gap: 6px;
-}
-
-.bookie-winners__row {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 10px;
-  font-size: 0.84rem;
-  padding: 0;
-}
-
-.bookie-winners__bets {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.bookie-winners__slip {
-  display: flex;
-  align-items: baseline;
-  gap: 8px 12px;
-  min-width: 0;
-}
-
-.bookie-winners__pick {
-  flex: 1 1 auto;
-  min-width: 0;
-  font-size: 0.78rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.bookie-winners__figs {
-  display: flex;
-  flex-shrink: 0;
-  align-items: baseline;
-  gap: 0.7em;
-  font-size: 0.78rem;
+  padding: 0 12px 10px;
 }
 
 .bookie-winners__fig {
@@ -956,6 +910,7 @@
 
 .bookie-winners__net--down {
   color: var(--data-negative, #ef4444);
+  font-weight: 700;
 }
 
 @media (max-width: 560px) {
