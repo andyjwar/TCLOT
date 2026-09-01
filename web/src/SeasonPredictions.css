@@ -46,10 +46,10 @@
   white-space: nowrap;
 }
 .season-predictions__delta--up {
-  color: var(--positive, #4ade80);
+  color: var(--data-positive, #12a15a);
 }
 .season-predictions__delta--down {
-  color: var(--negative, #f87171);
+  color: var(--data-negative, #ef4444);
 }
 
 /* Title odds chart */
