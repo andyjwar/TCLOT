@@ -96,6 +96,10 @@
   /* Semantic data colours (mirror existing --fm-pitch / --fm-loss-dot / --fm-draw) */
   --data-positive: #12a15a;
   --data-negative: #ef4444;
+  /* Aliases so older `var(--positive)` / `var(--negative)` call sites
+   * track the same greens/reds as the standings form table. */
+  --positive: var(--data-positive);
+  --negative: var(--data-negative);
   --data-neutral: #9ca3af;
   /* Amber used by the PR #5g `GW` dot for the "drawing" outcome — distinct
    * from `--data-neutral` so a drawn matchup reads differently from a
@@ -10324,11 +10328,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 }
 
 .live-standings-move--up {
-  color: var(--fm-win, #34d399);
+  color: var(--data-positive, #12a15a);
 }
 
 .live-standings-move--down {
-  color: #dc2626;
+  color: var(--data-negative, #ef4444);
 }
 
 /* ============================================================ */
@@ -19139,10 +19143,10 @@ button.live-xp__player-name:focus-visible {
   font-weight: 700;
 }
 .forecast-row__delta--up {
-  color: #2e9e5b;
+  color: var(--data-positive, #12a15a);
 }
 .forecast-row__delta--down {
-  color: #d9534f;
+  color: var(--data-negative, #ef4444);
 }
 .forecast-health__chip--live .forecast-health__value {
   color: #2e9e5b;
