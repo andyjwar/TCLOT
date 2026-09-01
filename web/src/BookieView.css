@@ -545,23 +545,6 @@
   color: var(--fm-muted);
 }
 
-/* Settled tickets stay on the live board until the next gameweek — a green
- * wash so they read as done, not still riding. Stronger on a win. */
-.bookie-bet--won,
-.bookie-bet--lost,
-.bookie-bet--void,
-.bookie-bet--cashed_out {
-  background: color-mix(in srgb, var(--data-positive, #12a15a) 20%, transparent);
-  margin-inline: -6px;
-  padding-inline: 6px;
-  border-radius: 8px;
-  border-bottom-color: transparent;
-}
-
-.bookie-bet--won {
-  background: color-mix(in srgb, var(--data-positive, #12a15a) 28%, transparent);
-}
-
 .bookie-bet__desc {
   min-width: 0;
   overflow: hidden;
@@ -648,7 +631,7 @@
 /* Just-settled weekly tickets stay on My bets / the live board until the
  * next GW's markets print — a green wash so they don't read as still live. */
 .bookie-bet--settled {
-  background: color-mix(in srgb, #16a34a 16%, transparent);
+  background: color-mix(in srgb, #16a34a 22%, transparent);
   border-radius: 8px;
   border-bottom-color: transparent;
   padding-left: 8px;
@@ -658,7 +641,7 @@
 }
 
 .fotmob[data-theme='light'] .bookie-bet--settled {
-  background: color-mix(in srgb, #16a34a 12%, transparent);
+  background: color-mix(in srgb, #16a34a 16%, transparent);
 }
 
 /* The tempter's button — a blue pill in the Cash out column, matching the
