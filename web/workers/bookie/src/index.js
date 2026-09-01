@@ -13,8 +13,9 @@
  * "effectively finished" rule as web/src/h2hEffectiveFinished.js: a GW counts
  * as final once every Premier League fixture for it is finished or
  * provisionally finished, or FPL's bootstrap `events[].finished` flag is
- * already true), grades bets, credits payouts, and pays every registered
- * punter a weekly stipend so nobody is frozen out after going bust.
+ * already true), grades bets, credits payouts, and pays a weekly stipend to
+ * anyone who had a ticket that GW so a busted bankroll can come back —
+ * sitting the week out does not pay.
  *
  * Identity is honor-system-with-a-lock: each manager claims their league
  * entry once with a PIN (PBKDF2-hashed); sessions are HMAC-signed tokens.
@@ -35,6 +36,7 @@
 import { footballComplete, finishedEventIdsFromEvents, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 import { applyFreshStart } from './freshStart.js';
+import { applySitoutStipendClawback } from './stipend.js';
 
 const STARTING_BALANCE = 1000;
 const WEEKLY_STIPEND = 50;
@@ -336,8 +338,8 @@ async function gradeBets(db, market, winningSelection, voidedSelections = null) 
 /**
  * Settle every due market: H2H markets whose gameweek's football is complete,
  * and the outright once all league matches are final. After a gameweek fully
- * settles, every registered punter gets the weekly stipend (once per GW) so
- * a busted bankroll can always come back for more.
+ * settles, anyone who had a weekly ticket that GW gets the stipend (once)
+ * so a busted bankroll can come back — sit-outs are not paid.
  */
 async function settleDue(env) {
   const db = env.DB;
@@ -454,6 +456,8 @@ async function settleDue(env) {
     }
 
     // Stipend: once per gameweek, after every H2H market for it has settled.
+    // Only punters who had a weekly ticket (H2H / player special) that GW —
+    // sitting it out is not a +50 free roll.
     const remaining = await db
       .prepare(`SELECT COUNT(*) AS n FROM markets WHERE kind = 'h2h' AND gw = ? AND status = 'open'`)
       .bind(gw)
@@ -463,8 +467,16 @@ async function settleDue(env) {
       const stipendKey = `stipend:${season}:${gw}`;
       if (season && !(await metaGet(db, stipendKey))) {
         await db
-          .prepare(`UPDATE users SET balance = balance + ? WHERE season = ?`)
-          .bind(WEEKLY_STIPEND, season)
+          .prepare(
+            `UPDATE users SET balance = balance + ?
+             WHERE season = ?
+               AND entry_id IN (
+                 SELECT DISTINCT b.entry_id FROM bets b
+                 JOIN markets m ON m.id = b.market_id
+                 WHERE b.season = ? AND m.gw = ?
+               )`,
+          )
+          .bind(WEEKLY_STIPEND, season, season, gw)
           .run();
         await metaSet(db, stipendKey, nowIso);
       }
@@ -891,6 +903,15 @@ async function handleState(request, env, ctx, ch) {
     metaSet,
   });
   if (wiped) console.log('bookie: fresh start — bets cleared, balances reset to', STARTING_BALANCE);
+
+  const clawed = await applySitoutStipendClawback(db, {
+    season: seasonNow,
+    stipend: WEEKLY_STIPEND,
+    nowIso: new Date().toISOString(),
+    metaGet,
+    metaSet,
+  });
+  if (clawed) console.log('bookie: clawed sit-out stipends for', seasonNow);
 
   const nowMs = Date.now();
   const markets = await db
