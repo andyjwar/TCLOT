@@ -35,6 +35,8 @@ against the official FPL Draft results.
   currency); a 50-Clotcoin stipend
   lands after each settled gameweek you had a weekly ticket in, so going
   bust is never terminal. Sitting the week out does not pay.
+  The leaderboard also reports season won (net profit), lost (stake
+  written off), and live (open stake), all sortable.
   A one-shot restart (`fresh-start.sql` / `applyFreshStart`) can wipe the
   ticket ledger and put every bankroll back at 1,000 without touching PINs
   or markets. It is gated by the `freshStart:2026-08-27` meta key so it
