@@ -1463,6 +1463,7 @@ function TeamHistoryMobileMatrix({ journey, fullNameMap }) {
 }
 
 function HeritageTeamHistory({ tableRows, fullNameMap, isStandalone = true }) {
+  /* Completed seasons only — current 26/27 is on Standings / CofC. */
   const journey = useMemo(() => computeHallManagerJourney(tableRows), [tableRows])
   const [mobileMode, setMobileMode] = useState('list')
 
