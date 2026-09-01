@@ -942,10 +942,6 @@
   justify-self: auto;
 }
 
-.bookie-winners__gw {
-  color: var(--fm-muted);
-}
-
 .bookie-winners__net--up {
   color: var(--data-positive, #12a15a);
   font-weight: 700;
