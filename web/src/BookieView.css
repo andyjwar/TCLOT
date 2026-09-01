@@ -551,7 +551,7 @@
 .bookie-bet--lost,
 .bookie-bet--void,
 .bookie-bet--cashed_out {
-  background: color-mix(in srgb, var(--data-positive, #12a15a) 14%, transparent);
+  background: color-mix(in srgb, var(--data-positive, #12a15a) 20%, transparent);
   margin-inline: -6px;
   padding-inline: 6px;
   border-radius: 8px;
@@ -559,7 +559,7 @@
 }
 
 .bookie-bet--won {
-  background: color-mix(in srgb, var(--data-positive, #12a15a) 22%, transparent);
+  background: color-mix(in srgb, var(--data-positive, #12a15a) 28%, transparent);
 }
 
 .bookie-bet__desc {
