@@ -381,7 +381,8 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           this week. Bets settle as soon as the football finishes, stay on that board
           (green row) until the next gameweek's markets open, and a{' '}
           {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
-          each gameweek so going bust is embarrassing, not terminal. Open tickets carry a
+          each gameweek you have a ticket in, so going bust is embarrassing, not
+          terminal — sitting the week out does not pay. Open tickets carry a
           cash-out offer — what your position is worth right now, minus the house's cut.
           Once the gameweek kicks off the offer tracks the live scores, so when your long
           shot is 20 points up the bookie will dangle a tidy guaranteed profit in front of

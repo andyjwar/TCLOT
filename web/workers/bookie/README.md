@@ -31,7 +31,8 @@ against the official FPL Draft results.
   markets open.
 - **Bankroll** — everyone starts a season with 1,000 Clotcoins (the TCLOT
   currency); a 50-Clotcoin stipend
-  lands after each settled gameweek so going bust is never terminal.
+  lands after each settled gameweek you had a weekly ticket in, so going
+  bust is never terminal. Sitting the week out does not pay.
   The leaderboard also reports season won (net profit), lost (stake
   written off), and live (open stake), all sortable.
   A one-shot restart (`fresh-start.sql` / `applyFreshStart`) can wipe the
