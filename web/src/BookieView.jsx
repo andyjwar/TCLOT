@@ -22,6 +22,7 @@ import {
 import { decimalOddsToFraction } from './oddsFormat.js'
 import { historyOpponentMetaForGw, loadLeagueFixtures } from './playerGwHistory.js'
 import { fetchLeagueJsonFile } from './playersBenchShared.js'
+import { highlightSettledOnLiveBoard, liveBoardGameweek, liveBoardTickets } from './bookieLiveBoard.js'
 import './BookieView.css'
 
 /** "Fri 28 Aug, 18:30" in the viewer's locale. */
@@ -95,6 +96,18 @@ function betReturnValue(bet) {
 function betReturnLabel(bet) {
   if (bet.status === 'lost') return '—'
   return fmtCoins(betReturnValue(bet))
+}
+
+function betRowClassName(bet, liveGw, marketById) {
+  const market = marketById?.get(Number(bet.market_id))
+  const row = {
+    ...bet,
+    kind: bet.kind || market?.kind,
+    gw: bet.gw ?? market?.gw,
+  }
+  const status = row.status && row.status !== 'open' ? ` bookie-bet--${row.status}` : ''
+  const settled = highlightSettledOnLiveBoard(row, liveGw) ? ' bookie-bet--settled' : ''
+  return `bookie-bet${status}${settled}`
 }
 
 function BetColHead({ cashout = false }) {
@@ -358,7 +371,8 @@ export function BookieView({ teamLogoMap = {}, kitIndexByEntry }) {
           last-place boards reprice after every gameweek but your ticket keeps the odds
           you took.
           Every ticket is public — the live bets board shows what everyone has riding
-          this week. Bets settle as soon as the football finishes, and a{' '}
+          this week. Bets settle as soon as the football finishes, stay on that board
+          (green row) until the next gameweek's markets open, and a{' '}
           {fmtCoins(state.weeklyStipend ?? 50)}-Clotcoin stipend lands after
           each gameweek so going bust is embarrassing, not terminal. Open tickets carry a
           cash-out offer — what your position is worth right now, minus the house's cut.
@@ -1110,6 +1124,7 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
     for (const m of markets) map.set(Number(m.id), m)
     return map
   }, [markets])
+  const liveGw = liveBoardGameweek(markets)
   const bets = me.bets ?? []
   if (bets.length === 0) {
     return (
@@ -1127,7 +1142,7 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
         {bets.map((b) => {
           const quote = b.status === 'open' ? cashoutQuotes.get(Number(b.id)) : undefined
           return (
-            <li key={b.id} className={`bookie-bet bookie-bet--${b.status}`}>
+            <li key={b.id} className={betRowClassName(b, liveGw, marketById)}>
               <BetDesc bet={b} marketById={marketById} nameByEntry={nameByEntry} />
               <BetTicketFigures bet={b} />
               {quote != null && token ? (
@@ -1149,10 +1164,11 @@ function MyBets({ me, markets, nameByEntry, cashoutQuotes, token, onCashedOut })
 }
 
 /**
- * Everyone's open tickets — the league-wide live board. Tickets were never
- * secret ballots: seeing what your rivals have riding is the point. Grouped
- * per team behind a collapsible row so eight busy punters don't turn the
- * board into a scroll marathon.
+ * Everyone's tickets for this gameweek — open ones plus just-settled weekly
+ * slips (green) until the next GW's markets print. Tickets were never secret
+ * ballots: seeing what your rivals have riding is the point. Grouped per
+ * team behind a collapsible row so eight busy punters don't turn the board
+ * into a scroll marathon.
  */
 function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntry }) {
   const marketById = useMemo(() => {
@@ -1161,7 +1177,12 @@ function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntr
     return map
   }, [markets])
 
-  const bets = state.openBets ?? []
+  const liveGw = liveBoardGameweek(markets)
+  const bets = liveBoardTickets({
+    openBets: state.openBets,
+    closedBets: state.closedBets,
+    markets,
+  })
   const byEntry = new Map()
   for (const b of bets) {
     const key = Number(b.entry_id)
@@ -1174,6 +1195,9 @@ function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntr
       name: rows[0]?.name ?? nameByEntry.get(entryId) ?? String(entryId),
       rows,
       staked: rows.reduce((sum, r) => sum + Number(r.stake), 0),
+      riding: rows
+        .filter((r) => r.status === 'open' || r.status == null)
+        .reduce((sum, r) => sum + Number(r.stake), 0),
     }))
     .sort((a, b) => b.staked - a.staked)
 
@@ -1206,13 +1230,13 @@ function LiveBets({ state, me, markets, nameByEntry, teamLogoMap, kitIndexByEntr
                     {mine ? ' (you)' : ''}
                   </span>
                   <span className="bookie-punter__meta tabular">
-                    {g.rows.length} {g.rows.length === 1 ? 'bet' : 'bets'} · {fmtCoins(g.staked)} riding
+                    {g.rows.length} {g.rows.length === 1 ? 'bet' : 'bets'} · {fmtCoins(g.riding)} riding
                   </span>
                 </summary>
                 <ul className="bookie-bets bookie-punter__bets">
                   <BetColHead />
                   {g.rows.map((b) => (
-                    <li key={b.id} className="bookie-bet">
+                    <li key={b.id} className={betRowClassName(b, liveGw, marketById)}>
                       <BetDesc bet={b} marketById={marketById} nameByEntry={nameByEntry} />
                       <BetTicketFigures bet={b} />
                     </li>
