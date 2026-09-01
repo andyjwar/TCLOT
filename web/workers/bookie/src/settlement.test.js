@@ -2,12 +2,15 @@ import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   footballComplete,
+  footballOfficial,
   finishedEventIdsFromEvents,
   h2hResultForMarket,
   championFromMatches,
   playerMarketOutcome,
   ranksFromMatches,
   seasonKindWinners,
+  desiredBetGrade,
+  creditedPayout,
 } from './settlement.js'
 
 /* footballComplete — effective-finish rule for a Premier League gameweek */
@@ -33,6 +36,36 @@ test('footballComplete: no fixtures for the GW is not complete', () => {
   assert.equal(footballComplete([{ event: 1, finished: true }], 2), false)
   assert.equal(footballComplete([], 2), false)
   assert.equal(footballComplete(null, 2), false)
+})
+
+test('footballOfficial: provisional finish is not official', () => {
+  const fixtures = [
+    { event: 2, finished: true },
+    { event: 2, finished: false, finished_provisional: true },
+  ]
+  assert.equal(footballComplete(fixtures, 2), true)
+  assert.equal(footballOfficial(fixtures, 2), false)
+  assert.equal(footballOfficial([{ event: 2, finished: true }], 2), true)
+  assert.equal(footballOfficial([], 2), false)
+})
+
+test('desiredBetGrade: win / lose / void-no-play / void-no-result', () => {
+  const bet = { selection: 'away', stake: 10, odds: 2.1 }
+  assert.deepEqual(desiredBetGrade(bet, new Set(['away'])), { status: 'won', payout: 21 })
+  assert.deepEqual(desiredBetGrade(bet, new Set(['home'])), { status: 'lost', payout: 0 })
+  assert.deepEqual(desiredBetGrade({ selection: '4', stake: 10, odds: 8 }, new Set(['1']), new Set(['4'])), {
+    status: 'void',
+    payout: 10,
+  })
+  assert.deepEqual(desiredBetGrade(bet, null), { status: 'void', payout: 10 })
+})
+
+test('creditedPayout: only terminal paying statuses return coins', () => {
+  assert.equal(creditedPayout({ status: 'open', payout: 21 }), 0)
+  assert.equal(creditedPayout({ status: 'lost', payout: 0 }), 0)
+  assert.equal(creditedPayout({ status: 'won', payout: 21 }), 21)
+  assert.equal(creditedPayout({ status: 'void', payout: 10 }), 10)
+  assert.equal(creditedPayout({ status: 'cashed_out', payout: 12 }), 12)
 })
 
 test('footballComplete: bootstrap event.finished closes a GW fixtures still show open', () => {
@@ -113,6 +146,20 @@ test('h2hResultForMarket: away win', () => {
     league_entry_2_points: 31,
   }
   assert.equal(h2hResultForMarket(payload, match).result, 'away')
+})
+
+test('h2hResultForMarket: one-point away win (Balrogs 46–45 Sméagol)', () => {
+  const smeagolHome = { homeEntryId: 5220, awayEntryId: 44904 }
+  const match = {
+    league_entry_1: 5220,
+    league_entry_2: 44904,
+    league_entry_1_points: 45,
+    league_entry_2_points: 46,
+  }
+  assert.equal(h2hResultForMarket(smeagolHome, match).result, 'away')
+  const bet = { selection: 'away', stake: 10, odds: 2.1 }
+  assert.deepEqual(desiredBetGrade(bet, new Set(['away'])), { status: 'won', payout: 21 })
+  assert.equal(creditedPayout({ status: 'lost', payout: 0 }), 0)
 })
 
 test('h2hResultForMarket: non-numeric scores mean no result yet', () => {

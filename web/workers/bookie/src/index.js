@@ -33,7 +33,7 @@
  * Deploy: cd web/workers/bookie && npm run deploy  (see README.md for setup)
  */
 
-import { footballComplete, finishedEventIdsFromEvents, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
+import { footballComplete, footballOfficial, finishedEventIdsFromEvents, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, desiredBetGrade, creditedPayout, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 import { applyFreshStart } from './freshStart.js';
 import { applySitoutStipendClawback } from './stipend.js';
@@ -277,9 +277,11 @@ async function ingestMarkets(env) {
 /* ------------------------------------------------------------------ */
 
 /**
- * Grade every open bet on a settled market and credit winners. Selections
- * in `voidedSelections` (player specials: no minutes played) refund their
- * stake instead of grading — the bookie no-play rule.
+ * Bring every gradeable ticket on a market in line with `winningSelection`.
+ * Idempotent: open bets settle, and a provisionally-settled bet is re-graded
+ * (balance delta applied) when bonus later flips the result. Cashed-out
+ * tickets are left alone — those already exited. Selections in
+ * `voidedSelections` (player specials: no minutes) refund their stake.
  */
 async function gradeBets(db, market, winningSelection, voidedSelections = null) {
   const winners =
@@ -289,50 +291,42 @@ async function gradeBets(db, market, winningSelection, voidedSelections = null) 
         ? winningSelection
         : new Set([String(winningSelection)]);
   const bets = await db
-    .prepare(`SELECT * FROM bets WHERE market_id = ? AND status = 'open'`)
+    .prepare(
+      `SELECT * FROM bets WHERE market_id = ? AND status IN ('open', 'won', 'lost', 'void')`,
+    )
     .bind(market.id)
     .all();
   const nowIso = new Date().toISOString();
   for (const bet of bets.results ?? []) {
-    if (voidedSelections?.has(String(bet.selection))) {
-      await db.batch([
-        db
-          .prepare(`UPDATE bets SET status = 'void', payout = ?, settled_at = ? WHERE id = ?`)
-          .bind(bet.stake, nowIso, bet.id),
+    const desired = desiredBetGrade(bet, winners, voidedSelections);
+    if (bet.status === desired.status && Number(bet.payout) === Number(desired.payout)) continue;
+    const delta = creditedPayout(desired) - creditedPayout(bet);
+    const stmts = [
+      db
+        .prepare(`UPDATE bets SET status = ?, payout = ?, settled_at = ? WHERE id = ?`)
+        .bind(desired.status, desired.payout, nowIso, bet.id),
+    ];
+    if (delta !== 0) {
+      stmts.push(
         db
           .prepare(`UPDATE users SET balance = balance + ? WHERE entry_id = ? AND season = ?`)
-          .bind(bet.stake, bet.entry_id, bet.season),
-      ]);
-      continue;
+          .bind(delta, bet.entry_id, bet.season),
+      );
     }
-    const won = winners != null && winners.has(String(bet.selection));
-    if (won) {
-      const payout = Math.round(bet.stake * bet.odds);
-      await db.batch([
-        db
-          .prepare(`UPDATE bets SET status = 'won', payout = ?, settled_at = ? WHERE id = ?`)
-          .bind(payout, nowIso, bet.id),
-        db
-          .prepare(`UPDATE users SET balance = balance + ? WHERE entry_id = ? AND season = ?`)
-          .bind(payout, bet.entry_id, bet.season),
-      ]);
-    } else if (winners != null) {
-      await db
-        .prepare(`UPDATE bets SET status = 'lost', payout = 0, settled_at = ? WHERE id = ?`)
-        .bind(nowIso, bet.id)
-        .run();
-    } else {
-      // Void: no result could ever be derived — refund the stake.
-      await db.batch([
-        db
-          .prepare(`UPDATE bets SET status = 'void', payout = ?, settled_at = ? WHERE id = ?`)
-          .bind(bet.stake, nowIso, bet.id),
-        db
-          .prepare(`UPDATE users SET balance = balance + ? WHERE entry_id = ? AND season = ?`)
-          .bind(bet.stake, bet.entry_id, bet.season),
-      ]);
-    }
+    await db.batch(stmts);
   }
+}
+
+function parseMarketPayload(market) {
+  try {
+    return JSON.parse(market.payload);
+  } catch {
+    return {};
+  }
+}
+
+function marketIsLocked(market) {
+  return parseMarketPayload(market).locked === true;
 }
 
 /**
@@ -340,6 +334,11 @@ async function gradeBets(db, market, winningSelection, voidedSelections = null) 
  * and the outright once all league matches are final. After a gameweek fully
  * settles, anyone who had a weekly ticket that GW gets the stipend (once)
  * so a busted bankroll can come back — sit-outs are not paid.
+ *
+ * Weekly markets grade as soon as the football is effectively finished, then
+ * stay unlocked until FPL's official finish (H2H `match.finished`, or every
+ * PL fixture `finished` for player specials). Bonus can flip a one-point
+ * scoreline in that gap — unlocked markets are re-read and re-graded.
  */
 async function settleDue(env) {
   const db = env.DB;
@@ -349,8 +348,20 @@ async function settleDue(env) {
     .bind(nowMs)
     .all();
   const dueMarkets = due.results ?? [];
-  const h2hDue = dueMarkets.filter((m) => m.kind === 'h2h');
-  const playerDue = dueMarkets.filter((m) => PLAYER_MARKET_KINDS.includes(m.kind));
+  const settledWeekly = await db
+    .prepare(
+      `SELECT * FROM markets WHERE status = 'settled' AND kind IN ('h2h', 'scorer', 'toppoints')`,
+    )
+    .all();
+  const unlockedWeekly = (settledWeekly.results ?? []).filter((m) => !marketIsLocked(m));
+  const h2hDue = [
+    ...dueMarkets.filter((m) => m.kind === 'h2h'),
+    ...unlockedWeekly.filter((m) => m.kind === 'h2h'),
+  ];
+  const playerDue = [
+    ...dueMarkets.filter((m) => PLAYER_MARKET_KINDS.includes(m.kind)),
+    ...unlockedWeekly.filter((m) => PLAYER_MARKET_KINDS.includes(m.kind)),
+  ];
   const seasonDue = dueMarkets.filter((m) => SEASON_MARKET_KINDS.includes(m.kind));
   if (h2hDue.length === 0 && playerDue.length === 0 && seasonDue.length === 0) return;
 
@@ -387,8 +398,9 @@ async function settleDue(env) {
       fixtures = [];
     }
     const complete = footballComplete(fixtures, gw, extraFinishedGws);
+    const officialFootball = footballOfficial(fixtures, gw);
     for (const market of h2hDue.filter((m) => Number(m.gw) === gw)) {
-      const payload = JSON.parse(market.payload);
+      const payload = parseMarketPayload(market);
       const match = matches.find(
         (m) =>
           Number(m.event) === gw &&
@@ -397,12 +409,16 @@ async function settleDue(env) {
             (Number(m.league_entry_1) === Number(payload.awayEntryId) &&
               Number(m.league_entry_2) === Number(payload.homeEntryId))),
       );
-      const finished =
-        match &&
-        (match.finished === true || (complete && match.started === true));
+      const official = match?.finished === true;
+      const finished = match && (official || (complete && match.started === true));
       if (!finished) continue;
       const outcome = h2hResultForMarket(payload, match);
       if (!outcome) continue;
+      const already =
+        market.status === 'settled' &&
+        market.result === outcome.result &&
+        (payload.locked === true) === official;
+      if (already && payload.locked === true) continue;
       await db
         .prepare(
           `UPDATE markets SET status = 'settled', result = ?, settled_at = ?,
@@ -411,7 +427,11 @@ async function settleDue(env) {
         .bind(
           outcome.result,
           nowIso,
-          JSON.stringify({ ...payload, finalScore: { home: outcome.home, away: outcome.away } }),
+          JSON.stringify({
+            ...payload,
+            finalScore: { home: outcome.home, away: outcome.away },
+            locked: official,
+          }),
           market.id,
         )
         .run();
@@ -431,21 +451,26 @@ async function settleDue(env) {
       }
       if (liveElements) {
         for (const market of playerMarkets) {
-          const payload = JSON.parse(market.payload);
+          const payload = parseMarketPayload(market);
           const outcome = playerMarketOutcome(market.kind, payload.selections ?? [], liveElements);
           if (!outcome) continue;
+          const result = [...outcome.winners].join(',');
+          if (market.status === 'settled' && market.result === result && payload.locked === true) {
+            continue;
+          }
           await db
             .prepare(
               `UPDATE markets SET status = 'settled', result = ?, settled_at = ?,
                  payload = ? WHERE id = ?`,
             )
             .bind(
-              [...outcome.winners].join(','),
+              result,
               nowIso,
               JSON.stringify({
                 ...payload,
                 voided: [...outcome.voided],
                 ...(outcome.topScore != null ? { topScore: outcome.topScore } : {}),
+                locked: officialFootball,
               }),
               market.id,
             )
@@ -463,7 +488,9 @@ async function settleDue(env) {
       .bind(gw)
       .first();
     if (Number(remaining?.n) === 0) {
-      const season = h2hDue.find((m) => Number(m.gw) === gw)?.season;
+      const season =
+        h2hDue.find((m) => Number(m.gw) === gw)?.season ??
+        dueMarkets.find((m) => m.kind === 'h2h' && Number(m.gw) === gw)?.season;
       const stipendKey = `stipend:${season}:${gw}`;
       if (season && !(await metaGet(db, stipendKey))) {
         await db

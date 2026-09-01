@@ -21,6 +21,53 @@ export function footballComplete(fixtures, gw, extraFinishedGws) {
 }
 
 /**
+ * Whether every Premier League fixture for `gw` is *officially* finished —
+ * not just provisionally. Bonus and BPS can still move between provisional
+ * and official, which is enough to flip a one-point H2H.
+ */
+export function footballOfficial(fixtures, gw) {
+  const rows = (Array.isArray(fixtures) ? fixtures : []).filter((f) => Number(f?.event) === gw);
+  if (rows.length === 0) return false;
+  return rows.every((f) => f?.finished === true);
+}
+
+/**
+ * What a ticket should look like once a market has a result. Pure so
+ * settlement can re-grade a provisionally-settled bet when bonus flips
+ * the scoreline — `gradeBets` applies the balance delta.
+ *
+ * @param {{ selection: string, stake: number, odds: number }} bet
+ * @param {Set<string> | null} winners
+ * @param {Set<string> | null} [voidedSelections]
+ * @returns {{ status: 'won' | 'lost' | 'void', payout: number }}
+ */
+export function desiredBetGrade(bet, winners, voidedSelections = null) {
+  const stake = Number(bet?.stake) || 0;
+  if (voidedSelections?.has(String(bet.selection))) {
+    return { status: 'void', payout: stake };
+  }
+  if (winners != null && winners.has(String(bet.selection))) {
+    return { status: 'won', payout: Math.round(stake * Number(bet.odds)) };
+  }
+  if (winners != null) {
+    return { status: 'lost', payout: 0 };
+  }
+  return { status: 'void', payout: stake };
+}
+
+/**
+ * Clotcoins already credited to the punter for this ticket. Open and lost
+ * pay nothing; won / cashed-out / void have `payout` on the row (void
+ * stores the refunded stake).
+ */
+export function creditedPayout(bet) {
+  if (bet?.status === 'won' || bet?.status === 'void' || bet?.status === 'cashed_out') {
+    return Number(bet.payout) || 0;
+  }
+  return 0;
+}
+
+/**
  * Event ids FPL has already marked `finished` on draft/classic bootstrap.
  * Same shapes as web/src/h2hEffectiveFinished.js — used so settlement does
  * not wait on a stale fixtures.json after the gameweek is banked.

@@ -631,7 +631,7 @@
 /* Just-settled weekly tickets stay on My bets / the live board until the
  * next GW's markets print — a green wash so they don't read as still live. */
 .bookie-bet--settled {
-  background: color-mix(in srgb, #16a34a 16%, transparent);
+  background: color-mix(in srgb, #16a34a 22%, transparent);
   border-radius: 8px;
   border-bottom-color: transparent;
   padding-left: 8px;
@@ -641,7 +641,7 @@
 }
 
 .fotmob[data-theme='light'] .bookie-bet--settled {
-  background: color-mix(in srgb, #16a34a 12%, transparent);
+  background: color-mix(in srgb, #16a34a 16%, transparent);
 }
 
 /* The tempter's button — a blue pill in the Cash out column, matching the

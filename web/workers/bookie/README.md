@@ -26,9 +26,11 @@ against the official FPL Draft results.
 - **Settlement** — a gameweek counts as final once every Premier League fixture
   for it is finished or provisionally finished, or FPL's bootstrap
   `events[].finished` flag is already true (same rule the site uses), so
-  payouts land hours before FPL's own "data checked" flag. Settled weekly
-  tickets stay on the live bets board (green row) until the next gameweek's
-  markets open.
+  payouts land hours before FPL's own "data checked" flag. Markets stay
+  unlocked until the official finish so a bonus-point flip can re-grade a
+  ticket (and the bankroll) instead of leaving a provisional result stuck.
+  Settled weekly tickets stay on the live bets board (green row) until the
+  next gameweek's markets open.
 - **Bankroll** — everyone starts a season with 1,000 Clotcoins (the TCLOT
   currency); a 50-Clotcoin stipend
   lands after each settled gameweek you had a weekly ticket in, so going
