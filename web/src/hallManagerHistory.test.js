@@ -5,6 +5,7 @@ import {
   LIVE_HALL_SEASON_LABEL,
   computeHallAlgorithmRows,
   computeHallManagerCareerRows,
+  computeHallManagerJourney,
   computeLiveHallManagerCareerRows,
   hallManagerDisplayKey,
   liveHallSeasonHasResults,
@@ -104,4 +105,30 @@ test('live career rows match historic-only totals before GW1', () => {
     liveEmpty.map((r) => [r.key, r.titles, r.totalPts, r.seasons]),
     historic.map((r) => [r.key, r.titles, r.totalPts, r.seasons]),
   )
+})
+
+test('Team Journeys omit the in-progress 26/27 season even after results', () => {
+  const liveFirst = [
+    {
+      teamName: 'Rokesly Regorasu',
+      manager: 'David Higman',
+      rank: 1,
+      matches_won: 2,
+      matches_drawn: 0,
+      matches_lost: 0,
+      gf: 80,
+      ga: 40,
+      total: 6,
+    },
+  ]
+  const liveCareer = computeLiveHallManagerCareerRows(liveFirst).find((r) => r.key === 'David')
+  assert.equal(liveCareer.titles, 2)
+
+  const journey = computeHallManagerJourney(liveFirst)
+  const david = journey.find((r) => r.key === 'David')
+  assert.ok(david)
+  assert.equal(david.titles, 1)
+  assert.equal(david.seasons.length, 6)
+  assert.ok(!david.seasons.some((s) => s.season === LIVE_HALL_SEASON_LABEL))
+  assert.ok(david.seasons.every((s) => s.season !== '2026-27'))
 })

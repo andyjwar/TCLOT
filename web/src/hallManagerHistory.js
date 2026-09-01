@@ -329,14 +329,12 @@ export function computeLiveHallManagerCareerRows(tableRows) {
 }
 
 /**
- * Per manager (display key): teams managed in season order — archived tables plus current
- * season when `tableRows` is available. Each entry carries the rank for heatmap tinting.
- * @param {object[] | null | undefined} tableRows
+ * Per manager (display key): teams managed in season order. Each entry
+ * carries the rank for heatmap tinting.
+ * @param {{ season: string, rows: object[] }[]} seasonDefs
  * @returns {{ key: string, entries: { season: string, team: string, rank: number|null }[] }[]}
  */
-export function computeHallManagerTeamHistory(tableRows) {
-  const seasonDefs = hallSeasonDefsWithLive(tableRows)
-
+function computeHallManagerTeamHistoryFromDefs(seasonDefs) {
   const byKey = new Map()
   for (const { season, rows } of seasonDefs) {
     for (const r of rows) {
@@ -355,13 +353,21 @@ export function computeHallManagerTeamHistory(tableRows) {
 }
 
 /**
- * Build per-manager career profile: title/runner-up/titan/minnow counts + season cards
- * for the manager journey timeline (TH-D mockup).
+ * Archived tables plus the current season once it has results.
  * @param {object[] | null | undefined} tableRows
  */
-export function computeHallManagerJourney(tableRows) {
-  const careerRows = computeLiveHallManagerCareerRows(tableRows)
-  const teamHistory = computeHallManagerTeamHistory(tableRows)
+export function computeHallManagerTeamHistory(tableRows) {
+  return computeHallManagerTeamHistoryFromDefs(hallSeasonDefsWithLive(tableRows))
+}
+
+/**
+ * Completed seasons only — the in-progress 26/27 table lives on Standings
+ * and Champion of Champions, not Team Journeys.
+ * @param {object[] | null | undefined} [_tableRows]
+ */
+export function computeHallManagerJourney(_tableRows) {
+  const careerRows = computeHallManagerCareerRows()
+  const teamHistory = computeHallManagerTeamHistoryFromDefs(HALL_SEASON_FINAL_TABLES)
   const careerByKey = new Map(careerRows.map((r) => [r.key, r]))
   return teamHistory.map(({ key, entries }) => {
     const career = careerByKey.get(key)
