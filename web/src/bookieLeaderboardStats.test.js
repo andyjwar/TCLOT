@@ -7,6 +7,7 @@ import {
   enrichLeaderboardRows,
   nextLeaderboardSort,
   sortLeaderboardRows,
+  weeklyWinnerGroups,
   winningWeeklyBets,
 } from './bookieLeaderboardStats.js'
 
@@ -111,7 +112,7 @@ test('nextLeaderboardSort — new column starts desc, same column flips', () => 
   assert.deepEqual(nextLeaderboardSort('lost', 'asc', 'lost'), { sortKey: 'lost', sortDir: 'desc' })
 })
 
-test('winningWeeklyBets — H2H wins for that entry and GW only', () => {
+test('winningWeeklyBets — weekly wins for that entry and GW (H2H + specials)', () => {
   const bets = [
     { id: 1, entry_id: 99, gw: 2, kind: 'h2h', status: 'won', stake: 50, payout: 190 },
     { id: 2, entry_id: 99, gw: 2, kind: 'h2h', status: 'lost', stake: 10 },
@@ -119,12 +120,50 @@ test('winningWeeklyBets — H2H wins for that entry and GW only', () => {
     { id: 4, entry_id: 7, gw: 2, kind: 'h2h', status: 'won', stake: 10, payout: 20 },
     { id: 5, entry_id: 99, gw: 2, kind: 'scorer', status: 'won', stake: 10, payout: 80 },
     { id: 6, entry_id: 99, gw: 2, kind: 'h2h', status: 'cashed_out', stake: 40, payout: 55 },
+    { id: 7, entry_id: 99, gw: 2, kind: 'last', status: 'won', stake: 10, payout: 80 },
   ]
   const wins = winningWeeklyBets(bets, { entryId: 99, gw: 2 })
   assert.deepEqual(
     wins.map((b) => b.id),
-    [1, 6],
+    [1, 5, 6],
   )
   assert.equal(betWinnings(wins[0]), 140)
-  assert.equal(betWinnings(wins[1]), 15)
+  assert.equal(betWinnings(wins[1]), 70)
+  assert.equal(betWinnings(wins[2]), 15)
+})
+
+test('weeklyWinnerGroups — every team with a winning weekly ticket, not just the biggest net', () => {
+  const bets = [
+    { id: 1, entry_id: 1, gw: 2, kind: 'h2h', status: 'won', stake: 200, payout: 345 },
+    { id: 2, entry_id: 1, gw: 2, kind: 'h2h', status: 'lost', stake: 5 },
+    { id: 3, entry_id: 2, gw: 2, kind: 'scorer', status: 'won', stake: 10, payout: 90 },
+    { id: 4, entry_id: 2, gw: 2, kind: 'h2h', status: 'lost', stake: 10 },
+    { id: 5, entry_id: 3, gw: 2, kind: 'h2h', status: 'lost', stake: 50 },
+    { id: 6, entry_id: 4, gw: 1, kind: 'h2h', status: 'won', stake: 10, payout: 20 },
+  ]
+  const groups = weeklyWinnerGroups(bets)
+  assert.deepEqual(
+    groups.map((g) => ({
+      gw: g.gw,
+      teams: g.teams.map((t) => ({ entryId: t.entryId, net: t.net, tickets: t.tickets.map((b) => b.id) })),
+    })),
+    [
+      {
+        gw: 2,
+        teams: [
+          { entryId: 1, net: 140, tickets: [1] },
+          { entryId: 2, net: 70, tickets: [3] },
+        ],
+      },
+      { gw: 1, teams: [{ entryId: 4, net: 10, tickets: [6] }] },
+    ],
+  )
+})
+
+test('weeklyWinnerGroups — API weeklyNet can add a team missing from the capped bet list', () => {
+  const groups = weeklyWinnerGroups([], [{ entryId: 8, gw: 2, net: 40 }])
+  assert.deepEqual(
+    groups.map((g) => g.teams.map((t) => ({ entryId: t.entryId, net: t.net, tickets: t.tickets.length }))),
+    [[{ entryId: 8, net: 40, tickets: 0 }]],
+  )
 })

@@ -1000,7 +1000,7 @@ async function handleState(request, env, ctx, ch) {
     ]),
   );
 
-  // Weekly net P/L per punter per GW — the "who won the week" table.
+  // Weekly net P/L per punter per GW (H2H + player specials).
   const weekly = await db
     .prepare(
       `SELECT b.entry_id, m.gw,
@@ -1009,7 +1009,8 @@ async function handleState(request, env, ctx, ch) {
                                 WHEN 'lost' THEN -b.stake ELSE 0 END) AS net,
               COUNT(*) AS bets
        FROM bets b JOIN markets m ON m.id = b.market_id
-       WHERE b.season = ? AND m.kind = 'h2h' AND b.status IN ('won', 'lost', 'cashed_out')
+       WHERE b.season = ? AND m.kind IN ('h2h', 'scorer', 'toppoints')
+         AND b.status IN ('won', 'lost', 'cashed_out')
        GROUP BY b.entry_id, m.gw`,
     )
     .bind(seasonNow)
