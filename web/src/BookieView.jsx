@@ -24,10 +24,10 @@ import { historyOpponentMetaForGw, loadLeagueFixtures } from './playerGwHistory.
 import { fetchLeagueJsonFile } from './playersBenchShared.js'
 import { highlightSettledOnLiveBoard, liveBoardGameweek, liveBoardTickets } from './bookieLiveBoard.js'
 import {
-  betWinnings,
   enrichLeaderboardRows,
   nextLeaderboardSort,
   sortLeaderboardRows,
+  weeklyBetNet,
   weeklyWinnerGroups,
 } from './bookieLeaderboardStats.js'
 import './BookieView.css'
@@ -1424,18 +1424,23 @@ function BookieLeaderboards({ state, me, nameByEntry, teamLogoMap, kitIndexByEnt
                                   <strong>{pick}</strong>
                                   {detail ? ` ${detail}` : ''}
                                 </span>
-                                <span className="bookie-winners__pills">
+                                <span className="bookie-winners__figs tabular">
                                   <span
-                                    className="bookie-bet__pill bookie-bet__pill--won bookie-winners__pill tabular"
+                                    className="bookie-winners__fig"
                                     title={`decimal ${Number(b.odds).toFixed(2)}`}
                                   >
                                     {fmtOdds(b.odds)}
                                   </span>
-                                  <span className="bookie-bet__pill bookie-bet__pill--won bookie-winners__pill tabular">
-                                    {fmtCoins(b.stake)}
-                                  </span>
-                                  <span className="bookie-bet__pill bookie-bet__pill--won bookie-winners__pill tabular">
-                                    {fmtNet(betWinnings(b))}
+                                  <span className="bookie-winners__fig">{fmtCoins(b.stake)}</span>
+                                  <span
+                                    className={
+                                      'bookie-winners__fig ' +
+                                      (weeklyBetNet(b) >= 0
+                                        ? 'bookie-winners__fig--up'
+                                        : 'bookie-winners__fig--down')
+                                    }
+                                  >
+                                    {fmtNet(weeklyBetNet(b))}
                                   </span>
                                 </span>
                               </li>

@@ -7,6 +7,7 @@ import {
   enrichLeaderboardRows,
   nextLeaderboardSort,
   sortLeaderboardRows,
+  weeklySheetBets,
   weeklyWinnerGroups,
   winningWeeklyBets,
 } from './bookieLeaderboardStats.js'
@@ -151,12 +152,25 @@ test('weeklyWinnerGroups — every team with a winning weekly ticket, not just t
       {
         gw: 2,
         teams: [
-          { entryId: 1, net: 140, tickets: [1] },
-          { entryId: 2, net: 70, tickets: [3] },
+          { entryId: 1, net: 140, tickets: [1, 2] },
+          { entryId: 2, net: 70, tickets: [3, 4] },
         ],
       },
       { gw: 1, teams: [{ entryId: 4, net: 10, tickets: [6] }] },
     ],
+  )
+})
+
+test('weeklySheetBets — wins first, then cash-outs, then losses', () => {
+  const bets = [
+    { id: 3, entry_id: 1, gw: 2, kind: 'h2h', status: 'lost', stake: 70 },
+    { id: 1, entry_id: 1, gw: 2, kind: 'h2h', status: 'won', stake: 20, payout: 35 },
+    { id: 2, entry_id: 1, gw: 2, kind: 'h2h', status: 'cashed_out', stake: 40, payout: 55 },
+    { id: 4, entry_id: 1, gw: 2, kind: 'last', status: 'won', stake: 10, payout: 80 },
+  ]
+  assert.deepEqual(
+    weeklySheetBets(bets, { entryId: 1, gw: 2 }).map((b) => b.id),
+    [1, 2, 3],
   )
 })
 

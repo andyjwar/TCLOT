@@ -39,7 +39,7 @@ against the official FPL Draft results.
   written off), and live (open stake), all sortable. Weekly winners
   lists every team that landed a winning H2H or player-special ticket
   that gameweek (not only the single biggest net), with those slips
-  underneath.
+  underneath as compact odds / stake / P/L text (green wins, red losses).
   A one-shot restart (`fresh-start.sql` / `applyFreshStart`) can wipe the
   ticket ledger and put every bankroll back at 1,000 without touching PINs
   or markets. It is gated by the `freshStart:2026-08-27` meta key so it

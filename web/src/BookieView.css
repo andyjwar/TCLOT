@@ -913,33 +913,40 @@
 
 .bookie-winners__slip {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 10px;
+  align-items: baseline;
+  gap: 8px 12px;
   min-width: 0;
 }
 
 .bookie-winners__pick {
-  flex: 1 1 8rem;
+  flex: 1 1 auto;
   min-width: 0;
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.bookie-winners__pills {
+.bookie-winners__figs {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
+  flex-shrink: 0;
+  align-items: baseline;
+  gap: 0.7em;
+  font-size: 0.78rem;
 }
 
-.bookie-winners__pill {
-  width: auto;
-  min-width: 2.6em;
-  padding: 0.12em 0.55em;
-  justify-self: auto;
+.bookie-winners__fig {
+  color: var(--fm-muted);
+}
+
+.bookie-winners__fig--up {
+  color: var(--data-positive, #12a15a);
+  font-weight: 700;
+}
+
+.bookie-winners__fig--down {
+  color: var(--data-negative, #ef4444);
+  font-weight: 700;
 }
 
 .bookie-winners__net--up {
