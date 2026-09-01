@@ -12,8 +12,9 @@
  * Settlement reads the official FPL Draft league results directly (same
  * "effectively finished" rule as web/src/h2hEffectiveFinished.js: a GW counts
  * as final once every Premier League fixture for it is finished or
- * provisionally finished), grades bets, credits payouts, and pays every
- * registered punter a weekly stipend so nobody is frozen out after going bust.
+ * provisionally finished, or FPL's bootstrap `events[].finished` flag is
+ * already true), grades bets, credits payouts, and pays every registered
+ * punter a weekly stipend so nobody is frozen out after going bust.
  *
  * Identity is honor-system-with-a-lock: each manager claims their league
  * entry once with a PIN (PBKDF2-hashed); sessions are HMAC-signed tokens.
@@ -31,7 +32,7 @@
  * Deploy: cd web/workers/bookie && npm run deploy  (see README.md for setup)
  */
 
-import { footballComplete, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
+import { footballComplete, finishedEventIdsFromEvents, h2hResultForMarket, playerMarketOutcome, ranksFromMatches, seasonKindWinners, PLAYER_MARKET_KINDS, SEASON_MARKET_KINDS } from './settlement.js';
 import { CASHOUT_MARGIN, cashoutValue, remainingFraction, liveH2hProbs } from './cashout.js';
 import { applyFreshStart } from './freshStart.js';
 
@@ -362,6 +363,14 @@ async function settleDue(env) {
   const matches = details?.matches ?? [];
   const nowIso = new Date().toISOString();
 
+  let extraFinishedGws = new Set();
+  try {
+    const boot = await fetchJson(`${DRAFT_API}/bootstrap-static`);
+    extraFinishedGws = finishedEventIdsFromEvents(boot);
+  } catch {
+    /* bootstrap down — fall back to fixtures-only complete */
+  }
+
   const gws = [...new Set([...h2hDue, ...playerDue].map((m) => Number(m.gw)))].sort(
     (a, b) => a - b,
   );
@@ -370,9 +379,12 @@ async function settleDue(env) {
     try {
       fixtures = await fetchJson(`${CLASSIC_API}/fixtures/?event=${gw}`);
     } catch {
-      continue;
+      // Still settle if FPL already marked the event finished even when
+      // fixtures.json is unreachable (same extraFinishedGws union as the site).
+      if (!extraFinishedGws.has(gw)) continue;
+      fixtures = [];
     }
-    const complete = footballComplete(fixtures, gw);
+    const complete = footballComplete(fixtures, gw, extraFinishedGws);
     for (const market of h2hDue.filter((m) => Number(m.gw) === gw)) {
       const payload = JSON.parse(market.payload);
       const match = matches.find(
