@@ -46,4 +46,17 @@ export function draftEntryEventUrl(entryId, gameweek) {
   return `${DRAFT_DIRECT}/entry/${entryId}/event/${gameweek}`
 }
 
+/** Classic `fantasy.premierleague.com/api` path + query (fixtures, bootstrap-static). */
+export function classicResourceUrl(pathAndQuery) {
+  const pq = String(pathAndQuery).replace(/^\/+/, '')
+  const base = fplApiBase()
+  if (base !== FPL_DIRECT) {
+    return `${base.replace(/\/$/, '')}/${pq}`
+  }
+  if (import.meta.env.DEV) {
+    return `/__fpl/${pq}`
+  }
+  return `${FPL_DIRECT}/${pq}`
+}
+
 export { FPL_DIRECT, DRAFT_DIRECT }

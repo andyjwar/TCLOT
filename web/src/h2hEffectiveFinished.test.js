@@ -6,6 +6,8 @@ import {
   matchEffectivelyFinished,
   normalizeMatchesFinished,
   deriveStandingsFromFinishedMatches,
+  overlayFixturesById,
+  pendingCloseGameweeks,
 } from './h2hEffectiveFinished.js'
 
 const fixturesGw1Done = [
@@ -131,6 +133,28 @@ test('completedFootballGameweeks — bootstrap finished closes a GW fixtures sti
   const set = completedFootballGameweeks(fixturesGw1Done, [2])
   assert.equal(set.has(1), true)
   assert.equal(set.has(2), true)
+})
+
+test('pendingCloseGameweeks — started H2H rows with points, not yet finished', () => {
+  assert.deepEqual(pendingCloseGameweeks(matches), [1, 2])
+  assert.deepEqual(pendingCloseGameweeks([{ event: 4, finished: true, started: true }]), [])
+})
+
+test('overlayFixturesById — live row replaces the stale Monday-night fixture', () => {
+  const baked = [
+    { id: 19, event: 2, finished: false, finished_provisional: true },
+    { id: 20, event: 2, finished: false, finished_provisional: false, started: false },
+  ]
+  const live = [
+    { id: 19, event: 2, finished: false, finished_provisional: true },
+    { id: 20, event: 2, finished: true, finished_provisional: true, started: true },
+  ]
+  const merged = overlayFixturesById(baked, live)
+  assert.equal(merged.find((f) => f.id === 20).finished, true)
+  const closed = completedFootballGameweeks(merged)
+  assert.equal(closed.has(2), true)
+  const out = normalizeMatchesFinished(matches, merged)
+  assert.equal(out[2].finished, true)
 })
 
 test('normalizeMatchesFinished — event.finished promotes GW2 even if one PL fixture lags', () => {

@@ -238,7 +238,8 @@ jobs:
       # Live site is on Vercel (tclot.vercel.app); Pages alone does not refresh it.
       # Optional repo/environment secret VERCEL_DEPLOY_HOOK = Deploy Hook URL from
       # Vercel → Project → Settings → Git → Deploy Hooks. When set, every successful
-      # scheduled/push Pages deploy also kicks a Vercel rebuild (which re-runs ingest).
+      # scheduled/push Pages deploy also kicks a Vercel rebuild (Vercel re-fetches
+      # FPL because CI=1 does not trip the GitHub-only skip in fetch-league-if-needed).
       - name: Trigger Vercel redeploy (optional)
         env:
           VERCEL_DEPLOY_HOOK: ${{ secrets.VERCEL_DEPLOY_HOOK }}

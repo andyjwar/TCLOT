@@ -3,8 +3,10 @@ import { fplElementWebName } from './fplElementNames.js';
 import {
   finishedEventIdsFromEvents,
   normalizeMatchesFinished,
+  overlayFixturesById,
+  pendingCloseGameweeks,
 } from './h2hEffectiveFinished.js';
-import { draftResourceUrl } from './fplDraftUrl.js';
+import { classicResourceUrl, draftResourceUrl } from './fplDraftUrl.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
 import { TEAM_KIT_COUNT } from './teamKitStyles';
 import {
@@ -69,6 +71,27 @@ async function fetchLiveDraftBootstrap() {
     /* fall through — committed bootstrap_draft.json is the fallback */
   }
   return null;
+}
+
+/** Live classic fixtures for GWs that have H2H points but are not closed yet. */
+async function fetchLiveClassicFixtures(gameweeks) {
+  const gws = (gameweeks || []).filter((n) => Number.isFinite(n) && n >= 1);
+  if (gws.length === 0) return [];
+  const chunks = await Promise.all(
+    gws.map(async (gw) => {
+      try {
+        const r = await fetch(classicResourceUrl(`fixtures/?event=${gw}`), {
+          cache: 'no-store',
+        });
+        if (!r.ok) return [];
+        const j = await r.json();
+        return Array.isArray(j) ? j : [];
+      } catch {
+        return [];
+      }
+    }),
+  );
+  return chunks.flat();
 }
 
 async function fetchJSONOptional(path, cacheKey = '') {
@@ -364,6 +387,10 @@ export function useLeagueData() {
         const finishedEventIds = finishedEventIdsFromEvents(
           liveBootstrap ?? (await fetchJSONOptional('bootstrap_draft.json', leagueDataV)),
         );
+        const liveFixtures = await fetchLiveClassicFixtures(
+          pendingCloseGameweeks(details?.matches),
+        );
+        const mergedFixtures = overlayFixturesById(fixtures, liveFixtures);
         let teamLogoMap = {};
         try {
           const r = await fetch(
@@ -405,7 +432,7 @@ export function useLeagueData() {
               waiverOutGw,
               waiverInTenureTop,
               tradesPanel,
-              fixtures,
+              fixtures: mergedFixtures,
               finishedEventIds,
               currentSeasonNameByManager,
             }),
