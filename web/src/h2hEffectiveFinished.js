@@ -17,13 +17,40 @@
  */
 
 /**
+ * Event ids FPL has already marked `finished` on draft/classic bootstrap.
+ * The brand header uses this same flag for "GW N complete", so standings and
+ * recaps must honour it even when a stale `fixtures.json` still has one
+ * Monday-night row as not started.
+ *
+ * @param {object | object[] | null | undefined} bootstrapOrEvents
+ *   `bootstrap-static` / `bootstrap_draft.json`, `{ data: [] }`, or a bare list.
+ * @returns {Set<number>}
+ */
+export function finishedEventIdsFromEvents(bootstrapOrEvents) {
+  const ev = bootstrapOrEvents?.events ?? bootstrapOrEvents;
+  const list = Array.isArray(ev) ? ev : Array.isArray(ev?.data) ? ev.data : [];
+  const out = new Set();
+  for (const e of list) {
+    if (e?.finished !== true) continue;
+    const id = Number(e?.id);
+    if (Number.isFinite(id) && id >= 1) out.add(id);
+  }
+  return out;
+}
+
+/**
  * GW ids whose Premier League football is complete: the GW has at least one
  * fixture and every fixture for it is finished or provisionally finished.
  *
+ * Optional `extraFinishedGws` (typically {@link finishedEventIdsFromEvents})
+ * is unioned in so a live `events[].finished` flag can close a week when the
+ * ingested fixture list is still a few hours behind.
+ *
  * @param {object[] | null | undefined} fixtures Classic `fixtures.json` array.
+ * @param {Iterable<number> | null | undefined} extraFinishedGws
  * @returns {Set<number>}
  */
-export function completedFootballGameweeks(fixtures) {
+export function completedFootballGameweeks(fixtures, extraFinishedGws) {
   const byGw = new Map();
   for (const f of Array.isArray(fixtures) ? fixtures : []) {
     const ev = Number(f?.event);
@@ -35,6 +62,12 @@ export function completedFootballGameweeks(fixtures) {
   const out = new Set();
   for (const [ev, allDone] of byGw) {
     if (allDone) out.add(ev);
+  }
+  if (extraFinishedGws) {
+    for (const raw of extraFinishedGws) {
+      const ev = Number(raw);
+      if (Number.isFinite(ev) && ev >= 1) out.add(ev);
+    }
   }
   return out;
 }
@@ -68,11 +101,13 @@ export function matchEffectivelyFinished(m, completedGws) {
  *
  * @param {object[] | null | undefined} matches `details.matches` array.
  * @param {object[] | null | undefined} fixtures Classic `fixtures.json` array.
+ * @param {Iterable<number> | null | undefined} extraFinishedGws
+ *   Bootstrap event ids already marked finished (see {@link finishedEventIdsFromEvents}).
  * @returns {object[]}
  */
-export function normalizeMatchesFinished(matches, fixtures) {
+export function normalizeMatchesFinished(matches, fixtures, extraFinishedGws) {
   const list = Array.isArray(matches) ? matches : [];
-  const completed = completedFootballGameweeks(fixtures);
+  const completed = completedFootballGameweeks(fixtures, extraFinishedGws);
   if (completed.size === 0) return list;
   return list.map((m) =>
     m && m.finished !== true && matchEffectivelyFinished(m, completed)

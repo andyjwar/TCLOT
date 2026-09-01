@@ -62,6 +62,10 @@ import {
   watchableXi,
 } from '../src/weeklyPreviewLineup.js'
 import { gwDeadlineHasPassed } from '../src/weeklyRecapView.js'
+import {
+  finishedEventIdsFromEvents,
+  normalizeMatchesFinished,
+} from '../src/h2hEffectiveFinished.js'
 import { decimalOddsToFraction, probToFractionalOdds } from '../src/oddsFormat.js'
 import {
   pickTopScorer,
@@ -88,7 +92,23 @@ if (!predictions?.current?.teams?.length) {
   process.exit(0)
 }
 
-const matches = details.matches ?? []
+let fixtures = []
+try {
+  fixtures = read('fixtures.json')
+} catch {
+  fixtures = []
+}
+let bootstrapDraft = null
+try {
+  bootstrapDraft = read('bootstrap_draft.json')
+} catch {
+  bootstrapDraft = null
+}
+const matches = normalizeMatchesFinished(
+  details.matches ?? [],
+  fixtures,
+  finishedEventIdsFromEvents(bootstrapDraft),
+)
 const entryIds = predictions.current.teams.map((t) => Number(t.leagueEntryId))
 const nameById = new Map(
   predictions.current.teams.map((t) => [Number(t.leagueEntryId), t.name]),
@@ -394,7 +414,6 @@ const bookie = readOptional('bookie-markets.json')
 const playerPredictions = readOptional('predictions.json')
 const modelCalibration = readOptional('model-calibration.json')
 const elementStatus = readOptional('element_status.json')
-const bootstrapDraft = readOptional('bootstrap_draft.json')
 const draftPicks = readOptional('draft_picks.json')
 const sigmaScale = calibrationSigmaScale(modelCalibration)
 
