@@ -121,6 +121,12 @@ export function weeklyBetNet(bet) {
   return 0
 }
 
+/** Settled weekly ticket (win, loss, or cash-out) for the winners sheet. */
+export function isSettledWeeklyBet(bet) {
+  if (!bet || !isWeeklyWinnerKind(bet.kind)) return false
+  return bet.status === 'won' || bet.status === 'lost' || bet.status === 'cashed_out'
+}
+
 /**
  * Winning weekly tickets for one punter in one GW — H2H and player
  * specials. Season-long slips stay off this list.
@@ -134,6 +140,28 @@ export function winningWeeklyBets(bets, { entryId, gw } = {}) {
     if (Number(b.gw) !== week) return false
     return isWinningWeeklyBet(b)
   })
+}
+
+/**
+ * Settled weekly tickets for the winners sheet — wins first, then
+ * cash-outs, then losses, so the green/red figures read in that order.
+ */
+export function weeklySheetBets(bets, { entryId, gw } = {}) {
+  const id = Number(entryId)
+  const week = Number(gw)
+  if (!Number.isFinite(id) || !Number.isFinite(week)) return []
+  const rank = (status) => {
+    if (status === 'won') return 0
+    if (status === 'cashed_out') return 1
+    return 2
+  }
+  return (Array.isArray(bets) ? bets : [])
+    .filter((b) => {
+      if (Number(b.entry_id ?? b.entryId) !== id) return false
+      if (Number(b.gw) !== week) return false
+      return isSettledWeeklyBet(b)
+    })
+    .sort((a, b) => rank(a.status) - rank(b.status) || Number(a.id) - Number(b.id))
 }
 
 /**
@@ -162,7 +190,7 @@ export function weeklyWinnerGroups(bets, weeklyNet = []) {
     if (!Number.isFinite(gw) || !Number.isFinite(entryId)) continue
     const cur = take(gw, entryId)
     cur.net += weeklyBetNet(bet)
-    if (isWinningWeeklyBet(bet)) cur.tickets.push(bet)
+    if (isSettledWeeklyBet(bet)) cur.tickets.push(bet)
   }
 
   for (const row of Array.isArray(weeklyNet) ? weeklyNet : []) {
@@ -180,7 +208,12 @@ export function weeklyWinnerGroups(bets, weeklyNet = []) {
 
   const byGw = new Map()
   for (const row of byKey.values()) {
-    if (row.tickets.length === 0 && !(row.net > 0)) continue
+    const wonAny = row.tickets.some((b) => isWinningWeeklyBet(b))
+    if (!wonAny && !(row.net > 0)) continue
+    row.tickets.sort((a, b) => {
+      const rank = (s) => (s === 'won' ? 0 : s === 'cashed_out' ? 1 : 2)
+      return rank(a.status) - rank(b.status) || Number(a.id) - Number(b.id)
+    })
     const list = byGw.get(row.gw) ?? []
     list.push(row)
     byGw.set(row.gw, list)
