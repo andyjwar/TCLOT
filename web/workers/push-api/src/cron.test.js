@@ -72,6 +72,15 @@ describe('pickDeadlineReminders', () => {
     assert.equal(lineup.gw, 5)
   })
 
+  it('does not fire a lineup reminder 24h before the lineup deadline', () => {
+    const now = Date.parse('2026-08-22T12:00:00Z') // ~22h before deadline_time
+    const picks = pickDeadlineReminders(events, now)
+    assert.equal(
+      picks.some((p) => String(p.type).startsWith('lineup_deadline')),
+      false,
+    )
+  })
+
   it('returns nothing far from either deadline', () => {
     const now = Date.parse('2026-08-01T00:00:00Z')
     assert.equal(pickDeadlineReminders(events, now).length, 0)

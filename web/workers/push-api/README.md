@@ -67,7 +67,7 @@ npm run generate-vapid
 
 Cron runs every 5 minutes. There are three user-facing alert types (matching the Settings toggles):
 
-- **Deadline reminders** (`deadlineReminders`) — 24h and 1h before both the GW **waiver deadline** (`waivers_time`) and the **lineup deadline** (`deadline_time`). Sent at most once per bucket per GW.
+- **Deadline reminders** (`deadlineReminders`) — 24h and 1h before the GW **waiver deadline** (`waivers_time`); 1h only before the **lineup deadline** (`deadline_time`). Sent at most once per bucket per GW.
 - **Waiver results** (`waiverResults`) — within ~3h after `waivers_time`, once per GW.
 - **Your live XI** (`liveXi`) — goals, assists, and defensive-contribution (+2) moments for players in the subscriber's **starting XI** (draft picks 1–11) during a live GW.
 

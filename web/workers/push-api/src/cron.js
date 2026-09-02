@@ -62,8 +62,8 @@ function reminderBucket(msUntil) {
 }
 
 /**
- * Deadline reminders for BOTH the waiver deadline (`waivers_time`) and the
- * lineup deadline (`deadline_time`) of the upcoming GW, at 24h and 1h out.
+ * Deadline reminders: waiver deadline at 24h and 1h out; lineup deadline
+ * (`deadline_time`) at 1h out only.
  * @param {GwEvent[]} events
  * @param {number} nowMs
  * @returns {Array<{ type: string, gw: number, title: string, body: string, pref: string, dedupKey: string, url: string }>}
@@ -93,17 +93,14 @@ export function pickDeadlineReminders(events, nowMs) {
   }
 
   const lineupBucket = reminderBucket(target.deadlineMs - now)
-  if (lineupBucket) {
+  if (lineupBucket === '1h') {
     out.push({
-      type: `lineup_deadline_${lineupBucket}`,
+      type: 'lineup_deadline_1h',
       gw: target.id,
       pref: 'deadlineReminders',
-      dedupKey: `lineup_deadline_${lineupBucket}:${target.id}`,
+      dedupKey: `lineup_deadline_1h:${target.id}`,
       url: '/#/fplLive',
-      title:
-        lineupBucket === '1h'
-          ? `GW${target.id} lineup deadline in 1 hour`
-          : `GW${target.id} lineup deadline tomorrow`,
+      title: `GW${target.id} lineup deadline in 1 hour`,
       body: 'Set your starting XI before the Premier League deadline.',
     })
   }
