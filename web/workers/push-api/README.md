@@ -43,6 +43,10 @@ npm run generate-vapid
    npm run deploy
    ```
 
+   Pushes to `main` that touch `web/workers/push-api/**` also run
+   **Deploy push-api Worker**. A site-only Vercel/Pages deploy does not
+   update this Worker.
+
 4. Wire the web app at build time (no trailing slash):
 
    ```bash
