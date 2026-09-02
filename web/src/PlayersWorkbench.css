@@ -946,9 +946,9 @@ body[data-tclot-theme='dark'] .players-table__head-row {
 .players-table__sort-indicator--idle {
   flex-direction: column;
   gap: 0;
-  font-size: 0.42rem;
+  font-size: 0.5rem;
   line-height: 0.88;
-  opacity: 0.55;
+  opacity: 0.85;
 }
 
 .players-table__sort-indicator--active {

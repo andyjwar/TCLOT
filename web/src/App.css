@@ -3316,9 +3316,9 @@
 .standings-sort-arrow--idle {
   flex-direction: column;
   gap: 0;
-  font-size: 0.5em;
+  font-size: 0.58em;
   line-height: 0.88;
-  opacity: 0.55;
+  opacity: 0.85;
 }
 
 .standings-sort-arrow--active {

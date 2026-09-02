@@ -14832,9 +14832,9 @@
 .hof-coc-live__sort-arrow--idle {
   flex-direction: column;
   gap: 0;
-  font-size: 8px;
+  font-size: 9px;
   line-height: 0.88;
-  opacity: 0.55;
+  opacity: 0.85;
 }
 .hof-coc-live__sort-arrow--active {
   opacity: 1;
