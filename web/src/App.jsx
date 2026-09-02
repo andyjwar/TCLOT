@@ -544,6 +544,7 @@ import { BrandHeaderWordmark } from './BrandHeaderWordmark'
 import { LeagueInfoModal } from './LeagueInfoModal'
 import { GlobalSearch } from './GlobalSearch.jsx'
 import { PointsCell } from './PointsCell.jsx'
+import { SortArrow } from './SortArrow.jsx'
 import {
   DEFAULT_TAB_STORAGE_KEY,
   readStoredDefaultTab,
@@ -1704,21 +1705,6 @@ function CofcLiveSortTh({ col, sort, onSort }) {
   /** League table is ordered by points high → low; show green ↓ on PTS in that order */
   const ptsLeagueDefault = isPts && sort === null
 
-  let arrowGlyph = '↕'
-  let arrowClass = 'standings-sort-arrow'
-  if (isPts) {
-    if (ptsLeagueDefault) {
-      arrowGlyph = '↓'
-      arrowClass += ' standings-sort-arrow--active standings-sort-arrow--desc'
-    } else if (active) {
-      arrowGlyph = dir === 'asc' ? '↑' : '↓'
-      arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
-    }
-  } else if (active) {
-    arrowGlyph = dir === 'asc' ? '↑' : '↓'
-    arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
-  }
-
   const ariaSort = ptsLeagueDefault
     ? 'descending'
     : active
@@ -1756,7 +1742,7 @@ function CofcLiveSortTh({ col, sort, onSort }) {
         aria-label={ariaLabel}
       >
         <span className="standings-sort-btn__label">{col.label}</span>
-        <span className={arrowClass} aria-hidden="true">{arrowGlyph}</span>
+        <SortArrow active={active} dir={dir} leagueDefaultDesc={ptsLeagueDefault} />
       </button>
     </th>
   )
@@ -2516,21 +2502,6 @@ function StandingsSortTh({ columnKey, sortState, onSort, label, title, className
   /** League table is ordered by points high → low; show green ↓ on PTS when using that order */
   const ptsLeagueDefault = isPts && sortState === null
 
-  let arrowGlyph = '↕'
-  let arrowClass = 'standings-sort-arrow'
-  if (isPts) {
-    if (ptsLeagueDefault) {
-      arrowGlyph = '↓'
-      arrowClass += ' standings-sort-arrow--active standings-sort-arrow--desc'
-    } else if (active) {
-      arrowGlyph = dir === 'asc' ? '↑' : '↓'
-      arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
-    }
-  } else if (active) {
-    arrowGlyph = dir === 'asc' ? '↑' : '↓'
-    arrowClass += ` standings-sort-arrow--active standings-sort-arrow--${dir}`
-  }
-
   const ariaSort =
     ptsLeagueDefault
       ? 'descending'
@@ -2560,9 +2531,7 @@ function StandingsSortTh({ columnKey, sortState, onSort, label, title, className
         aria-label={ariaLabel}
       >
         <span className="standings-sort-btn__label">{label}</span>
-        <span className={arrowClass} aria-hidden>
-          {arrowGlyph}
-        </span>
+        <SortArrow active={active} dir={dir} leagueDefaultDesc={ptsLeagueDefault} />
       </button>
     </th>
   )

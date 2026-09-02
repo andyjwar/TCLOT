@@ -3308,13 +3308,21 @@
   font-size: 0.88em;
   font-weight: 800;
   line-height: 1;
-  opacity: 0.62;
-  color: color-mix(in srgb, var(--fm-text-strong) 72%, var(--fm-muted) 28%);
+  /* Same green as live rank-move arrows / PTS sort — never the boxed ↕ emoji */
+  font-variant-emoji: text;
+  color: var(--fm-accent, #12a15a);
+}
+
+.standings-sort-arrow--idle {
+  flex-direction: column;
+  gap: 0;
+  font-size: 0.5em;
+  line-height: 0.88;
+  opacity: 0.55;
 }
 
 .standings-sort-arrow--active {
   opacity: 1;
-  color: var(--fm-accent, #12a15a);
   font-size: 0.95em;
 }
 
@@ -9356,8 +9364,7 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   thead
   th
   .standings-sort-arrow {
-  color: color-mix(in srgb, var(--fm-text-strong) 72%, var(--fm-muted) 28%);
-  opacity: 0.62;
+  color: var(--fm-accent, #12a15a);
 }
 
 .tile.hall-of-champions
@@ -9365,7 +9372,6 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   thead
   th
   .standings-sort-arrow--active {
-  color: var(--fm-accent, #12a15a);
   opacity: 1;
   font-size: 0.95em;
 }
@@ -16838,7 +16844,7 @@ button.live-xp__player-name:focus-visible {
     width: var(--cofc-sort-arrow);
   }
 
-  /* Idle ↕ eats the label band on phones. Keep the active PTS (or
+  /* Idle stacked ↑↓ eats the label band on phones. Keep the active PTS (or
    * clicked-column) arrow; collapse the rest so W / D / L / For sit
    * on their figures — same idea as the mobile league table. */
   .standings-table.heritage-cofc__table .standings-sort-arrow:not(.standings-sort-arrow--active) {
