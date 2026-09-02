@@ -21,6 +21,7 @@ import { useLeagueData } from './useLeagueData'
 import { TeamAvatar } from './TeamAvatar'
 import { teamChipAbbr } from './liveScoresDerivations.js'
 import { NavIcon } from './NavIcon'
+import { SortArrow } from './SortArrow.jsx'
 import './Mockup.css'
 import { MOCKUP_PART2_SECTIONS } from './MockupSurfacesPart2.jsx'
 import './MockupSurfacesPart2.css'
@@ -9814,17 +9815,11 @@ function sortCocLiveRows(rows, sort) {
 }
 
 /* Sortable column header — chevron treatment matches StandingsSortTh
- * (inactive ↕, active ↑/↓ tinted brand). Header is a button so the
+ * (idle stacked green ↑↓, active ↑/↓ tinted brand). Header is a button so the
  * sort affordance is obvious at the keyboard layer too. */
 function CocLiveSortTh({ col, sort, onSort }) {
   const active = sort?.key === col.key
   const dir = active ? sort.dir : null
-  let arrowGlyph = '↕'
-  let arrowClass = 'hof-coc-live__sort-arrow'
-  if (active) {
-    arrowGlyph = dir === 'asc' ? '↑' : '↓'
-    arrowClass += ' hof-coc-live__sort-arrow--active hof-coc-live__sort-arrow--' + dir
-  }
   const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : undefined
   return (
     <th
@@ -9847,7 +9842,7 @@ function CocLiveSortTh({ col, sort, onSort }) {
         }
       >
         <span className="hof-coc-live__sort-label">{col.label}</span>
-        <span className={arrowClass} aria-hidden>{arrowGlyph}</span>
+        <SortArrow active={active} dir={dir} className="hof-coc-live__sort-arrow" />
       </button>
     </th>
   )
@@ -10042,12 +10037,13 @@ function CocAlgorithmMatrix() {
   }
   const arrowFor = (key) => {
     const active = sort?.key === key
-    if (!active) return { glyph: '↕', cls: 'hof-coc-live__sort-arrow' }
-    const dir = sort.dir
-    return {
-      glyph: dir === 'asc' ? '↑' : '↓',
-      cls: 'hof-coc-live__sort-arrow hof-coc-live__sort-arrow--active hof-coc-live__sort-arrow--' + dir,
-    }
+    return (
+      <SortArrow
+        active={active}
+        dir={active ? sort.dir : null}
+        className="hof-coc-live__sort-arrow"
+      />
+    )
   }
   return (
     <div className="hof-coc-algo">
@@ -10061,7 +10057,7 @@ function CocAlgorithmMatrix() {
               <th scope="col" className={'hof-coc-algo__th hof-coc-algo__th-mgr' + (sort?.key === 'mgr' ? ' is-active' : '')}>
                 <button type="button" className="hof-coc-live__sort-btn" onClick={() => handleSort('mgr')}>
                   <span className="hof-coc-live__sort-label">Manager</span>
-                  <span className={arrowFor('mgr').cls} aria-hidden>{arrowFor('mgr').glyph}</span>
+                  {arrowFor('mgr')}
                 </button>
               </th>
               {MERGED_SEASONS.map((season) => (
@@ -10072,14 +10068,14 @@ function CocAlgorithmMatrix() {
                 >
                   <button type="button" className="hof-coc-live__sort-btn" onClick={() => handleSort(season)}>
                     <span className="hof-coc-live__sort-label">{season}</span>
-                    <span className={arrowFor(season).cls} aria-hidden>{arrowFor(season).glyph}</span>
+                    {arrowFor(season)}
                   </button>
                 </th>
               ))}
               <th scope="col" className={'hof-coc-algo__th hof-coc-algo__th-total' + (sort?.key === 'total' ? ' is-active' : '')}>
                 <button type="button" className="hof-coc-live__sort-btn" onClick={() => handleSort('total')}>
                   <span className="hof-coc-live__sort-label">Total</span>
-                  <span className={arrowFor('total').cls} aria-hidden>{arrowFor('total').glyph}</span>
+                  {arrowFor('total')}
                 </button>
               </th>
             </tr>

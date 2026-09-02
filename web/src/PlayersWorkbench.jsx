@@ -44,6 +44,7 @@ import {
   writeWireStatSelection,
 } from './playersWireList.js'
 import './PlayersWorkbench.css'
+import { SortArrow } from './SortArrow.jsx'
 import { usePortraitMobile, useMobileLayout } from './usePortraitMobile.js'
 import { usePillMenuDismiss } from './usePillMenuDismiss.js'
 import {
@@ -1481,18 +1482,11 @@ export function PlayersWorkbench({
                       {wireColumnHeaderLabel(col)}
                     </span>
                     {!mobileLayout ? (
-                      isActive ? (
-                        <span className="players-table__sort-indicator" aria-hidden>
-                          {sortDir === 'asc' ? '↑' : '↓'}
-                        </span>
-                      ) : (
-                        <span
-                          className="players-table__sort-indicator players-table__sort-indicator--idle"
-                          aria-hidden
-                        >
-                          ↕
-                        </span>
-                      )
+                      <SortArrow
+                        active={isActive}
+                        dir={isActive ? sortDir : null}
+                        className="players-table__sort-indicator"
+                      />
                     ) : null}
                   </button>
                 )
