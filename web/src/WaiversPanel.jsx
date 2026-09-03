@@ -5,6 +5,8 @@ import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
+import { isForbiddenWaiverPickup } from './forbiddenWaivers.js'
+import { useForbiddenWaivers } from './useForbiddenWaivers.js'
 import './WaiversPanel.css'
 
 /* =================================================================== */
@@ -42,9 +44,9 @@ function ClubCrest({ badgeUrl, teamShort, size = 22, out = false }) {
 
 /** Identity cell: optional in/out arrow + club crest + clickable name + position chip.
  *  Reads left-to-right as: arrow · club badge · name · position chip. */
-function WvPlayerCell({ element, name, badgeUrl, teamShort, pos, dir }) {
+function WvPlayerCell({ element, name, badgeUrl, teamShort, pos, dir, forbidden = false }) {
   return (
-    <span className="waivers-player">
+    <span className={'waivers-player' + (forbidden ? ' waivers-player--forbidden' : '')}>
       {dir ? (
         <span className={`waivers-dir waivers-dir--${dir}`} aria-hidden="true">
           {dir === 'in' ? '↑' : '↓'}
@@ -59,6 +61,11 @@ function WvPlayerCell({ element, name, badgeUrl, teamShort, pos, dir }) {
       >
         {name}
       </ClickablePlayerName>
+      {forbidden ? (
+        <span className="waivers-forbidden-stamp" title="Forbidden waiver — league rule">
+          Forbidden
+        </span>
+      ) : null}
       <WvPosChip pos={pos} />
     </span>
   )
@@ -84,7 +91,7 @@ function WvOrderCell({ move }) {
 
 /** Desktop: "All swaps" flat table ↔ "By team" phone-style tiles (expanded).
  *  `gwPill` (optional node) renders inline on the same row as the toggle. */
-function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
+function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill, forbiddenIds }) {
   const [group, setGroup] = useState('flat')
 
   const flatRows = useMemo(() => {
@@ -139,6 +146,7 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
           defaultExpanded
+          forbiddenIds={forbiddenIds}
         />
       ) : (
         <div className="waivers-table-wrap">
@@ -158,8 +166,13 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
               </tr>
             </thead>
             <tbody>
-              {flatRows.map((r) => (
-                <tr key={r.transactionId}>
+              {flatRows.map((r) => {
+                const forbidden = isForbiddenWaiverPickup(r, forbiddenIds)
+                return (
+                <tr
+                  key={r.transactionId}
+                  className={forbidden ? 'waivers-row--forbidden' : undefined}
+                >
                   <td className="waivers-table__num tabular">
                     <WvOrderCell move={r} />
                   </td>
@@ -185,6 +198,7 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
                       teamShort={r.pickedTeamShort}
                       pos={r.pickedPos}
                       dir="in"
+                      forbidden={forbidden}
                     />
                   </td>
                   <td>
@@ -198,7 +212,8 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
                     />
                   </td>
                 </tr>
-              ))}
+                )
+              })}
             </tbody>
           </table>
         </div>
@@ -208,7 +223,7 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill }) {
 }
 
 /** Mobile · All Swaps — every successful pick in league waiver order, cards expanded. */
-function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
+function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry, forbiddenIds }) {
   const rows = useMemo(() => {
     const flat = flattenWaiverGroups(groups)
     return [...flat].sort(sortMovesWaiverThenFa)
@@ -233,8 +248,14 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
           m.waiverProcessOrder != null && Number.isFinite(Number(m.waiverProcessOrder))
             ? Number(m.waiverProcessOrder)
             : null
+        const forbidden = isForbiddenWaiverPickup(m, forbiddenIds)
         return (
-          <li className="waivers-glance__item" key={id}>
+          <li
+            className={
+              'waivers-glance__item' + (forbidden ? ' waivers-glance__item--forbidden' : '')
+            }
+            key={id}
+          >
             <button
               type="button"
               className="waivers-glance__row"
@@ -273,7 +294,7 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
             </button>
             {isOpen ? (
               <div className="waivers-glance__moves">
-                <div className="waivers-swap">
+                <div className={'waivers-swap' + (forbidden ? ' waivers-swap--forbidden' : '')}>
                   <WvPlayerCell
                     element={m.element_in}
                     name={m.pickedName}
@@ -281,6 +302,7 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry }) {
                     teamShort={m.pickedTeamShort}
                     pos={m.pickedPos}
                     dir="in"
+                    forbidden={forbidden}
                   />
                   <WvPlayerCell
                     element={m.element_out}
@@ -308,6 +330,7 @@ function WeeklyWaiversTiles({
   teamLogoMap,
   kitIndexByEntry,
   defaultExpanded = false,
+  forbiddenIds,
 }) {
   const [open, setOpen] = useState(() => new Set())
   const [closed, setClosed] = useState(() => new Set())
@@ -334,8 +357,16 @@ function WeeklyWaiversTiles({
       {groups.map((g) => {
         const isOpen = defaultExpanded ? !closed.has(g.entry) : open.has(g.entry)
         const teamOrder = Math.min(...(g.moves || []).map(moveOrderKey))
+        const teamForbidden = (g.moves || []).some((m) =>
+          isForbiddenWaiverPickup(m, forbiddenIds),
+        )
         return (
-          <article className="waivers-weekly-tile" key={g.entry}>
+          <article
+            className={
+              'waivers-weekly-tile' + (teamForbidden ? ' waivers-weekly-tile--forbidden' : '')
+            }
+            key={g.entry}
+          >
             <button
               type="button"
               className="waivers-weekly-tile__head"
@@ -371,8 +402,13 @@ function WeeklyWaiversTiles({
             </button>
             {isOpen ? (
               <div className="waivers-weekly-tile__moves">
-                {(g.moves || []).map((m) => (
-                  <div className="waivers-swap" key={m.transactionId}>
+                {(g.moves || []).map((m) => {
+                  const forbidden = isForbiddenWaiverPickup(m, forbiddenIds)
+                  return (
+                  <div
+                    className={'waivers-swap' + (forbidden ? ' waivers-swap--forbidden' : '')}
+                    key={m.transactionId}
+                  >
                     <WvPlayerCell
                       element={m.element_in}
                       name={m.pickedName}
@@ -380,6 +416,7 @@ function WeeklyWaiversTiles({
                       teamShort={m.pickedTeamShort}
                       pos={m.pickedPos}
                       dir="in"
+                      forbidden={forbidden}
                     />
                     <WvPlayerCell
                       element={m.element_out}
@@ -390,7 +427,8 @@ function WeeklyWaiversTiles({
                       dir="out"
                     />
                   </div>
-                ))}
+                  )
+                })}
               </div>
             ) : null}
           </article>
@@ -415,6 +453,7 @@ export function WeeklyWaivers({
   gwPill,
   summaryView,
 }) {
+  const { ids: forbiddenIds } = useForbiddenWaivers()
   const isMobile = useMobileLayout()
   /* Phone-narrow (≤767): collapsed By team. Tablet in the mobile shell
    * (768–1080): same tiles as phone, expanded by default. */
@@ -461,6 +500,7 @@ export function WeeklyWaivers({
             groups={groups}
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
+            forbiddenIds={forbiddenIds}
           />
         ) : (
           <WeeklyWaiversTiles
@@ -468,6 +508,7 @@ export function WeeklyWaivers({
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
             defaultExpanded={!isPhoneNarrow}
+            forbiddenIds={forbiddenIds}
           />
         )}
       </div>
@@ -493,6 +534,7 @@ export function WeeklyWaivers({
       teamLogoMap={teamLogoMap}
       kitIndexByEntry={kitIndexByEntry}
       gwPill={gwPill}
+      forbiddenIds={forbiddenIds}
     />
   )
 }
@@ -593,6 +635,7 @@ export function WaiverTotalsToggle({
 
 /* ── Section 3 · First waiver picks tracker — fixed-height scroll ─────── */
 export function FirstWaiverPicks({ rows = [], teamLogoMap, kitIndexByEntry, emptyMessage }) {
+  const { ids: forbiddenIds } = useForbiddenWaivers()
   if (!rows.length) return <p className="muted muted--tight">{emptyMessage}</p>
   return (
     <div className="waivers-first">
@@ -615,8 +658,13 @@ export function FirstWaiverPicks({ rows = [], teamLogoMap, kitIndexByEntry, empt
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.gameweek}>
+            {rows.map((r) => {
+              const forbidden = isForbiddenWaiverPickup(r, forbiddenIds)
+              return (
+              <tr
+                key={r.gameweek}
+                className={forbidden ? 'waivers-row--forbidden' : undefined}
+              >
                 <td className="waivers-table__num tabular fw-700">{r.gameweek}</td>
                 <td className="waivers-first__pick">
                   <TeamAvatar
@@ -634,6 +682,7 @@ export function FirstWaiverPicks({ rows = [], teamLogoMap, kitIndexByEntry, empt
                     badgeUrl={r.pickedBadgeUrl}
                     teamShort={r.pickedTeamShort}
                     pos={r.pickedPos}
+                    forbidden={forbidden}
                   />
                 </td>
                 <td className="waivers-table__num tabular">
@@ -642,7 +691,8 @@ export function FirstWaiverPicks({ rows = [], teamLogoMap, kitIndexByEntry, empt
                   </span>
                 </td>
               </tr>
-            ))}
+              )
+            })}
           </tbody>
         </table>
       </div>
