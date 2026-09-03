@@ -750,6 +750,32 @@ body[data-tclot-theme='ceefax'] .forbidden-waivers__count {
 body[data-tclot-theme='ceefax'] .forbidden-waivers__empty {
   font-size: 20px !important;
 }
+body[data-tclot-theme='ceefax'] .forbidden-waivers__row--taken {
+  background: var(--cf-red) !important;
+  color: #000 !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+body[data-tclot-theme='ceefax'] .forbidden-waivers__row--taken .forbidden-waivers__name {
+  color: #000 !important;
+}
+body[data-tclot-theme='ceefax'] .forbidden-waivers__taken-stamp,
+body[data-tclot-theme='ceefax'] .forbidden-waivers__taken-count,
+body[data-tclot-theme='ceefax'] .waivers-forbidden-stamp {
+  background: #000 !important;
+  color: var(--cf-red) !important;
+  animation: none !important;
+}
+body[data-tclot-theme='ceefax'] .waivers-row--forbidden,
+body[data-tclot-theme='ceefax'] .waivers-swap--forbidden,
+body[data-tclot-theme='ceefax'] .waivers-glance__item--forbidden,
+body[data-tclot-theme='ceefax'] .waivers-weekly-tile--forbidden,
+body[data-tclot-theme='ceefax'] .waivers-share__row--forbidden {
+  background: var(--cf-red) !important;
+  box-shadow: none !important;
+  outline-color: #000 !important;
+  animation: none !important;
+}
 body[data-tclot-theme='ceefax'] .tile-hint,
 body[data-tclot-theme='ceefax'] .tile-hint--tight {
   font-size: 1.05rem !important;

@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { fetchLeagueDataJsonOptional } from './leagueDataFetch.js'
+import { useEffect, useMemo, useState } from 'react'
 import { useIsCeefax } from './useIsCeefax.js'
+import { useForbiddenWaivers } from './useForbiddenWaivers.js'
 import './ForbiddenWaivers.css'
 
 /** PL club badge for an FPL team `code`. */
@@ -18,38 +18,60 @@ const POS_RANK = { GKP: 1, GK: 1, DEF: 2, MID: 3, FWD: 4 }
  * the end of GW7 cannot be added by any team. The list regenerates on every
  * deploy from scripts/build-forbidden-waivers.mjs (fresh bootstrap minus the
  * baseline snapshot), so new signings appear here automatically.
+ *
+ * `takenPickupIds` is the set of element ids that have actually been claimed
+ * (successful waiver / FA). Those rows light up in red.
  */
-export function ForbiddenWaivers() {
-  const [data, setData] = useState(null)
+export function ForbiddenWaivers({ takenPickupIds = null }) {
+  const { data, players } = useForbiddenWaivers()
   const isCeefax = useIsCeefax()
+  const [foldOpen, setFoldOpen] = useState(false)
+  const [autoOpened, setAutoOpened] = useState(false)
+
+  const takenCount = useMemo(() => {
+    if (!takenPickupIds || typeof takenPickupIds.has !== 'function') return 0
+    let n = 0
+    for (const p of players) {
+      if (takenPickupIds.has(Number(p.id))) n += 1
+    }
+    return n
+  }, [players, takenPickupIds])
 
   useEffect(() => {
-    let alive = true
-    fetchLeagueDataJsonOptional('forbidden-waivers.json').then((json) => {
-      if (alive && json) setData(json)
-    })
-    return () => {
-      alive = false
+    if (takenCount > 0 && !autoOpened) {
+      setFoldOpen(true)
+      setAutoOpened(true)
     }
-  }, [])
+  }, [takenCount, autoOpened])
 
   if (!data) return null
 
-  const players = data.players ?? []
   const closed = data.windowOpen === false
 
   return (
     <section
-      className="tile tile--compact forbidden-waivers"
+      className={
+        'tile tile--compact forbidden-waivers' +
+        (takenCount > 0 ? ' forbidden-waivers--breach' : '')
+      }
       aria-labelledby="forbidden-waivers-heading"
     >
-      <details className="forbidden-waivers__fold">
+      <details
+        className="forbidden-waivers__fold"
+        open={foldOpen}
+        onToggle={(e) => setFoldOpen(e.currentTarget.open)}
+      >
         <summary className="forbidden-waivers__summary">
           <h2 id="forbidden-waivers-heading" className="tile-title tile-title--sm">
             Forbidden waivers
           </h2>
           {players.length > 0 ? (
             <span className="forbidden-waivers__count tabular">{players.length}</span>
+          ) : null}
+          {takenCount > 0 ? (
+            <span className="forbidden-waivers__taken-count tabular">
+              {takenCount} taken
+            </span>
           ) : null}
         </summary>
         <p className="tile-hint muted tile-hint--tight">
@@ -65,15 +87,26 @@ export function ForbiddenWaivers() {
           <ul className="forbidden-waivers__list">
             {players
               .slice()
-              .sort(
-                (a, b) =>
+              .sort((a, b) => {
+                const aTaken = takenPickupIds?.has(Number(a.id)) ? 0 : 1
+                const bTaken = takenPickupIds?.has(Number(b.id)) ? 0 : 1
+                return (
+                  aTaken - bTaken ||
                   (POS_RANK[a.position] ?? 5) - (POS_RANK[b.position] ?? 5) ||
-                  (a.fullName || a.webName || '').localeCompare(b.fullName || b.webName || ''),
-              )
+                  (a.fullName || a.webName || '').localeCompare(b.fullName || b.webName || '')
+                )
+              })
               .map((p) => {
                 const badge = plClubBadgeUrl(p.teamCode)
+                const taken = Boolean(takenPickupIds?.has(Number(p.id)))
                 return (
-                  <li key={p.id} className="forbidden-waivers__row">
+                  <li
+                    key={p.id}
+                    className={
+                      'forbidden-waivers__row' +
+                      (taken ? ' forbidden-waivers__row--taken' : '')
+                    }
+                  >
                     {isCeefax ? (
                       <span className="forbidden-waivers__badge forbidden-waivers__badge--code">
                         {p.team || ''}
@@ -93,6 +126,9 @@ export function ForbiddenWaivers() {
                     <span className="forbidden-waivers__name" title={p.fullName}>
                       {p.fullName || p.webName}
                     </span>
+                    {taken ? (
+                      <span className="forbidden-waivers__taken-stamp">Taken</span>
+                    ) : null}
                     <span
                       className={`forbidden-waivers__pos forbidden-waivers__pos--${p.position.toLowerCase()}`}
                     >

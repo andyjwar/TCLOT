@@ -565,6 +565,7 @@ import {
   WaiverFreshnessBanner,
 } from './WaiversPanel.jsx'
 import { deriveWaiverFreshnessNotice } from './waiverDataFreshness.js'
+import { pickupIdSetFromMoves } from './forbiddenWaivers.js'
 import { reloadStandaloneApp } from './tclotRefresh.js'
 import {
   readTclotViewState,
@@ -3023,6 +3024,11 @@ function App() {
     () => mergeWaiverOutGwRows(staticWaiverOutGwRows, liveWaiver.rows),
     [staticWaiverOutGwRows, liveWaiver.rows],
   )
+  /** Successful pickup ids (static ingest + live FPL overlay) for forbidden-list stamps. */
+  const takenPickupIds = useMemo(
+    () => pickupIdSetFromMoves(waiverOutGwRows),
+    [waiverOutGwRows],
+  )
   const refreshLeagueAndWaivers = useCallback(async () => {
     // In-place JSON refetch cannot unstick an iOS home-screen app; the
     // document is frozen until the process is killed. Cache-bust navigate.
@@ -4037,7 +4043,7 @@ function App() {
               <div className="subview-panel">
               {teamSelectionTab === 'waivers' && (
             <div className="dashboard-stack">
-              <ForbiddenWaivers />
+              <ForbiddenWaivers takenPickupIds={takenPickupIds} />
 
               <WaiverFreshnessBanner notice={waiverFreshnessNotice} />
 

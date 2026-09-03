@@ -5,6 +5,8 @@ import { gameWeekSelectLabel } from './gwLabel.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { teamChipAbbr } from './liveScoresDerivations.js'
+import { isForbiddenWaiverPickup } from './forbiddenWaivers.js'
+import { useForbiddenWaivers } from './useForbiddenWaivers.js'
 import './WaiversPanel.css'
 
 /** Plain-text line for one move — no `W` prefix for waivers; FA lines keep `FA`. */
@@ -99,7 +101,14 @@ function ShareOwner({ row, teamLogoMap, kitIndexByEntry }) {
  * 3-letter team code pinned right. Position is shown once — in and out
  * share it.
  */
-function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEntry }) {
+function WaiverShareCard({
+  gw,
+  rows,
+  leagueTitleAbbr,
+  teamLogoMap,
+  kitIndexByEntry,
+  forbiddenIds,
+}) {
   const density = shareCardDensity(rows.length)
   return (
     <div className={'waivers-share waivers-share--' + density} aria-label="Waiver summary for sharing">
@@ -114,8 +123,14 @@ function WaiverShareCard({ gw, rows, leagueTitleAbbr, teamLogoMap, kitIndexByEnt
         {rows.map((r) => {
           const isFa = r.transactionKind === 'f'
           const pos = shareMovePos(r)
+          const forbidden = isForbiddenWaiverPickup(r, forbiddenIds)
           return (
-            <li className="waivers-share__row" key={r.transactionId}>
+            <li
+              className={
+                'waivers-share__row' + (forbidden ? ' waivers-share__row--forbidden' : '')
+              }
+              key={r.transactionId}
+            >
               <span className="waivers-share__marker tabular">
                 {isFa ? (
                   <span className="waivers-share__tag waivers-share__tag--fa">FA</span>
@@ -168,6 +183,7 @@ export function WaiverSummaryShare({
   onGwChange,
   showGwPicker = true,
 }) {
+  const { ids: forbiddenIds } = useForbiddenWaivers()
   const [copied, setCopied] = useState(false)
 
   const flatRows = useMemo(() => {
@@ -254,6 +270,7 @@ export function WaiverSummaryShare({
         leagueTitleAbbr={leagueTitleAbbr}
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
+        forbiddenIds={forbiddenIds}
       />
     </div>
   )
