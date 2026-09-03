@@ -5,7 +5,7 @@ import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { firstWord, standingsMobileTeamName } from './teamNameUtils.js'
 import { useMobileLayout, useMobileNarrowViewport } from './usePortraitMobile.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
-import { isForbiddenWaiverPickup } from './forbiddenWaivers.js'
+import { forbiddenPickupDisplayName, isForbiddenWaiverPickup } from './forbiddenWaivers.js'
 import { useForbiddenWaivers } from './useForbiddenWaivers.js'
 import './WaiversPanel.css'
 
@@ -91,7 +91,14 @@ function WvOrderCell({ move }) {
 
 /** Desktop: "All swaps" flat table ↔ "By team" phone-style tiles (expanded).
  *  `gwPill` (optional node) renders inline on the same row as the toggle. */
-function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill, forbiddenIds }) {
+function WeeklyWaiversTable({
+  groups,
+  teamLogoMap,
+  kitIndexByEntry,
+  gwPill,
+  forbiddenIds,
+  forbiddenPlayers,
+}) {
   const [group, setGroup] = useState('flat')
 
   const flatRows = useMemo(() => {
@@ -147,6 +154,7 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill, forb
           kitIndexByEntry={kitIndexByEntry}
           defaultExpanded
           forbiddenIds={forbiddenIds}
+          forbiddenPlayers={forbiddenPlayers}
         />
       ) : (
         <div className="waivers-table-wrap">
@@ -193,7 +201,11 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill, forb
                   <td>
                     <WvPlayerCell
                       element={r.element_in}
-                      name={r.pickedName}
+                      name={forbiddenPickupDisplayName(
+                        r.pickedName,
+                        r.element_in,
+                        forbiddenPlayers,
+                      )}
                       badgeUrl={r.pickedBadgeUrl}
                       teamShort={r.pickedTeamShort}
                       pos={r.pickedPos}
@@ -223,7 +235,13 @@ function WeeklyWaiversTable({ groups, teamLogoMap, kitIndexByEntry, gwPill, forb
 }
 
 /** Mobile · All Swaps — every successful pick in league waiver order, cards expanded. */
-function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry, forbiddenIds }) {
+function WeeklyWaiversAllSwaps({
+  groups,
+  teamLogoMap,
+  kitIndexByEntry,
+  forbiddenIds,
+  forbiddenPlayers,
+}) {
   const rows = useMemo(() => {
     const flat = flattenWaiverGroups(groups)
     return [...flat].sort(sortMovesWaiverThenFa)
@@ -297,7 +315,11 @@ function WeeklyWaiversAllSwaps({ groups, teamLogoMap, kitIndexByEntry, forbidden
                 <div className={'waivers-swap' + (forbidden ? ' waivers-swap--forbidden' : '')}>
                   <WvPlayerCell
                     element={m.element_in}
-                    name={m.pickedName}
+                    name={forbiddenPickupDisplayName(
+                      m.pickedName,
+                      m.element_in,
+                      forbiddenPlayers,
+                    )}
                     badgeUrl={m.pickedBadgeUrl}
                     teamShort={m.pickedTeamShort}
                     pos={m.pickedPos}
@@ -331,6 +353,7 @@ function WeeklyWaiversTiles({
   kitIndexByEntry,
   defaultExpanded = false,
   forbiddenIds,
+  forbiddenPlayers,
 }) {
   const [open, setOpen] = useState(() => new Set())
   const [closed, setClosed] = useState(() => new Set())
@@ -411,7 +434,11 @@ function WeeklyWaiversTiles({
                   >
                     <WvPlayerCell
                       element={m.element_in}
-                      name={m.pickedName}
+                      name={forbiddenPickupDisplayName(
+                        m.pickedName,
+                        m.element_in,
+                        forbiddenPlayers,
+                      )}
                       badgeUrl={m.pickedBadgeUrl}
                       teamShort={m.pickedTeamShort}
                       pos={m.pickedPos}
@@ -453,7 +480,7 @@ export function WeeklyWaivers({
   gwPill,
   summaryView,
 }) {
-  const { ids: forbiddenIds } = useForbiddenWaivers()
+  const { ids: forbiddenIds, players: forbiddenPlayers } = useForbiddenWaivers()
   const isMobile = useMobileLayout()
   /* Phone-narrow (≤767): collapsed By team. Tablet in the mobile shell
    * (768–1080): same tiles as phone, expanded by default. */
@@ -501,6 +528,7 @@ export function WeeklyWaivers({
             teamLogoMap={teamLogoMap}
             kitIndexByEntry={kitIndexByEntry}
             forbiddenIds={forbiddenIds}
+            forbiddenPlayers={forbiddenPlayers}
           />
         ) : (
           <WeeklyWaiversTiles
@@ -509,6 +537,7 @@ export function WeeklyWaivers({
             kitIndexByEntry={kitIndexByEntry}
             defaultExpanded={!isPhoneNarrow}
             forbiddenIds={forbiddenIds}
+            forbiddenPlayers={forbiddenPlayers}
           />
         )}
       </div>
@@ -535,6 +564,7 @@ export function WeeklyWaivers({
       kitIndexByEntry={kitIndexByEntry}
       gwPill={gwPill}
       forbiddenIds={forbiddenIds}
+      forbiddenPlayers={forbiddenPlayers}
     />
   )
 }
@@ -635,7 +665,7 @@ export function WaiverTotalsToggle({
 
 /* ── Section 3 · First waiver picks tracker — fixed-height scroll ─────── */
 export function FirstWaiverPicks({ rows = [], teamLogoMap, kitIndexByEntry, emptyMessage }) {
-  const { ids: forbiddenIds } = useForbiddenWaivers()
+  const { ids: forbiddenIds, players: forbiddenPlayers } = useForbiddenWaivers()
   if (!rows.length) return <p className="muted muted--tight">{emptyMessage}</p>
   return (
     <div className="waivers-first">
@@ -678,7 +708,11 @@ export function FirstWaiverPicks({ rows = [], teamLogoMap, kitIndexByEntry, empt
                 <td>
                   <WvPlayerCell
                     element={r.element_in}
-                    name={r.pickedName}
+                    name={forbiddenPickupDisplayName(
+                      r.pickedName,
+                      r.element_in,
+                      forbiddenPlayers,
+                    )}
                     badgeUrl={r.pickedBadgeUrl}
                     teamShort={r.pickedTeamShort}
                     pos={r.pickedPos}
