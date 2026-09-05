@@ -277,7 +277,14 @@ export function parsePulseliveEvents(fixtureJson, fplFixture, pulseToFpl) {
     if (fplT === th) teamSide = 'home';
     else if (fplT === ta) teamSide = 'away';
 
-    const isOwnGoal = String(ev?.type || '').toUpperCase() === 'O';
+    const pulseType = String(ev?.type || '').toUpperCase();
+    const pulseDesc = String(ev?.description || '').toUpperCase();
+    const isOwnGoal =
+      pulseType === 'O' ||
+      (kind === 'goal' &&
+        (pulseDesc === 'O' ||
+          pulseDesc === 'OG' ||
+          pulseDesc.startsWith('OWN')));
     const isPenalty =
       kind === 'goal' &&
       !isOwnGoal &&

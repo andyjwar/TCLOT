@@ -632,7 +632,12 @@ export function enrichWithFplElements({ fplFixture, events, lineups, elementById
     if (!e.playerName || !e.teamSide) return { ...e, elementId: null };
     const teamFpl = e.teamSide === 'home' ? homeFpl : awayFpl;
     if (teamFpl == null) return { ...e, elementId: null };
-    const elid = matchFplElementId(teamFpl, e.playerName, elementById);
+    let elid = matchFplElementId(teamFpl, e.playerName, elementById);
+    /** Own-goal feeds sometimes tag the receiving club; try the other shirt. */
+    if (elid == null && e.isOwnGoal) {
+      const other = e.teamSide === 'home' ? awayFpl : homeFpl;
+      if (other != null) elid = matchFplElementId(other, e.playerName, elementById);
+    }
     return { ...e, elementId: elid };
   });
 

@@ -83,6 +83,21 @@ test('pickPreferredRow — events: fallback used when primary empty', () => {
   assert.deepEqual(merged.events, [{ kind: 'goal', playerName: 'B' }]);
 });
 
+test('pickPreferredRow — official 1–2 is not maxed with a flipped OG log', () => {
+  const p = row(1, {
+    events: [
+      { kind: 'goal', teamSide: 'home', isOwnGoal: false },
+      { kind: 'goal', teamSide: 'away', isOwnGoal: false },
+      { kind: 'goal', teamSide: 'away', isOwnGoal: true },
+    ],
+    score: { homeScore: 1, awayScore: 2, statusText: 'Live', liveMinute: "64'00" },
+    matchId: 100,
+  });
+  const merged = pickPreferredRow(p, row(1), LABELS);
+  assert.equal(merged.score.homeScore, 1);
+  assert.equal(merged.score.awayScore, 2);
+});
+
 test('pickPreferredRow — 0–0 headline lifts to event-log 1–1', () => {
   const p = row(1, {
     events: [

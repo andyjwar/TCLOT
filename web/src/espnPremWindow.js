@@ -139,6 +139,14 @@ export function parseEspnKeyEventsForPrem(
       p0 && typeof p0.displayName === 'string' ? p0.displayName.trim() : null;
     const textBlob = `${ev?.text || ''} ${ev?.shortText || ''}`;
     const isOwnGoal = kind === 'goal' && isEspnOwnGoalEvent(ev);
+    /**
+     * ESPN `team` on an own-goal is the side that gained the goal (the
+     * receiving club). Prem events use the scorer's club — the team that
+     * conceded — so `scoreFromPremEvents` can credit the other side and
+     * `enrichWithFplElements` can match Thiaw on Newcastle, not Bournemouth.
+     */
+    if (isOwnGoal && teamSide === 'home') teamSide = 'away';
+    else if (isOwnGoal && teamSide === 'away') teamSide = 'home';
     const isPenalty = kind === 'goal' && /\bpenalt/i.test(textBlob);
     const mm = espnClockToMinute(ev);
     const w = Date.parse(String(ev?.wallclock || ''));

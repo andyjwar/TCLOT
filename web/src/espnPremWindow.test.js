@@ -68,6 +68,33 @@ test('parseEspnKeyEventsForPrem — goal + assist from keyEvents', () => {
   assert.equal(ev[0].teamSide, 'home');
 });
 
+test('parseEspnKeyEventsForPrem — own goal teamSide is the scorer club', () => {
+  /** ESPN credits Bournemouth (away / receiving). Thiaw plays for Newcastle. */
+  const ev = parseEspnKeyEventsForPrem(
+    {
+      keyEvents: [
+        {
+          id: 'og1',
+          type: { type: 'own-goal' },
+          team: { id: '331' },
+          clock: { value: 1200, displayValue: "20'" },
+          wallclock: '2026-09-05T11:50:00Z',
+          text: 'Own Goal by Malick Thiaw, Newcastle United.',
+          shortText: 'Own Goal Thiaw',
+          participants: [{ athlete: { displayName: 'Malick Thiaw' } }],
+        },
+      ],
+    },
+    fplFixture,
+    espnToFpl,
+  );
+  assert.equal(ev.length, 1);
+  assert.equal(ev[0].kind, 'goal');
+  assert.equal(ev[0].isOwnGoal, true);
+  assert.equal(ev[0].playerName, 'Malick Thiaw');
+  assert.equal(ev[0].teamSide, 'home');
+});
+
 test('parseEspnSubstitutions — on/off from participants', () => {
   const summary = {
     keyEvents: [
