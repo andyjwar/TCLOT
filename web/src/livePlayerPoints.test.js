@@ -140,3 +140,33 @@ test('scoreFromPremEvents — own goal credits the other side', () => {
     { homeScore: 0, awayScore: 1 },
   );
 });
+
+test('liftScoreFromEvents — 1–0 headline still lifts a missing away goal', () => {
+  const lifted = liftScoreFromEvents(
+    { homeScore: 1, awayScore: 0, statusText: 'Live' },
+    [
+      { kind: 'goal', teamSide: 'home', isOwnGoal: false },
+      { kind: 'goal', teamSide: 'away', isOwnGoal: false },
+    ],
+  );
+  assert.equal(lifted.homeScore, 1);
+  assert.equal(lifted.awayScore, 1);
+});
+
+test('liftScoreFromEvents — NEW 1–2 BOU is not maxed into 2–2 by a flipped OG', () => {
+  /**
+   * Official score: Gordon + Tavernier + Thiaw OG → 1–2.
+   * ESPN tags the own goal to the receiving side (BOU). Counting that as
+   * "away OG → home goal" yields 2–1; per-side max with 1–2 was 2–2.
+   */
+  const lifted = liftScoreFromEvents(
+    { homeScore: 1, awayScore: 2, statusText: 'Live', liveMinute: "64'00" },
+    [
+      { kind: 'goal', teamSide: 'home', isOwnGoal: false },
+      { kind: 'goal', teamSide: 'away', isOwnGoal: false },
+      { kind: 'goal', teamSide: 'away', isOwnGoal: true },
+    ],
+  );
+  assert.equal(lifted.homeScore, 1);
+  assert.equal(lifted.awayScore, 2);
+});

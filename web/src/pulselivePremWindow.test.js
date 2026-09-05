@@ -526,6 +526,36 @@ test('parsePulseliveEvents — own goal kind=goal, isOwnGoal=true, NO assist emi
   assert.equal(ogAssist, undefined);
 });
 
+test('parsePulseliveEvents — type G with own-goal description is an OG', () => {
+  const fplFixture = { team_h: 11, team_a: 1 };
+  const pulseToFpl = new Map([[10, 11], [1, 1]]);
+  const evs = parsePulseliveEvents(
+    {
+      teamLists: [
+        { teamId: 10, lineup: [{ id: 4002, name: { display: 'Malick Thiaw' } }], substitutes: [] },
+        { teamId: 1, lineup: [{ id: 5001, name: { display: 'Bukayo Saka' } }], substitutes: [] },
+      ],
+      events: [
+        {
+          id: 801,
+          type: 'G',
+          description: 'OG',
+          personId: 4002,
+          teamId: 10,
+          clock: { secs: 1200, label: "20'00" },
+          time: { millis: 2000 },
+        },
+      ],
+    },
+    fplFixture,
+    pulseToFpl,
+  );
+  assert.equal(evs.length, 1);
+  assert.equal(evs[0].isOwnGoal, true);
+  assert.equal(evs[0].teamSide, 'home');
+  assert.equal(evs[0].playerName, 'Malick Thiaw');
+});
+
 test('parsePulseliveEvents — yellow + second-yellow red mapped correctly', () => {
   const fplFixture = { team_h: 11, team_a: 1 };
   const pulseToFpl = new Map([[10, 11], [1, 1]]);

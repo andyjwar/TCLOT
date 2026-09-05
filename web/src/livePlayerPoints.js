@@ -84,7 +84,10 @@ export function tallyPremEventsForElement(premRows, elementId) {
 }
 
 /**
- * Match score implied by Prem goal events (own goals credit the other side).
+ * Match score implied by Prem goal events.
+ *
+ * `teamSide` is the scorer's club. For an own goal that is the team that
+ * conceded — credit the other side.
  *
  * @param {object[] | null | undefined} events
  * @returns {{ homeScore: number, awayScore: number }}
@@ -105,9 +108,10 @@ export function scoreFromPremEvents(events) {
 }
 
 /**
- * Prefer the higher of a reported Prem/FPL score and the event-log score
- * (Leeds–Brentford headline 0–0 while Calvert-Lewin + Schade are already
- * in the log).
+ * Raise a stalled Prem/FPL headline (Leeds–Brentford 0–0 while Calvert-Lewin
+ * + Schade are already in the log). Do not take a per-side max when the
+ * event log has no extra goals — ESPN tags own goals to the receiving side,
+ * so a 1–2 with a Thiaw OG becomes a flipped 2–1 and `Math.max` paints 2–2.
  *
  * @param {object | null | undefined} score
  * @param {object[] | null | undefined} events
@@ -120,12 +124,19 @@ export function liftScoreFromEvents(score, events) {
   }
   const rh = Number(score?.homeScore);
   const ra = Number(score?.awayScore);
-  const home = Math.max(Number.isFinite(rh) ? rh : 0, fromEvents.homeScore);
-  const away = Math.max(Number.isFinite(ra) ? ra : 0, fromEvents.awayScore);
+  const headlineHome = Number.isFinite(rh) ? rh : 0;
+  const headlineAway = Number.isFinite(ra) ? ra : 0;
+  const headlineKnown = Number.isFinite(rh) && Number.isFinite(ra);
+  const eventTotal = fromEvents.homeScore + fromEvents.awayScore;
+  if (headlineKnown && eventTotal <= headlineHome + headlineAway) {
+    return score;
+  }
+  const home = Math.max(headlineHome, fromEvents.homeScore);
+  const away = Math.max(headlineAway, fromEvents.awayScore);
   if (!score) {
     return { homeScore: home, awayScore: away, started: true };
   }
-  if (home === (Number.isFinite(rh) ? rh : 0) && away === (Number.isFinite(ra) ? ra : 0)) {
+  if (home === headlineHome && away === headlineAway) {
     return score;
   }
   return { ...score, homeScore: home, awayScore: away };
