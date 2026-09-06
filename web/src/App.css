@@ -14771,6 +14771,145 @@ button.live-xp__player-name:focus-visible {
   overflow: hidden;
 }
 
+.standings-stats-bench-table__worst .win-margin-table__n strong {
+  color: var(--fm-text-strong);
+}
+
+.standings-bench__callout {
+  margin: 0 0 12px;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--fm-text);
+}
+
+.standings-stats-bench-table__bar-fill {
+  background: color-mix(in srgb, var(--tclot-logo-purple) 72%, transparent);
+}
+
+.standings-stats-bench-table__rec {
+  white-space: nowrap;
+  min-width: 3.4rem;
+}
+
+.standings-bench-gw {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--fm-border);
+}
+
+.standings-bench-gw__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.standings-bench-gw__title {
+  margin: 0;
+}
+
+.standings-bench-gw__single {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.standings-bench-fx {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.standings-bench-fx__card {
+  border: 1px solid var(--fm-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--fm-muted) 6%, var(--fm-card));
+}
+
+.standings-bench-fx__card--flip {
+  border-color: color-mix(in srgb, var(--tclot-logo-purple) 45%, var(--fm-border));
+}
+
+.standings-bench-fx__names {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.standings-bench-fx__side {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.standings-bench-fx__side--away {
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.standings-bench-fx__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.standings-bench-fx__scores {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.standings-bench-fx__line {
+  display: grid;
+  grid-template-columns: 4.4rem minmax(4rem, 1fr) auto;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.standings-bench-fx__label {
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+}
+
+.standings-bench-fx__score {
+  font-size: 1.05rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.standings-bench-fx__result {
+  font-size: 0.74rem;
+  justify-self: end;
+}
+
+.standings-bench-fx__result--flip {
+  color: var(--fm-text-strong);
+  font-weight: 650;
+}
+
+.standings-bench-fx__misses {
+  margin: 8px 0 0;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: var(--fm-text);
+}
+
+.standings-bench-fx__miss-sep {
+  color: var(--fm-muted);
+}
+
 .standings-stats-weeks-table__bar-fill {
   position: absolute;
   inset: 0 auto 0 0;
@@ -14959,7 +15098,8 @@ button.live-xp__player-name:focus-visible {
     overflow-x: visible;
   }
   .standings-stats-margin-table.win-margin-table,
-  .standings-stats-weeks-table.win-margin-table {
+  .standings-stats-weeks-table.win-margin-table,
+  .standings-stats-bench-table.win-margin-table {
     min-width: 0;
     width: 100%;
     table-layout: fixed;
@@ -14968,21 +15108,40 @@ button.live-xp__player-name:focus-visible {
   .standings-stats-margin-table.win-margin-table th,
   .standings-stats-margin-table.win-margin-table td,
   .standings-stats-weeks-table.win-margin-table th,
-  .standings-stats-weeks-table.win-margin-table td {
+  .standings-stats-weeks-table.win-margin-table td,
+  .standings-stats-bench-table.win-margin-table th,
+  .standings-stats-bench-table.win-margin-table td {
     padding: 6px 4px;
   }
   .standings-stats-margin-table .win-margin-table__team,
-  .standings-stats-weeks-table .win-margin-table__team {
+  .standings-stats-weeks-table .win-margin-table__team,
+  .standings-stats-bench-table .win-margin-table__team {
     min-width: 0;
     width: auto;
   }
   .standings-stats-margin-table .win-margin-table__team-inner,
-  .standings-stats-weeks-table .win-margin-table__team-inner {
+  .standings-stats-weeks-table .win-margin-table__team-inner,
+  .standings-stats-bench-table .win-margin-table__team-inner {
     gap: 6px;
   }
   .standings-stats-margin-table .win-margin-table__n,
   .standings-stats-weeks-table .win-margin-table__n {
     width: 1.95rem;
+  }
+  .standings-stats-bench-table .win-margin-table__n {
+    width: 2.15rem;
+  }
+  .standings-stats-bench-table__rec {
+    min-width: 0;
+    width: 2.8rem;
+    font-size: 0.68rem;
+  }
+  .standings-bench-fx__line {
+    grid-template-columns: 3.6rem minmax(3.2rem, 1fr) auto;
+    gap: 6px;
+  }
+  .standings-bench-fx__score {
+    font-size: 0.95rem;
   }
   /* TEAM column on mobile: first word only beside the crest. */
   .standings-stats-margin-table .win-margin-table__name-full,

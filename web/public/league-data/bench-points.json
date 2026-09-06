@@ -1,0 +1,575 @@
+{
+  "schemaVersion": 1,
+  "gameweeks": [
+    1
+  ],
+  "teams": [
+    {
+      "leagueEntryId": 18279,
+      "fplEntryId": 18269,
+      "teamName": "Mordor S.F.G",
+      "actualPts": 51,
+      "bestXiPts": 62,
+      "benchLeft": 11,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "1–0–0",
+      "bestRecord": "1–0–0",
+      "actualW": 1,
+      "actualD": 0,
+      "actualL": 0,
+      "bestW": 1,
+      "bestD": 0,
+      "bestL": 0,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 51,
+          "bestXiPts": 62,
+          "benchLeft": 11,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 68,
+              "name": "Tavernier",
+              "pos": "MID",
+              "pts": 10
+            },
+            {
+              "id": 445,
+              "name": "Thiaw",
+              "pos": "DEF",
+              "pts": 3
+            },
+            {
+              "id": 198,
+              "name": "Henderson",
+              "pos": "GK",
+              "pts": 2
+            }
+          ],
+          "satOut": [
+            {
+              "id": 398,
+              "name": "Foden",
+              "pos": "MID",
+              "pts": 1
+            },
+            {
+              "id": 529,
+              "name": "Roefs",
+              "pos": "GK",
+              "pts": 1
+            },
+            {
+              "id": 469,
+              "name": "N.Williams",
+              "pos": "DEF",
+              "pts": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "leagueEntryId": 5220,
+      "fplEntryId": 5217,
+      "teamName": "Suffolk Sméagol",
+      "actualPts": 52,
+      "bestXiPts": 59,
+      "benchLeft": 7,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "1–0–0",
+      "bestRecord": "1–0–0",
+      "actualW": 1,
+      "actualD": 0,
+      "actualL": 0,
+      "bestW": 1,
+      "bestD": 0,
+      "bestL": 0,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 52,
+          "bestXiPts": 59,
+          "benchLeft": 7,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 385,
+              "name": "Trafford",
+              "pos": "GK",
+              "pts": 9
+            },
+            {
+              "id": 464,
+              "name": "Wissa",
+              "pos": "FWD",
+              "pts": 4
+            }
+          ],
+          "satOut": [
+            {
+              "id": 358,
+              "name": "Kerkez",
+              "pos": "DEF",
+              "pts": 0
+            },
+            {
+              "id": 1,
+              "name": "Raya",
+              "pos": "GK",
+              "pts": 6
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "leagueEntryId": 44904,
+      "fplEntryId": 44841,
+      "teamName": "Brampton Balrogs",
+      "actualPts": 38,
+      "bestXiPts": 44,
+      "benchLeft": 6,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "0–0–1",
+      "bestRecord": "0–0–1",
+      "actualW": 0,
+      "actualD": 0,
+      "actualL": 1,
+      "bestW": 0,
+      "bestD": 0,
+      "bestL": 1,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 38,
+          "bestXiPts": 44,
+          "benchLeft": 6,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 504,
+              "name": "Vuskovic",
+              "pos": "DEF",
+              "pts": 6
+            },
+            {
+              "id": 250,
+              "name": "Leno",
+              "pos": "GK",
+              "pts": 2
+            }
+          ],
+          "satOut": [
+            {
+              "id": 201,
+              "name": "Muñoz",
+              "pos": "DEF",
+              "pts": 0
+            },
+            {
+              "id": 467,
+              "name": "Sels",
+              "pos": "GK",
+              "pts": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "leagueEntryId": 6849,
+      "fplEntryId": 6845,
+      "teamName": "Rokesly Regorasu",
+      "actualPts": 55,
+      "bestXiPts": 60,
+      "benchLeft": 5,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "1–0–0",
+      "bestRecord": "1–0–0",
+      "actualW": 1,
+      "actualD": 0,
+      "actualL": 0,
+      "bestW": 1,
+      "bestD": 0,
+      "bestL": 0,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 55,
+          "bestXiPts": 60,
+          "benchLeft": 5,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 569,
+              "name": "Gonzalo",
+              "pos": "FWD",
+              "pts": 6
+            }
+          ],
+          "satOut": [
+            {
+              "id": 389,
+              "name": "Matheus N.",
+              "pos": "DEF",
+              "pts": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "leagueEntryId": 4898,
+      "fplEntryId": 4895,
+      "teamName": "Toronto Gimli",
+      "actualPts": 39,
+      "bestXiPts": 44,
+      "benchLeft": 5,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "0–0–1",
+      "bestRecord": "0–0–1",
+      "actualW": 0,
+      "actualD": 0,
+      "actualL": 1,
+      "bestW": 0,
+      "bestD": 0,
+      "bestL": 1,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 39,
+          "bestXiPts": 44,
+          "benchLeft": 5,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 109,
+              "name": "Verbruggen",
+              "pos": "GK",
+              "pts": 6
+            }
+          ],
+          "satOut": [
+            {
+              "id": 412,
+              "name": "Lammens",
+              "pos": "GK",
+              "pts": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "leagueEntryId": 10173,
+      "fplEntryId": 10168,
+      "teamName": "Hackney Rohirrim",
+      "actualPts": 31,
+      "bestXiPts": 35,
+      "benchLeft": 4,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "0–0–1",
+      "bestRecord": "0–0–1",
+      "actualW": 0,
+      "actualD": 0,
+      "actualL": 1,
+      "bestW": 0,
+      "bestD": 0,
+      "bestL": 1,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 31,
+          "bestXiPts": 35,
+          "benchLeft": 4,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 226,
+              "name": "Pickford",
+              "pos": "GK",
+              "pts": 7
+            }
+          ],
+          "satOut": [
+            {
+              "id": 384,
+              "name": "Donnarumma",
+              "pos": "GK",
+              "pts": 3
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "leagueEntryId": 30728,
+      "fplEntryId": 30692,
+      "teamName": "Seoul Shire",
+      "actualPts": 47,
+      "bestXiPts": 49,
+      "benchLeft": 2,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "1–0–0",
+      "bestRecord": "1–0–0",
+      "actualW": 1,
+      "actualD": 0,
+      "actualL": 0,
+      "bestW": 1,
+      "bestD": 0,
+      "bestL": 0,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 47,
+          "bestXiPts": 49,
+          "benchLeft": 2,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 465,
+              "name": "Osula",
+              "pos": "FWD",
+              "pts": 4
+            },
+            {
+              "id": 5,
+              "name": "J.Timber",
+              "pos": "DEF",
+              "pts": 0
+            }
+          ],
+          "satOut": [
+            {
+              "id": 142,
+              "name": "James",
+              "pos": "DEF",
+              "pts": 0
+            },
+            {
+              "id": 514,
+              "name": "Tel",
+              "pos": "MID",
+              "pts": 2
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "leagueEntryId": 4259,
+      "fplEntryId": 4258,
+      "teamName": "Atlético Bilbo",
+      "actualPts": 24,
+      "bestXiPts": 25,
+      "benchLeft": 1,
+      "officialBenchPts": 0,
+      "weeksPlayed": 1,
+      "actualRecord": "0–0–1",
+      "bestRecord": "0–0–1",
+      "actualW": 0,
+      "actualD": 0,
+      "actualL": 1,
+      "bestW": 0,
+      "bestD": 0,
+      "bestL": 1,
+      "weeks": [
+        {
+          "gw": 1,
+          "actualPts": 24,
+          "bestXiPts": 25,
+          "benchLeft": 1,
+          "officialBenchPts": 0,
+          "leftOnBench": [
+            {
+              "id": 61,
+              "name": "Truffert",
+              "pos": "DEF",
+              "pts": 1
+            }
+          ],
+          "satOut": [
+            {
+              "id": 149,
+              "name": "Colwill",
+              "pos": "DEF",
+              "pts": 0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "fixtures": [
+    {
+      "gw": 1,
+      "homeId": 18279,
+      "awayId": 4259,
+      "homeName": "Mordor S.F.G",
+      "awayName": "Atlético Bilbo",
+      "actualHome": 51,
+      "actualAway": 24,
+      "bestHome": 62,
+      "bestAway": 25,
+      "actualResult": "H",
+      "bestResult": "H",
+      "flipped": false,
+      "homeLeft": 11,
+      "awayLeft": 1,
+      "homeLeftOnBench": [
+        {
+          "id": 68,
+          "name": "Tavernier",
+          "pos": "MID",
+          "pts": 10
+        },
+        {
+          "id": 445,
+          "name": "Thiaw",
+          "pos": "DEF",
+          "pts": 3
+        },
+        {
+          "id": 198,
+          "name": "Henderson",
+          "pos": "GK",
+          "pts": 2
+        }
+      ],
+      "awayLeftOnBench": [
+        {
+          "id": 61,
+          "name": "Truffert",
+          "pos": "DEF",
+          "pts": 1
+        }
+      ]
+    },
+    {
+      "gw": 1,
+      "homeId": 30728,
+      "awayId": 10173,
+      "homeName": "Seoul Shire",
+      "awayName": "Hackney Rohirrim",
+      "actualHome": 47,
+      "actualAway": 31,
+      "bestHome": 49,
+      "bestAway": 35,
+      "actualResult": "H",
+      "bestResult": "H",
+      "flipped": false,
+      "homeLeft": 2,
+      "awayLeft": 4,
+      "homeLeftOnBench": [
+        {
+          "id": 465,
+          "name": "Osula",
+          "pos": "FWD",
+          "pts": 4
+        },
+        {
+          "id": 5,
+          "name": "J.Timber",
+          "pos": "DEF",
+          "pts": 0
+        }
+      ],
+      "awayLeftOnBench": [
+        {
+          "id": 226,
+          "name": "Pickford",
+          "pos": "GK",
+          "pts": 7
+        }
+      ]
+    },
+    {
+      "gw": 1,
+      "homeId": 44904,
+      "awayId": 6849,
+      "homeName": "Brampton Balrogs",
+      "awayName": "Rokesly Regorasu",
+      "actualHome": 38,
+      "actualAway": 55,
+      "bestHome": 44,
+      "bestAway": 60,
+      "actualResult": "A",
+      "bestResult": "A",
+      "flipped": false,
+      "homeLeft": 6,
+      "awayLeft": 5,
+      "homeLeftOnBench": [
+        {
+          "id": 504,
+          "name": "Vuskovic",
+          "pos": "DEF",
+          "pts": 6
+        },
+        {
+          "id": 250,
+          "name": "Leno",
+          "pos": "GK",
+          "pts": 2
+        }
+      ],
+      "awayLeftOnBench": [
+        {
+          "id": 569,
+          "name": "Gonzalo",
+          "pos": "FWD",
+          "pts": 6
+        }
+      ]
+    },
+    {
+      "gw": 1,
+      "homeId": 4898,
+      "awayId": 5220,
+      "homeName": "Toronto Gimli",
+      "awayName": "Suffolk Sméagol",
+      "actualHome": 39,
+      "actualAway": 52,
+      "bestHome": 44,
+      "bestAway": 59,
+      "actualResult": "A",
+      "bestResult": "A",
+      "flipped": false,
+      "homeLeft": 5,
+      "awayLeft": 7,
+      "homeLeftOnBench": [
+        {
+          "id": 109,
+          "name": "Verbruggen",
+          "pos": "GK",
+          "pts": 6
+        }
+      ],
+      "awayLeftOnBench": [
+        {
+          "id": 385,
+          "name": "Trafford",
+          "pos": "GK",
+          "pts": 9
+        },
+        {
+          "id": 464,
+          "name": "Wissa",
+          "pos": "FWD",
+          "pts": 4
+        }
+      ]
+    }
+  ],
+  "generatedAt": "2026-09-06T19:19:38.875Z",
+  "season": "2026-27",
+  "leagueId": 1577
+}

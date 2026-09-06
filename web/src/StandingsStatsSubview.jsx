@@ -1,6 +1,7 @@
 import { useMemo } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { FixtureScheduleMatrix } from './FixtureScheduleMatrix.jsx'
+import { StandingsBenchPoints } from './StandingsBenchPoints.jsx'
 import { TeamH2HRivals } from './TeamH2HRivals.jsx'
 import { WIN_MARGIN_BUCKET_KEYS } from './useLeagueData'
 import { useMobileNarrowViewport } from './usePortraitMobile'
@@ -22,11 +23,12 @@ function bucketTitle(key, kind) {
 /**
  * Stats sub-tab — Phase 2 redesign.
  *
- * Sections (matches the 5.56 PM screenshot):
- *  1. Wins by margin — toggle Wins / Losses (buckets: 1 / 2 / 3-5 / 5-10 / 10-20 / 20+).
- *  2. Game weeks in 1st place — toggle 1st / Last + horizontal bars.
- *  3. Schedule luck matrix — embedded (delta cells).
- *  4. Head-to-Head rivals — team picker + per-opponent P/W/D/L/PF/PA.
+ * Sections:
+ *  1. Points left on the bench — best legal XI vs official totals + GW scores.
+ *  2. Wins by margin — toggle Wins / Losses (buckets: 1 / 2 / 3-5 / 5-10 / 10-20 / 20+).
+ *  3. Game weeks in 1st place — toggle 1st / Last + horizontal bars.
+ *  4. Schedule luck matrix — embedded (delta cells).
+ *  5. Head-to-Head rivals — team picker + per-opponent P/W/D/L/PF/PA.
  *
  * @param {object} props
  * @param {{ league_entry: number, teamName: string, buckets: Record<string, number>, totalWins: number }[]} props.winMarginBucketRows
@@ -94,6 +96,11 @@ export function StandingsStatsSubview({
 
   return (
     <div className="standings-stats">
+      <StandingsBenchPoints
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+
       <section
         className="standings-stats__section standings-stats__section--margins"
         aria-labelledby="standings-stats-margins-heading"
