@@ -24,7 +24,7 @@ function bucketTitle(key, kind) {
  * Stats sub-tab — Phase 2 redesign.
  *
  * Sections:
- *  1. Points left on the bench — best legal XI vs official totals + GW scores.
+ *  1. Points left on the bench — unused FPL pts + H2H table pts (3/1/0) vs best XI.
  *  2. Wins by margin — toggle Wins / Losses (buckets: 1 / 2 / 3-5 / 5-10 / 10-20 / 20+).
  *  3. Game weeks in 1st place — toggle 1st / Last + horizontal bars.
  *  4. Schedule luck matrix — embedded (delta cells).
