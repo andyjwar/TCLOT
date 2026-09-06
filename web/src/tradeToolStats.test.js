@@ -20,6 +20,7 @@ import {
   toggleTradeStat,
   lockedTradePosition,
   filterSquadForTrade,
+  filterSquadByPosition,
   filterSquadByQuery,
   applyTradePick,
   encodeTradeSource,
@@ -176,6 +177,26 @@ test('lockedTradePosition — first pick on either side locks the position', () 
   assert.equal(lockedTradePosition([{ positionType: 1 }], []), 1)
   assert.equal(lockedTradePosition([], [{ positionType: 3 }]), 3)
   assert.equal(lockedTradePosition([{ positionType: 2 }], [{ positionType: 2 }]), 2)
+})
+
+test('filterSquadByPosition — keeps one slot; blank or unknown leaves list', () => {
+  const squad = [
+    { element: 1, positionType: 1 },
+    { element: 2, positionType: 2 },
+    { element: 3, positionType: 1 },
+    { element: 4, positionType: 4 },
+  ]
+  assert.deepEqual(filterSquadByPosition(squad, null), squad)
+  assert.deepEqual(filterSquadByPosition(squad, ''), squad)
+  assert.deepEqual(filterSquadByPosition(squad, 'all'), squad)
+  assert.deepEqual(
+    filterSquadByPosition(squad, 4).map((p) => p.element),
+    [4],
+  )
+  assert.deepEqual(
+    filterSquadByPosition(squad, '2').map((p) => p.element),
+    [2],
+  )
 })
 
 test('filterSquadForTrade — locked position hides every other slot', () => {

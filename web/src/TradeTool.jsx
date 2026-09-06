@@ -27,6 +27,7 @@ import {
   buildRadarAxes,
   encodeTradeSource,
   filterSquadByQuery,
+  filterSquadByPosition,
   filterSquadForTrade,
   formatTradeStat,
   indexElementsByCode,
@@ -524,6 +525,8 @@ export function TradeTool({
 
   const [sourceA, setSourceA] = useState('')
   const [sourceB, setSourceB] = useState('')
+  const [positionA, setPositionA] = useState(/** @type {'' | 1 | 2 | 3 | 4} */ (''))
+  const [positionB, setPositionB] = useState(/** @type {'' | 1 | 2 | 3 | 4} */ (''))
   const [idsA, setIdsA] = useState(/** @type {number[]} */ ([]))
   const [idsB, setIdsB] = useState(/** @type {number[]} */ ([]))
   const [queryA, setQueryA] = useState('')
@@ -597,14 +600,47 @@ export function TradeTool({
   const pickedA = poolA.filter((p) => idsA.includes(p.element))
   const pickedB = poolB.filter((p) => idsB.includes(p.element))
   const lockPosition = lockedTradePosition(pickedA, pickedB)
+  const browseA =
+    parsedA || queryA.trim() || positionA ? (parsedA ? squadA : allPlayers) : []
+  const browseB =
+    parsedB || queryB.trim() || positionB ? (parsedB ? squadB : allPlayers) : []
   const visibleA = filterSquadForTrade(
-    filterSquadByQuery(parsedA ? squadA : queryA.trim() ? allPlayers : [], queryA),
+    filterSquadByPosition(filterSquadByQuery(browseA, queryA), positionA),
     lockPosition,
   )
   const visibleB = filterSquadForTrade(
-    filterSquadByQuery(parsedB ? squadB : queryB.trim() ? allPlayers : [], queryB),
+    filterSquadByPosition(filterSquadByQuery(browseB, queryB), positionB),
     lockPosition,
   )
+
+  useEffect(() => {
+    if (lockPosition == null) return
+    if (positionA && positionA !== lockPosition) setPositionA(lockPosition)
+    if (positionB && positionB !== lockPosition) setPositionB(lockPosition)
+  }, [lockPosition, positionA, positionB])
+
+  const pickPosition = (side, raw) => {
+    const pos = /** @type {1 | 2 | 3 | 4} */ (Number(raw))
+    if (!POSITION_ORDER.includes(pos)) return
+    if (lockPosition != null && pos !== lockPosition) return
+    const dropMismatched = (ids, pool) =>
+      ids.filter((id) => {
+        const player = pool.find((p) => p.element === id)
+        return player != null && player.positionType === pos
+      })
+    if (side === 'a') {
+      setPositionA(pos)
+      setIdsA((ids) => dropMismatched(ids, poolA))
+    } else {
+      setPositionB(pos)
+      setIdsB((ids) => dropMismatched(ids, poolB))
+    }
+  }
+
+  const clearPosition = (side) => {
+    if (side === 'a') setPositionA('')
+    else setPositionB('')
+  }
 
   const togglePlayer = (side, elementId) => {
     const next = applyTradePick({
@@ -647,6 +683,7 @@ export function TradeTool({
     const selected = side === 'a' ? idsA : idsB
     const query = side === 'a' ? queryA : queryB
     const setQuery = side === 'a' ? setQueryA : setQueryB
+    const position = side === 'a' ? positionA : positionB
     const visible = side === 'a' ? visibleA : visibleB
     const groups = POSITION_ORDER.map((type) => ({
       type,
@@ -655,10 +692,17 @@ export function TradeTool({
     })).filter((g) => g.players.length)
     const hasTeam = parsed != null
     const hasQuery = Boolean(query.trim())
+    const hasPosition = position !== ''
+    const posLabel = hasPosition ? POS_LABEL[position] : null
     const club =
       parsed?.kind === 'club'
         ? clubs.find((c) => c.id === parsed.id) ?? null
         : null
+    const positionOptions = POSITION_ORDER.map((type) => ({
+      value: String(type),
+      label: POS_LABEL[type],
+      disabled: lockPosition != null && lockPosition !== type,
+    }))
 
     return (
       <div className={`trade-tool__side trade-tool__side--${side}`}>
@@ -678,16 +722,27 @@ export function TradeTool({
               fallback={club?.short_name?.slice(0, 3)}
             />
           ) : null}
-          <CompactSelectPill
-            ariaLabel={side === 'a' ? 'Give team or club' : 'Get team or club'}
-            value={source}
-            onChange={(v) => pickSource(side, v)}
-            onClear={() => clearSource(side)}
-            options={sourceOptions}
-            placeholder="Pick a team"
-            isActive={hasTeam}
-            menuMaxWidth={280}
-          />
+          <div className="trade-tool__picks">
+            <CompactSelectPill
+              ariaLabel={side === 'a' ? 'Give team or club' : 'Get team or club'}
+              value={source}
+              onChange={(v) => pickSource(side, v)}
+              onClear={() => clearSource(side)}
+              options={sourceOptions}
+              placeholder="Pick a team"
+              isActive={hasTeam}
+              menuMaxWidth={280}
+            />
+            <CompactSelectPill
+              ariaLabel={side === 'a' ? 'Give position' : 'Get position'}
+              value={position === '' ? '' : String(position)}
+              onChange={(v) => pickPosition(side, v)}
+              onClear={() => clearPosition(side)}
+              options={positionOptions}
+              placeholder="Pick a position"
+              isActive={hasPosition}
+            />
+          </div>
           <label className="trade-tool__search">
             <span className="visually-hidden">Search player</span>
             <input
@@ -701,17 +756,25 @@ export function TradeTool({
             />
           </label>
         </div>
-        {!hasTeam && !hasQuery ? (
-          <p className="muted muted--tight">Pick a team or search a player.</p>
+        {!hasTeam && !hasQuery && !hasPosition ? (
+          <p className="muted muted--tight">
+            Pick a team, a position, or search a player.
+          </p>
         ) : status === 'loading' ? (
           <p className="muted muted--tight">Loading squad…</p>
         ) : !groups.length ? (
           <p className="muted muted--tight">
             {hasQuery
               ? 'No matching player.'
-              : lockPosLabel
+              : lockPosLabel && hasTeam
                 ? `No ${lockPosLabel} on this squad.`
-                : 'No squad on record yet.'}
+                : lockPosLabel
+                  ? `Same position · ${lockPosLabel} only.`
+                  : hasPosition && hasTeam
+                    ? `No ${posLabel} on this squad.`
+                    : hasPosition
+                      ? `No ${posLabel} players.`
+                      : 'No squad on record yet.'}
           </p>
         ) : (
           <div className="trade-tool__roster">
@@ -749,8 +812,9 @@ export function TradeTool({
           </h2>
         </div>
         <p className="tile-hint muted tile-hint--tight">
-          Pick a team, then one player each. Same position only — nothing is
-          sent to FPL Draft. Agree the deal, then offer it in the official app.
+          Pick a team or a position, then one player each. Same position only —
+          nothing is sent to FPL Draft. Agree the deal, then offer it in the
+          official app.
         </p>
 
         {status === 'error' ? (
@@ -889,7 +953,8 @@ export function TradeTool({
               </>
             ) : (
               <p className="muted muted--tight trade-tool__empty">
-                Pick a team or search a player on each side. Same position only.
+                Pick a team, a position, or search a player on each side. Same
+                position only.
               </p>
             )}
           </div>
