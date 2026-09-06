@@ -111,7 +111,6 @@ export function TeamDetailView({
 
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = 0
-    setTab('season')
   }, [teamId])
 
   if (!data || !data.S[teamId]) return null

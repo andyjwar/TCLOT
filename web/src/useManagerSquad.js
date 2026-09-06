@@ -74,7 +74,6 @@ function lastFinishedGameweek(boot) {
  *   groups: ManagerSquadGroup[],
  *   gameweek: number | null,
  *   currentGameweek: number | null,
- *   totalSeasonPoints: number,
  *   error: string | null,
  * }}
  */
@@ -89,7 +88,6 @@ export function useManagerSquad({
     groups: [],
     gameweek: null,
     currentGameweek: null,
-    totalSeasonPoints: 0,
     error: null,
   })
   const reqRef = useRef(0)
@@ -158,14 +156,12 @@ export function useManagerSquad({
         }
 
         const byType = new Map(POSITION_ORDER.map((t) => [t, []]))
-        let totalSeasonPoints = 0
         for (const pid of ownedIds) {
           const el = elemsById.get(pid)
           if (!el) continue
           const type = /** @type {1|2|3|4} */ (Number(el.element_type))
           if (!byType.has(type)) continue
           const seasonPoints = Number(el.total_points) || 0
-          totalSeasonPoints += seasonPoints
           const joined = joinedMap.get(`${fplEntryId}:${pid}`) ?? null
           const joinedGw = joined?.gw ?? null
           const gwsOwned =
@@ -213,7 +209,6 @@ export function useManagerSquad({
           groups,
           gameweek: lastGw,
           currentGameweek: Number.isFinite(currentGw) ? currentGw : null,
-          totalSeasonPoints,
           error: null,
         })
       } catch (err) {
@@ -223,7 +218,6 @@ export function useManagerSquad({
           groups: [],
           gameweek: null,
           currentGameweek: null,
-          totalSeasonPoints: 0,
           error: err?.message || String(err),
         })
       }

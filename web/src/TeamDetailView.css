@@ -609,7 +609,6 @@ body[data-tclot-theme='dark'] .tc-card {
 .tc-squad__caption {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
   gap: 10px;
   font-size: 10.5px;
   text-transform: uppercase;
@@ -617,36 +616,6 @@ body[data-tclot-theme='dark'] .tc-card {
   font-weight: 700;
   color: var(--tc-text-muted);
   margin-bottom: 10px;
-}
-.tc-squad__total {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-  flex-shrink: 0;
-}
-/* Dark-green glass pill — same recipe as live PTS / W/L chips on this card. */
-.tc-squad__total-pill {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 1.75em;
-  padding: 0.12em 0.45em;
-  border-radius: 0.35em;
-  font-family: var(--tc-mono);
-  font-size: 16px;
-  font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-  line-height: 1;
-  color: var(--tc-text-strong);
-  background: color-mix(in srgb, var(--tc-pos) 18%, transparent);
-  box-shadow: 0 0 0 0.15em color-mix(in srgb, var(--tc-pos) 15%, transparent);
-}
-.tc-squad__total small {
-  font-size: 8.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--tc-text-muted);
 }
 /* Shared column geometry for header + rows. */
 .tc-squad__head,

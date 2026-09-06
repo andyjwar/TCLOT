@@ -19,7 +19,7 @@ export function TeamCurrentSquad({
   active,
   leagueDataRevision = '',
 }) {
-  const { status, groups, gameweek, totalSeasonPoints, error } = useManagerSquad(
+  const { status, groups, gameweek, error } = useManagerSquad(
     { leagueEntryId, fplEntryId, enabled: active, leagueDataRevision },
   )
 
@@ -48,10 +48,6 @@ export function TeamCurrentSquad({
       <div className="tc-squad__caption">
         <span>
           {gameweek ? `Squad · last scored GW${gameweek}` : 'Current squad'}
-        </span>
-        <span className="tc-squad__total">
-          <span className="tc-squad__total-pill tabular">{totalSeasonPoints}</span>
-          <small>season pts</small>
         </span>
       </div>
 
