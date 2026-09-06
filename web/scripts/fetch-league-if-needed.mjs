@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 /**
  * Local dev/build: pulls your league into data/ so copy-data uses the right JSON.
- * CI (GITHUB_ACTIONS/CI): skipped — GitHub runs ingest.py instead.
+ * GitHub Actions: skipped — the workflow already ran ingest.py.
+ * Vercel: runs. Vercel sets CI=1 (not CI=true); do not treat "any CI" as skip
+ * or production bakes stale committed league-data.
  *
  * League id comes from committed repo-root `league-id` (see readLeagueId.mjs).
  */
@@ -17,7 +19,7 @@ const dataDir = join(repoRoot, 'data')
 if (process.env.SKIP_LEAGUE_FETCH === '1') {
   process.exit(0)
 }
-if (process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true') {
+if (process.env.GITHUB_ACTIONS === 'true') {
   process.exit(0)
 }
 

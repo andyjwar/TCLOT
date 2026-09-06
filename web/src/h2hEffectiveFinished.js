@@ -26,6 +26,66 @@
  *   `bootstrap-static` / `bootstrap_draft.json`, `{ data: [] }`, or a bare list.
  * @returns {Set<number>}
  */
+/**
+ * Replace baked fixture rows with a live `fixtures?event=` payload for the
+ * same fixture ids. Used so a stale Monday-night row in `fixtures.json` cannot
+ * block H2H promotion after the football is actually over.
+ *
+ * @param {object[] | null | undefined} baked
+ * @param {object[] | null | undefined} live
+ * @returns {object[]}
+ */
+export function overlayFixturesById(baked, live) {
+  const bakedList = Array.isArray(baked) ? baked : [];
+  const liveList = Array.isArray(live) ? live : [];
+  if (liveList.length === 0) return bakedList;
+  const byId = new Map();
+  const extras = [];
+  for (const f of bakedList) {
+    const id = Number(f?.id);
+    if (Number.isFinite(id)) byId.set(id, f);
+    else extras.push(f);
+  }
+  const liveEvents = new Set();
+  let replaced = 0;
+  for (const f of liveList) {
+    const id = Number(f?.id);
+    const ev = Number(f?.event);
+    if (Number.isFinite(ev)) liveEvents.add(ev);
+    if (Number.isFinite(id)) {
+      if (byId.has(id)) replaced += 1;
+      byId.set(id, f);
+    } else extras.push(f);
+  }
+  if (byId.size === 0) {
+    const keep = bakedList.filter((f) => !liveEvents.has(Number(f?.event)));
+    return [...keep, ...liveList];
+  }
+  if (replaced === 0 && bakedList.length === 0) return liveList;
+  return [...byId.values(), ...extras];
+}
+
+/**
+ * Gameweeks that already have started H2H points but are not officially
+ * finished — the window where a stale `fixtures.json` hides results.
+ *
+ * @param {object[] | null | undefined} matches
+ * @returns {number[]}
+ */
+export function pendingCloseGameweeks(matches) {
+  const out = new Set();
+  for (const m of Array.isArray(matches) ? matches : []) {
+    if (m?.finished === true) continue;
+    if (m?.started !== true) continue;
+    const ev = Number(m?.event);
+    if (!Number.isFinite(ev) || ev < 1) continue;
+    const p1 = Number(m.league_entry_1_points);
+    const p2 = Number(m.league_entry_2_points);
+    if (Number.isFinite(p1) && Number.isFinite(p2)) out.add(ev);
+  }
+  return [...out].sort((a, b) => a - b);
+}
+
 export function finishedEventIdsFromEvents(bootstrapOrEvents) {
   const ev = bootstrapOrEvents?.events ?? bootstrapOrEvents;
   const list = Array.isArray(ev) ? ev : Array.isArray(ev?.data) ? ev.data : [];
