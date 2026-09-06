@@ -15170,11 +15170,18 @@ button.live-xp__player-name:focus-visible {
     width: 1.95rem;
   }
   .standings-stats-bench-table .win-margin-table__n {
-    width: 2.15rem;
+    width: 2.55rem;
+  }
+  .standings-stats-bench-table.win-margin-table thead th.win-margin-table__n {
+    white-space: normal;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+    overflow-wrap: normal;
+    word-break: normal;
   }
   .standings-stats-bench-table__swing {
     min-width: 0;
-    width: 2.2rem;
+    width: 2.35rem;
     font-size: 0.68rem;
   }
   .standings-bench-fx__col {
