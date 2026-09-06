@@ -3,7 +3,10 @@ import test from 'node:test'
 import {
   effectiveXiIds,
   formatRecord,
+  formatSwing,
   h2hOutcome,
+  leaguePtsFromOutcome,
+  leaguePtsFromRecord,
   legalFormations,
   pickOptimalXi,
   weekBenchForSquad,
@@ -141,4 +144,11 @@ test('h2hOutcome and formatRecord', () => {
   assert.equal(h2hOutcome(40, 50), 'L')
   assert.equal(h2hOutcome(40, 40), 'D')
   assert.equal(formatRecord({ w: 3, d: 1, l: 2 }), '3–1–2')
+  assert.equal(leaguePtsFromOutcome('W'), 3)
+  assert.equal(leaguePtsFromOutcome('D'), 1)
+  assert.equal(leaguePtsFromOutcome('L'), 0)
+  assert.equal(leaguePtsFromRecord({ w: 2, d: 1, l: 1 }), 7)
+  assert.equal(formatSwing(3), '+3')
+  assert.equal(formatSwing(0), '0')
+  assert.equal(formatSwing(-3), '-3')
 })

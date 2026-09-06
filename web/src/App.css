@@ -14786,9 +14786,19 @@ button.live-xp__player-name:focus-visible {
   background: color-mix(in srgb, var(--tclot-logo-purple) 72%, transparent);
 }
 
-.standings-stats-bench-table__rec {
+.standings-stats-bench-table__swing {
   white-space: nowrap;
-  min-width: 3.4rem;
+  min-width: 2.4rem;
+}
+
+.standings-stats-bench-table__swing--up {
+  color: var(--fm-win);
+  font-weight: 650;
+}
+
+.standings-stats-bench-table__swing--down {
+  color: var(--fm-loss);
+  font-weight: 650;
 }
 
 .standings-bench-gw {
@@ -14862,41 +14872,72 @@ button.live-xp__player-name:focus-visible {
   font-weight: 600;
 }
 
-.standings-bench-fx__scores {
+.standings-bench-fx__side-copy {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  min-width: 0;
+  gap: 1px;
 }
 
-.standings-bench-fx__line {
+.standings-bench-fx__side-copy--away {
+  align-items: flex-end;
+}
+
+.standings-bench-fx__unused {
+  font-size: 0.68rem;
+  line-height: 1.2;
+}
+
+.standings-bench-fx__compare {
   display: grid;
-  grid-template-columns: 4.4rem minmax(4rem, 1fr) auto;
-  align-items: baseline;
+  grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-.standings-bench-fx__label {
-  font-size: 0.66rem;
+.standings-bench-fx__col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding: 8px 8px 7px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--fm-muted) 10%, transparent);
+}
+
+.standings-bench-fx__col--flip {
+  background: color-mix(in srgb, var(--tclot-logo-purple) 16%, transparent);
+}
+
+.standings-bench-fx__col-label {
+  font-size: 0.64rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--fm-muted);
 }
 
-.standings-bench-fx__score {
-  font-size: 1.05rem;
+.standings-bench-fx__col-score {
+  font-size: 1.15rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+  line-height: 1.15;
 }
 
-.standings-bench-fx__result {
-  font-size: 0.74rem;
-  justify-self: end;
+.standings-bench-fx__col-pts {
+  font-size: 0.76rem;
+  line-height: 1.3;
+  color: var(--fm-text);
 }
 
-.standings-bench-fx__result--flip {
+.standings-bench-fx__verdict {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  line-height: 1.4;
+  font-weight: 600;
+}
+
+.standings-bench-fx__verdict--flip {
   color: var(--fm-text-strong);
-  font-weight: 650;
 }
 
 .standings-bench-fx__misses {
@@ -15129,19 +15170,25 @@ button.live-xp__player-name:focus-visible {
     width: 1.95rem;
   }
   .standings-stats-bench-table .win-margin-table__n {
-    width: 2.15rem;
+    width: 2.55rem;
   }
-  .standings-stats-bench-table__rec {
+  .standings-stats-bench-table.win-margin-table thead th.win-margin-table__n {
+    white-space: normal;
+    letter-spacing: 0.01em;
+    line-height: 1.15;
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+  .standings-stats-bench-table__swing {
     min-width: 0;
-    width: 2.8rem;
+    width: 2.35rem;
     font-size: 0.68rem;
   }
-  .standings-bench-fx__line {
-    grid-template-columns: 3.6rem minmax(3.2rem, 1fr) auto;
-    gap: 6px;
+  .standings-bench-fx__col {
+    padding: 7px 6px 6px;
   }
-  .standings-bench-fx__score {
-    font-size: 0.95rem;
+  .standings-bench-fx__col-score {
+    font-size: 1.02rem;
   }
   /* TEAM column on mobile: first word only beside the crest. */
   .standings-stats-margin-table .win-margin-table__name-full,

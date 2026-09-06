@@ -187,3 +187,29 @@ export function h2hOutcome(forPts, againstPts) {
 export function formatRecord(rec) {
   return `${rec?.w ?? 0}–${rec?.d ?? 0}–${rec?.l ?? 0}`
 }
+
+/**
+ * H2H table points: 3 for a win, 1 for a draw, 0 for a loss.
+ *
+ * @param {'W' | 'D' | 'L'} outcome
+ */
+export function leaguePtsFromOutcome(outcome) {
+  if (outcome === 'W') return 3
+  if (outcome === 'D') return 1
+  return 0
+}
+
+/**
+ * @param {{ w?: number, d?: number, l?: number }} rec
+ */
+export function leaguePtsFromRecord(rec) {
+  return 3 * (Number(rec?.w) || 0) + (Number(rec?.d) || 0)
+}
+
+/**
+ * @param {number} n
+ */
+export function formatSwing(n) {
+  const v = Number(n) || 0
+  return v > 0 ? `+${v}` : `${v}`
+}

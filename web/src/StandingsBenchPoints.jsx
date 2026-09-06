@@ -1,5 +1,11 @@
 import { useMemo, useState } from 'react'
-import { fixturesForGw, formatBenchMisses } from './benchPoints.js'
+import {
+  fixtureTablePtsLabel,
+  fixtureTableSummary,
+  fixturesForGw,
+  formatSatPlayers,
+} from './benchPoints.js'
+import { formatSwing, leaguePtsFromRecord } from './bestXi.js'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { TeamAvatar } from './TeamAvatar'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
@@ -7,18 +13,36 @@ import { firstWord } from './teamNameUtils.js'
 import { useBenchPoints } from './useBenchPoints.js'
 import { useMobileNarrowViewport } from './usePortraitMobile'
 
-function resultLabel(code) {
-  if (code === 'H') return 'Home win'
-  if (code === 'A') return 'Away win'
-  return 'Draw'
-}
-
 function scoreText(a, b) {
   return `${a}–${b}`
 }
 
+function tablePtsForRow(row) {
+  if (row?.actualLeaguePts != null) return Number(row.actualLeaguePts) || 0
+  return leaguePtsFromRecord({
+    w: row?.actualW,
+    d: row?.actualD,
+    l: row?.actualL,
+  })
+}
+
+function bestTablePtsForRow(row) {
+  if (row?.bestLeaguePts != null) return Number(row.bestLeaguePts) || 0
+  return leaguePtsFromRecord({
+    w: row?.bestW,
+    d: row?.bestD,
+    l: row?.bestL,
+  })
+}
+
+function swingForRow(row) {
+  if (row?.leaguePtsSwing != null) return Number(row.leaguePtsSwing) || 0
+  return bestTablePtsForRow(row) - tablePtsForRow(row)
+}
+
+
 /**
- * Stats → bench points: season leftover table + per-GW adjusted H2H scores.
+ * Stats → bench points: leftover FPL + table-pts (3/1/0) comparison.
  *
  * @param {object} props
  * @param {Record<string, string>} props.teamLogoMap
@@ -54,6 +78,15 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
   )
 
   const worst = teamRows[0]
+  const biggestSwing = useMemo(() => {
+    let best = null
+    for (const r of teamRows) {
+      const swing = swingForRow(r)
+      if (!best || swing > swingForRow(best)) best = r
+    }
+    return best && swingForRow(best) > 0 ? best : null
+  }, [teamRows])
+
   const hasData = teamRows.some((r) => (r.weeksPlayed ?? 0) > 0)
 
   return (
@@ -65,9 +98,10 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         Points left on the bench
       </h3>
       <p className="standings-stats-hint">
-        What each side would have scored with a legal best XI from the same
-        15. Leftover is the gap versus the official total (autosubs already
-        count). Worst manager sits at the top.
+        Unused is FPL points a better legal XI would have scored (autosubs
+        already count). Table is the real standings: 3 for a win, 1 for a
+        draw. If XI is that same table if every finished fixture used both
+        sides' best legal 11.
       </p>
 
       {loading ? (
@@ -80,14 +114,23 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         <>
           {worst && worst.benchLeft > 0 ? (
             <p className="standings-bench__callout">
-              Most left on the pine:{' '}
-              <strong>{worst.teamName}</strong> ({worst.benchLeft} pt
-              {worst.benchLeft === 1 ? '' : 's'} across {worst.weeksPlayed} GW
+              Most unused FPL points:{' '}
+              <strong>{worst.teamName}</strong> ({worst.benchLeft} across{' '}
+              {worst.weeksPlayed} GW
               {worst.weeksPlayed === 1 ? '' : 's'}).
+              {biggestSwing ? (
+                <>
+                  {' '}
+                  Biggest table swing:{' '}
+                  <strong>{biggestSwing.teamName}</strong> (
+                  {formatSwing(swingForRow(biggestSwing))} table pt
+                  {Math.abs(swingForRow(biggestSwing)) === 1 ? '' : 's'}).
+                </>
+              ) : null}
             </p>
           ) : (
             <p className="standings-bench__callout">
-              Nobody left usable points on the bench in finished gameweeks.
+              Nobody left usable FPL points on the bench in finished gameweeks.
             </p>
           )}
 
@@ -101,42 +144,46 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   <th
                     scope="col"
                     className="win-margin-table__n tabular"
-                    title="Points a legal best XI would have added"
+                    title="FPL points a legal best XI would have added after autosubs"
                   >
-                    Left
+                    Unused
                   </th>
                   <th
                     scope="col"
                     className="win-margin-table__n tabular"
-                    title="Sum of each GW’s best legal XI"
+                    title="Current H2H table points (3 for a win, 1 for a draw)"
                   >
-                    Best
+                    Table
                   </th>
                   <th
                     scope="col"
                     className="win-margin-table__n tabular"
-                    title="Official points for"
+                    title="Table points if every finished fixture used both sides' best legal XI"
                   >
-                    Actual
+                    If XI
                   </th>
                   <th
                     scope="col"
-                    className="win-margin-table__n tabular standings-stats-bench-table__rec"
-                    title="W–D–L if every fixture used best-XI scores"
+                    className="win-margin-table__n tabular standings-stats-bench-table__swing"
+                    title="Swing in table points (If XI minus Table)"
                   >
-                    Best rec
+                    +/−
                   </th>
                   <th
                     scope="col"
                     className="standings-stats-weeks-table__bar-head"
-                    aria-label="Leftover bar"
+                    aria-label="Unused bar"
                   />
                 </tr>
               </thead>
               <tbody>
                 {teamRows.map((row, i) => {
                   const left = Number(row.benchLeft) || 0
+                  const tablePts = tablePtsForRow(row)
+                  const bestPts = bestTablePtsForRow(row)
+                  const swing = swingForRow(row)
                   const fillPct = maxLeft > 0 ? Math.round((left / maxLeft) * 100) : 0
+                  const recTitle = `Played ${row.actualRecord || '—'}. If best XIs: ${row.bestRecord || '—'}.`
                   return (
                     <tr
                       key={row.leagueEntryId}
@@ -145,6 +192,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                           ? 'standings-stats-bench-table__worst'
                           : undefined
                       }
+                      title={recTitle}
                     >
                       <th scope="row" className="win-margin-table__team">
                         <span className="win-margin-table__team-inner">
@@ -167,12 +215,19 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                       <td className="tabular win-margin-table__n">
                         <strong>{left}</strong>
                       </td>
-                      <td className="tabular win-margin-table__n">{row.bestXiPts}</td>
-                      <td className="tabular win-margin-table__n muted">
-                        {row.actualPts}
-                      </td>
-                      <td className="tabular win-margin-table__n standings-stats-bench-table__rec">
-                        {row.bestRecord}
+                      <td className="tabular win-margin-table__n">{tablePts}</td>
+                      <td className="tabular win-margin-table__n">{bestPts}</td>
+                      <td
+                        className={
+                          'tabular win-margin-table__n standings-stats-bench-table__swing' +
+                          (swing > 0
+                            ? ' standings-stats-bench-table__swing--up'
+                            : swing < 0
+                              ? ' standings-stats-bench-table__swing--down'
+                              : '')
+                        }
+                      >
+                        {formatSwing(swing)}
                       </td>
                       <td className="standings-stats-weeks-table__bar-cell">
                         <span
@@ -195,7 +250,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
           <div className="standings-bench-gw">
             <div className="standings-bench-gw__head">
               <h4 className="standings-stats-eyebrow standings-bench-gw__title">
-                Game week scores
+                Would the result have changed?
               </h4>
               {gwOptions.length > 1 ? (
                 <CompactSelectPill
@@ -203,21 +258,45 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   value={gw}
                   options={gwOptions}
                   onChange={(next) => setGwPick(Number(next))}
-                  ariaLabel="Game week for adjusted scores"
+                  ariaLabel="Game week for table-point comparison"
                 />
               ) : gw != null ? (
                 <span className="standings-bench-gw__single muted">GW {gw}</span>
               ) : null}
             </div>
             <p className="standings-stats-hint">
-              Official H2H score, then the score if both managers had started
-              their best legal XI that week.
+              Left column is what was played (and the 3 / 1 / 0 table pts it
+              paid). Right column is the same fixture if both managers had
+              started their best legal XI.
             </p>
             {gwFixtures.length ? (
               <ul className="standings-bench-fx">
                 {gwFixtures.map((fx) => {
-                  const homeMiss = formatBenchMisses(fx.homeLeftOnBench)
-                  const awayMiss = formatBenchMisses(fx.awayLeftOnBench)
+                  const homeLabel = isMobileNarrow
+                    ? firstWord(fx.homeName)
+                    : fx.homeName
+                  const awayLabel = isMobileNarrow
+                    ? firstWord(fx.awayName)
+                    : fx.awayName
+                  const homeSat = formatSatPlayers(fx.homeLeftOnBench)
+                  const awaySat = formatSatPlayers(fx.awayLeftOnBench)
+                  const playedPts = fixtureTablePtsLabel(
+                    fx.actualResult,
+                    homeLabel,
+                    awayLabel,
+                  )
+                  const bestPts = fixtureTablePtsLabel(
+                    fx.bestResult,
+                    homeLabel,
+                    awayLabel,
+                  )
+                  const verdict = fixtureTableSummary({
+                    ...fx,
+                    homeName: homeLabel,
+                    awayName: awayLabel,
+                  })
+                  const homeLeft = Number(fx.homeLeft) || 0
+                  const awayLeft = Number(fx.awayLeft) || 0
                   return (
                     <li
                       key={`${fx.gw}-${fx.homeId}-${fx.awayId}`}
@@ -235,22 +314,36 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                             logoMap={teamLogoMap}
                             kitIndexByEntry={kitIndexByEntry}
                           />
-                          <ClickableTeamName
-                            leagueEntryId={fx.homeId}
-                            className="standings-bench-fx__name"
-                            title={fx.homeName}
-                          >
-                            {isMobileNarrow ? firstWord(fx.homeName) : fx.homeName}
-                          </ClickableTeamName>
+                          <span className="standings-bench-fx__side-copy">
+                            <ClickableTeamName
+                              leagueEntryId={fx.homeId}
+                              className="standings-bench-fx__name"
+                              title={fx.homeName}
+                            >
+                              {homeLabel}
+                            </ClickableTeamName>
+                            {homeLeft > 0 ? (
+                              <span className="standings-bench-fx__unused muted">
+                                {homeLeft} unused
+                              </span>
+                            ) : null}
+                          </span>
                         </span>
                         <span className="standings-bench-fx__side standings-bench-fx__side--away">
-                          <ClickableTeamName
-                            leagueEntryId={fx.awayId}
-                            className="standings-bench-fx__name"
-                            title={fx.awayName}
-                          >
-                            {isMobileNarrow ? firstWord(fx.awayName) : fx.awayName}
-                          </ClickableTeamName>
+                          <span className="standings-bench-fx__side-copy standings-bench-fx__side-copy--away">
+                            <ClickableTeamName
+                              leagueEntryId={fx.awayId}
+                              className="standings-bench-fx__name"
+                              title={fx.awayName}
+                            >
+                              {awayLabel}
+                            </ClickableTeamName>
+                            {awayLeft > 0 ? (
+                              <span className="standings-bench-fx__unused muted">
+                                {awayLeft} unused
+                              </span>
+                            ) : null}
+                          </span>
                           <TeamAvatar
                             entryId={fx.awayId}
                             name={fx.awayName}
@@ -260,56 +353,65 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                           />
                         </span>
                       </div>
-                      <div className="standings-bench-fx__scores">
-                        <div className="standings-bench-fx__line">
-                          <span className="standings-bench-fx__label">Actual</span>
-                          <span className="standings-bench-fx__score tabular">
+                      <div className="standings-bench-fx__compare">
+                        <div className="standings-bench-fx__col">
+                          <span className="standings-bench-fx__col-label">
+                            Played
+                          </span>
+                          <span className="standings-bench-fx__col-score tabular">
                             {scoreText(fx.actualHome, fx.actualAway)}
                           </span>
-                          <span className="standings-bench-fx__result muted">
-                            {resultLabel(fx.actualResult)}
+                          <span className="standings-bench-fx__col-pts">
+                            {playedPts}
                           </span>
                         </div>
-                        <div className="standings-bench-fx__line">
-                          <span className="standings-bench-fx__label">Best XI</span>
-                          <span className="standings-bench-fx__score tabular">
+                        <div
+                          className={
+                            'standings-bench-fx__col' +
+                            (fx.flipped ? ' standings-bench-fx__col--flip' : '')
+                          }
+                        >
+                          <span className="standings-bench-fx__col-label">
+                            If both best XIs
+                          </span>
+                          <span className="standings-bench-fx__col-score tabular">
                             {scoreText(fx.bestHome, fx.bestAway)}
                           </span>
-                          <span
-                            className={
-                              'standings-bench-fx__result' +
-                              (fx.flipped
-                                ? ' standings-bench-fx__result--flip'
-                                : ' muted')
-                            }
-                          >
-                            {fx.flipped
-                              ? `Would be ${resultLabel(fx.bestResult).toLowerCase()}`
-                              : 'Same result'}
+                          <span className="standings-bench-fx__col-pts">
+                            {bestPts}
                           </span>
                         </div>
                       </div>
-                      {homeMiss || awayMiss ? (
+                      <p
+                        className={
+                          'standings-bench-fx__verdict' +
+                          (fx.flipped ? ' standings-bench-fx__verdict--flip' : '')
+                        }
+                      >
+                        {verdict}
+                      </p>
+                      {homeSat || awaySat ? (
                         <p className="standings-bench-fx__misses">
-                          {homeMiss ? (
+                          {homeSat ? (
                             <span>
-                              {isMobileNarrow ? firstWord(fx.homeName) : fx.homeName}{' '}
-                              left {homeMiss} on the bench
+                              {homeLabel} sat {homeSat}
                             </span>
                           ) : null}
-                          {homeMiss && awayMiss ? (
-                            <span className="standings-bench-fx__miss-sep"> · </span>
+                          {homeSat && awaySat ? (
+                            <span className="standings-bench-fx__miss-sep">
+                              {' '}
+                              ·{' '}
+                            </span>
                           ) : null}
-                          {awayMiss ? (
+                          {awaySat ? (
                             <span>
-                              {isMobileNarrow ? firstWord(fx.awayName) : fx.awayName}{' '}
-                              left {awayMiss} on the bench
+                              {awayLabel} sat {awaySat}
                             </span>
                           ) : null}
                         </p>
                       ) : (
                         <p className="standings-bench-fx__misses muted">
-                          Both XIs already matched the best legal 11.
+                          Both already started their best legal 11.
                         </p>
                       )}
                     </li>

@@ -2,8 +2,12 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   buildBenchPointsReport,
+  fixtureTablePtsLabel,
+  fixtureTableSummary,
   fixturesForGw,
   formatBenchMisses,
+  formatSatPlayers,
+  tablePtsFromResult,
 } from './benchPoints.js'
 
 function p(id, pos, pts, name = `P${id}`) {
@@ -85,6 +89,12 @@ test('buildBenchPointsReport totals leftover and flips a fixture', () => {
   assert.equal(home.bestRecord, '0–1–0')
   assert.equal(away.bestRecord, '0–1–0')
   assert.equal(home.actualRecord, '0–0–1')
+  assert.equal(home.actualLeaguePts, 0)
+  assert.equal(home.bestLeaguePts, 1)
+  assert.equal(home.leaguePtsSwing, 1)
+  assert.equal(away.actualLeaguePts, 3)
+  assert.equal(away.bestLeaguePts, 1)
+  assert.equal(away.leaguePtsSwing, -2)
 
   assert.equal(report.fixtures.length, 1)
   const fx = report.fixtures[0]
@@ -93,6 +103,10 @@ test('buildBenchPointsReport totals leftover and flips a fixture', () => {
   assert.equal(fx.bestResult, 'D')
   assert.equal(fx.bestHome, homeActual + 6)
   assert.equal(fx.bestAway, awayActual)
+  assert.equal(fx.actualHomeTablePts, 0)
+  assert.equal(fx.actualAwayTablePts, 3)
+  assert.equal(fx.bestHomeTablePts, 1)
+  assert.equal(fx.bestAwayTablePts, 1)
 })
 
 test('fixturesForGw and formatBenchMisses', () => {
@@ -106,6 +120,52 @@ test('fixturesForGw and formatBenchMisses', () => {
     'Salah 12, Saka 8',
   )
   assert.equal(formatBenchMisses([{ name: 'Blank', pts: 0 }]), '')
+  assert.equal(
+    formatSatPlayers([
+      { name: 'Tavernier', pts: 10 },
+      { name: 'Thiaw', pts: 3 },
+    ]),
+    'Tavernier (10), Thiaw (3)',
+  )
+})
+
+test('fixture table-pt labels and flip summaries', () => {
+  assert.equal(tablePtsFromResult('H', 'H'), 3)
+  assert.equal(tablePtsFromResult('H', 'A'), 0)
+  assert.equal(tablePtsFromResult('D', 'A'), 1)
+  assert.equal(fixtureTablePtsLabel('D', 'Home FC', 'Away FC'), '1 pt each')
+  assert.equal(fixtureTablePtsLabel('H', 'Home FC', 'Away FC'), 'Home FC +3')
+  assert.equal(fixtureTablePtsLabel('A', 'Home FC', 'Away FC'), 'Away FC +3')
+  assert.equal(
+    fixtureTableSummary({
+      flipped: false,
+      actualResult: 'H',
+      bestResult: 'H',
+      homeName: 'Home FC',
+      awayName: 'Away FC',
+    }),
+    'Home FC keep the 3 table pts.',
+  )
+  assert.equal(
+    fixtureTableSummary({
+      flipped: true,
+      actualResult: 'A',
+      bestResult: 'D',
+      homeName: 'Home FC',
+      awayName: 'Away FC',
+    }),
+    'Would be a draw. 1 table pt each instead of Away FC taking 3.',
+  )
+  assert.equal(
+    fixtureTableSummary({
+      flipped: true,
+      actualResult: 'D',
+      bestResult: 'H',
+      homeName: 'Home FC',
+      awayName: 'Away FC',
+    }),
+    'Would flip: Home FC take 3 table pts (was a draw).',
+  )
 })
 
 test('worst manager sorts to the top', () => {

@@ -6,7 +6,13 @@
  * for each gameweek.
  */
 
-import { formatRecord, h2hOutcome, weekBenchForSquad } from './bestXi.js'
+import {
+  formatRecord,
+  h2hOutcome,
+  leaguePtsFromOutcome,
+  leaguePtsFromRecord,
+  weekBenchForSquad,
+} from './bestXi.js'
 
 function emptyRecord() {
   return { w: 0, d: 0, l: 0 }
@@ -162,6 +168,10 @@ export function buildBenchPointsReport(input) {
         actualResult: actualHomeOut === 'W' ? 'H' : actualHomeOut === 'L' ? 'A' : 'D',
         bestResult: bestHomeOut === 'W' ? 'H' : bestHomeOut === 'L' ? 'A' : 'D',
         flipped: actualHomeOut !== bestHomeOut,
+        actualHomeTablePts: leaguePtsFromOutcome(actualHomeOut),
+        actualAwayTablePts: leaguePtsFromOutcome(actualAwayOut),
+        bestHomeTablePts: leaguePtsFromOutcome(bestHomeOut),
+        bestAwayTablePts: leaguePtsFromOutcome(bestAwayOut),
         homeLeft: homeWeek.benchLeft,
         awayLeft: awayWeek.benchLeft,
         homeLeftOnBench: homeWeek.leftOnBench.map(slimPlayer),
@@ -188,6 +198,10 @@ export function buildBenchPointsReport(input) {
       bestW: t.bestRecord.w,
       bestD: t.bestRecord.d,
       bestL: t.bestRecord.l,
+      actualLeaguePts: leaguePtsFromRecord(t.actualRecord),
+      bestLeaguePts: leaguePtsFromRecord(t.bestRecord),
+      leaguePtsSwing:
+        leaguePtsFromRecord(t.bestRecord) - leaguePtsFromRecord(t.actualRecord),
       weeks: t.weeks,
     }))
     .sort((a, b) => {
@@ -201,7 +215,7 @@ export function buildBenchPointsReport(input) {
   gameweeks.sort((a, b) => a - b)
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     gameweeks,
     teams: teamRows,
     fixtures,
@@ -230,4 +244,89 @@ export function formatBenchMisses(players, limit = 2) {
     .slice(0, limit)
     .map((p) => `${p.name || 'Player'} ${Number(p.pts) || 0}`)
     .join(', ')
+}
+
+/**
+ * "Tavernier (10), Thiaw (3)" for the GW card sit-outs.
+ *
+ * @param {{ name?: string, pts?: number }[]} players
+ * @param {number} [limit]
+ */
+export function formatSatPlayers(players, limit = 2) {
+  const rows = (players || []).filter((p) => (Number(p.pts) || 0) > 0)
+  if (!rows.length) return ''
+  return rows
+    .slice(0, limit)
+    .map((p) => `${p.name || 'Player'} (${Number(p.pts) || 0})`)
+    .join(', ')
+}
+
+/**
+ * Table pts for one side of an H/A/D fixture result.
+ *
+ * @param {'H' | 'A' | 'D' | string} result
+ * @param {'H' | 'A'} side
+ */
+export function tablePtsFromResult(result, side) {
+  if (result === 'D') return 1
+  if (result === 'H' || result === 'A') return result === side ? 3 : 0
+  return 0
+}
+
+/**
+ * One-line verdict for a GW card: same table pts, or who would take them.
+ *
+ * @param {{
+ *   actualResult?: string,
+ *   bestResult?: string,
+ *   flipped?: boolean,
+ *   homeName?: string,
+ *   awayName?: string,
+ * }} fx
+ */
+export function fixtureTableSummary(fx) {
+  const home = fx?.homeName || 'Home'
+  const away = fx?.awayName || 'Away'
+  const winner = (code) => (code === 'H' ? home : code === 'A' ? away : null)
+  const actual = fx?.actualResult
+  const best = fx?.bestResult
+  if (!fx?.flipped) {
+    if (actual === 'D') return 'Draw either way. 1 table pt each.'
+    const name = winner(actual)
+    return name
+      ? `${name} keep the 3 table pts.`
+      : 'Same table points.'
+  }
+  if (best === 'D') {
+    const name = winner(actual)
+    return name
+      ? `Would be a draw. 1 table pt each instead of ${name} taking 3.`
+      : 'Would be a draw. 1 table pt each.'
+  }
+  if (actual === 'D') {
+    const name = winner(best)
+    return name
+      ? `Would flip: ${name} take 3 table pts (was a draw).`
+      : 'Would flip the table points.'
+  }
+  const next = winner(best)
+  const prev = winner(actual)
+  if (next && prev) {
+    return `Would flip: ${next} take 3 table pts instead of ${prev}.`
+  }
+  return 'Would flip the table points.'
+}
+
+/**
+ * Compact "+3" / "1 pt each" label for one fixture outcome.
+ *
+ * @param {'H' | 'A' | 'D' | string} result
+ * @param {string} homeName
+ * @param {string} awayName
+ */
+export function fixtureTablePtsLabel(result, homeName, awayName) {
+  if (result === 'D') return '1 pt each'
+  if (result === 'H') return `${homeName || 'Home'} +3`
+  if (result === 'A') return `${awayName || 'Away'} +3`
+  return ''
 }
