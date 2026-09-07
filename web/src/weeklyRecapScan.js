@@ -378,6 +378,33 @@ function highestPredicted(previewGw) {
   return best
 }
 
+function modelDots(recapGw) {
+  const calls = (recapGw?.model?.calls || []).filter(
+    (c) => c.outcome === 'hit' || c.outcome === 'miss',
+  )
+  let dots = calls.map((c) => (c.outcome === 'hit' ? 'win' : 'loss'))
+  if (!dots.length) {
+    const hits = Number(recapGw?.model?.hits) || 0
+    const misses = Number(recapGw?.model?.misses) || 0
+    if (hits + misses === 0) return []
+    dots = [...Array(hits).fill('win'), ...Array(misses).fill('loss')]
+  }
+  return dots
+}
+
+function modelTile(recapGw) {
+  const dots = modelDots(recapGw)
+  if (!dots.length) return null
+  const right = dots.filter((d) => d === 'win').length
+  return {
+    label: 'Model',
+    value: `${right}/${dots.length}`,
+    sub: `${right}/${dots.length}`,
+    tone: 'neutral',
+    dots,
+  }
+}
+
 export function glanceTiles({ recapGw, previewGw, preview }) {
   const s = (preview ? previewGw?.superlatives : recapGw?.superlatives) || {}
   const predicted = preview ? highestPredicted(previewGw) : null
@@ -389,6 +416,24 @@ export function glanceTiles({ recapGw, previewGw, preview }) {
         'win',
       )
     : tile('GW scorer', s.weekHigh?.points, shortTeam(s.weekHigh?.name), 'win')
+  if (preview) {
+    return [
+      scorer,
+      tile(
+        'Best waiver',
+        s.bestWaiver?.pts ?? s.bestWaiver?.xp,
+        s.bestWaiver?.name,
+      ),
+      tile(
+        'Dud',
+        s.dud?.pts ?? s.dud?.xp,
+        s.dud
+          ? `${s.dud.name}${s.dud.overallPick ? ` · pick ${s.dud.overallPick}` : ''}`
+          : '',
+        'loss',
+      ),
+    ].filter(Boolean)
+  }
   return [
     scorer,
     tile(
@@ -404,6 +449,8 @@ export function glanceTiles({ recapGw, previewGw, preview }) {
         : '',
       'loss',
     ),
+    modelTile(recapGw),
+    tile('Top scorer', s.starPlayer?.pts, s.starPlayer?.name),
   ].filter(Boolean)
 }
 
