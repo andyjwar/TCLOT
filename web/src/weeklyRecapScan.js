@@ -148,6 +148,27 @@ export function personalityRecap(m, preview = false, used = []) {
   return lines.slice(0, 2)
 }
 
+function formatTitlePct(n) {
+  if (!Number.isFinite(n)) return null
+  const rounded = Math.abs(n - Math.round(n)) < 0.05 ? String(Math.round(n)) : n.toFixed(1)
+  return `${rounded}%`
+}
+
+function titleOddsTile(side) {
+  const name = squareTeam(side?.name)
+  const after = side?.titleOdds?.after
+  const before = side?.titleOdds?.before
+  const pct = Number.isFinite(after) ? after : side?.titlePct
+  const value = formatTitlePct(pct) || side?.titlePrice
+  if (!name || value == null || value === '') return null
+  let tone = 'neutral'
+  if (Number.isFinite(after) && Number.isFinite(before)) {
+    if (after > before + 0.15) tone = 'win'
+    else if (after < before - 0.15) tone = 'loss'
+  }
+  return tile(name, value, 'title', tone)
+}
+
 function recapStatTiles(m) {
   const fav = favSide(m)
   const whoFor = shortTeam(fav?.name)
@@ -162,15 +183,7 @@ function recapStatTiles(m) {
   const best = [...tops].sort((a, b) => (b.pts || 0) - (a.pts || 0))[0]
   const star = tile('Top scorer', best?.pts, best?.name)
 
-  const flops = [m?.home?.players?.flop, m?.away?.players?.flop].filter(
-    (p) => p?.name && Number.isFinite(p.pts),
-  )
-  const flop = flops.find((p) => Number.isFinite(p.xp) && p.pts < p.xp) || flops[0]
-  const dud = flop
-    ? tile('Dud', flop.pts, flop.name, 'loss')
-    : null
-
-  return [call, star, dud].filter(Boolean).slice(0, 3)
+  return [call, star, titleOddsTile(m?.home), titleOddsTile(m?.away)].filter(Boolean)
 }
 
 function squareTeam(name) {
