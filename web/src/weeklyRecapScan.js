@@ -50,11 +50,6 @@ function who(side) {
   return firstName(side?.manager) || side?.name || 'they'
 }
 
-function favName(m) {
-  if (!m?.odds?.favoriteSide) return null
-  return m.odds.favoriteSide === 'home' ? m.home?.name : m.away?.name
-}
-
 function favSide(m) {
   if (m?.odds?.favoriteSide === 'away') return m.away
   if (m?.odds?.favoriteSide === 'home') return m.home
