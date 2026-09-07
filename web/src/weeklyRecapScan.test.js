@@ -4,9 +4,7 @@ import {
   fixtureStoryLines,
   glanceFixture,
   glanceTiles,
-  matchupChips,
   personalityRecap,
-  polaroidFacts,
 } from './weeklyRecapScan.js'
 
 const recapGw = {
@@ -107,13 +105,6 @@ test('preview header derives GW scorer when baked topScorer is null', () => {
   )
   assert.equal(tiles[0].value, '6.1')
   assert.equal(tiles[0].sub, 'Salah')
-})
-
-test('polaroidFacts follows the slim header', () => {
-  const facts = polaroidFacts({ recapGw, preview: false, decided: 4 })
-  assert.equal(facts.length, 5)
-  assert.ok(facts.some((f) => f.label === 'Model'))
-  assert.ok(facts.some((f) => f.label === 'Top scorer'))
 })
 
 test('personalityRecap is vegan for Mottershead and not a two-manager checklist', () => {
@@ -227,16 +218,4 @@ test('preview fixture is two team book squares plus top scorer', () => {
   assert.equal(out.stats[1].tone, 'win')
   assert.equal(out.stats[2].sub, 'Petrović')
   assert.ok(out.recap.length >= 1 && out.recap.length <= 3)
-})
-
-test('matchupChips flags upset and derby', () => {
-  const chips = matchupChips({
-    derby: 'the Battle of Warderloo',
-    odds: { outcome: 'miss' },
-    away: { isWeekHigh: true },
-  })
-  assert.deepEqual(
-    chips.map((c) => c.label),
-    ['Battle of Warderloo', 'Upset', 'Week high'],
-  )
 })

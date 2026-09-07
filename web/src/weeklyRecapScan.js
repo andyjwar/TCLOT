@@ -12,9 +12,6 @@ import {
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import { variantIndex } from './weeklyRecapText.js'
 
-export const RECAP_LAYOUTS = ['glance', 'polaroid', 'combo', 'classic']
-export const RECAP_LAYOUT_STORAGE = 'tclot-recap-layout'
-
 const TABLE_OPEN = /^(That leaves|That keeps|Both sides finished)\b/
 const QUIPPY =
   /vegan|twin|sleep|complimentary|people'?s champion|invented|cheerfully|plant-based|whatever sleep/i
@@ -497,29 +494,6 @@ export function glanceFixture(m, { preview = false, used = [] } = {}) {
   return { stats, bullets: [], recap }
 }
 
-export function matchupScanLines(m, { preview = false } = {}) {
-  const { bullets, recap } = glanceFixture(m, { preview })
-  return { bullets, quip: recap.join(' ') }
-}
-
-export function matchupChips(m, { preview = false } = {}) {
-  const chips = []
-  if (m?.derby) chips.push({ label: m.derby.replace(/^the /i, ''), tone: 'gold' })
-  if (preview) {
-    if (m?.odds?.favoritePct >= 70) chips.push({ label: 'Lock', tone: 'win' })
-    else if (m?.odds && Math.abs((m.odds.home || 0) - (m.odds.away || 0)) <= 6) {
-      chips.push({ label: 'Coin', tone: 'gold' })
-    }
-    return chips
-  }
-  if (m?.odds?.outcome === 'miss') chips.push({ label: 'Upset', tone: 'loss' })
-  else if (m?.odds?.outcome === 'hit') chips.push({ label: 'Called it', tone: 'win' })
-  if (m?.home?.isWeekHigh || m?.away?.isWeekHigh) {
-    chips.push({ label: 'Week high', tone: 'gold' })
-  }
-  return chips
-}
-
 function tile(label, value, sub, tone) {
   if (value == null || value === '') return null
   return { label, value: String(value), sub: sub || '', tone: tone || 'neutral' }
@@ -614,37 +588,7 @@ export function glanceTiles({ recapGw, previewGw, preview }) {
   ].filter(Boolean)
 }
 
-export function polaroidFacts({ recapGw, previewGw, preview, decided }) {
-  const tiles = glanceTiles({ recapGw, previewGw, preview, decided })
-  return tiles.slice(0, 5).map((t) => ({
-    ...t,
-    caption: t.sub || t.label,
-  }))
-}
-
 export function wrapBanner(sentences) {
   const first = (sentences || []).find(Boolean)
   return first ? stripEnd(first) : null
-}
-
-export function readRecapLayout() {
-  if (typeof window === 'undefined') return 'glance'
-  try {
-    const q = new URLSearchParams(window.location.search).get('recapui')
-    if (RECAP_LAYOUTS.includes(q)) return q
-    const stored = localStorage.getItem(RECAP_LAYOUT_STORAGE)
-    if (RECAP_LAYOUTS.includes(stored)) return stored
-  } catch {
-    /* private mode */
-  }
-  return 'glance'
-}
-
-export function writeRecapLayout(layout) {
-  if (!RECAP_LAYOUTS.includes(layout)) return
-  try {
-    localStorage.setItem(RECAP_LAYOUT_STORAGE, layout)
-  } catch {
-    /* ignore */
-  }
 }
