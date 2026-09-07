@@ -1,14 +1,13 @@
 /**
  * Scan-first recap/preview copy. Turns baked weekly-recaps.json into
- * header tiles, per-fixture stat boxes, two interesting bullets, and a
- * two-sentence personality recap — no paragraphs, no repeated lines.
+ * header tiles, per-fixture stat boxes, and a mixed recap box — jokes,
+ * waivers, scorers, duds, streaks — not a per-manager checklist.
  */
 
 import {
   allManagerJokes,
-  isTitanicPair,
-  namedFixtureFor,
-  titanicAside,
+  isMottershead,
+  mottersheadVeganLine,
 } from './leagueLore.js'
 import { standingsMobileTeamName } from './teamNameUtils.js'
 import { variantIndex } from './weeklyRecapText.js'
@@ -86,6 +85,7 @@ export function pickQuip(sentences) {
 }
 
 function jokeFromPool(manager, salt, usedSet) {
+  if (isMottershead(manager)) return null
   const pool = allManagerJokes(manager).filter((t) => !STALE_TAKE.test(t))
   if (!pool.length) return null
   const fresh = pool.filter((t) => !usedSet.has(stripEnd(t).toLowerCase()))
@@ -93,7 +93,152 @@ function jokeFromPool(manager, salt, usedSet) {
   return stripEnd(choice)
 }
 
-/** Always two personality sentences, rotating the full lore pool. */
+function pickupKind(kind) {
+  return kind === 'f' ? 'free-agent' : 'waiver'
+}
+
+function pickupBits(side) {
+  const bits = []
+  const p = side?.pickup
+  if (p?.name) bits.push(p)
+  if (p?.star?.name) bits.push(p.star)
+  if (p?.flop?.name) bits.push({ ...p.flop, dud: true })
+  for (const r of side?.recentPickups || []) {
+    if (r?.name) bits.push(r)
+  }
+  return bits
+}
+
+function recordLine(side, key) {
+  const rec = side?.record
+  if (!rec) return null
+  const w = Number(rec.w) || 0
+  const d = Number(rec.d) || 0
+  const l = Number(rec.l) || 0
+  const played = w + d + l
+  const rank = Number(side?.rank)
+  if (played >= 3 && w === 0) {
+    return pick(
+      [
+        `${who(side)} is ${w}-${d}-${l} and still waiting on a first win`,
+        `${who(side)}'s ${w}-${d}-${l} is the kind of record that gets a subcommittee`,
+      ],
+      `${key}-winless`,
+    )
+  }
+  if (played >= 4 && l >= 3 && l >= w * 2) {
+    return `${who(side)} sits ${w}-${d}-${l}, which is doing some talking of its own`
+  }
+  if (Number.isFinite(rank) && rank >= 7 && played >= 2) {
+    return `${who(side)} is ${ordinal(rank)}, and the table is not being subtle about it`
+  }
+  return null
+}
+
+function streakLine(side) {
+  const st = side?.streak
+  if (!st || !Number.isFinite(st.len) || st.len <= 2) return null
+  const kind = st.type === 'W' ? 'winning' : st.type === 'L' ? 'losing' : 'unbeaten'
+  if (st.type === 'D') return null
+  return `${who(side)} is on a ${st.len}-game ${kind} streak`
+}
+
+/** Fixture notes: waivers, projected scorers, hauls, duds, streaks, bad records. */
+export function fixtureStoryLines(m, preview = false, key = 's') {
+  const out = []
+  for (const [side, salt] of [
+    [m?.home, `${key}-h`],
+    [m?.away, `${key}-a`],
+  ]) {
+    if (!side) continue
+    for (const p of pickupBits(side)) {
+      const kind = pickupKind(p.kind)
+      if (p.dud || (Number.isFinite(p.xp) && Number.isFinite(p.pts) && p.pts <= 2 && p.xp >= 4)) {
+        out.push(
+          `${who(side)}'s ${kind} ${p.name} returned ${p.pts ?? 0}${p.xp != null ? ` off ${p.xp}` : ''}`,
+        )
+      } else if (Number.isFinite(p.pts) && p.pts >= 8) {
+        out.push(`${who(side)}'s ${kind} ${p.name} paid ${p.pts}`)
+      } else {
+        out.push(
+          pick(
+            [
+              `${who(side)} claimed ${p.name} on the ${kind}`,
+              `${p.name} is the new ${kind} in ${shortTeam(side.name)}`,
+            ],
+            `${salt}-waive-${p.name}`,
+          ),
+        )
+      }
+    }
+
+    if (preview) {
+      const watch = [...(side.keys || [])]
+        .filter((k) => k?.name)
+        .sort((a, b) => (b.xp || 0) - (a.xp || 0))[0]
+      if (watch) {
+        out.push(
+          pick(
+            [
+              `${who(side)}'s hinge is ${watch.name} at ${watch.xp}`,
+              `The projected stack for ${shortTeam(side.name)} runs through ${watch.name} (${watch.xp})`,
+            ],
+            `${salt}-xp`,
+          ),
+        )
+      }
+    } else {
+      const top = side.players?.top
+      if (top?.name && Number.isFinite(top.pts)) {
+        out.push(
+          pick(
+            [
+              `${top.name} led ${shortTeam(side.name)} with ${top.pts}`,
+              `Biggest return in ${shortTeam(side.name)}: ${top.name} on ${top.pts}`,
+            ],
+            `${salt}-top`,
+          ),
+        )
+      }
+      const flop = side.players?.flop
+      if (flop?.name && Number.isFinite(flop.pts)) {
+        out.push(
+          pick(
+            [
+              `${flop.name} the dud for ${who(side)}: ${flop.pts}${flop.xp != null ? ` from ${flop.xp}` : ''}`,
+              `${who(side)} will not want the clip of ${flop.name} walking off with ${flop.pts}`,
+            ],
+            `${salt}-dud`,
+          ),
+        )
+      }
+    }
+
+    const streak = streakLine(side)
+    if (streak) out.push(streak)
+    const rec = recordLine(side, salt)
+    if (rec) out.push(rec)
+  }
+  return out.filter(Boolean)
+}
+
+function takeSome(arr, n, key) {
+  const pool = [...arr]
+  const out = []
+  for (let i = 0; i < n && pool.length; i++) {
+    const item = pick(pool, `${key}-${i}`)
+    out.push(item)
+    const idx = pool.indexOf(item)
+    if (idx >= 0) pool.splice(idx, 1)
+  }
+  return out
+}
+
+/**
+ * Mixed recap/preview copy: vegan when Mottershead is on the card, then a
+ * random blend of fixture notes and one-or-both manager jokes. Not a
+ * two-manager checklist.
+ */
 export function personalityRecap(m, preview = false, used = []) {
   const key = fixtureKey(m, preview)
   const usedSet = new Set(
@@ -108,32 +253,34 @@ export function personalityRecap(m, preview = false, used = []) {
     lines.push(s)
   }
 
-  for (const [side, salt] of [
-    [m?.home, `${key}-h`],
-    [m?.away, `${key}-a`],
-  ]) {
-    if (!side || lines.length >= 2) continue
-    add(jokeFromPool(side.manager, salt, usedSet))
+  const mottOn =
+    isMottershead(m?.home?.manager) || isMottershead(m?.away?.manager)
+  if (mottOn) add(mottersheadVeganLine(pick, `${key}-vegan`))
+
+  const stories = fixtureStoryLines(m, preview, key).filter(
+    (s) => !overlaps(s, [...usedSet]),
+  )
+  if (stories.length) {
+    const n = pick(mottOn ? [1, 1, 2] : [1, 1, 2], `${key}-stories`)
+    for (const s of takeSome(stories, n, `${key}-story`)) add(s)
   }
 
-  if (lines.length < 2 && isTitanicPair(m?.home?.manager, m?.away?.manager)) {
-    add(titanicAside(pick, `${key}-titanic`))
+  const jokeSides = [m?.home, m?.away].filter(
+    (s) => s?.manager && !isMottershead(s.manager),
+  )
+  const jokeMode = pick(['one', 'one', 'both', 'none'], `${key}-jokes`)
+  if (jokeMode !== 'none' && jokeSides.length) {
+    const chosen =
+      jokeMode === 'both' || jokeSides.length === 1
+        ? jokeSides
+        : [pick(jokeSides, `${key}-jside`)]
+    for (const side of chosen) {
+      if (lines.length >= 3) break
+      add(jokeFromPool(side.manager, `${key}-${side.entryId || side.manager}`, usedSet))
+    }
   }
 
-  const derby = m?.derby || namedFixtureFor(m?.home?.manager, m?.away?.manager)
-  if (lines.length < 2 && derby) {
-    add(
-      pick(
-        [
-          `${derby.replace(/^the /i, '')} again, and neither of them will let it pass quietly`,
-          `This is ${derby}, so the group chat is already writing the minutes`,
-        ],
-        `${key}-derby`,
-      ),
-    )
-  }
-
-  if (lines.length < 2) {
+  if (!lines.length) {
     add(
       pick(
         [
@@ -145,7 +292,7 @@ export function personalityRecap(m, preview = false, used = []) {
     )
   }
 
-  return lines.slice(0, 2)
+  return lines.slice(0, 3)
 }
 
 function formatTitlePct(n) {
