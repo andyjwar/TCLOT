@@ -350,13 +350,27 @@ function tile(label, value, sub, tone) {
   return { label, value: String(value), sub: sub || '', tone: tone || 'neutral' }
 }
 
+function highestPredicted(previewGw) {
+  const baked = previewGw?.superlatives?.topScorer
+  if (baked?.name) return baked
+  let best = null
+  for (const m of previewGw?.matchups || []) {
+    for (const k of [m?.home?.keys?.[0], m?.away?.keys?.[0]]) {
+      if (!k?.name) continue
+      if (!best || (k.xp || 0) > (best.xp || 0)) best = k
+    }
+  }
+  return best
+}
+
 export function glanceTiles({ recapGw, previewGw, preview }) {
   const s = (preview ? previewGw?.superlatives : recapGw?.superlatives) || {}
+  const predicted = preview ? highestPredicted(previewGw) : null
   const scorer = preview
     ? tile(
         'GW scorer',
-        s.topScorer?.xp ?? s.topScorer?.pts ?? s.topScorer?.name ?? null,
-        s.topScorer?.name,
+        predicted?.xp ?? predicted?.pts ?? predicted?.name ?? null,
+        predicted?.name,
         'win',
       )
     : tile('GW scorer', s.weekHigh?.points, shortTeam(s.weekHigh?.name), 'win')

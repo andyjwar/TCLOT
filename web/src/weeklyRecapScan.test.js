@@ -58,6 +58,35 @@ test('glanceTiles header is GW scorer, best waiver, dud', () => {
   assert.ok(!tiles.some((t) => t.label === 'Model' || t.label === 'Upset'))
 })
 
+test('preview header derives GW scorer when baked topScorer is null', () => {
+  const tiles = glanceTiles({
+    preview: true,
+    previewGw: {
+      superlatives: {
+        topScorer: null,
+        bestWaiver: { name: 'Schade', xp: 4.2 },
+        dud: { name: 'Isak', xp: 1.2, overallPick: 3 },
+      },
+      matchups: [
+        {
+          home: { keys: [{ name: 'Verbruggen', xp: 3.9 }] },
+          away: { keys: [{ name: 'Donnarumma', xp: 4.9 }] },
+        },
+        {
+          home: { keys: [{ name: 'Salah', xp: 6.1 }] },
+          away: { keys: [{ name: 'Haaland', xp: 5.5 }] },
+        },
+      ],
+    },
+  })
+  assert.deepEqual(
+    tiles.map((t) => t.label),
+    ['GW scorer', 'Best waiver', 'Dud'],
+  )
+  assert.equal(tiles[0].value, '6.1')
+  assert.equal(tiles[0].sub, 'Salah')
+})
+
 test('polaroidFacts follows the slim header', () => {
   const facts = polaroidFacts({ recapGw, preview: false, decided: 4 })
   assert.equal(facts.length, 3)
