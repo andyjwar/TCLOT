@@ -98,10 +98,13 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         Points left on the bench
       </h3>
       <p className="standings-stats-hint">
-        Unused is FPL points a better legal XI would have scored (autosubs
-        already count). Table is the real standings: 3 for a win, 1 for a
-        draw. If XI is that same table if every finished fixture used both
-        sides' best legal 11.
+        “Unused” shows the additional FPL points each team could have earned
+        by fielding its best legal XI; autosub points are already included.
+      </p>
+      <p className="standings-stats-hint">
+        “Actual” shows the current standings: 3 points for a win and 1 for a
+        draw. “Best XI” shows how the standings would look if both teams had
+        fielded their highest-scoring legal XI in every completed fixture.
       </p>
 
       {loading ? (
@@ -153,19 +156,19 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                     className="win-margin-table__n tabular"
                     title="Current H2H table points (3 for a win, 1 for a draw)"
                   >
-                    Table
+                    Actual
                   </th>
                   <th
                     scope="col"
                     className="win-margin-table__n tabular"
                     title="Table points if every finished fixture used both sides' best legal XI"
                   >
-                    If XI
+                    Best XI
                   </th>
                   <th
                     scope="col"
                     className="win-margin-table__n tabular standings-stats-bench-table__swing"
-                    title="Swing in table points (If XI minus Table)"
+                    title="Swing in table points (Best XI minus Actual)"
                   >
                     +/−
                   </th>
@@ -247,12 +250,18 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
             </table>
           </div>
 
-          <div className="standings-bench-gw">
-            <div className="standings-bench-gw__head">
+          <details className="standings-bench-gw">
+            <summary className="standings-bench-gw__summary">
               <h4 className="standings-stats-eyebrow standings-bench-gw__title">
                 Would the result have changed?
               </h4>
-              {gwOptions.length > 1 ? (
+              {gw != null ? (
+                <span className="standings-bench-gw__single muted">GW {gw}</span>
+              ) : null}
+            </summary>
+            <div className="standings-bench-gw__body">
+            {gwOptions.length > 1 ? (
+              <div className="standings-bench-gw__toolbar">
                 <CompactSelectPill
                   label="GW"
                   value={gw}
@@ -260,10 +269,8 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   onChange={(next) => setGwPick(Number(next))}
                   ariaLabel="Game week for table-point comparison"
                 />
-              ) : gw != null ? (
-                <span className="standings-bench-gw__single muted">GW {gw}</span>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
             <p className="standings-stats-hint">
               Left column is what was played (and the 3 / 1 / 0 table pts it
               paid). Right column is the same fixture if both managers had
@@ -421,7 +428,8 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
             ) : (
               <p className="muted muted--tight">No fixtures for this gameweek.</p>
             )}
-          </div>
+            </div>
+          </details>
         </>
       )}
     </section>

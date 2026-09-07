@@ -14807,12 +14807,33 @@ button.live-xp__player-name:focus-visible {
   border-top: 1px solid var(--fm-border);
 }
 
-.standings-bench-gw__head {
+.standings-bench-gw__summary {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 4px;
+  gap: 10px;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+
+.standings-bench-gw__summary::-webkit-details-marker {
+  display: none;
+}
+
+.standings-bench-gw__summary::after {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--fm-muted);
+  border-bottom: 2px solid var(--fm-muted);
+  transform: rotate(45deg);
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
+.standings-bench-gw[open] > .standings-bench-gw__summary::after {
+  transform: rotate(-135deg);
 }
 
 .standings-bench-gw__title {
@@ -14822,6 +14843,16 @@ button.live-xp__player-name:focus-visible {
 .standings-bench-gw__single {
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+.standings-bench-gw__toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin: 10px 0 4px;
+}
+
+.standings-bench-gw__body {
+  padding-top: 8px;
 }
 
 .standings-bench-fx {
