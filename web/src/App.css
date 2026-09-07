@@ -220,24 +220,10 @@
   );
 }
 
-/* Brand-header "tile" — already `background: transparent` in production
- * (see `.tile.tile--brand-header`), so the gradient reads through the
- * header without any extra work. The mockup variant applies a
- * translucent white + 6px backdrop blur to its header tile because the
- * mockup baseline has a solid white card; we add the same frosted-glass
- * treatment here in light theme so the brand row gets a subtle
- * "presence" over the gradient (matches the visual character of the
- * approved mockup). The blur is only painted on the brand row itself,
- * not the status strip below (which has its own `--surface-2` bg).
- *
- * Mobile note: the purple-header treatment (see the `max-width: 720px`
- * block below) repaints this tile with the brand gradient, so the
- * frosted-white desktop frost is overridden there. */
-.fotmob[data-theme='light'] .tile.tile--brand-header {
-  background: color-mix(in srgb, #ffffff 70%, transparent);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
+/* Brand-header band is painted in `.tile.tile--brand-header` (racing-green
+ * under Scorebook, brand gradient otherwise). Light theme must not frost
+ * the tile — that used to wash the desktop header into a pale strip while
+ * the phone kept the app band. */
 
 .fotmob[data-theme='light'] .data-banner {
   color: var(--fm-text-strong);
@@ -403,8 +389,9 @@
 .dashboard-layout--with-nav {
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto auto auto;
-  /* One row-gap for title → nav and nav → content */
-  gap: 8px 0;
+  /* Header band + tab track sit flush, matching the phone app chrome.
+   * Spacing between content sections lives inside `.dashboard-content`. */
+  gap: 0;
   align-items: stretch;
 }
 
@@ -420,7 +407,8 @@
   margin-bottom: 0;
 }
 
-/* Row 2: primary nav — Premier League–style text tabs + underline indicator */
+/* Row 2: primary nav — same cream underline track as the phone Table /
+ * Schedule / Stats bar, flush under the green header band. */
 .dashboard-layout--with-nav > .dashboard-nav {
   grid-column: 1;
   grid-row: 2;
@@ -432,8 +420,9 @@
   position: static;
   align-self: stretch;
   min-width: 0;
-  margin-top: 10px;
-  padding: 0 4px;
+  margin: 0 -16px;
+  padding: 0 12px;
+  background: var(--fm-bg);
   border-bottom: 1px solid var(--fm-border);
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
@@ -644,6 +633,16 @@
   flex: 0 0 auto;
 }
 
+/* Desktop primary nav matches the phone tab language: text + underline.
+ * Settings keeps its gear. Live pulse is already on the status strip. */
+.dashboard-nav--top .dashboard-nav__icon,
+.dashboard-nav--top .dashboard-nav__emoji {
+  display: none;
+}
+.dashboard-nav--top .dashboard-nav__btn--settings .dashboard-nav__icon {
+  display: block;
+}
+
 .dashboard-nav__btn--settings::before {
   content: '';
   position: absolute;
@@ -664,6 +663,12 @@
 @media (max-width: 1080px) {
   .dashboard-nav--top {
     display: none !important;
+  }
+
+  /* Header search lives in the floating dock; collapse the crest
+   * wrapper so it cannot leave an empty third column on iPad. */
+  .brand-header__crests {
+    display: none;
   }
 
   /* 26/27 hub fills the space above the tab bar. Keep overflow/height off
@@ -1221,51 +1226,49 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-@media (max-width: 720px) {
-  /* —— Underline tab bar (mobile) — mockup "Option 2" ——
-   * The segmented capsule becomes flat text tabs with a purple underline
-   * under the active tab. Applied to every sub-nav tablist (FPL Live, Moves,
-   * Standings, sub-views, Heritage) for one consistent, lightweight menu.
-   * The :not() guard skips the league-info modal sub-nav, which must stay a
-   * compact capsule. The sticky full-bleed "track" (page bg + bottom hairline
-   * that the underline rests on) is set on each tablist's wrapper — see the
-   * "Sub-nav tab tracks" block later in this file. */
-  .subnav:not(.li-subnav) {
-    display: inline-flex;
-    width: auto;
-    min-width: 100%;
-    gap: 0;
-    padding: 0;
-    background: none;
-    border: 0;
-    border-radius: 0;
-  }
-  .subnav:not(.li-subnav) .subnav__tab {
-    flex: 0 0 auto;
-    position: relative;
-    min-height: 0;
-    padding: 13px 14px 12px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-muted);
-    background: none;
-    border-radius: 0;
-  }
-  .subnav:not(.li-subnav) .subnav__tab--active {
-    background: none;
-    box-shadow: none;
-    color: var(--text-strong);
-  }
-  .subnav:not(.li-subnav) .subnav__tab--active::after {
-    content: '';
-    position: absolute;
-    left: 14px;
-    right: 14px;
-    bottom: 0;
-    height: 2px;
-    border-radius: 2px 2px 0 0;
-    background: var(--tclot-logo-purple);
-  }
+/* —— Underline tab bar — mockup "Option 2" (now all breakpoints) ——
+ * The segmented capsule becomes flat text tabs with a brand underline
+ * under the active tab. Applied to every sub-nav tablist (FPL Live, Moves,
+ * Standings, sub-views, Heritage) so desktop / iPad match the phone app.
+ * The :not() guard skips the league-info modal sub-nav, which must stay a
+ * compact capsule. The sticky full-bleed "track" (page bg + bottom hairline
+ * that the underline rests on) is set on each tablist's wrapper — see the
+ * "Sub-nav tab tracks" block later in this file. */
+.subnav:not(.li-subnav) {
+  display: inline-flex;
+  width: auto;
+  min-width: 100%;
+  gap: 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  border-radius: 0;
+}
+.subnav:not(.li-subnav) .subnav__tab {
+  flex: 0 0 auto;
+  position: relative;
+  min-height: 0;
+  padding: 13px 14px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: none;
+  border-radius: 0;
+}
+.subnav:not(.li-subnav) .subnav__tab--active {
+  background: none;
+  box-shadow: none;
+  color: var(--text-strong);
+}
+.subnav:not(.li-subnav) .subnav__tab--active::after {
+  content: '';
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--tclot-logo-purple);
 }
 
 /* Pulsing-dot prefix on the Live GW tab — same green dot as the main nav,
@@ -8570,65 +8573,71 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .tile.tile--brand-header {
   display: flex;
   flex-direction: column;
-  margin: 0;
+  /* Full-bleed band: cancel `.app.fotmob` 20px top + 16px side padding
+   * so the chrome meets the viewport (and the iOS status bar when
+   * standalone). Same treatment the phone app already used. */
+  margin: -20px -16px 0;
   padding: 0;
-  background: transparent;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--brand-grad);
   border: 0;
   border-radius: 0;
-  box-shadow: none;
-  color: var(--text);
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
+  color: #ffffff;
   overflow: visible;
 }
 
-/* Brand row — `auto 1fr auto` grid: pill left, '2025/26' meta center,
- * 8 crests right-justified. Height matches the pre-PR-#3.7 tile so the
- * page header stays the same total height when the status strip is not
- * rendered (e.g. bootstrap still loading). */
+/* Brand row — pill left, season right. Crests stay in the DOM for the
+ * archive-view search fallback but are not painted (the phone app does
+ * not show them). */
 .brand-header__row {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: var(--space-3);
-  height: 68px;
+  height: 56px;
   padding: 0 var(--space-4);
 }
 
-/* Gradient pill carrying the inline lion icon + TCLOT wordmark — the
- * brand atom. Lion <svg> renders with currentColor so the lion picks
- * up the pill's white type colour automatically. */
+/* Frosted-glass chip so the pill stays distinct on the green band.
+ * Lion <svg> uses currentColor and stays white. */
 .brand-header__pill {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  height: 38px;
+  height: 34px;
   padding: 0 14px 0 10px;
   border-radius: var(--r-circle);
-  background: var(--brand-grad);
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.24);
   color: #ffffff;
   flex: 0 0 auto;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   box-shadow:
-    0 1px 0 rgba(255, 255, 255, 0.10) inset,
-    0 1px 2px rgba(0, 0, 0, 0.20);
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 .brand-header__wordmark {
   color: #ffffff;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: 0.04em;
   line-height: 1;
 }
 
-/* Meta slot — Geist Mono / caps / muted treatment lifted from the old
- * `.brand-header__season` styling. The `2025/26` label now lives here. */
+/* Meta slot — Geist Mono / caps. Right-aligned like the phone season
+ * switcher (`2026/27 ▾`). */
 .brand-header__meta {
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.78);
   text-transform: uppercase;
   letter-spacing: 0.08em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  justify-self: end;
 }
 .brand-header__meta--season {
   font-family: 'Geist Mono', monospace;
@@ -8664,10 +8673,8 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .season-switch__btn[aria-expanded='true'] {
   background: rgba(255, 255, 255, 0.1);
 }
-.fotmob[data-theme='light'] .season-switch__btn:hover,
-.fotmob[data-theme='light'] .season-switch__btn[aria-expanded='true'] {
-  background: rgba(0, 0, 0, 0.07);
-}
+/* Header band is dark green in both themes — keep the light wash.
+ * Do not use the old light-theme ink hover; it vanishes on the band. */
 .season-switch__caret {
   font-size: 0.8em;
   opacity: 0.7;
@@ -8675,9 +8682,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .season-switch__menu {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
+  left: auto;
+  right: 0;
   z-index: 40;
   min-width: 168px;
+  max-width: min(220px, calc(100vw - 24px));
   padding: 5px;
   display: flex;
   flex-direction: column;
@@ -8741,11 +8750,11 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   justify-self: end;
   white-space: nowrap;
 }
+/* Phone app chrome: the 8-crest strip is desktop-legacy and is not
+ * shown on any breakpoint. The wrapper stays so archive-view search
+ * can still mount here when the status strip is hidden. */
 .brand-header__crest {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 auto;
+  display: none;
 }
 /* Force the production crest atom to 32px regardless of its `size` prop;
  * `team-avatar-frame--sm` is normally 28px — we resize it locally so 8
@@ -8774,16 +8783,16 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
   flex-wrap: wrap;
   gap: var(--space-2);
   padding: var(--space-2) var(--space-4);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 0;
-  background: var(--surface-2);
+  background: rgba(0, 0, 0, 0.16);
   font-size: var(--text-xs);
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.82);
   letter-spacing: 0.02em;
   min-height: 28px;
 }
 .brand-header__status-strong {
-  color: var(--text-strong);
+  color: #ffffff;
   font-weight: 600;
 }
 .brand-header__status-sep {
@@ -8792,7 +8801,7 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 .brand-header__status-mono {
   font-family: 'Geist Mono', monospace;
   font-variant-numeric: tabular-nums;
-  color: var(--text);
+  color: #ffffff;
 }
 .brand-header__status-clock {
   white-space: nowrap;
@@ -8820,46 +8829,12 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
 }
 
 @media (max-width: 720px) {
-  /* —— Mobile-only purple header band ——
-   * On narrow screens the whole brand header (row + status strip) becomes
-   * a single purple gradient band with light text. Desktop keeps the
-   * original transparent header / surface-2 status strip / muted text. */
-  .tile.tile--brand-header {
-    /* Full-bleed era: bleed the purple band to all three top edges so it
-     * frames the screen like the edge-to-edge content below, instead of
-     * floating inside the page's 16px side gutter + 20px top padding.
-     * -20px top cancels `.app.fotmob` padding-top; -16px sides cancel the
-     * page gutter (same offset the content bands use). Desktop (>720px)
-     * keeps the original inset header untouched. */
-    margin: -20px -16px 0;
-    background: var(--brand-grad);
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
-    color: #ffffff;
-    /* Standalone (home-screen) app: with viewport-fit=cover the page is laid
-     * out under the iOS status bar, so the purple band extends behind it and
-     * this padding keeps the brand row below the clock. In-browser the env()
-     * value is 0 and nothing changes. */
-    padding-top: env(safe-area-inset-top, 0px);
-  }
-  /* Override the desktop light-theme frosted-white frost so the purple
-   * band shows in light mode too. Matches the desktop rule's specificity
-   * so it reliably wins inside this later-source media query. */
-  .fotmob[data-theme='light'] .tile.tile--brand-header {
-    background: var(--brand-grad);
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-  }
-
+  /* Phone-only tightening — the green band, glass pill, and status
+   * wash now live in the base rules so desktop / iPad match the app. */
   .brand-header__row {
-    height: 56px;
     padding: 0 var(--space-3);
-    gap: var(--space-3);
-    /* Drop the crest row on narrow screens — pill + season keeps the
-     * row legible at 375px. Status strip remains visible below. */
     grid-template-columns: auto auto;
   }
-  /* Pre-draft (no status strip): More sits on the brand row, so keep
-   * a third column for it on the far right. */
   .brand-header__row:has(.brand-header__more) {
     grid-template-columns: auto 1fr auto;
   }
@@ -8867,57 +8842,19 @@ body[data-tclot-theme='dark'] .live-player-slide__sheet {
     height: 30px;
     padding: 0 12px 0 8px;
     gap: 6px;
-    /* Frosted-glass chip so the pill stays distinct on the purple band. */
-    background: rgba(255, 255, 255, 0.16);
-    border: 1px solid rgba(255, 255, 255, 0.24);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.18) inset,
-      0 1px 2px rgba(0, 0, 0, 0.18);
   }
   .brand-header__wordmark {
     font-size: 12px;
   }
   .brand-header__meta {
     font-size: 10px;
-    justify-self: end;
-    color: rgba(255, 255, 255, 0.78);
   }
-  /* Trigger sits on the right edge — open the menu leftward so it
-   * stays on-screen instead of clipping past the viewport. */
   .season-switch__menu {
-    left: auto;
-    right: 0;
     min-width: 156px;
-    max-width: min(220px, calc(100vw - 24px));
   }
-  .brand-header__crests {
-    display: none;
-  }
+  /* Tighter phone type — crest wrapper hide is shared with iPad below. */
   .brand-header__status-strip {
     padding: var(--space-2) var(--space-3);
-    /* Translucent dark wash + hairline white border over the purple. */
-    border-top: 1px solid rgba(255, 255, 255, 0.16);
-    background: rgba(0, 0, 0, 0.16);
-    color: rgba(255, 255, 255, 0.82);
-  }
-  .brand-header__status-strong {
-    color: #ffffff;
-  }
-  .brand-header__status-mono {
-    color: #ffffff;
-  }
-
-  /* The top nav row is `display: none` on mobile (see the ≤1080px rule),
-   * so the dashboard grid's 8px row-gap was applied on BOTH sides of that
-   * empty row — leaving a 16px white band between the purple header and
-   * the first content section. Collapse the row-gap on mobile so content
-   * sits flush under the status strip. Column-gap is already 0 and the
-   * spacing between content sections lives inside `.dashboard-content`,
-   * so this only removes the dead space beneath the header band. */
-  .dashboard-layout--with-nav {
-    row-gap: 0;
   }
 }
 
@@ -14069,11 +14006,11 @@ button.live-xp__player-name:focus-visible {
   position: sticky;
   top: 0;
   z-index: 30;
-  /* Top margin pulled from 4px → -8px so the capsule pills rest at the same
-   * nav→content offset as the Heritage reference strip (the prior 4px margin +
-   * 8px top padding sat the pills ~12px lower than Heritage at every width). */
-  margin: -8px -16px 10px;
-  padding: 8px 16px;
+  /* Same edge-to-edge underline track as the phone app (Table / Schedule /
+   * Stats). Side bleed cancels the page gutter; bottom gap keeps the
+   * first content tile from kissing the hairline. */
+  margin: 0 -16px 10px;
+  padding: 0 4px;
   background: var(--fm-bg);
   border-bottom: 1px solid var(--fm-border);
 }
@@ -15385,74 +15322,69 @@ button.live-xp__player-name:focus-visible {
   max-width: 100%;
 }
 
-@media (max-width: 720px) {
-  /* ============================================================== */
-  /*  Sub-nav tab tracks (mobile) — one consistent, persistent bar  */
-  /* -------------------------------------------------------------- */
-  /*  Every sub-nav tablist (FPL Live, Moves, Standings, sub-views, */
-  /*  Heritage) sits in a sticky, edge-to-edge bar with the page    */
-  /*  background + a bottom hairline that the active-tab underline   */
-  /*  rests on. Normalised here (late in the file so it wins over    */
-  /*  each wrapper's base rule) so they read identically and stay    */
-  /*  pinned to the top of the viewport as the page scrolls.         */
-  /*  The tab/underline visuals live in the "Underline tab bar"      */
-  /*  block earlier in this file.                                    */
-  .standings-subnav-strip,
-  .subview-subnav-strip,
-  .heritage-subnav-strip,
-  .tile--team-selection > .section-chrome--sticky {
-    position: sticky;
-    top: 0;
-    z-index: 31;
-    padding: 0 4px;
-    background: var(--fm-bg);
-    border: 0;
-    border-bottom: 1px solid var(--border);
-    overflow-x: auto;
-    overflow-y: visible;
-    scrollbar-width: none;
-    -webkit-overflow-scrolling: touch;
-  }
-  .standings-subnav-strip::-webkit-scrollbar,
-  .subview-subnav-strip::-webkit-scrollbar,
-  .heritage-subnav-strip::-webkit-scrollbar,
-  .tile--team-selection > .section-chrome--sticky::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Direct children of dashboard-content bleed to both edges with no
-   * vertical pull (header sits above, content gap handles spacing below). */
-  .standings-subnav-strip,
-  .subview-subnav-strip,
-  .heritage-subnav-strip {
-    margin: 0 -16px;
-  }
-
-  /* FPL Live / Moves bar lives inside a card: keep cancelling the card's
-   * top + side padding so the bar sits flush at the card's top edge, and
-   * drop the bottom padding so the underline lands on the hairline. */
-  .tile--team-selection > .section-chrome--sticky {
-    margin: -17px -16px 0;
-    padding-bottom: 0;
-    box-shadow: none;
-  }
-
-  /* Subtle separation shadow once the bar is pinned (always-on but faint). */
-  .fotmob[data-theme='dark'] .standings-subnav-strip,
-  .fotmob[data-theme='dark'] .subview-subnav-strip,
-  .fotmob[data-theme='dark'] .heritage-subnav-strip,
-  .fotmob[data-theme='dark'] .tile--team-selection > .section-chrome--sticky {
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-  }
-  .fotmob[data-theme='light'] .standings-subnav-strip,
-  .fotmob[data-theme='light'] .subview-subnav-strip,
-  .fotmob[data-theme='light'] .heritage-subnav-strip,
-  .fotmob[data-theme='light'] .tile--team-selection > .section-chrome--sticky {
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
-  }
-
-  .heritage-subnav { flex-wrap: nowrap; max-width: 100%; }
+/* ============================================================== */
+/*  Sub-nav tab tracks — one consistent, persistent bar            */
+/* -------------------------------------------------------------- */
+/*  Every sub-nav tablist (FPL Live, Moves, Standings, sub-views,  */
+/*  Heritage) sits in a sticky, edge-to-edge bar with the page     */
+/*  background + a bottom hairline that the active-tab underline    */
+/*  rests on. Shared across phone / iPad / desktop so the menu      */
+/*  matches the app. The tab/underline visuals live in the          */
+/*  "Underline tab bar" block earlier in this file.                 */
+.standings-subnav-strip,
+.subview-subnav-strip,
+.heritage-subnav-strip,
+.tile--team-selection > .section-chrome--sticky {
+  position: sticky;
+  top: 0;
+  z-index: 31;
+  padding: 0 4px;
+  background: var(--fm-bg);
+  border: 0;
+  border-bottom: 1px solid var(--border);
+  overflow-x: auto;
+  overflow-y: visible;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.standings-subnav-strip::-webkit-scrollbar,
+.subview-subnav-strip::-webkit-scrollbar,
+.heritage-subnav-strip::-webkit-scrollbar,
+.tile--team-selection > .section-chrome--sticky::-webkit-scrollbar {
+  display: none;
+}
+
+/* Direct children of dashboard-content bleed to both edges. */
+.standings-subnav-strip,
+.subview-subnav-strip,
+.heritage-subnav-strip {
+  margin: 0 -16px 10px;
+}
+
+/* FPL Live / Moves bar lives inside a card: keep cancelling the card's
+ * top + side padding so the bar sits flush at the card's top edge, and
+ * drop the bottom padding so the underline lands on the hairline. */
+.tile--team-selection > .section-chrome--sticky {
+  margin: -17px -16px 0;
+  padding-bottom: 0;
+  box-shadow: none;
+}
+
+/* Subtle separation shadow once the bar is pinned (always-on but faint). */
+.fotmob[data-theme='dark'] .standings-subnav-strip,
+.fotmob[data-theme='dark'] .subview-subnav-strip,
+.fotmob[data-theme='dark'] .heritage-subnav-strip,
+.fotmob[data-theme='dark'] .tile--team-selection > .section-chrome--sticky {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+.fotmob[data-theme='light'] .standings-subnav-strip,
+.fotmob[data-theme='light'] .subview-subnav-strip,
+.fotmob[data-theme='light'] .heritage-subnav-strip,
+.fotmob[data-theme='light'] .tile--team-selection > .section-chrome--sticky {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.05);
+}
+
+.heritage-subnav { flex-wrap: nowrap; max-width: 100%; }
 
 /* Manager-initial bubble shared by Historic Standings + CofC + Team History */
 .heritage-mgr-crest {

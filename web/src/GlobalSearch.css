@@ -26,7 +26,7 @@
   outline: none;
 }
 .brand-header__search:focus-visible {
-  box-shadow: 0 0 0 2px var(--brand, #795bfb);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
 }
 .brand-header__search svg {
   display: block;
@@ -60,7 +60,7 @@
   outline: none;
 }
 .brand-header__more:focus-visible {
-  box-shadow: 0 0 0 2px var(--brand, #795bfb);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
 }
 .brand-header__more svg {
   display: block;
@@ -101,7 +101,7 @@
 /* Crest-row fallback: sit just after the 8 crests. */
 .brand-header__crests > .brand-header__search {
   margin-left: 4px;
-  color: var(--text-muted, inherit);
+  color: rgba(255, 255, 255, 0.82);
 }
 
 /* ---- Palette overlay ---- */
