@@ -14775,13 +14775,6 @@ button.live-xp__player-name:focus-visible {
   color: var(--fm-text-strong);
 }
 
-.standings-bench__callout {
-  margin: 0 0 12px;
-  font-size: 0.82rem;
-  line-height: 1.45;
-  color: var(--fm-text);
-}
-
 .standings-stats-bench-table__bar-fill {
   background: color-mix(in srgb, var(--tclot-logo-purple) 72%, transparent);
 }

@@ -77,16 +77,6 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
     [gameweeks],
   )
 
-  const worst = teamRows[0]
-  const biggestSwing = useMemo(() => {
-    let best = null
-    for (const r of teamRows) {
-      const swing = swingForRow(r)
-      if (!best || swing > swingForRow(best)) best = r
-    }
-    return best && swingForRow(best) > 0 ? best : null
-  }, [teamRows])
-
   const hasData = teamRows.some((r) => (r.weeksPlayed ?? 0) > 0)
 
   return (
@@ -115,28 +105,6 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         </p>
       ) : (
         <>
-          {worst && worst.benchLeft > 0 ? (
-            <p className="standings-bench__callout">
-              Most unused FPL points:{' '}
-              <strong>{worst.teamName}</strong> ({worst.benchLeft} across{' '}
-              {worst.weeksPlayed} GW
-              {worst.weeksPlayed === 1 ? '' : 's'}).
-              {biggestSwing ? (
-                <>
-                  {' '}
-                  Biggest table swing:{' '}
-                  <strong>{biggestSwing.teamName}</strong> (
-                  {formatSwing(swingForRow(biggestSwing))} table pt
-                  {Math.abs(swingForRow(biggestSwing)) === 1 ? '' : 's'}).
-                </>
-              ) : null}
-            </p>
-          ) : (
-            <p className="standings-bench__callout">
-              Nobody left usable FPL points on the bench in finished gameweeks.
-            </p>
-          )}
-
           <div className="table-scroll table-scroll--win-margin">
             <table className="win-margin-table standings-stats-bench-table">
               <thead>
