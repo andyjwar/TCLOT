@@ -598,12 +598,10 @@ body[data-tclot-theme='ceefax'] .gw-fixture-name-cell .team-name--sidebar {
 body[data-tclot-theme='ceefax'] .standings-team-mgr {
   font-size: 20px !important;
 }
-/* Mobile underline subnav (Table / Schedule / Stats) — 13px in App.css. */
-@media (max-width: 720px) {
-  body[data-tclot-theme='ceefax'] .subnav:not(.li-subnav) .subnav__tab {
-    font-size: 22px !important;
-    padding: 14px 16px 13px !important;
-  }
+/* Underline subnav (Table / Schedule / Stats) — 13px in App.css. */
+body[data-tclot-theme='ceefax'] .subnav:not(.li-subnav) .subnav__tab {
+  font-size: 22px !important;
+  padding: 14px 16px 13px !important;
 }
 /* Stats margin / weeks tables use small rem bases — lift explicitly. */
 body[data-tclot-theme='ceefax'] .win-margin-table {
