@@ -1,14 +1,17 @@
-import { useMemo, useState } from 'react'
+import { Fragment, useMemo, useState } from 'react'
 import {
+  BENCH_DETAIL_MIN_PTS,
   fixtureTablePtsLabel,
   fixtureTableSummary,
   fixturesForGw,
   formatSatPlayers,
+  leftoverBenchPlayers,
   nextBenchSort,
   sortBenchPointRows,
 } from './benchPoints.js'
 import { formatSwing, leaguePtsFromRecord } from './bestXi.js'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
 import { SortArrow } from './SortArrow.jsx'
 import { TeamAvatar } from './TeamAvatar'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
@@ -100,6 +103,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
   const gameweeks = report?.gameweeks || []
   const latestGw = gameweeks.length ? gameweeks[gameweeks.length - 1] : null
   const [gwPick, setGwPick] = useState(/** @type {number | null} */ (null))
+  const [expandedId, setExpandedId] = useState(/** @type {number | null} */ (null))
   const gw =
     gwPick != null && gameweeks.includes(gwPick) ? gwPick : latestGw
 
@@ -158,6 +162,9 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         “Actual” shows the current standings: 3 points for a win and 1 for a
         draw. “Best XI” shows how the standings would look if both teams had
         fielded their highest-scoring legal XI in every completed fixture.
+      </p>
+      <p className="standings-stats-hint">
+        Tap a team to see sit-outs of more than {BENCH_DETAIL_MIN_PTS} points.
       </p>
 
       {loading ? (
@@ -226,33 +233,62 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   const swing = swingForRow(row)
                   const fillPct = maxLeft > 0 ? Math.round((left / maxLeft) * 100) : 0
                   const recTitle = `Played ${row.actualRecord || '—'}. If best XIs: ${row.bestRecord || '—'}.`
+                  const leftover = leftoverBenchPlayers(row)
+                  const open = expandedId === row.leagueEntryId
+                  const toggleId = `standings-bench-team-${row.leagueEntryId}`
+                  const panelId = `standings-bench-detail-${row.leagueEntryId}`
+                  const rowClass = [
+                    row.leagueEntryId === worstUnusedId
+                      ? 'standings-stats-bench-table__worst'
+                      : '',
+                    open ? 'standings-stats-bench-table__row--open' : '',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')
                   return (
+                    <Fragment key={row.leagueEntryId}>
                     <tr
-                      key={row.leagueEntryId}
-                      className={
-                        row.leagueEntryId === worstUnusedId
-                          ? 'standings-stats-bench-table__worst'
-                          : undefined
-                      }
+                      className={rowClass || undefined}
                       title={recTitle}
                     >
                       <th scope="row" className="win-margin-table__team">
-                        <span className="win-margin-table__team-inner">
-                          <TeamAvatar
-                            entryId={row.leagueEntryId}
-                            name={row.teamName}
-                            size="sm"
-                            logoMap={teamLogoMap}
-                            kitIndexByEntry={kitIndexByEntry}
+                        <button
+                          type="button"
+                          id={toggleId}
+                          className="standings-stats-bench-table__team-btn"
+                          aria-expanded={open}
+                          aria-controls={panelId}
+                          onClick={() =>
+                            setExpandedId(open ? null : row.leagueEntryId)
+                          }
+                        >
+                          <span
+                            className={
+                              'standings-stats-bench-table__chevron' +
+                              (open
+                                ? ' standings-stats-bench-table__chevron--open'
+                                : '')
+                            }
+                            aria-hidden="true"
                           />
-                          <ClickableTeamName
-                            leagueEntryId={row.leagueEntryId}
-                            className="win-margin-table__name"
-                            title={row.teamName}
-                          >
-                            {isMobileNarrow ? firstWord(row.teamName) : row.teamName}
-                          </ClickableTeamName>
-                        </span>
+                          <span className="win-margin-table__team-inner">
+                            <TeamAvatar
+                              entryId={row.leagueEntryId}
+                              name={row.teamName}
+                              size="sm"
+                              logoMap={teamLogoMap}
+                              kitIndexByEntry={kitIndexByEntry}
+                            />
+                            <span
+                              className="win-margin-table__name"
+                              title={row.teamName}
+                            >
+                              {isMobileNarrow
+                                ? firstWord(row.teamName)
+                                : row.teamName}
+                            </span>
+                          </span>
+                        </button>
                       </th>
                       <td className="tabular win-margin-table__n">
                         <strong>{left}</strong>
@@ -283,6 +319,67 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                         </span>
                       </td>
                     </tr>
+                    {open ? (
+                      <tr className="standings-stats-bench-table__detail">
+                        <td colSpan={6}>
+                          <div
+                            id={panelId}
+                            className="standings-stats-bench-misses"
+                            role="region"
+                            aria-labelledby={toggleId}
+                          >
+                            {leftover.length ? (
+                              <table className="standings-stats-bench-misses__table">
+                                <thead>
+                                  <tr>
+                                    <th scope="col">Player</th>
+                                    <th
+                                      scope="col"
+                                      className="tabular standings-stats-bench-misses__gw"
+                                    >
+                                      GW
+                                    </th>
+                                    <th
+                                      scope="col"
+                                      className="tabular standings-stats-bench-misses__pts"
+                                    >
+                                      Pts
+                                    </th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {leftover.map((p) => (
+                                    <tr key={`${p.id}-${p.gw}`}>
+                                      <td>
+                                        <ClickablePlayerName
+                                          element={p.id}
+                                          displayName={p.name}
+                                          web_name={p.name}
+                                          leagueEntryId={row.leagueEntryId}
+                                        >
+                                          {p.name}
+                                        </ClickablePlayerName>
+                                      </td>
+                                      <td className="tabular standings-stats-bench-misses__gw">
+                                        {p.gw}
+                                      </td>
+                                      <td className="tabular standings-stats-bench-misses__pts">
+                                        <strong>{p.pts}</strong>
+                                      </td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            ) : (
+                              <p className="standings-stats-bench-misses__empty muted">
+                                No sit-outs above {BENCH_DETAIL_MIN_PTS} points.
+                              </p>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    ) : null}
+                    </Fragment>
                   )
                 })}
               </tbody>

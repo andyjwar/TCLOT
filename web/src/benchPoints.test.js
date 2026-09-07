@@ -7,6 +7,7 @@ import {
   fixturesForGw,
   formatBenchMisses,
   formatSatPlayers,
+  leftoverBenchPlayers,
   nextBenchSort,
   sortBenchPointRows,
   tablePtsFromResult,
@@ -109,6 +110,36 @@ test('buildBenchPointsReport totals leftover and flips a fixture', () => {
   assert.equal(fx.actualAwayTablePts, 3)
   assert.equal(fx.bestHomeTablePts, 1)
   assert.equal(fx.bestAwayTablePts, 1)
+})
+
+test('leftoverBenchPlayers lists sit-outs above 2 pts with GW', () => {
+  const rows = leftoverBenchPlayers({
+    weeks: [
+      {
+        gw: 2,
+        leftOnBench: [
+          { id: 1, name: 'Tavernier', pts: 10 },
+          { id: 2, name: 'Thiaw', pts: 3 },
+          { id: 3, name: 'Henderson', pts: 2 },
+          { id: 4, name: 'Blank', pts: 0 },
+        ],
+      },
+      {
+        gw: 1,
+        leftOnBench: [{ id: 5, name: 'Salah', pts: 12 }],
+      },
+    ],
+  })
+  assert.deepEqual(
+    rows.map((r) => ({ name: r.name, gw: r.gw, pts: r.pts })),
+    [
+      { name: 'Salah', gw: 1, pts: 12 },
+      { name: 'Tavernier', gw: 2, pts: 10 },
+      { name: 'Thiaw', gw: 2, pts: 3 },
+    ],
+  )
+  assert.equal(leftoverBenchPlayers({ weeks: [] }).length, 0)
+  assert.equal(leftoverBenchPlayers(null).length, 0)
 })
 
 test('fixturesForGw and formatBenchMisses', () => {

@@ -14748,6 +14748,112 @@ button.live-xp__player-name:focus-visible {
   font-weight: 650;
 }
 
+.standings-stats-bench-table__team-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.standings-stats-bench-table__team-btn:hover .win-margin-table__name {
+  color: var(--fm-text-strong);
+}
+
+.standings-stats-bench-table__team-btn:focus-visible {
+  outline: 2px solid var(--tclot-logo-purple);
+  outline-offset: 2px;
+}
+
+.standings-stats-bench-table__chevron {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-right: 2px solid var(--fm-muted);
+  border-bottom: 2px solid var(--fm-muted);
+  transform: rotate(-45deg);
+  transition: transform 0.15s ease;
+}
+
+.standings-stats-bench-table__chevron--open {
+  transform: rotate(45deg);
+  border-color: var(--tclot-logo-purple);
+}
+
+.standings-stats-bench-table__row--open > th,
+.standings-stats-bench-table__row--open > td {
+  border-bottom-color: transparent;
+}
+
+.standings-stats-bench-table__detail > td {
+  padding: 0 10px 10px;
+  border-bottom: 1px solid var(--fm-border);
+  background: color-mix(in srgb, var(--tclot-logo-purple) 5%, transparent);
+}
+
+.standings-stats-bench-misses {
+  padding: 2px 0 2px 18px;
+}
+
+.standings-stats-bench-misses__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.standings-stats-bench-misses__table th {
+  text-align: left;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fm-muted);
+  padding: 4px 8px 6px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 70%, transparent);
+}
+
+.standings-stats-bench-misses__table td {
+  padding: 6px 8px 6px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--fm-border) 35%, transparent);
+  color: var(--fm-text);
+}
+
+.standings-stats-bench-misses__table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.standings-stats-bench-misses__gw,
+.standings-stats-bench-misses__pts {
+  text-align: right;
+  width: 3.2rem;
+  white-space: nowrap;
+}
+
+.standings-stats-bench-misses__table th.standings-stats-bench-misses__gw,
+.standings-stats-bench-misses__table th.standings-stats-bench-misses__pts {
+  text-align: right;
+}
+
+.standings-stats-bench-misses__pts strong {
+  color: var(--fm-text-strong);
+}
+
+.standings-stats-bench-misses__empty {
+  margin: 4px 0 2px;
+  font-size: 0.78rem;
+}
+
 .standings-bench-gw {
   margin-top: 18px;
   padding-top: 14px;
@@ -15161,6 +15267,18 @@ button.live-xp__player-name:focus-visible {
     min-width: 0;
     width: 2.35rem;
     font-size: 0.68rem;
+  }
+  .standings-stats-bench-table__team-btn {
+    gap: 6px;
+  }
+  .standings-stats-bench-table__detail > td {
+    padding: 0 4px 8px;
+  }
+  .standings-stats-bench-misses {
+    padding-left: 12px;
+  }
+  .standings-stats-bench-misses__table {
+    font-size: 0.72rem;
   }
   .standings-bench-fx__col {
     padding: 7px 6px 6px;
