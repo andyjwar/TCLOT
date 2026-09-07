@@ -1,12 +1,12 @@
 import { TeamAvatar } from './TeamAvatar'
 import { namedFixtureFor, derbyChipLabel } from './leagueLore.js'
 import {
+  glanceFixture,
   glanceTiles,
   matchupChips,
   matchupScanLines,
   polaroidFacts,
   shortTeam,
-  wrapBanner,
 } from './weeklyRecapScan.js'
 import './WeeklyRecapScan.css'
 
@@ -58,19 +58,28 @@ function ChipRow({ chips }) {
   )
 }
 
-function GlanceTiles({ tiles }) {
+function Tile({ tile: t }) {
+  return (
+    <div className={'recap-scan__tile recap-scan__tile--' + t.tone}>
+      <i>{t.label}</i>
+      <b>{t.value}</b>
+      {t.sub ? <em>{t.sub}</em> : null}
+    </div>
+  )
+}
+
+function GlanceTiles({ tiles, compact }) {
   if (!tiles.length) return null
   return (
-    <div className="recap-scan__tiles">
+    <div
+      className={
+        'recap-scan__tiles' +
+        (compact ? ' recap-scan__tiles--fixture' : '') +
+        (tiles.length === 2 ? ' recap-scan__tiles--two' : '')
+      }
+    >
       {tiles.map((t) => (
-        <div
-          key={t.label}
-          className={'recap-scan__tile recap-scan__tile--' + t.tone}
-        >
-          <i>{t.label}</i>
-          <b>{t.value}</b>
-          {t.sub ? <em>{t.sub}</em> : null}
-        </div>
+        <Tile key={t.label} tile={t} />
       ))}
     </div>
   )
@@ -158,9 +167,14 @@ function Scoreline({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
   )
 }
 
-function GlanceCard({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
-  const { bullets, quip } = matchupScanLines(m, { preview })
-  const chips = matchupChips(m, { preview })
+function GlanceCard({
+  matchup: m,
+  preview,
+  teamLogoMap,
+  kitIndexByEntry,
+  fixture,
+}) {
+  const { stats, recap } = fixture || glanceFixture(m, { preview })
   return (
     <section
       className="tile tile--compact recap-scan-card"
@@ -173,15 +187,13 @@ function GlanceCard({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
       />
-      <ChipRow chips={chips} />
-      {bullets.length ? (
-        <ul className="recap-scan__bullets">
-          {bullets.map((b) => (
-            <li key={b}>{b}</li>
-          ))}
-        </ul>
-      ) : null}
-      {quip ? <p className="recap-scan__quip">{quip}</p> : null}
+      <GlanceTiles tiles={stats} compact />
+      <div className="recap-scan__box recap-scan__box--recap">
+        <i>{preview ? 'Preview' : 'Recap'}</i>
+        <p className="recap-scan__quip-copy">
+          {recap.map((s) => (/[.!?]$/.test(s) ? s : `${s}.`)).join(' ')}
+        </p>
+      </div>
     </section>
   )
 }
@@ -217,25 +229,12 @@ export function ScanHeader({
 }) {
   const facts = polaroidFacts({ recapGw, previewGw, preview, decided })
   const tiles = glanceTiles({ recapGw, previewGw, preview, decided })
-  const banner = wrapBanner(preview ? previewGw?.wrap : recapGw?.wrap)
 
   if (layout === 'polaroid' || layout === 'combo') {
-    return (
-      <>
-        <PolaroidStrip facts={facts} />
-        {banner && layout === 'combo' ? (
-          <p className="recap-scan__banner">{banner}</p>
-        ) : null}
-      </>
-    )
+    return <PolaroidStrip facts={facts} />
   }
 
-  return (
-    <>
-      <GlanceTiles tiles={tiles} />
-      {banner ? <p className="recap-scan__banner">{banner}</p> : null}
-    </>
-  )
+  return <GlanceTiles tiles={tiles} />
 }
 
 export function ScanMatchups({
@@ -245,14 +244,30 @@ export function ScanMatchups({
   teamLogoMap,
   kitIndexByEntry,
 }) {
-  const Card = layout === 'polaroid' ? PolaroidCard : GlanceCard
-  return matchups.map((m) => (
-    <Card
-      key={`${m.home.entryId}-${m.away.entryId}`}
-      matchup={m}
-      preview={preview}
-      teamLogoMap={teamLogoMap}
-      kitIndexByEntry={kitIndexByEntry}
-    />
-  ))
+  if (layout === 'polaroid') {
+    return matchups.map((m) => (
+      <PolaroidCard
+        key={`${m.home.entryId}-${m.away.entryId}`}
+        matchup={m}
+        preview={preview}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+    ))
+  }
+  const used = []
+  return matchups.map((m) => {
+    const fixture = glanceFixture(m, { preview, used })
+    used.push(...fixture.recap)
+    return (
+      <GlanceCard
+        key={`${m.home.entryId}-${m.away.entryId}`}
+        matchup={m}
+        preview={preview}
+        fixture={fixture}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+    )
+  })
 }

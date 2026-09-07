@@ -1,12 +1,11 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  glanceFixture,
   glanceTiles,
   matchupChips,
-  matchupScanLines,
-  pickQuip,
+  personalityRecap,
   polaroidFacts,
-  wrapBanner,
 } from './weeklyRecapScan.js'
 
 const recapGw = {
@@ -23,72 +22,149 @@ const recapGw = {
   },
 }
 
-test('pickQuip prefers personality over table copy', () => {
-  assert.equal(
-    pickQuip([
-      'Mordor steamrolled Bilbo 51–24.',
-      'That leaves Mordor 3rd (1-0-0).',
-      'Mottershead is still talking like he invented veganism.',
-    ]),
-    'Mottershead is still talking like he invented veganism',
-  )
-})
+const recapMatch = {
+  gw: 1,
+  home: {
+    entryId: 18279,
+    name: 'Mordor S.F.G',
+    manager: 'Nick Mottershead',
+    points: 51,
+    rank: 3,
+    record: { w: 1, d: 0, l: 0 },
+    players: { top: { name: 'João Pedro', pts: 11 }, flop: { name: 'Roefs', pts: 1, xp: 5.4 } },
+  },
+  away: {
+    entryId: 4259,
+    name: 'Atlético Bilbo',
+    manager: 'Nick Goodacre',
+    points: 24,
+    rank: 8,
+    record: { w: 0, d: 0, l: 1 },
+    players: { top: { name: 'Branthwaite', pts: 6 }, flop: { name: 'Shaw', pts: 1, xp: 5.1 } },
+  },
+  odds: { favoriteSide: 'home', favoritePct: 74, outcome: 'hit' },
+  margin: 27,
+}
 
-test('glanceTiles recap is six scan cards', () => {
+test('glanceTiles header is GW scorer, best waiver, dud', () => {
   const tiles = glanceTiles({ recapGw, preview: false, decided: 4 })
-  assert.equal(tiles.length, 6)
+  assert.deepEqual(
+    tiles.map((t) => t.label),
+    ['GW scorer', 'Best waiver', 'Dud'],
+  )
   assert.equal(tiles[0].value, '55')
-  assert.equal(tiles[1].value, '23%')
-  assert.equal(tiles[2].value, '3/4')
-  assert.match(tiles[5].sub, /pick 8/)
+  assert.equal(tiles[1].value, '8')
+  assert.equal(tiles[2].value, '0')
+  assert.ok(!tiles.some((t) => t.label === 'Model' || t.label === 'Upset'))
 })
 
-test('polaroidFacts keeps a swipeable handful', () => {
-  const facts = polaroidFacts({ recapGw, preview: false, decided: 4 })
-  assert.ok(facts.length >= 4 && facts.length <= 5)
-  assert.ok(facts[0].caption)
-})
-
-test('matchupScanLines recap: odds + star + quip, no paragraph', () => {
-  const out = matchupScanLines({
-    home: {
-      name: 'Mordor S.F.G',
-      rank: 3,
-      record: { w: 1, d: 0, l: 0 },
-      players: { top: { name: 'João Pedro', pts: 11 } },
+test('preview header derives GW scorer when baked topScorer is null', () => {
+  const tiles = glanceTiles({
+    preview: true,
+    previewGw: {
+      superlatives: {
+        topScorer: null,
+        bestWaiver: { name: 'Schade', xp: 4.2 },
+        dud: { name: 'Isak', xp: 1.2, overallPick: 3 },
+      },
+      matchups: [
+        {
+          home: { keys: [{ name: 'Verbruggen', xp: 3.9 }] },
+          away: { keys: [{ name: 'Donnarumma', xp: 4.9 }] },
+        },
+        {
+          home: { keys: [{ name: 'Salah', xp: 6.1 }] },
+          away: { keys: [{ name: 'Haaland', xp: 5.5 }] },
+        },
+      ],
     },
-    away: {
-      name: 'Atlético Bilbo',
-      rank: 8,
-      record: { w: 0, d: 0, l: 1 },
-      players: { flop: { name: 'Shaw', pts: 1, xp: 5.1 } },
-    },
-    odds: { favoriteSide: 'home', favoritePct: 74, outcome: 'hit' },
-    sentences: [
-      'Mordor S.F.G steamrolled Atlético Bilbo 51–24 — the kind of scoreline that gets screenshotted.',
-      'As expected: the model gave Mordor S.F.G 74% pre-match, and that\'s how it went.',
-      'That leaves Mordor S.F.G 3rd (1-0-0); Atlético Bilbo are 8th at 0-0-1.',
-      'Plant-based and extremely sure: Mottershead is still talking like he invented veganism.',
-    ],
   })
-  assert.ok(out.bullets.length >= 2 && out.bullets.length <= 3)
-  assert.match(out.bullets[0], /74%/)
-  assert.match(out.quip, /veganism/)
-  assert.ok(!out.bullets.join(' ').includes('That leaves'))
+  assert.deepEqual(
+    tiles.map((t) => t.label),
+    ['GW scorer', 'Best waiver', 'Dud'],
+  )
+  assert.equal(tiles[0].value, '6.1')
+  assert.equal(tiles[0].sub, 'Salah')
 })
 
-test('matchupScanLines preview uses book + watch', () => {
-  const out = matchupScanLines(
+test('polaroidFacts follows the slim header', () => {
+  const facts = polaroidFacts({ recapGw, preview: false, decided: 4 })
+  assert.equal(facts.length, 3)
+})
+
+test('personalityRecap is two lines and never the stale take', () => {
+  const a = personalityRecap(recapMatch)
+  const b = personalityRecap(recapMatch)
+  assert.equal(a.length, 2)
+  assert.deepEqual(a, b)
+  assert.doesNotMatch(a.join(' '), /will have a take/i)
+})
+
+test('personality lines rotate when a joke is already used', () => {
+  const first = personalityRecap({
+    gw: 1,
+    home: { entryId: 1, name: 'Toronto Gimli', manager: 'Jon Ward' },
+    away: { entryId: 2, name: 'Hackney Rohirrim', manager: 'Mike Sutton' },
+  })
+  const second = personalityRecap(
     {
-      home: { keys: [{ name: 'Roefs', xp: 5.4 }] },
-      away: { keys: [{ name: 'Shaw', xp: 5.1 }] },
-      bookie: { home: '4/11', draw: '33/1', away: '3/1' },
-      sentences: ['The hinge is Saka against Gabriel.'],
+      gw: 1,
+      home: { entryId: 1, name: 'Toronto Gimli', manager: 'Jon Ward' },
+      away: { entryId: 3, name: 'Seoul Shire', manager: 'Luke Butcher' },
+    },
+    false,
+    first,
+  )
+  const jonFirst = first.find((s) => /Jon|Brother Ward/i.test(s))
+  const jonSecond = second.find((s) => /Jon|Brother Ward/i.test(s))
+  assert.ok(jonFirst)
+  assert.ok(jonSecond)
+  assert.notEqual(jonFirst, jonSecond)
+  assert.doesNotMatch([...first, ...second].join(' '), /will have a take/i)
+})
+
+test('recap fixture: model who, top scorer, dud', () => {
+  const out = glanceFixture(recapMatch)
+  assert.deepEqual(
+    out.stats.map((t) => t.label),
+    ['Model', 'Top scorer', 'Dud'],
+  )
+  assert.equal(out.stats[0].value, 'Right')
+  assert.match(out.stats[0].sub, /Mordor|MSFG/)
+  assert.equal(out.stats[1].value, '11')
+  assert.equal(out.stats[2].label, 'Dud')
+  assert.equal(out.recap.length, 2)
+})
+
+test('preview fixture is book odds plus highest predicted scorer', () => {
+  const out = glanceFixture(
+    {
+      gw: 1,
+      home: {
+        entryId: 1,
+        name: 'Toronto Gimli',
+        manager: 'Jon Ward',
+        keys: [{ name: 'Verbruggen', xp: 3.9 }],
+      },
+      away: {
+        entryId: 2,
+        name: 'Hackney Rohirrim',
+        manager: 'Mike Sutton',
+        keys: [{ name: 'Donnarumma', xp: 4.9 }],
+      },
+      odds: { favoriteSide: 'home', favoritePct: 67 },
+      bookie: { home: '1/2', draw: '25/1', away: '5/2' },
     },
     { preview: true },
   )
-  assert.match(out.bullets[0], /4\/11/)
-  assert.match(out.bullets.join(' '), /Roefs/)
+  assert.deepEqual(
+    out.stats.map((t) => t.label),
+    ['Book', 'Top scorer'],
+  )
+  assert.equal(out.stats[0].value, '1/2 · 25/1 · 5/2')
+  assert.equal(out.stats[1].value, '4.9')
+  assert.equal(out.stats[1].sub, 'Donnarumma')
+  assert.equal(out.recap.length, 2)
 })
 
 test('matchupChips flags upset and derby', () => {
@@ -100,12 +176,5 @@ test('matchupChips flags upset and derby', () => {
   assert.deepEqual(
     chips.map((c) => c.label),
     ['Battle of Warderloo', 'Upset', 'Week high'],
-  )
-})
-
-test('wrapBanner is a single statement', () => {
-  assert.equal(
-    wrapBanner(['This week features the Battle of Warderloo.']),
-    'This week features the Battle of Warderloo',
   )
 })
