@@ -151,6 +151,11 @@ export function WeeklyRecap({
     onMenuLabelChange?.(menuLabel)
   }, [menuLabel, onMenuLabelChange])
 
+  const site = useMemo(
+    () => indexRecapSite({ ...(siteRaw || {}), matches }),
+    [siteRaw, matches],
+  )
+
   if (failed) {
     return (
       <section className="tile tile--compact" aria-label="Weekly recap">
@@ -188,10 +193,6 @@ export function WeeklyRecap({
   const heading = showingPreview ? `GW${active.gw} preview` : `GW${active.gw} recap`
   const decided = recapGw ? recapGw.model.hits + recapGw.model.misses : 0
   const priorGws = (data?.gameweeks || []).filter((g) => Number(g.gw) < Number(active.gw))
-  const site = useMemo(
-    () => indexRecapSite({ ...(siteRaw || {}), matches }),
-    [siteRaw, matches],
-  )
 
   return (
     <>
