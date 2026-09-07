@@ -1,6 +1,7 @@
 import { TeamAvatar } from './TeamAvatar'
 import { namedFixtureFor, derbyChipLabel } from './leagueLore.js'
 import {
+  glanceFixture,
   glanceTiles,
   matchupChips,
   matchupScanLines,
@@ -58,19 +59,26 @@ function ChipRow({ chips }) {
   )
 }
 
-function GlanceTiles({ tiles }) {
+function Tile({ tile: t }) {
+  return (
+    <div className={'recap-scan__tile recap-scan__tile--' + t.tone}>
+      <i>{t.label}</i>
+      <b>{t.value}</b>
+      {t.sub ? <em>{t.sub}</em> : null}
+    </div>
+  )
+}
+
+function GlanceTiles({ tiles, compact }) {
   if (!tiles.length) return null
   return (
-    <div className="recap-scan__tiles">
+    <div
+      className={
+        'recap-scan__tiles' + (compact ? ' recap-scan__tiles--fixture' : '')
+      }
+    >
       {tiles.map((t) => (
-        <div
-          key={t.label}
-          className={'recap-scan__tile recap-scan__tile--' + t.tone}
-        >
-          <i>{t.label}</i>
-          <b>{t.value}</b>
-          {t.sub ? <em>{t.sub}</em> : null}
-        </div>
+        <Tile key={t.label} tile={t} />
       ))}
     </div>
   )
@@ -159,8 +167,7 @@ function Scoreline({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
 }
 
 function GlanceCard({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
-  const { bullets, quip } = matchupScanLines(m, { preview })
-  const chips = matchupChips(m, { preview })
+  const { stats, bullets, recap } = glanceFixture(m, { preview })
   return (
     <section
       className="tile tile--compact recap-scan-card"
@@ -173,15 +180,28 @@ function GlanceCard({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
       />
-      <ChipRow chips={chips} />
-      {bullets.length ? (
-        <ul className="recap-scan__bullets">
-          {bullets.map((b) => (
-            <li key={b}>{b}</li>
-          ))}
-        </ul>
-      ) : null}
-      {quip ? <p className="recap-scan__quip">{quip}</p> : null}
+      <div className="recap-scan__boxes">
+        {stats.length ? (
+          <div className="recap-scan__box recap-scan__box--stats">
+            <i>Key</i>
+            <GlanceTiles tiles={stats} compact />
+          </div>
+        ) : null}
+        {bullets.length ? (
+          <div className="recap-scan__box">
+            <i>Notes</i>
+            <ul className="recap-scan__bullets">
+              {bullets.map((b) => (
+                <li key={b}>{b}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
+        <div className="recap-scan__box recap-scan__box--recap">
+          <i>{preview ? 'Preview' : 'Recap'}</i>
+          <p className="recap-scan__quip-copy">{recap.join(' ')}</p>
+        </div>
+      </div>
     </section>
   )
 }
