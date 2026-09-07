@@ -262,15 +262,6 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                             setExpandedId(open ? null : row.leagueEntryId)
                           }
                         >
-                          <span
-                            className={
-                              'standings-stats-bench-table__chevron' +
-                              (open
-                                ? ' standings-stats-bench-table__chevron--open'
-                                : '')
-                            }
-                            aria-hidden="true"
-                          />
                           <span className="win-margin-table__team-inner">
                             <TeamAvatar
                               entryId={row.leagueEntryId}
