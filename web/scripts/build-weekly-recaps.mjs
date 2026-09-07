@@ -33,6 +33,7 @@ import {
   findArchivedH2hRow,
   archivedXi,
   sidePlayerFacts,
+  reconcileTeamPoints,
   h2hSeriesAsOf,
   ranksAsOf,
   bankedTable,
@@ -64,7 +65,7 @@ import {
 import { gwDeadlineHasPassed } from '../src/weeklyRecapView.js'
 import {
   finishedEventIdsFromEvents,
-  normalizeMatchesFinished,
+  applyLeagueResults,
 } from '../src/h2hEffectiveFinished.js'
 import { decimalOddsToFraction, probToFractionalOdds } from '../src/oddsFormat.js'
 import {
@@ -104,8 +105,8 @@ try {
 } catch {
   bootstrapDraft = null
 }
-const matches = normalizeMatchesFinished(
-  details.matches ?? [],
+const { matches } = applyLeagueResults(
+  details,
   fixtures,
   finishedEventIdsFromEvents(bootstrapDraft),
 )
@@ -283,8 +284,12 @@ for (let gw = 1; gw <= lastFinishedGw; gw++) {
     const home = teamOut(facts.teams.get(row.home), gw)
     const away = teamOut(facts.teams.get(row.away), gw)
     const archRow = findArchivedH2hRow(history, row.home, row.away)
-    home.players = sidePlayerFacts(archivedXi(archRow, row.home))
-    away.players = sidePlayerFacts(archivedXi(archRow, row.away))
+    const homeXi = archivedXi(archRow, row.home)
+    const awayXi = archivedXi(archRow, row.away)
+    home.players = sidePlayerFacts(homeXi)
+    away.players = sidePlayerFacts(awayXi)
+    home.points = reconcileTeamPoints(home.points, { players: home.players, xi: homeXi })
+    away.points = reconcileTeamPoints(away.points, { players: away.players, xi: awayXi })
     home.pickup = sidePickupFacts(home, gw)
     away.pickup = sidePickupFacts(away, gw)
     const series = h2hSeriesAsOf(matches, row.home, row.away, gw)

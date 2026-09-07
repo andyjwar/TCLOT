@@ -11,9 +11,11 @@
  * These helpers bridge that gap. A gameweek's H2H matches are treated as
  * effectively final as soon as all of that GW's Premier League fixtures are
  * complete — `finished` OR `finished_provisional` in the classic `fixtures.json`.
- * At that point every match already carries provisional points (bonus included)
- * in `details.json`, so results and standings can be derived immediately and are
- * re-derived from the confirmed points once FPL sets `finished` for real.
+ * At that point FPL often still has **Saturday leftover** `league_entry_*_points`
+ * (e.g. Seoul Shire 9 while Mitchell already has 15). Official
+ * `standings.points_for` on the draft site updates sooner. If we derive the
+ * table from those leftovers we overwrite the website FOR and freeze a wrong
+ * recap scoreline. Always lift match points to official FOR before deriving.
  */
 
 /**
@@ -179,14 +181,187 @@ export function deriveStandingsFromFinishedMatches(leagueEntries, matches) {
       points_against: s.pa,
     };
   });
-  rows.sort(
-    (a, b) =>
-      b.total - a.total ||
-      b.points_for - a.points_for ||
-      a.points_against - b.points_against,
-  );
+  rows.sort(compareStandingsRows);
   rows.forEach((r, i) => {
     r.rank = i + 1;
   });
   return rows;
+}
+
+/** Official FPL Draft H2H order: league PTS, then FOR, then fewer against.
+ * Waiver count / `waiver_pick` is not a tie-break. */
+export function compareStandingsRows(a, b) {
+  return (
+    (Number(b.total) || 0) - (Number(a.total) || 0) ||
+    (Number(b.points_for) || 0) - (Number(a.points_for) || 0) ||
+    (Number(a.points_against) || 0) - (Number(b.points_against) || 0)
+  );
+}
+
+export function pointsForFromFinishedMatches(matches) {
+  const pf = new Map();
+  for (const m of matches || []) {
+    if (!m?.finished) continue;
+    const id1 = Number(m.league_entry_1);
+    const id2 = Number(m.league_entry_2);
+    pf.set(id1, (pf.get(id1) || 0) + (Number(m.league_entry_1_points) || 0));
+    pf.set(id2, (pf.get(id2) || 0) + (Number(m.league_entry_2_points) || 0));
+  }
+  return pf;
+}
+
+export function latestFinishedEvent(matches) {
+  let latest = 0;
+  for (const m of matches || []) {
+    if (m?.finished) latest = Math.max(latest, Number(m.event) || 0);
+  }
+  return latest;
+}
+
+/**
+ * When official `standings.points_for` is ahead of summed H2H leftovers,
+ * add the missing points onto the latest finished GW so FOR, recap, form,
+ * and PA stay in lockstep with the draft website.
+ *
+ * @param {object[]} matches
+ * @param {object[] | null | undefined} officialStandings
+ * @returns {object[]}
+ */
+export function reconcileMatchPointsFromStandings(matches, officialStandings) {
+  const list = Array.isArray(matches) ? matches : [];
+  if (!list.length || !Array.isArray(officialStandings) || officialStandings.length === 0) {
+    return list;
+  }
+  const derivedPf = pointsForFromFinishedMatches(list);
+  const delta = new Map();
+  for (const s of officialStandings) {
+    const id = Number(s.league_entry);
+    if (!Number.isFinite(id)) continue;
+    const extra = (Number(s.points_for) || 0) - (derivedPf.get(id) || 0);
+    if (extra > 0) delta.set(id, extra);
+  }
+  if (delta.size === 0) return list;
+  const latest = latestFinishedEvent(list);
+  if (!latest) return list;
+
+  let changed = false;
+  const out = list.map((m) => {
+    if (!m?.finished || Number(m.event) !== latest) return m;
+    const d1 = delta.get(Number(m.league_entry_1)) || 0;
+    const d2 = delta.get(Number(m.league_entry_2)) || 0;
+    if (!d1 && !d2) return m;
+    changed = true;
+    return {
+      ...m,
+      league_entry_1_points: (Number(m.league_entry_1_points) || 0) + d1,
+      league_entry_2_points: (Number(m.league_entry_2_points) || 0) + d2,
+    };
+  });
+  return changed ? out : list;
+}
+
+/**
+ * Per-match max() of static ingest vs a live `league/{id}/details` fetch so a
+ * stale Vercel bake cannot keep Saturday leftovers on screen.
+ */
+export function overlayFresherMatchPoints(baseMatches, liveMatches) {
+  const base = Array.isArray(baseMatches) ? baseMatches : [];
+  if (!Array.isArray(liveMatches) || liveMatches.length === 0) return base;
+  const liveByPair = new Map();
+  for (const m of liveMatches) {
+    const ev = Number(m?.event);
+    const a = Number(m?.league_entry_1);
+    const b = Number(m?.league_entry_2);
+    if (!Number.isFinite(ev) || !Number.isFinite(a) || !Number.isFinite(b)) continue;
+    const key = `${ev}:${a < b ? `${a}-${b}` : `${b}-${a}`}`;
+    liveByPair.set(key, m);
+  }
+  let changed = false;
+  const out = base.map((m) => {
+    const ev = Number(m?.event);
+    const a = Number(m?.league_entry_1);
+    const b = Number(m?.league_entry_2);
+    const live = liveByPair.get(`${ev}:${a < b ? `${a}-${b}` : `${b}-${a}`}`);
+    if (!live) return m;
+    const same = Number(live.league_entry_1) === a;
+    const liveP1 = Number(same ? live.league_entry_1_points : live.league_entry_2_points);
+    const liveP2 = Number(same ? live.league_entry_2_points : live.league_entry_1_points);
+    const baseP1 = Number(m.league_entry_1_points) || 0;
+    const baseP2 = Number(m.league_entry_2_points) || 0;
+    const p1 = Number.isFinite(liveP1) ? Math.max(baseP1, liveP1) : baseP1;
+    const p2 = Number.isFinite(liveP2) ? Math.max(baseP2, liveP2) : baseP2;
+    const finished = m.finished === true || live.finished === true;
+    const started = m.started === true || live.started === true;
+    if (
+      p1 === baseP1 &&
+      p2 === baseP2 &&
+      finished === Boolean(m.finished) &&
+      started === Boolean(m.started)
+    ) {
+      return m;
+    }
+    changed = true;
+    return {
+      ...m,
+      league_entry_1_points: p1,
+      league_entry_2_points: p2,
+      finished,
+      started,
+    };
+  });
+  return changed ? out : base;
+}
+
+/** Per team, keep the snapshot with the higher FOR (website-fresh). */
+export function mergeStandingsPreferringHigherFor(a, b) {
+  const mapA = new Map((Array.isArray(a) ? a : []).map((s) => [Number(s.league_entry), s]));
+  const mapB = new Map((Array.isArray(b) ? b : []).map((s) => [Number(s.league_entry), s]));
+  const ids = new Set([...mapA.keys(), ...mapB.keys()]);
+  const rows = [];
+  for (const id of ids) {
+    if (!Number.isFinite(id)) continue;
+    const sa = mapA.get(id);
+    const sb = mapB.get(id);
+    if (!sa) {
+      rows.push({ ...sb });
+      continue;
+    }
+    if (!sb) {
+      rows.push({ ...sa });
+      continue;
+    }
+    const pfa = Number(sa.points_for) || 0;
+    const pfb = Number(sb.points_for) || 0;
+    const fresher = pfb > pfa ? sb : sa;
+    rows.push({
+      ...fresher,
+      points_for: Math.max(pfa, pfb),
+      points_against: Math.max(Number(sa.points_against) || 0, Number(sb.points_against) || 0),
+    });
+  }
+  rows.sort(compareStandingsRows);
+  rows.forEach((r, i) => {
+    r.rank = i + 1;
+  });
+  return rows;
+}
+
+/**
+ * One pipeline: overlay live details → promote finished → lift leftover
+ * scores to official FOR → derive the table.
+ */
+export function applyLeagueResults(details, fixtures, extraFinishedGws, liveDetails) {
+  const baseMatches = overlayFresherMatchPoints(details?.matches, liveDetails?.matches);
+  const official = mergeStandingsPreferringHigherFor(
+    details?.standings,
+    liveDetails?.standings,
+  );
+  const matches = reconcileMatchPointsFromStandings(
+    normalizeMatchesFinished(baseMatches, fixtures, extraFinishedGws),
+    official,
+  );
+  const derived = deriveStandingsFromFinishedMatches(details?.league_entries, matches);
+  const standings =
+    derived.length > 0 ? mergeStandingsPreferringHigherFor(derived, official) : official;
+  return { matches, standings };
 }

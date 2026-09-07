@@ -3,8 +3,7 @@ import { existsSync, mkdirSync, readdirSync, copyFileSync, readFileSync, writeFi
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import {
-  normalizeMatchesFinished,
-  deriveStandingsFromFinishedMatches,
+  applyLeagueResults,
   finishedEventIdsFromEvents,
 } from '../src/h2hEffectiveFinished.js';
 
@@ -90,39 +89,26 @@ function promoteFinishedMatches() {
       ? JSON.parse(readFileSync(fixturesPath, 'utf8'))
       : [];
     const finishedEvents = readFinishedEventIds();
-    const before = (details.matches || []).filter((m) => m?.finished === true).length;
-    const matches = normalizeMatchesFinished(
-      details.matches || [],
-      fixtures,
-      finishedEvents,
-    );
-    const after = matches.filter((m) => m?.finished === true).length;
-    let changed = after !== before;
-    if (changed) {
-      details.matches = matches;
+    const before = JSON.stringify({
+      matches: details.matches,
+      standings: details.standings,
+    });
+    const applied = applyLeagueResults(details, fixtures, finishedEvents);
+    const after = applied.matches.filter((m) => m?.finished === true).length;
+    details.matches = applied.matches;
+    if (applied.standings?.length) {
+      details.standings = applied.standings;
     }
-    // FPL's standings array often stays all-zero until "data checked". Once we
-    // have finished H2H rows, rewrite standings so schedule / raw consumers see
-    // real W-L-T without waiting on the client-side derive.
-    if (after > 0) {
-      const derived = deriveStandingsFromFinishedMatches(
-        details.league_entries || [],
-        matches,
-      );
-      if (derived.length) {
-        details.standings = derived;
-        changed = true;
-      }
-    }
+    const changed = JSON.stringify({
+      matches: details.matches,
+      standings: details.standings,
+    }) !== before;
     if (!changed) return;
     writeFileSync(detailsPath, JSON.stringify(details, null, 2));
-    if (after !== before) {
-      console.log(
-        `Promoted ${after - before} H2H match(es) to finished (PL football complete; FPL finished flag still lagging).`,
-      );
-    }
     if (after > 0) {
-      console.log(`Rewrote standings from ${after} finished H2H match(es).`);
+      console.log(
+        `Rewrote H2H results / standings from ${after} finished match(es) (official FOR wins over leftover scores).`,
+      );
     }
   } catch (e) {
     console.warn('promoteFinishedMatches skip:', e.message);

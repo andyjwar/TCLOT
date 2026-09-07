@@ -576,3 +576,44 @@ export function sidePlayerFacts(xi) {
       : null,
   }
 }
+
+/** Sum of archived XI `pts`. Null when there is no XI to sum. */
+export function sumArchivedXiPoints(xi) {
+  if (!Array.isArray(xi) || xi.length === 0) return null
+  return xi.reduce((s, p) => s + (Number(p.pts) || 0), 0)
+}
+
+/**
+ * Recover the XI total from `sidePlayerFacts` when the archive itself is not
+ * on hand: `top.pts / share`. Null when share is missing or zero.
+ */
+export function impliedXiPoints(players) {
+  const top = Number(players?.top?.pts)
+  const share = Number(players?.share)
+  if (!Number.isFinite(top) || top < 0) return null
+  if (!Number.isFinite(share) || share <= 0) return null
+  return Math.round(top / share)
+}
+
+/**
+ * Team GW total for a recap card. Official H2H points can lag the live XI
+ * (FPL Draft leaves `league_entry_*_points` on Saturday leftovers while
+ * player rows already have the finished haul). Never let the team total sit
+ * below the XI sum, the implied XI from `top/share`, or the side's top scorer.
+ *
+ * @param {number | null | undefined} official
+ * @param {{ players?: { top?: { pts?: number }, share?: number } | null, xi?: object[] | null }} [src]
+ */
+export function reconcileTeamPoints(official, { players = null, xi = null } = {}) {
+  const officialN = Number(official)
+  const officialPts = Number.isFinite(officialN) ? officialN : 0
+  const xiSum = sumArchivedXiPoints(xi)
+  const implied = impliedXiPoints(players)
+  const topPts = Number(players?.top?.pts)
+  return Math.max(
+    officialPts,
+    xiSum ?? 0,
+    implied ?? 0,
+    Number.isFinite(topPts) ? topPts : 0,
+  )
+}

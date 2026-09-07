@@ -51,6 +51,7 @@ function cacheTtlSeconds(path, upstreamBase) {
   if (path.includes('/live')) return 45;
   if (path.startsWith('fixtures')) return 180;
   if (path.includes('/entry/') && path.includes('/event/')) return 45;
+  if (path.startsWith('league/') && path.includes('/details')) return 45;
   return 0;
 }
 
