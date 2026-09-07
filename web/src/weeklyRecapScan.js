@@ -139,7 +139,12 @@ export function glanceTiles({ recapGw, previewGw, preview, decided }) {
   if (preview) {
     const s = previewGw?.superlatives || {}
     const tiles = [
-      tile('Favourite', s.favourite ? `${s.favourite.pct}%` : null, shortTeam(s.favourite?.name)),
+      tile(
+        'Favourite',
+        s.favourite ? `${s.favourite.pct}%` : null,
+        shortTeam(s.favourite?.name),
+        'win',
+      ),
       tile(
         'Toss-up',
         s.closest ? `${s.closest.favoritePct}%` : null,
@@ -163,6 +168,7 @@ export function glanceTiles({ recapGw, previewGw, preview, decided }) {
         s.dud
           ? `${s.dud.name}${s.dud.overallPick ? ` · pick ${s.dud.overallPick}` : ''}`
           : '',
+        'loss',
       ),
     ]
     const derbies = (previewGw?.matchups || []).filter((m) => m.derby)

@@ -125,9 +125,15 @@ function Scoreline({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
       </span>
       {preview ? (
         <span className="recap-scan__odds" aria-label="Win odds">
-          <b className={homeOn ? 'on' : ''}>{m.odds?.home ?? '–'}</b>
+          <b className={homeOn ? 'on' : ''}>
+            {m.odds?.home ?? '–'}
+            <small>%</small>
+          </b>
           <i>{m.odds?.draw ?? '–'}</i>
-          <b className={awayOn ? 'on' : ''}>{m.odds?.away ?? '–'}</b>
+          <b className={awayOn ? 'on' : ''}>
+            {m.odds?.away ?? '–'}
+            <small>%</small>
+          </b>
         </span>
       ) : (
         <span className="recap-scan__score tabular">

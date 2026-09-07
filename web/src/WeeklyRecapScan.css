@@ -203,6 +203,11 @@
   font-size: 20px;
   color: var(--text, var(--fm-text-strong, #e8ecf4));
 }
+.recap-scan__odds small {
+  font-size: 0.55em;
+  font-weight: 700;
+  margin-left: 1px;
+}
 .recap-scan__odds i {
   font-style: normal;
   font-size: 11px;
