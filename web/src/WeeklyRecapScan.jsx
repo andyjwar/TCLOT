@@ -199,7 +199,9 @@ function GlanceCard({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
         ) : null}
         <div className="recap-scan__box recap-scan__box--recap">
           <i>{preview ? 'Preview' : 'Recap'}</i>
-          <p className="recap-scan__quip-copy">{recap.join(' ')}</p>
+          <p className="recap-scan__quip-copy">
+            {recap.map((s) => (/[.!?]$/.test(s) ? s : `${s}.`)).join(' ')}
+          </p>
         </div>
       </div>
     </section>
