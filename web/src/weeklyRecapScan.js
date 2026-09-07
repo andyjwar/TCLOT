@@ -541,18 +541,23 @@ function titleSwingLine(side) {
 function tableLine(side) {
   const rec = recFmt(side)
   const rank = Number(side?.rank)
-  if (!rec && !Number.isFinite(rank)) return null
-  if (Number.isFinite(rank) && rec) {
+  const played =
+    (Number(side?.record?.w) || 0) +
+    (Number(side?.record?.d) || 0) +
+    (Number(side?.record?.l) || 0)
+  if (played < 1) return null
+  if (Number.isFinite(rank) && rank >= 1 && rec) {
     return `${who(side)} is ${ordinal(rank)} at ${rec}`
   }
   if (rec) return `${who(side)} sits ${rec}`
-  return `${who(side)} is ${ordinal(rank)}`
+  if (Number.isFinite(rank) && rank >= 1) return `${who(side)} is ${ordinal(rank)}`
+  return null
 }
 
 function rankMoveLine(side) {
   const rank = Number(side?.rank)
   const prev = Number(side?.prevRank)
-  if (!Number.isFinite(rank) || !Number.isFinite(prev) || rank === prev) return null
+  if (!Number.isFinite(rank) || rank < 1 || !Number.isFinite(prev) || prev < 1 || rank === prev) return null
   if (rank < prev) {
     return `${who(side)} climbed from ${ordinal(prev)} to ${ordinal(rank)}`
   }

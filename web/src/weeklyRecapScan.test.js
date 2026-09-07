@@ -456,6 +456,33 @@ test('themeSupport stays on a haul and quotes share, projection and prior week',
   assert.match(blob, /22%|38\.4|up from 4|Tavernier/)
 })
 
+test('preview waiver brief skips a 0-0-0 table line', () => {
+  const side = {
+    entryId: 10173,
+    name: 'Hackney Rohirrim',
+    manager: 'Mike Mottershead',
+    record: { w: 0, d: 0, l: 0 },
+    rank: 0,
+  }
+  const lines = themeSupport(
+    {
+      gw: 1,
+      home: side,
+      away: { name: 'Seoul Shire', entryId: 44904 },
+      predicted: { home: 45.6, away: 35.5 },
+    },
+    {
+      kind: 'waiver',
+      text: 'Mike claimed Dorgu on the waiver',
+      stem: 'claimed',
+      about: { side, pickup: { name: 'Dorgu' } },
+    },
+    { preview: true, key: 'waiver-empty' },
+  )
+  assert.doesNotMatch(lines.join(' '), /0th|0-0-0/)
+  assert.match(lines.join(' '), /45\.6/)
+})
+
 test('streak brief uses table and title-model numbers from the site', () => {
   const side = {
     entryId: 6849,
