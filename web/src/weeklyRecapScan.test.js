@@ -244,6 +244,8 @@ test('personalityRecap is vegan for Mottershead and not a two-manager checklist'
   assert.match(a.join(' '), /vegan|oat milk|tofu|plant-based/i)
   assert.doesNotMatch(a.join(' '), /will have a take/i)
   assert.ok(a.kinds.includes('vegan'))
+  assert.match(a.join(' '), /Mordor|SFG/i)
+  assert.match(a.join(' '), /Bilbo|Atlético/i)
 })
 
 test('fixture stories cover waiver, projected, scorer, dud, streak and bad record', () => {
@@ -426,6 +428,17 @@ test('four recap cards do not reuse a stem or joke line', () => {
   const boxes = accumulate(matchups, false)
   const stems = boxes.flatMap((b) => b.stems.filter((s) => s !== 'vegan'))
   assert.equal(new Set(stems).size, stems.length)
+  const pairRe = [
+    [/Mordor|SFG/i, /Bilbo|Atlético/i],
+    [/Seoul|Shire/i, /Hackney|Rohirrim/i],
+    [/Brampton|Balrogs/i, /Rokesly|Regorasu/i],
+    [/Toronto|Gimli/i, /Suffolk|Sméagol/i],
+  ]
+  boxes.forEach((b, i) => {
+    const blob = b.recap.join(' ')
+    assert.match(blob, pairRe[i][0], `card ${i} missing home`)
+    assert.match(blob, pairRe[i][1], `card ${i} missing away`)
+  })
   const lines = boxes.flatMap((b) => b.recap.map((s) => s.toLowerCase()))
   assert.equal(new Set(lines).size, lines.length)
   const newsKinds = boxes.map((b) => b.kinds.find((k) => k !== 'vegan' && k !== 'joke'))
@@ -513,6 +526,65 @@ test('a joke line used on the first card does not return on the second', () => {
     assert.ok(!second.recap.some((s) => s.toLowerCase() === line.toLowerCase()))
   }
   assert.equal(recapStem('The projected stack for Seoul runs through Saka (6.1)'), 'projected-stack')
+})
+
+test('recap waiver theme still names the other team', () => {
+  const lines = personalityRecap({
+    gw: 3,
+    home: {
+      entryId: 1,
+      name: 'Toronto Gimli',
+      manager: 'Jon Ward',
+      points: 38,
+      players: { top: { name: 'Saka', pts: 8 } },
+    },
+    away: {
+      entryId: 2,
+      name: 'Hackney Rohirrim',
+      manager: 'Mike Sutton',
+      points: 50,
+      pickup: { name: 'King', pts: 10, xp: 4.1, kind: 'w' },
+      players: { top: { name: 'King', pts: 10 } },
+      record: { w: 1, d: 0, l: 2 },
+      rank: 8,
+    },
+    odds: { favoriteSide: 'home', favoritePct: 61, outcome: 'miss' },
+    predicted: { home: 41.2, away: 26.1 },
+    winner: 2,
+    margin: 12,
+  })
+  const blob = lines.join(' ')
+  assert.match(blob, /Gimli|Toronto/i)
+  assert.match(blob, /Hackney|Rohirrim/i)
+})
+
+test('recap streak theme still names the other team', () => {
+  const lines = personalityRecap({
+    gw: 3,
+    home: {
+      entryId: 8,
+      name: 'Suffolk Sméagol',
+      manager: 'Andy Ward',
+      points: 34,
+      players: { top: { name: 'Haaland', pts: 7 } },
+    },
+    away: {
+      entryId: 6,
+      name: 'Rokesly Regorasu',
+      manager: 'David Higman',
+      points: 47,
+      streak: { type: 'W', len: 3 },
+      record: { w: 3, d: 0, l: 0 },
+      rank: 1,
+      players: { top: { name: 'Gakpo', pts: 11 } },
+    },
+    odds: { favoriteSide: 'away', favoritePct: 70, outcome: 'hit' },
+    winner: 6,
+    margin: 13,
+  })
+  const blob = lines.join(' ')
+  assert.match(blob, /Suffolk|Sméagol/i)
+  assert.match(blob, /Rokesly|Regorasu/i)
 })
 
 test('themeSupport stays on a haul and quotes share, projection and prior week', () => {
