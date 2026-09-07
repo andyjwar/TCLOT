@@ -456,6 +456,25 @@ test('themeSupport stays on a haul and quotes share, projection and prior week',
   assert.match(blob, /22%|38\.4|up from 4|Tavernier/)
 })
 
+test('two Mottershead cards both keep vegan and stay at three sentences', () => {
+  const used = { lines: [], kinds: [], stems: [] }
+  const first = glanceFixture(recapMatch, { used })
+  used.lines.push(...first.recap)
+  used.kinds.push(...first.kinds)
+  used.stems.push(...first.stems)
+  const second = glanceFixture(
+    {
+      ...recapMatch,
+      home: { ...recapMatch.away, manager: 'Nick Mottershead', name: 'Hackney Rohirrim' },
+    },
+    { used },
+  )
+  assert.ok(first.recap.length >= 3)
+  assert.ok(second.recap.length >= 3)
+  assert.match(first.recap.join(' '), /vegan|oat milk|tofu|plant-based/i)
+  assert.match(second.recap.join(' '), /vegan|oat milk|tofu|plant-based/i)
+})
+
 test('preview waiver brief skips a 0-0-0 table line', () => {
   const side = {
     entryId: 10173,

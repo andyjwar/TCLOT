@@ -143,6 +143,7 @@ function angle(kind, text, about = null) {
 function isFree(a, bag) {
   if (!a?.text || STALE_TAKE.test(a.text)) return false
   if (overlaps(a.text, bag.lines)) return false
+  if (a.kind === 'vegan') return true
   if (bag.stems.includes(a.stem)) return false
   return true
 }
@@ -680,6 +681,9 @@ export function themeSupport(m, news, { preview = false, priorGws = [], site = n
     add(formLine(site, side, gw, preview))
     add(resultLine(m, side))
     add(predPreviewLine(m, side))
+    add(bookLine(m, side))
+    add(titleModelLine(site, side))
+    add(keyShareLine(side, side?.keys?.[0]))
   } else if (news?.kind === 'projected') {
     add(keyShareLine(side, player))
     add(lastPlayerLine({ ...player, pts: player?.xp }, priorGws, site, gw))
@@ -811,7 +815,8 @@ export function personalityRecap(m, preview = false, used = [], ctx = {}) {
   }
 
   if (lines.length < 3) {
-    for (const extra of themeSupport(m, news || { about: { side: m.home } }, {
+    const padNews = { kind: 'fill', about: { side: news?.about?.side || m.home } }
+    for (const extra of themeSupport(m, padNews, {
       preview,
       priorGws,
       site,
