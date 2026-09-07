@@ -8,6 +8,8 @@ import {
   formatBenchMisses,
   formatSatPlayers,
   leftoverBenchPlayers,
+  nextBenchSort,
+  sortBenchPointRows,
   tablePtsFromResult,
 } from './benchPoints.js'
 
@@ -227,4 +229,52 @@ test('worst manager sorts to the top', () => {
   })
   assert.equal(report.teams[0].teamName, 'Wasteful')
   assert.ok(report.teams[0].benchLeft > report.teams[1].benchLeft)
+})
+
+test('nextBenchSort flips the same column and defaults unused desc / team asc', () => {
+  assert.deepEqual(nextBenchSort(null, 'actual'), { key: 'actual', dir: 'desc' })
+  assert.deepEqual(nextBenchSort({ key: 'actual', dir: 'desc' }, 'actual'), {
+    key: 'actual',
+    dir: 'asc',
+  })
+  assert.deepEqual(nextBenchSort({ key: 'unused', dir: 'desc' }, 'team'), {
+    key: 'team',
+    dir: 'asc',
+  })
+})
+
+test('sortBenchPointRows orders unused desc by default and team A–Z', () => {
+  const rows = [
+    { teamName: 'Seoul Shire', benchLeft: 10, actualLeaguePts: 3, bestLeaguePts: 3, leaguePtsSwing: 0 },
+    { teamName: 'Mordor S.F.G', benchLeft: 35, actualLeaguePts: 6, bestLeaguePts: 6, leaguePtsSwing: 0 },
+    { teamName: 'Suffolk Sméagol', benchLeft: 21, actualLeaguePts: 3, bestLeaguePts: 6, leaguePtsSwing: 3 },
+  ]
+  assert.deepEqual(
+    sortBenchPointRows(rows, { key: 'unused', dir: 'desc' }).map((r) => r.teamName),
+    ['Mordor S.F.G', 'Suffolk Sméagol', 'Seoul Shire'],
+  )
+  assert.deepEqual(
+    sortBenchPointRows(rows, { key: 'swing', dir: 'desc' }).map((r) => r.teamName),
+    ['Suffolk Sméagol', 'Mordor S.F.G', 'Seoul Shire'],
+  )
+  assert.deepEqual(
+    sortBenchPointRows(rows, { key: 'team', dir: 'asc' }).map((r) => r.teamName),
+    ['Mordor S.F.G', 'Seoul Shire', 'Suffolk Sméagol'],
+  )
+})
+
+test('sortBenchPointRows uses W–D–L when league pts fields are missing', () => {
+  const rows = [
+    { teamName: 'Alpha', benchLeft: 1, actualW: 1, actualD: 0, actualL: 2 },
+    { teamName: 'Zulu', benchLeft: 2, actualW: 3, actualD: 0, actualL: 0 },
+    { teamName: 'Mid', benchLeft: 3, actualW: 1, actualD: 0, actualL: 2 },
+  ]
+  assert.deepEqual(
+    sortBenchPointRows(rows, { key: 'actual', dir: 'desc' }).map((r) => r.teamName),
+    ['Zulu', 'Alpha', 'Mid'],
+  )
+  assert.deepEqual(
+    sortBenchPointRows(rows, { key: 'actual', dir: 'asc' }).map((r) => r.teamName),
+    ['Alpha', 'Mid', 'Zulu'],
+  )
 })

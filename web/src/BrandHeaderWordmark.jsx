@@ -1,7 +1,7 @@
 /**
  * BrandHeaderWordmark — turns the brand-header `TCLOT` wordmark into a
  * disclosure button that opens the League Info modal. Visually it
- * preserves the gradient pill (lion icon + white wordmark) from
+ * preserves the glass pill (lion icon + white wordmark) from
  * `.brand-header__pill` unchanged — no extra affordance glyphs.
  *
  * Disclosure semantics: `aria-haspopup="dialog"` + `aria-controls` point

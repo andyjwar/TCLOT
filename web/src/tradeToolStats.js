@@ -481,6 +481,21 @@ export function lockedTradePosition(pickedA, pickedB) {
 }
 
 /**
+ * Browse filter: keep one FPL element_type (1 GKP / 2 DEF / 3 MID / 4 FWD).
+ * Blank or unknown values leave the list unchanged.
+ *
+ * @param {object[] | null | undefined} squad
+ * @param {number | string | null | undefined} positionType
+ * @returns {object[]}
+ */
+export function filterSquadByPosition(squad, positionType) {
+  const list = Array.isArray(squad) ? squad : []
+  const pos = Number(positionType)
+  if (!Number.isFinite(pos) || pos < 1 || pos > 4) return list
+  return list.filter((p) => Number(p.positionType) === pos)
+}
+
+/**
  * Squad list for one trade side. Once a position is locked, both sides
  * only list that position — FPL Draft trades are same-position swaps.
  *
@@ -489,9 +504,7 @@ export function lockedTradePosition(pickedA, pickedB) {
  * @returns {object[]}
  */
 export function filterSquadForTrade(squad, lockPosition) {
-  const list = Array.isArray(squad) ? squad : []
-  if (lockPosition == null) return list
-  return list.filter((p) => Number(p.positionType) === Number(lockPosition))
+  return filterSquadByPosition(squad, lockPosition)
 }
 
 /**

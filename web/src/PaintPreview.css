@@ -387,91 +387,38 @@ body[data-tclot-paint='1'][data-tclot-theme='dark'] .live-contrib-row__pts--neg 
   background: color-mix(in srgb, #d97a4e 16%, transparent);
 }
 
-/* ---- Desktop brand-header banner: racing-green band ----
- * Flag-off desktop renders the brand header as a pale strip (frosted
- * white tile in light theme, cream `--surface-2` status strip) which
- * reads washed out on the Scorebook paper. Repaint it as the same
- * racing-green band mobile already uses (`max-width: 720px` block in
- * App.css paints `--brand-grad`), so both breakpoints share the brand
- * treatment. Colours only — geometry, spacing and the crest images are
- * untouched. Mobile keeps its existing rules (its band is already green
- * under the flag because `--brand-grad` maps to the green gradient). */
-@media (min-width: 721px) {
-  /* Band: green gradient across the whole tile (brand row + status
-   * strip zone). The light-theme selector must also be listed to beat
-   * App.css's frosted-white rule
-   * (`.fotmob[data-theme='light'] .tile.tile--brand-header`) on
-   * specificity, and to drop its backdrop blur. */
-  body[data-tclot-paint='1'] .tile.tile--brand-header,
-  body[data-tclot-paint='1'] .fotmob[data-theme='light'] .tile.tile--brand-header {
-    /* Flat deep green (the gradient's darkest stop) instead of
-     * `--tclot-header-grad` — user feedback: the gradient band next to
-     * the ink-washed status strip read as "two different banners".
-     * Matches the unified mobile band below. */
-    background: #17402f;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
-    color: #f4f6f0;
-    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
-  }
-
-  /* Wordmark pill: the green-gradient pill vanishes on the green band,
-   * so invert it — cream Scorebook card surface with ink-green type.
-   * The lion SVG renders with currentColor and picks up the ink green. */
-  body[data-tclot-paint='1'] .brand-header__pill {
-    background: #fdfaf0;
-    color: #17402f;
-    box-shadow:
-      0 1px 0 rgba(255, 255, 255, 0.35) inset,
-      0 1px 2px rgba(0, 0, 0, 0.25);
-  }
-  body[data-tclot-paint='1'] .brand-header__wordmark {
-    color: #17402f;
-  }
-
-  /* Season meta: muted cream over the band. */
-  body[data-tclot-paint='1'] .brand-header__meta {
-    color: rgba(244, 246, 240, 0.75);
-  }
-
-  /* Status strip: same deep-green surface as the band — only a faint
-   * ink wash + hairline divider set it apart, so header + strip read as
-   * ONE banner (user feedback), cream text. */
-  body[data-tclot-paint='1'] .brand-header__status-strip {
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(0, 0, 0, 0.08);
-    color: rgba(244, 246, 240, 0.75);
-  }
-  body[data-tclot-paint='1'] .brand-header__status-strong {
-    color: #f4f6f0;
-  }
-  body[data-tclot-paint='1'] .brand-header__status-mono {
-    color: #f4f6f0;
-  }
-  /* Live dot: default #16a34a fill is too dark on the green band —
-   * lift it to mint via the NavIcon fill hook. */
-  body[data-tclot-paint='1'] .brand-header__status-dot {
-    --nav-pulse-dot-fill: #8fc9a8;
-  }
+/* ---- Brand-header banner: unified racing-green band ----
+ * App.css now paints the same glass-pill / season-right / status-wash
+ * chrome at every breakpoint. Flatten `--brand-grad` to solid #17402f
+ * so the band + ink-washed strip read as one banner (not a gradient
+ * sitting on a darker wash). Geometry stays in App.css. */
+body[data-tclot-paint='1'] .tile.tile--brand-header,
+body[data-tclot-paint='1'] .fotmob[data-theme='light'] .tile.tile--brand-header {
+  background: #17402f;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  color: #f4f6f0;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.18);
 }
 
-/* ---- Mobile brand-header banner: same unified deep green ----
- * App.css's `max-width: 720px` block paints the band with
- * `var(--brand-grad)` (the racing-green gradient under this theme) and
- * the status strip with rgba(0,0,0,0.16) — the same "two banners" split
- * the user flagged on desktop. Flatten the band to the identical solid
- * #17402f and use the same faint wash + hairline as desktop so both
- * breakpoints read as one banner. Colours only; the mobile geometry
- * (negative margins, safe-area padding, frosted pill) stays in App.css. */
-@media (max-width: 720px) {
-  body[data-tclot-paint='1'] .tile.tile--brand-header,
-  body[data-tclot-paint='1'] .fotmob[data-theme='light'] .tile.tile--brand-header {
-    background: #17402f;
-  }
-  body[data-tclot-paint='1'] .brand-header__status-strip {
-    border-top: 1px solid rgba(255, 255, 255, 0.14);
-    background: rgba(0, 0, 0, 0.08);
-  }
+body[data-tclot-paint='1'] .brand-header__meta {
+  color: rgba(244, 246, 240, 0.75);
+}
+
+body[data-tclot-paint='1'] .brand-header__status-strip {
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.08);
+  color: rgba(244, 246, 240, 0.75);
+}
+body[data-tclot-paint='1'] .brand-header__status-strong {
+  color: #f4f6f0;
+}
+body[data-tclot-paint='1'] .brand-header__status-mono {
+  color: #f4f6f0;
+}
+/* Live dot: default #16a34a fill is too dark on the green band. */
+body[data-tclot-paint='1'] .brand-header__status-dot {
+  --nav-pulse-dot-fill: #8fc9a8;
 }
 
 /* ---- Form-dot tooltip (shared `data-tooltip` bubble + caret) ----

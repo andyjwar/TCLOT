@@ -1,8 +1,7 @@
 /* BrandHeaderWordmark — keeps the existing `.brand-header__pill` look
- * (gradient + lion + wordmark) but as a semantic <button>. Hover/focus
+ * (frosted glass + lion + wordmark) but as a semantic <button>. Hover/focus
  * lift subtly to signal tappability. Pairs with `.brand-header__pill`
- * rules in App.css for the gradient background, padding, and white
- * wordmark colour.
+ * rules in App.css for the glass chip, padding, and white wordmark colour.
  */
 
 .brand-header-wordmark {
@@ -31,17 +30,8 @@
 }
 
 .brand-header-wordmark:focus-visible {
-  outline: 2px solid var(--brand);
+  outline: 2px solid rgba(255, 255, 255, 0.9);
   outline-offset: 2px;
-}
-
-/* Mobile-only: the brand header becomes a purple band (see App.css
- * `max-width: 720px` block), so the focus ring switches to white to stay
- * visible against the gradient. Desktop keeps the brand-purple ring. */
-@media (max-width: 720px) {
-  .brand-header-wordmark:focus-visible {
-    outline-color: rgba(255, 255, 255, 0.9);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

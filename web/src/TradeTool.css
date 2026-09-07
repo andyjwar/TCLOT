@@ -287,9 +287,19 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
   margin-bottom: 8px;
 }
 
-.trade-tool__side-head .cpsp {
-  flex: 0 1 auto;
-  max-width: min(52%, 12.5rem);
+.trade-tool__picks {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.trade-tool__side-head .cpsp,
+.trade-tool__picks .cpsp {
+  flex: 1 1 6.75rem;
+  max-width: 12.5rem;
   min-width: 0;
 }
 
@@ -298,7 +308,7 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
 }
 
 .trade-tool__search {
-  flex: 1 1 8rem;
+  flex: 1 1 100%;
   min-width: 8rem;
 }
 
@@ -663,8 +673,22 @@ body[data-tclot-theme='light'] .trade-tool__stats-overlay,
     align-items: center;
   }
 
-  .trade-tool__side-head .cpsp {
+  .trade-tool__picks {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    flex: none;
+  }
+
+  .trade-tool__side-head:has(.team-avatar-frame) .trade-tool__picks,
+  .trade-tool__side-head:has(.trade-tool__club-crest) .trade-tool__picks {
+    grid-column: 2 / -1;
+  }
+
+  .trade-tool__side-head .cpsp,
+  .trade-tool__picks .cpsp {
     max-width: none;
+    flex: none;
   }
 
   .trade-tool__search {

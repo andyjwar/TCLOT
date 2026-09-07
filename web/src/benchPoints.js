@@ -367,3 +367,82 @@ export function fixtureTablePtsLabel(result, homeName, awayName) {
   if (result === 'A') return `${awayName || 'Away'} +3`
   return ''
 }
+
+/** @typedef {'team' | 'unused' | 'actual' | 'bestXi' | 'swing'} BenchSortKey */
+
+export const BENCH_SORT_KEYS = /** @type {const} */ ([
+  'team',
+  'unused',
+  'actual',
+  'bestXi',
+  'swing',
+])
+
+export function defaultBenchSortDir(key) {
+  return key === 'team' ? 'asc' : 'desc'
+}
+
+/**
+ * @param {{ key: BenchSortKey, dir: 'asc' | 'desc' } | null | undefined} current
+ * @param {string} clickedKey
+ */
+export function nextBenchSort(current, clickedKey) {
+  const key = BENCH_SORT_KEYS.includes(clickedKey)
+    ? clickedKey
+    : 'unused'
+  if (current?.key === key) {
+    return { key, dir: current.dir === 'desc' ? 'asc' : 'desc' }
+  }
+  return { key, dir: defaultBenchSortDir(key) }
+}
+
+function actualTablePts(row) {
+  if (row?.actualLeaguePts != null) return Number(row.actualLeaguePts) || 0
+  return leaguePtsFromRecord({
+    w: row?.actualW,
+    d: row?.actualD,
+    l: row?.actualL,
+  })
+}
+
+function bestTablePts(row) {
+  if (row?.bestLeaguePts != null) return Number(row.bestLeaguePts) || 0
+  return leaguePtsFromRecord({
+    w: row?.bestW,
+    d: row?.bestD,
+    l: row?.bestL,
+  })
+}
+
+function swingTablePts(row) {
+  if (row?.leaguePtsSwing != null) return Number(row.leaguePtsSwing) || 0
+  return bestTablePts(row) - actualTablePts(row)
+}
+
+function benchSortValue(row, key) {
+  if (key === 'team') return String(row?.teamName || '')
+  if (key === 'unused') return Number(row?.benchLeft) || 0
+  if (key === 'actual') return actualTablePts(row)
+  if (key === 'bestXi') return bestTablePts(row)
+  if (key === 'swing') return swingTablePts(row)
+  return 0
+}
+
+/**
+ * @param {object[]} rows
+ * @param {{ key?: string, dir?: 'asc' | 'desc' } | null | undefined} sort
+ */
+export function sortBenchPointRows(rows, sort) {
+  const key = BENCH_SORT_KEYS.includes(sort?.key) ? sort.key : 'unused'
+  const dir = sort?.dir === 'asc' ? 1 : -1
+  return [...(Array.isArray(rows) ? rows : [])].sort((a, b) => {
+    if (key === 'team') {
+      const cmp = String(a?.teamName || '').localeCompare(String(b?.teamName || ''))
+      return cmp * (sort?.dir === 'desc' ? -1 : 1)
+    }
+    const av = benchSortValue(a, key)
+    const bv = benchSortValue(b, key)
+    if (av !== bv) return (av - bv) * dir
+    return String(a?.teamName || '').localeCompare(String(b?.teamName || ''))
+  })
+}

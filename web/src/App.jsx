@@ -352,9 +352,10 @@ function SeasonSwitcher({ currentSeasonLabel, archivedSeasons = [] }) {
 }
 
 /**
- * Header tile carrying the brand pill + season meta + top-8 fantasy crests
- * (rank 1 leftmost → rank 8 rightmost), with the status strip beneath. Spec:
- * variant 4 of HEADER · POST-PR-#2 EVOLUTION (Mockup.jsx `HeroVariantBSeasonAndCrests`).
+ * Header tile carrying the brand pill + season meta, with the status strip
+ * beneath. Matches the phone app chrome at every breakpoint (green band,
+ * glass pill, season on the right). Crest markup stays for the archive-view
+ * search fallback but is not painted.
  *
  * @param {{
  *   tableRows?: object[],
