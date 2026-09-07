@@ -7,7 +7,6 @@ import {
   matchupScanLines,
   polaroidFacts,
   shortTeam,
-  wrapBanner,
 } from './weeklyRecapScan.js'
 import './WeeklyRecapScan.css'
 
@@ -74,7 +73,9 @@ function GlanceTiles({ tiles, compact }) {
   return (
     <div
       className={
-        'recap-scan__tiles' + (compact ? ' recap-scan__tiles--fixture' : '')
+        'recap-scan__tiles' +
+        (compact ? ' recap-scan__tiles--fixture' : '') +
+        (tiles.length === 2 ? ' recap-scan__tiles--two' : '')
       }
     >
       {tiles.map((t) => (
@@ -166,8 +167,14 @@ function Scoreline({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
   )
 }
 
-function GlanceCard({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
-  const { stats, bullets, recap } = glanceFixture(m, { preview })
+function GlanceCard({
+  matchup: m,
+  preview,
+  teamLogoMap,
+  kitIndexByEntry,
+  fixture,
+}) {
+  const { stats, recap } = fixture || glanceFixture(m, { preview })
   return (
     <section
       className="tile tile--compact recap-scan-card"
@@ -180,29 +187,12 @@ function GlanceCard({ matchup: m, preview, teamLogoMap, kitIndexByEntry }) {
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
       />
-      <div className="recap-scan__boxes">
-        {stats.length ? (
-          <div className="recap-scan__box recap-scan__box--stats">
-            <i>Key</i>
-            <GlanceTiles tiles={stats} compact />
-          </div>
-        ) : null}
-        {bullets.length ? (
-          <div className="recap-scan__box">
-            <i>Notes</i>
-            <ul className="recap-scan__bullets">
-              {bullets.map((b) => (
-                <li key={b}>{b}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-        <div className="recap-scan__box recap-scan__box--recap">
-          <i>{preview ? 'Preview' : 'Recap'}</i>
-          <p className="recap-scan__quip-copy">
-            {recap.map((s) => (/[.!?]$/.test(s) ? s : `${s}.`)).join(' ')}
-          </p>
-        </div>
+      <GlanceTiles tiles={stats} compact />
+      <div className="recap-scan__box recap-scan__box--recap">
+        <i>{preview ? 'Preview' : 'Recap'}</i>
+        <p className="recap-scan__quip-copy">
+          {recap.map((s) => (/[.!?]$/.test(s) ? s : `${s}.`)).join(' ')}
+        </p>
       </div>
     </section>
   )
@@ -239,25 +229,12 @@ export function ScanHeader({
 }) {
   const facts = polaroidFacts({ recapGw, previewGw, preview, decided })
   const tiles = glanceTiles({ recapGw, previewGw, preview, decided })
-  const banner = wrapBanner(preview ? previewGw?.wrap : recapGw?.wrap)
 
   if (layout === 'polaroid' || layout === 'combo') {
-    return (
-      <>
-        <PolaroidStrip facts={facts} />
-        {banner && layout === 'combo' ? (
-          <p className="recap-scan__banner">{banner}</p>
-        ) : null}
-      </>
-    )
+    return <PolaroidStrip facts={facts} />
   }
 
-  return (
-    <>
-      <GlanceTiles tiles={tiles} />
-      {banner ? <p className="recap-scan__banner">{banner}</p> : null}
-    </>
-  )
+  return <GlanceTiles tiles={tiles} />
 }
 
 export function ScanMatchups({
@@ -267,14 +244,30 @@ export function ScanMatchups({
   teamLogoMap,
   kitIndexByEntry,
 }) {
-  const Card = layout === 'polaroid' ? PolaroidCard : GlanceCard
-  return matchups.map((m) => (
-    <Card
-      key={`${m.home.entryId}-${m.away.entryId}`}
-      matchup={m}
-      preview={preview}
-      teamLogoMap={teamLogoMap}
-      kitIndexByEntry={kitIndexByEntry}
-    />
-  ))
+  if (layout === 'polaroid') {
+    return matchups.map((m) => (
+      <PolaroidCard
+        key={`${m.home.entryId}-${m.away.entryId}`}
+        matchup={m}
+        preview={preview}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+    ))
+  }
+  const used = []
+  return matchups.map((m) => {
+    const fixture = glanceFixture(m, { preview, used })
+    used.push(...fixture.recap)
+    return (
+      <GlanceCard
+        key={`${m.home.entryId}-${m.away.entryId}`}
+        matchup={m}
+        preview={preview}
+        fixture={fixture}
+        teamLogoMap={teamLogoMap}
+        kitIndexByEntry={kitIndexByEntry}
+      />
+    )
+  })
 }

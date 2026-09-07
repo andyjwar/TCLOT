@@ -5,11 +5,8 @@
  */
 
 import {
-  isMottershead,
+  allManagerJokes,
   isTitanicPair,
-  loreTagsFromSide,
-  managerFunFact,
-  mottersheadVeganLine,
   namedFixtureFor,
   titanicAside,
 } from './leagueLore.js'
@@ -21,7 +18,8 @@ export const RECAP_LAYOUT_STORAGE = 'tclot-recap-layout'
 
 const TABLE_OPEN = /^(That leaves|That keeps|Both sides finished)\b/
 const QUIPPY =
-  /vegan|twin|sleep|complimentary|people'?s champion|invented|cheerfully|plant-based|will have a take|whatever sleep/i
+  /vegan|twin|sleep|complimentary|people'?s champion|invented|cheerfully|plant-based|whatever sleep/i
+const STALE_TAKE = /will have a take/i
 
 export function shortTeam(name) {
   return standingsMobileTeamName(name) || name || '–'
@@ -87,33 +85,35 @@ export function pickQuip(sentences) {
   )
 }
 
-/** Always two personality sentences — one flavour of each manager. */
-export function personalityRecap(m, preview = false) {
+function jokeFromPool(manager, salt, usedSet) {
+  const pool = allManagerJokes(manager).filter((t) => !STALE_TAKE.test(t))
+  if (!pool.length) return null
+  const fresh = pool.filter((t) => !usedSet.has(stripEnd(t).toLowerCase()))
+  const choice = pick(fresh.length ? fresh : pool, salt)
+  return stripEnd(choice)
+}
+
+/** Always two personality sentences, rotating the full lore pool. */
+export function personalityRecap(m, preview = false, used = []) {
   const key = fixtureKey(m, preview)
+  const usedSet = new Set(
+    (used || []).map((s) => stripEnd(s).toLowerCase()).filter(Boolean),
+  )
   const lines = []
-  const used = new Set()
 
   const add = (line) => {
     const s = stripEnd(line)
-    if (!s || used.has(s.toLowerCase())) return
-    used.add(s.toLowerCase())
+    if (!s || usedSet.has(s.toLowerCase()) || STALE_TAKE.test(s)) return
+    usedSet.add(s.toLowerCase())
     lines.push(s)
   }
 
-  for (const side of [m?.home, m?.away]) {
+  for (const [side, salt] of [
+    [m?.home, `${key}-h`],
+    [m?.away, `${key}-a`],
+  ]) {
     if (!side || lines.length >= 2) continue
-    if (isMottershead(side.manager)) {
-      add(mottersheadVeganLine(pick, `${key}-vegan`))
-      continue
-    }
-    add(
-      managerFunFact(
-        side.manager,
-        pick,
-        `${key}-${side.entryId || side.manager}`,
-        loreTagsFromSide(side),
-      ),
-    )
+    add(jokeFromPool(side.manager, salt, usedSet))
   }
 
   if (lines.length < 2 && isTitanicPair(m?.home?.manager, m?.away?.manager)) {
@@ -137,71 +137,58 @@ export function personalityRecap(m, preview = false) {
     add(
       pick(
         [
-          `${who(m.home)} will have a take, whether the scoreboard asked for one or not`,
-          `${who(m.away)} is already narrating this like it was the plan`,
+          `${who(m.home)} is already narrating this like it was the plan`,
+          `${who(m.away)} has a theory, and the scoreboard is the footnote`,
         ],
         `${key}-fallback`,
       ),
     )
   }
 
-  if (lines.length < 2) {
-    add(`${who(m.away)} will have a take ready either way`)
-  }
-
   return lines.slice(0, 2)
 }
 
 function recapStatTiles(m) {
-  const pct = Number.isFinite(m?.odds?.favoritePct)
-    ? Math.round(m.odds.favoritePct)
-    : null
+  const fav = favSide(m)
+  const whoFor = shortTeam(fav?.name)
   const call =
     m?.odds?.outcome === 'miss'
-      ? tile('Model', pct != null ? `${pct}%` : 'Upset', 'got it wrong', 'loss')
+      ? tile('Model', 'Wrong', whoFor, 'loss')
       : m?.odds?.outcome === 'hit'
-        ? tile('Model', pct != null ? `${pct}%` : 'Hit', 'got it right', 'win')
-        : tile('Model', pct != null ? `${pct}%` : null, 'pre-match', 'neutral')
+        ? tile('Model', 'Right', whoFor, 'win')
+        : tile('Model', whoFor, 'pre-match')
 
   const tops = [m?.home?.players?.top, m?.away?.players?.top].filter((p) => p?.name)
   const best = [...tops].sort((a, b) => (b.pts || 0) - (a.pts || 0))[0]
-  const star = tile('Star', best?.pts, best?.name)
+  const star = tile('Top scorer', best?.pts, best?.name)
 
   const flops = [m?.home?.players?.flop, m?.away?.players?.flop].filter(
     (p) => p?.name && Number.isFinite(p.pts),
   )
   const flop = flops.find((p) => Number.isFinite(p.xp) && p.pts < p.xp) || flops[0]
   const dud = flop
-    ? tile('Flop', flop.pts, `${flop.name} from ${flop.xp ?? '?'}`, 'loss')
-    : Number.isFinite(m?.margin)
-      ? tile('Margin', m.margin, 'points')
-      : null
+    ? tile('Dud', flop.pts, flop.name, 'loss')
+    : null
 
   return [call, star, dud].filter(Boolean).slice(0, 3)
 }
 
 function previewStatTiles(m) {
-  const fav = favSide(m)
-  const pct = Number.isFinite(m?.odds?.favoritePct)
-    ? Math.round(m.odds.favoritePct)
-    : null
-  const lean = tile(
-    'Favourite',
-    pct != null ? `${pct}%` : null,
-    shortTeam(fav?.name),
-    pct >= 70 ? 'win' : 'neutral',
-  )
-
-  const bookPrice =
-    m?.odds?.favoriteSide === 'away' ? m?.bookie?.away : m?.bookie?.home
-  const book = tile('Book', bookPrice, shortTeam(fav?.name) || 'favourite')
+  const book =
+    m?.bookie?.home && m?.bookie?.away
+      ? tile(
+          'Book',
+          `${m.bookie.home} · ${m.bookie.draw ?? '–'} · ${m.bookie.away}`,
+          '',
+        )
+      : null
 
   const watch = [m?.home?.keys?.[0], m?.away?.keys?.[0]]
     .filter((k) => k?.name)
     .sort((a, b) => (b.xp || 0) - (a.xp || 0))[0]
-  const eye = tile('Watch', watch?.xp, watch?.name)
+  const eye = tile('Top scorer', watch?.xp, watch?.name)
 
-  return [lean, book, eye].filter(Boolean).slice(0, 3)
+  return [book, eye].filter(Boolean)
 }
 
 export function fixtureStatTiles(m, { preview = false } = {}) {
@@ -329,11 +316,10 @@ export function interestingBullets(m, { preview = false, used = [] } = {}) {
   return [...raw, ...extra].slice(0, 2)
 }
 
-export function glanceFixture(m, { preview = false } = {}) {
-  const recap = personalityRecap(m, preview)
-  const bullets = interestingBullets(m, { preview, used: recap })
+export function glanceFixture(m, { preview = false, used = [] } = {}) {
+  const recap = personalityRecap(m, preview, used)
   const stats = fixtureStatTiles(m, { preview })
-  return { stats, bullets, recap }
+  return { stats, bullets: [], recap }
 }
 
 export function matchupScanLines(m, { preview = false } = {}) {
@@ -364,77 +350,30 @@ function tile(label, value, sub, tone) {
   return { label, value: String(value), sub: sub || '', tone: tone || 'neutral' }
 }
 
-export function glanceTiles({ recapGw, previewGw, preview, decided }) {
-  if (preview) {
-    const s = previewGw?.superlatives || {}
-    const tiles = [
-      tile(
-        'Favourite',
-        s.favourite ? `${s.favourite.pct}%` : null,
-        shortTeam(s.favourite?.name),
+export function glanceTiles({ recapGw, previewGw, preview }) {
+  const s = (preview ? previewGw?.superlatives : recapGw?.superlatives) || {}
+  const scorer = preview
+    ? tile(
+        'GW scorer',
+        s.topScorer?.xp ?? s.topScorer?.pts ?? s.topScorer?.name ?? null,
+        s.topScorer?.name,
         'win',
-      ),
-      tile(
-        'Toss-up',
-        s.closest ? `${s.closest.favoritePct}%` : null,
-        s.closest
-          ? `${shortTeam(s.closest.homeName)}–${shortTeam(s.closest.awayName)}`
-          : '',
-      ),
-      tile(
-        'Watch',
-        s.topScorer?.pts ?? s.topScorer?.name ?? null,
-        s.topScorer ? `${s.topScorer.name}` : '',
-      ),
-      tile(
-        'Best waiver',
-        s.bestWaiver?.xp ?? s.bestWaiver?.pts ?? null,
-        s.bestWaiver?.name,
-      ),
-      tile(
-        'Dud',
-        s.dud?.xp ?? s.dud?.pts ?? null,
-        s.dud
-          ? `${s.dud.name}${s.dud.overallPick ? ` · pick ${s.dud.overallPick}` : ''}`
-          : '',
-        'loss',
-      ),
-    ]
-    const derbies = (previewGw?.matchups || []).filter((m) => m.derby)
-    if (derbies[0]?.derby) {
-      tiles.splice(
-        2,
-        0,
-        tile('Derby', derbies.length, derbies[0].derby.replace(/^the /i, '')),
       )
-    }
-    return tiles.filter(Boolean).slice(0, 6)
-  }
-
-  const s = recapGw?.superlatives || {}
-  const upset = recapGw?.model?.upset
+    : tile('GW scorer', s.weekHigh?.points, shortTeam(s.weekHigh?.name), 'win')
   return [
-    tile('Week high', s.weekHigh?.points, shortTeam(s.weekHigh?.name), 'win'),
+    scorer,
     tile(
-      'Upset',
-      upset ? `${upset.winnerPct}%` : null,
-      upset ? `${shortTeam(upset.winnerName)} over ${shortTeam(upset.loserName)}` : '',
-      'loss',
+      'Best waiver',
+      s.bestWaiver?.pts ?? s.bestWaiver?.xp,
+      s.bestWaiver?.name,
     ),
-    tile(
-      'Model',
-      decided > 0 ? `${recapGw.model.hits}/${decided}` : null,
-      'right',
-      'win',
-    ),
-    tile('Star', s.starPlayer?.pts, s.starPlayer?.name),
-    tile('Best waiver', s.bestWaiver?.pts ?? s.bestWaiver?.xp, s.bestWaiver?.name),
     tile(
       'Dud',
       s.dud?.pts ?? s.dud?.xp,
       s.dud
         ? `${s.dud.name}${s.dud.overallPick ? ` · pick ${s.dud.overallPick}` : ''}`
         : '',
+      'loss',
     ),
   ].filter(Boolean)
 }

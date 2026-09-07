@@ -34,8 +34,15 @@
   margin: 2px 0 10px;
 }
 .recap-scan__tiles--fixture {
-  margin: 0;
+  margin: 10px 0 8px;
   gap: 6px;
+}
+.recap-scan__tiles--two {
+  grid-template-columns: 1fr 1fr;
+}
+.recap-scan__tiles--two .recap-scan__tile b {
+  font-size: 15px;
+  letter-spacing: -0.02em;
 }
 .recap-scan__tile {
   background: var(--surface-2, var(--fm-surface-2, #171b26));

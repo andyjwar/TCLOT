@@ -3,11 +3,9 @@ import assert from 'node:assert/strict'
 import {
   glanceFixture,
   glanceTiles,
-  interestingBullets,
   matchupChips,
   personalityRecap,
   polaroidFacts,
-  wrapBanner,
 } from './weeklyRecapScan.js'
 
 const recapGw = {
@@ -46,60 +44,71 @@ const recapMatch = {
   },
   odds: { favoriteSide: 'home', favoritePct: 74, outcome: 'hit' },
   margin: 27,
-  sentences: [
-    'Mordor S.F.G steamrolled Atlético Bilbo 51–24 — the kind of scoreline that gets screenshotted.',
-    "As expected: the model gave Mordor S.F.G 74% pre-match, and that's how it went.",
-    'That leaves Mordor S.F.G 3rd (1-0-0); Atlético Bilbo are 8th at 0-0-1.',
-    'Plant-based and extremely sure: Mottershead is still talking like he invented veganism.',
-    'Atlético Bilbo will point at Shaw: projected for 5.1, he returned 1.',
-  ],
 }
 
-test('glanceTiles: Best waiver + model says right', () => {
+test('glanceTiles header is GW scorer, best waiver, dud', () => {
   const tiles = glanceTiles({ recapGw, preview: false, decided: 4 })
-  assert.equal(tiles.length, 6)
-  assert.equal(tiles.find((t) => t.label === 'Best waiver')?.value, '8')
-  assert.equal(tiles.find((t) => t.label === 'Model')?.sub, 'right')
-  assert.equal(tiles.find((t) => t.label === 'Model')?.value, '3/4')
-  assert.ok(!tiles.some((t) => t.label === 'Waiver'))
-  assert.ok(!tiles.some((t) => t.sub === 'called it'))
+  assert.deepEqual(
+    tiles.map((t) => t.label),
+    ['GW scorer', 'Best waiver', 'Dud'],
+  )
+  assert.equal(tiles[0].value, '55')
+  assert.equal(tiles[1].value, '8')
+  assert.equal(tiles[2].value, '0')
+  assert.ok(!tiles.some((t) => t.label === 'Model' || t.label === 'Upset'))
 })
 
-test('polaroidFacts keeps a swipeable handful', () => {
+test('polaroidFacts follows the slim header', () => {
   const facts = polaroidFacts({ recapGw, preview: false, decided: 4 })
-  assert.ok(facts.length >= 4 && facts.length <= 5)
-  assert.ok(facts[0].caption)
+  assert.equal(facts.length, 3)
 })
 
-test('personalityRecap is always two manager lines', () => {
+test('personalityRecap is two lines and never the stale take', () => {
   const a = personalityRecap(recapMatch)
   const b = personalityRecap(recapMatch)
   assert.equal(a.length, 2)
   assert.deepEqual(a, b)
-  assert.match(a.join(' '), /vegan|oat milk|tofu|plant-based/i)
-  assert.match(a.join(' '), /Goodacre|spreadsheet|conservative|lampshade|Northern/i)
+  assert.doesNotMatch(a.join(' '), /will have a take/i)
 })
 
-test('glanceFixture recap: stats, two bullets, recap never repeats a bullet', () => {
+test('personality lines rotate when a joke is already used', () => {
+  const first = personalityRecap({
+    gw: 1,
+    home: { entryId: 1, name: 'Toronto Gimli', manager: 'Jon Ward' },
+    away: { entryId: 2, name: 'Hackney Rohirrim', manager: 'Mike Sutton' },
+  })
+  const second = personalityRecap(
+    {
+      gw: 1,
+      home: { entryId: 1, name: 'Toronto Gimli', manager: 'Jon Ward' },
+      away: { entryId: 3, name: 'Seoul Shire', manager: 'Luke Butcher' },
+    },
+    false,
+    first,
+  )
+  const jonFirst = first.find((s) => /Jon|Brother Ward/i.test(s))
+  const jonSecond = second.find((s) => /Jon|Brother Ward/i.test(s))
+  assert.ok(jonFirst)
+  assert.ok(jonSecond)
+  assert.notEqual(jonFirst, jonSecond)
+  assert.doesNotMatch([...first, ...second].join(' '), /will have a take/i)
+})
+
+test('recap fixture: model who, top scorer, dud', () => {
   const out = glanceFixture(recapMatch)
-  assert.ok(out.stats.length >= 2 && out.stats.length <= 3)
-  assert.equal(out.stats[0].label, 'Model')
-  assert.equal(out.bullets.length, 2)
+  assert.deepEqual(
+    out.stats.map((t) => t.label),
+    ['Model', 'Top scorer', 'Dud'],
+  )
+  assert.equal(out.stats[0].value, 'Right')
+  assert.match(out.stats[0].sub, /Mordor|MSFG/)
+  assert.equal(out.stats[1].value, '11')
+  assert.equal(out.stats[2].label, 'Dud')
   assert.equal(out.recap.length, 2)
-  for (const b of out.bullets) {
-    for (const r of out.recap) {
-      assert.notEqual(b.toLowerCase(), r.toLowerCase(), `repeat: ${b}`)
-      assert.ok(!b.toLowerCase().includes(r.toLowerCase()), `bullet contains recap: ${b}`)
-    }
-  }
-  assert.ok(!out.bullets.some((b) => /^Book /.test(b)))
-  assert.ok(!out.bullets.join(' ').includes('That leaves'))
-  assert.ok(!out.bullets.some((b) => /João Pedro did 11/.test(b)))
-  assert.match(out.bullets.join(' '), /27|screenshotted|title|away|gear/i)
 })
 
-test('interesting preview bullets skip the raw book tape', () => {
-  const bullets = interestingBullets(
+test('preview fixture is book odds plus highest predicted scorer', () => {
+  const out = glanceFixture(
     {
       gw: 1,
       home: {
@@ -116,35 +125,17 @@ test('interesting preview bullets skip the raw book tape', () => {
       },
       odds: { favoriteSide: 'home', favoritePct: 67 },
       bookie: { home: '1/2', draw: '25/1', away: '5/2' },
-      sentences: [
-        "Mike's path is ugly, Hall to blank, plus Virgil to haul.",
-        'Luke claimed Tel; Mike added Dorgu.',
-      ],
-    },
-    { preview: true, used: [] },
-  )
-  assert.equal(bullets.length, 2)
-  assert.ok(!bullets.some((b) => /^Book /.test(b)))
-  assert.ok(!bullets.some((b) => /^Watch:/.test(b)))
-  assert.match(bullets.join(' '), /path is ugly|claimed|favourite|hinge/i)
-})
-
-test('every preview fixture still gets a two-sentence recap box', () => {
-  const out = glanceFixture(
-    {
-      gw: 1,
-      home: { entryId: 1, name: 'Suffolk Sméagol', manager: 'Andy Ward' },
-      away: { entryId: 2, name: 'Rokesly Regorasu', manager: 'David Higman' },
-      odds: { favoriteSide: 'away', favoritePct: 58 },
-      bookie: { home: '13/8', draw: '25/1', away: '8/11' },
-      sentences: [
-        'The title board still has Rokesly Regorasu out in front at 21/20, Suffolk Sméagol chasing, while the hinge looks like Kerkez against Guéhi.',
-      ],
     },
     { preview: true },
   )
+  assert.deepEqual(
+    out.stats.map((t) => t.label),
+    ['Book', 'Top scorer'],
+  )
+  assert.equal(out.stats[0].value, '1/2 · 25/1 · 5/2')
+  assert.equal(out.stats[1].value, '4.9')
+  assert.equal(out.stats[1].sub, 'Donnarumma')
   assert.equal(out.recap.length, 2)
-  assert.ok(out.recap.join(' ').length > 40)
 })
 
 test('matchupChips flags upset and derby', () => {
@@ -156,12 +147,5 @@ test('matchupChips flags upset and derby', () => {
   assert.deepEqual(
     chips.map((c) => c.label),
     ['Battle of Warderloo', 'Upset', 'Week high'],
-  )
-})
-
-test('wrapBanner is a single statement', () => {
-  assert.equal(
-    wrapBanner(['This week features the Battle of Warderloo.']),
-    'This week features the Battle of Warderloo',
   )
 })
