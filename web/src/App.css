@@ -15243,7 +15243,7 @@ button.live-xp__player-name:focus-visible {
     width: 1.95rem;
   }
   .standings-stats-bench-table .win-margin-table__n {
-    width: 2.9rem;
+    width: 2.35rem;
   }
   .standings-stats-bench-table.win-margin-table thead th.win-margin-table__n {
     white-space: normal;
@@ -15256,6 +15256,16 @@ button.live-xp__player-name:focus-visible {
     min-width: 0;
     width: 2.35rem;
     font-size: 0.68rem;
+  }
+  /* Unused bar is redundant next to the Unused number; drop it so the
+   * TEAM column can show curated short names (Sméagol, Regorasu). */
+  .standings-stats-bench-table .standings-stats-weeks-table__bar-head,
+  .standings-stats-bench-table .standings-stats-weeks-table__bar-cell {
+    display: none;
+  }
+  .standings-stats-bench-table .win-margin-table__name {
+    flex: 1 1 auto;
+    min-width: 0;
   }
   .standings-stats-bench-table__detail > td {
     padding: 0 4px 8px;
