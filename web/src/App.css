@@ -14712,19 +14712,45 @@ button.live-xp__player-name:focus-visible {
   color: var(--fm-text-strong);
 }
 
+.standings-stats-bench-table {
+  table-layout: fixed;
+}
+
+.standings-stats-bench-table__col-team {
+  width: auto;
+}
+
+.standings-stats-bench-table__col-n {
+  width: 3.4rem;
+}
+
+.standings-stats-bench-table__col-bestxi {
+  width: 4.8rem;
+}
+
+.standings-stats-bench-table__col-swing {
+  width: 3rem;
+}
+
+.standings-stats-bench-table__col-bar {
+  width: 28%;
+}
+
 .standings-stats-bench-table .standings-stats-bench-table__sort {
-  display: inline-flex;
+  display: flex;
   grid-template-columns: unset;
   width: 100%;
   max-width: 100%;
   gap: 2px;
   justify-content: center;
   align-items: center;
+  text-align: center;
 }
 
 .standings-stats-bench-table .win-margin-table__team .standings-stats-bench-table__sort {
   justify-content: flex-start;
   width: auto;
+  text-align: left;
 }
 
 .standings-stats-bench-table .standings-stats-bench-table__sort .standings-sort-btn__label {
@@ -14737,10 +14763,12 @@ button.live-xp__player-name:focus-visible {
   text-align: center;
 }
 
+.standings-stats-bench-table tbody th.win-margin-table__team {
+  padding-left: 4px;
+}
+
 .standings-stats-bench-table__bestxi {
   white-space: nowrap;
-  min-width: 4.5rem;
-  width: 4.5rem;
 }
 
 .standings-stats-bench-table__bar-fill {
@@ -14821,6 +14849,9 @@ button.live-xp__player-name:focus-visible {
   padding: 0 10px 12px;
   border-bottom: 1px solid var(--fm-border);
   background: color-mix(in srgb, var(--tclot-logo-purple) 5%, transparent);
+  /* Keep the sit-out card from rewriting parent column widths. */
+  max-width: 0;
+  overflow: hidden;
 }
 
 .standings-stats-bench-misses {
@@ -14833,6 +14864,8 @@ button.live-xp__player-name:focus-visible {
 
 .standings-stats-bench-misses__table {
   width: 100%;
+  max-width: 100%;
+  table-layout: fixed;
   border-collapse: collapse;
   font-size: 0.78rem;
 }
@@ -14879,6 +14912,11 @@ button.live-xp__player-name:focus-visible {
 .standings-stats-bench-misses__kit .pl-kit-fallback {
   width: 22px;
   height: 22px;
+}
+
+.standings-stats-bench-misses__kit .pl-kit-fallback {
+  border-radius: 50%;
+  font-size: 0.48rem;
 }
 
 .standings-stats-bench-misses__name {
@@ -15311,23 +15349,41 @@ button.live-xp__player-name:focus-visible {
     width: 1.95rem;
   }
   .standings-stats-bench-table .win-margin-table__n {
-    width: 2.6rem;
+    width: auto;
   }
   .standings-stats-bench-table.win-margin-table thead th.win-margin-table__n {
     white-space: nowrap;
-    letter-spacing: 0.01em;
+    letter-spacing: 0;
     line-height: 1.15;
     overflow-wrap: normal;
     word-break: keep-all;
+    font-size: 0.56rem;
   }
-  .standings-stats-bench-table__bestxi {
-    min-width: 3.7rem;
-    width: 3.7rem;
+  .standings-stats-bench-table__col-team {
+    width: 40%;
+  }
+  .standings-stats-bench-table__col-n {
+    width: 15%;
+  }
+  .standings-stats-bench-table__col-bestxi {
+    width: 20%;
+  }
+  .standings-stats-bench-table__col-swing {
+    width: 10%;
+  }
+  .standings-stats-bench-table__col-bar {
+    width: 0;
+  }
+  .standings-stats-bench-table .standings-sort-arrow--idle {
+    display: none;
   }
   .standings-stats-bench-table__swing {
     min-width: 0;
-    width: 2.15rem;
+    width: auto;
     font-size: 0.68rem;
+  }
+  .standings-stats-bench-table tbody th.win-margin-table__team {
+    padding-left: 2px;
   }
   /* Unused bar is redundant next to the Unused number; drop it so the
    * TEAM column can show curated short names (Sméagol, Regorasu). */

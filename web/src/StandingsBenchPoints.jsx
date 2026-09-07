@@ -180,6 +180,14 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         <>
           <div className="table-scroll table-scroll--win-margin">
             <table className="win-margin-table standings-stats-bench-table">
+              <colgroup>
+                <col className="standings-stats-bench-table__col-team" />
+                <col className="standings-stats-bench-table__col-n" />
+                <col className="standings-stats-bench-table__col-n" />
+                <col className="standings-stats-bench-table__col-bestxi" />
+                <col className="standings-stats-bench-table__col-swing" />
+                <col className="standings-stats-bench-table__col-bar" />
+              </colgroup>
               <thead>
                 <tr>
                   <BenchSortTh
