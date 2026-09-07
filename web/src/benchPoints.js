@@ -231,6 +231,43 @@ export function fixturesForGw(fixtures, gw) {
   return (fixtures || []).filter((f) => Number(f.gw) === n)
 }
 
+/** Sit-outs listed in the team dropdown must score more than this. */
+export const BENCH_DETAIL_MIN_PTS = 2
+
+/**
+ * Flatten leftover best-XI sit-outs across a team's finished weeks.
+ * Only players with more than {@link BENCH_DETAIL_MIN_PTS} points.
+ *
+ * @param {{ weeks?: { gw?: number, leftOnBench?: { id?: number, name?: string, pos?: string, pts?: number }[] }[] } | null | undefined} teamRow
+ * @param {number} [minPts]
+ * @returns {{ id: number, name: string, pos?: string, gw: number, pts: number }[]}
+ */
+export function leftoverBenchPlayers(teamRow, minPts = BENCH_DETAIL_MIN_PTS) {
+  const rows = []
+  for (const week of teamRow?.weeks || []) {
+    const gw = Number(week?.gw)
+    if (!Number.isFinite(gw) || gw < 1) continue
+    for (const p of week.leftOnBench || []) {
+      const pts = Number(p?.pts) || 0
+      if (pts <= minPts) continue
+      const id = Number(p?.id)
+      rows.push({
+        id: Number.isFinite(id) ? id : 0,
+        name: p?.name || 'Player',
+        pos: p?.pos,
+        gw,
+        pts,
+      })
+    }
+  }
+  rows.sort((a, b) => {
+    if (b.pts !== a.pts) return b.pts - a.pts
+    if (a.gw !== b.gw) return a.gw - b.gw
+    return (a.name || '').localeCompare(b.name || '')
+  })
+  return rows
+}
+
 /**
  * Short "Salah 12" list for the leftover starters they sat.
  *
