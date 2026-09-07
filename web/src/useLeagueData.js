@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fplElementWebName } from './fplElementNames.js';
 import {
+  compareH2hStandingsKeys,
   finishedEventIdsFromEvents,
   normalizeMatchesFinished,
+  sortH2hStandingsRows,
 } from './h2hEffectiveFinished.js';
 import { draftResourceUrl } from './fplDraftUrl.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
@@ -533,7 +535,7 @@ function buildDefaultKitIndexByLeagueEntry(sortedByRank, teams) {
 }
 
 /**
- * Rebuild cumulative H2H table from finished matches only (same scoring order as before).
+ * Rebuild cumulative H2H table from finished matches only (official PTS → PF → name).
  * The draft API often updates `matches[].finished` and points shortly before `standings`
  * totals catch up after a GW — deriving here keeps PTS / PL / form / next in sync with fixtures.
  */
@@ -596,11 +598,9 @@ function deriveStandingsFromMatches(leagueEntries, matchList, teams) {
       points_against: s.pa,
     };
   });
-  rows.sort(
-    (a, b) =>
-      b.total - a.total ||
-      b.points_for - a.points_for ||
-      a.points_against - b.points_against
+  sortH2hStandingsRows(
+    rows,
+    (r) => teams[r.league_entry]?.entry_name ?? `Team ${r.league_entry}`,
   );
   rows.forEach((r, i) => {
     r.rank = i + 1;
@@ -691,11 +691,15 @@ function buildGwRankExtremes(matchList, leagueEntries, teams) {
       const total = s.w * 3 + s.d;
       return { id, total, pf: s.pf, pa: s.pa };
     });
-    rows.sort(
-      (a, b) =>
-        b.total - a.total ||
-        b.pf - a.pf ||
-        a.pa - b.pa,
+    rows.sort((a, b) =>
+      compareH2hStandingsKeys(
+        a.total,
+        b.total,
+        a.pf,
+        b.pf,
+        teams[a.id]?.entry_name,
+        teams[b.id]?.entry_name,
+      ),
     );
     firstMap[rows[0].id].push(gw);
     lastMap[rows[teamCount - 1].id].push(gw);

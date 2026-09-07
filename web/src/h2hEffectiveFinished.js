@@ -117,10 +117,59 @@ export function normalizeMatchesFinished(matches, fixtures, extraFinishedGws) {
 }
 
 /**
- * Rebuild H2H standings rows from finished matches (same W/D/L + PF/PA order as
- * `useLeagueData.deriveStandingsFromMatches`). Used at build time so
- * `details.json` standings are not left as FPL's all-zero / stale snapshot after
- * we promote `matches[].finished`.
+ * Official FPL Draft H2H order: league points, then game points (points for).
+ * Draft help: "If teams are level on league points … the team with the most
+ * game points will be positioned higher." There is no points-against / GD
+ * step — remaining ties share a rank in the official app, and we list them
+ * A–Z by team name so the table matches that display (GW3: Seoul, Suffolk,
+ * Toronto — not Suffolk first on a better PA).
+ *
+ * @param {number} aPts
+ * @param {number} bPts
+ * @param {number} aFor
+ * @param {number} bFor
+ * @param {string | null | undefined} aName
+ * @param {string | null | undefined} bName
+ * @returns {number}
+ */
+export function compareH2hStandingsKeys(aPts, bPts, aFor, bFor, aName, bName) {
+  const pts = (Number(bPts) || 0) - (Number(aPts) || 0);
+  if (pts !== 0) return pts;
+  const pf = (Number(bFor) || 0) - (Number(aFor) || 0);
+  if (pf !== 0) return pf;
+  return String(aName ?? '').localeCompare(String(bName ?? ''), 'en', {
+    sensitivity: 'base',
+  });
+}
+
+/**
+ * In-place official H2H sort. `getName(row)` supplies the A–Z key after PTS/PF.
+ *
+ * @param {object[]} rows
+ * @param {(row: object) => string | null | undefined} [getName]
+ * @returns {object[]}
+ */
+export function sortH2hStandingsRows(rows, getName) {
+  const nameOf =
+    typeof getName === 'function' ? getName : (r) => r?.teamName ?? r?.entry_name;
+  rows.sort((a, b) =>
+    compareH2hStandingsKeys(
+      a.total,
+      b.total,
+      a.points_for,
+      b.points_for,
+      nameOf(a),
+      nameOf(b),
+    ),
+  );
+  return rows;
+}
+
+/**
+ * Rebuild H2H standings rows from finished matches (official PTS → PF → name
+ * order, same as `useLeagueData.deriveStandingsFromMatches`). Used at build
+ * time so `details.json` standings are not left as FPL's all-zero / stale
+ * snapshot after we promote `matches[].finished`.
  *
  * @param {object[]} leagueEntries
  * @param {object[]} matches Normalized matches (with effective `finished`).
@@ -164,6 +213,10 @@ export function deriveStandingsFromFinishedMatches(leagueEntries, matches) {
       st[id2].d += 1;
     }
   }
+  const nameById = new Map();
+  for (const e of leagueEntries || []) {
+    if (e?.id != null) nameById.set(e.id, e.entry_name ?? '');
+  }
   const rows = ids.map((id) => {
     const s = st[id];
     const total = s.w * 3 + s.d;
@@ -179,11 +232,9 @@ export function deriveStandingsFromFinishedMatches(leagueEntries, matches) {
       points_against: s.pa,
     };
   });
-  rows.sort(
-    (a, b) =>
-      b.total - a.total ||
-      b.points_for - a.points_for ||
-      a.points_against - b.points_against,
+  sortH2hStandingsRows(
+    rows,
+    (r) => nameById.get(r.league_entry) || `Team ${r.league_entry}`,
   );
   rows.forEach((r, i) => {
     r.rank = i + 1;
