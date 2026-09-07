@@ -136,34 +136,38 @@ test('recap fixture: model who, top scorer, dud', () => {
   assert.equal(out.recap.length, 2)
 })
 
-test('preview fixture is book odds plus highest predicted scorer', () => {
+test('preview fixture is two team book squares plus top scorer', () => {
   const out = glanceFixture(
     {
       gw: 1,
       home: {
         entryId: 1,
-        name: 'Toronto Gimli',
+        name: 'Seoul Shire',
         manager: 'Jon Ward',
         keys: [{ name: 'Verbruggen', xp: 3.9 }],
       },
       away: {
         entryId: 2,
-        name: 'Hackney Rohirrim',
+        name: 'Atlético Bilbo',
         manager: 'Mike Sutton',
-        keys: [{ name: 'Donnarumma', xp: 4.9 }],
+        keys: [{ name: 'Petrović', xp: 4.8 }],
       },
-      odds: { favoriteSide: 'home', favoritePct: 67 },
-      bookie: { home: '1/2', draw: '25/1', away: '5/2' },
+      odds: { favoriteSide: 'away', favoritePct: 53 },
+      bookie: { home: '11/8', draw: '25/1', away: '10/11' },
     },
     { preview: true },
   )
   assert.deepEqual(
-    out.stats.map((t) => t.label),
-    ['Book', 'Top scorer'],
+    out.stats.map((t) => [t.label, t.value]),
+    [
+      ['Seoul', '11/8'],
+      ['Bilbo', '10/11'],
+      ['Top scorer', '4.8'],
+    ],
   )
-  assert.equal(out.stats[0].value, '1/2 · 25/1 · 5/2')
-  assert.equal(out.stats[1].value, '4.9')
-  assert.equal(out.stats[1].sub, 'Donnarumma')
+  assert.ok(!out.stats.some((t) => String(t.value).includes('25/1')))
+  assert.equal(out.stats[1].tone, 'win')
+  assert.equal(out.stats[2].sub, 'Petrović')
   assert.equal(out.recap.length, 2)
 })
 
