@@ -111,6 +111,11 @@ const STEM_RULES = [
   ['vegan', /vegan|oat milk|tofu|plant-based/i],
   ['call-hit', /was the call|night agreed/i],
   ['call-miss', /scoreboard disagreed|wrecked a/i],
+  ['book-both', /the book has/i],
+  ['board-both', /on the board/i],
+  ['engine-both', /the engine has/i],
+  ['watch-is', /'s watch is/i],
+  ['title-price', /for the title/i],
 ]
 
 export function recapStem(text) {
@@ -753,12 +758,171 @@ function noteAngle(bag, kinds, stems, a) {
   bag.stems.push(a.stem)
 }
 
+function watchPlayer(side) {
+  return [...(side?.keys || [])]
+    .filter((k) => k?.name)
+    .sort((a, b) => (b.xp || 0) - (a.xp || 0))[0] || null
+}
+
+function previewBothLines(m) {
+  const home = m?.home
+  const away = m?.away
+  const out = []
+  if (home?.name && away?.name && m?.bookie?.home && m?.bookie?.away) {
+    out.push(
+      `The book has ${shortTeam(home.name)} at ${m.bookie.home} and ${shortTeam(away.name)} at ${m.bookie.away}`,
+    )
+  }
+  if (home?.name && away?.name && Number.isFinite(m?.odds?.home) && Number.isFinite(m?.odds?.away)) {
+    out.push(
+      `${shortTeam(home.name)} sit at ${Math.round(m.odds.home)}% on the board, ${shortTeam(away.name)} at ${Math.round(m.odds.away)}%`,
+    )
+  }
+  const hp = predFor(m, home)
+  const ap = predFor(m, away)
+  if (home?.name && away?.name && Number.isFinite(hp) && Number.isFinite(ap)) {
+    out.push(
+      `The engine has ${shortTeam(home.name)} at ${hp} and ${shortTeam(away.name)} at ${ap}`,
+    )
+  }
+  if (!out.length && home?.name && away?.name) {
+    out.push(`${shortTeam(home.name)} against ${shortTeam(away.name)} is the week's card`)
+  }
+  return out
+}
+
+function previewSideHooks(side) {
+  if (!side) return []
+  const out = []
+  const pickup = pickupBits(side)[0]
+  if (pickup?.name) {
+    out.push(
+      angle(
+        'waiver',
+        `${who(side)} claimed ${pickup.name} on the ${pickupKind(pickup.kind)}`,
+        { side, pickup },
+      ),
+    )
+  }
+  const watch = watchPlayer(side)
+  if (watch) {
+    out.push(
+      angle('projected', `${who(side)}'s watch is ${watch.name} at ${watch.xp}`, {
+        side,
+        player: watch,
+      }),
+    )
+  }
+  if (side.titlePrice) {
+    out.push(
+      angle('title', `${shortTeam(side.name)} are ${side.titlePrice} for the title`, { side }),
+    )
+  } else if (Number.isFinite(side.titlePct)) {
+    const pctLabel = formatTitlePct(side.titlePct)
+    if (pctLabel) {
+      out.push(
+        angle('title', `${shortTeam(side.name)} sit at ${pctLabel} for the title`, { side }),
+      )
+    }
+  }
+  return out.filter(Boolean)
+}
+
+function pickPreviewHook(angles, bag, key, avoidKind) {
+  const unusedKind = angles.filter(
+    (a) => isFree(a, bag) && a.kind !== avoidKind,
+  )
+  const pool = unusedKind.length
+    ? unusedKind
+    : angles.filter((a) => isFree(a, bag))
+  if (!pool.length) return angles.find((a) => !overlaps(a.text, bag.lines)) || null
+  return pick(pool, key)
+}
+
+function previewPersonality(m, used, ctx) {
+  const key = fixtureKey(m, true)
+  const bag = usedBag(used)
+  const mottOn =
+    isMottershead(m?.home?.manager) || isMottershead(m?.away?.manager)
+  const kinds = []
+  const stems = []
+  const lines = []
+
+  const both = previewBothLines(m)
+    .map((t) => angle('preview', t, { side: m.home, opp: m.away }))
+    .filter((a) => a && !overlaps(a.text, bag.lines))
+  const unusedBoth = both.filter((a) => !bag.stems.includes(a.stem))
+  const leadPool = unusedBoth.length ? unusedBoth : both
+  const lead = leadPool.length ? pick(leadPool, `${key}-lead`) : null
+  if (lead) {
+    lines.push(lead.text)
+    noteAngle(bag, kinds, stems, lead)
+  }
+
+  const homeHook = pickPreviewHook(
+    previewSideHooks(m.home),
+    bag,
+    `${key}-hh`,
+  )
+  const awayHook = pickPreviewHook(
+    previewSideHooks(m.away),
+    bag,
+    `${key}-ah`,
+    homeHook?.kind,
+  )
+  for (const hook of [homeHook, awayHook]) {
+    if (!hook || overlaps(hook.text, lines)) continue
+    lines.push(hook.text)
+    noteAngle(bag, kinds, stems, hook)
+  }
+
+  const vegan = mottOn ? veganAngle(key, bag) : null
+  if (vegan) {
+    if (!lines.length) {
+      lines.push(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    } else if (pick(['aside', 'aside', 'lead'], `${key}-vegan-slot`) === 'lead') {
+      lines.unshift(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    } else {
+      lines.push(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    }
+  }
+
+  const jokeSides = [m?.home, m?.away].filter(
+    (s) => s?.manager && !isMottershead(s.manager),
+  )
+  const jokeSide =
+    jokeSides.length > 1 ? pick(jokeSides, `${key}-jside`) : jokeSides[0]
+  const joke = jokeAngle(jokeSide, `${key}-joke`, bag)
+  if (joke && lines.length < 4) {
+    lines.push(joke.text)
+    noteAngle(bag, kinds, stems, joke)
+  }
+
+  if (lines.length < 3) {
+    for (const extra of both) {
+      if (lines.length >= 3) break
+      if (overlaps(extra.text, lines)) continue
+      lines.push(extra.text)
+      noteAngle(bag, kinds, stems, extra)
+    }
+  }
+
+  const out = lines.slice(0, 4)
+  out.kinds = kinds
+  out.stems = stems
+  return out
+}
+
 /**
  * One news theme per card, then two or three site-data sentences on that
  * theme. Jokes are a closing aside. Mottershead vegan is required but not
- * always first. Minimum three sentences.
+ * always first. Minimum three sentences. Previews name both teams.
  */
 export function personalityRecap(m, preview = false, used = [], ctx = {}) {
+  if (preview) return previewPersonality(m, used, ctx)
   const key = fixtureKey(m, preview)
   const bag = usedBag(used)
   const priorGws = ctx?.priorGws || []
