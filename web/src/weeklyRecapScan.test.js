@@ -92,33 +92,67 @@ test('glanceTiles header adds model dots and top scorer', () => {
   assert.equal(tiles.find((t) => t.label === 'Top scorer')?.sub, 'Stach')
 })
 
-test('preview header derives GW scorer when baked topScorer is null', () => {
+test('preview header is fav, underdog, top scorer, waiver and potential dud', () => {
   const tiles = glanceTiles({
     preview: true,
     previewGw: {
       superlatives: {
+        favourite: { name: 'Hackney Rohirrim', pct: 77 },
         topScorer: null,
         bestWaiver: { name: 'Schade', xp: 4.2 },
         dud: { name: 'Isak', xp: 1.2, overallPick: 3 },
       },
       matchups: [
         {
-          home: { keys: [{ name: 'Verbruggen', xp: 3.9 }] },
-          away: { keys: [{ name: 'Donnarumma', xp: 4.9 }] },
+          home: { name: 'Mordor S.F.G', keys: [{ name: 'Verbruggen', xp: 3.9 }] },
+          away: { name: 'Atlético Bilbo', keys: [{ name: 'Donnarumma', xp: 4.9 }] },
+          odds: { home: 73, away: 24, favoriteSide: 'home', favoritePct: 73 },
         },
         {
-          home: { keys: [{ name: 'Salah', xp: 6.1 }] },
-          away: { keys: [{ name: 'Haaland', xp: 5.5 }] },
+          home: { name: 'Seoul Shire', keys: [{ name: 'Salah', xp: 6.1 }] },
+          away: { name: 'Hackney Rohirrim', keys: [{ name: 'Haaland', xp: 5.5 }] },
+          odds: { home: 21, away: 77, favoriteSide: 'away', favoritePct: 77 },
         },
       ],
     },
   })
   assert.deepEqual(
     tiles.map((t) => t.label),
-    ['GW scorer', 'Best waiver', 'Dud'],
+    ['Biggest fav', 'Biggest underdog', 'Top scorer', 'Best waiver', 'Potential dud'],
   )
-  assert.equal(tiles[0].value, '6.1')
-  assert.equal(tiles[0].sub, 'Salah')
+  assert.equal(tiles[0].value, '77%')
+  assert.equal(tiles[0].sub, 'Hackney Rohirrim')
+  assert.equal(tiles[1].value, '21%')
+  assert.equal(tiles[1].sub, 'Seoul Shire')
+  assert.equal(tiles[2].value, '6.1')
+  assert.equal(tiles[2].sub, 'Salah')
+  assert.equal(tiles[3].value, '4.2')
+  assert.equal(tiles[3].sub, 'Schade')
+  assert.equal(tiles[4].value, '1.2')
+  assert.equal(tiles[4].sub, 'Isak · pick 3')
+})
+
+test('preview header derives favourite and underdog from matchup odds', () => {
+  const tiles = glanceTiles({
+    preview: true,
+    previewGw: {
+      superlatives: {
+        bestWaiver: { name: 'Schade', xp: 4.2 },
+        dud: { name: 'Isak', xp: 1.2 },
+      },
+      matchups: [
+        {
+          home: { name: 'Mordor S.F.G', keys: [{ name: 'Roefs', xp: 5.4 }] },
+          away: { name: 'Atlético Bilbo' },
+          odds: { home: 73, away: 24, favoriteSide: 'home', favoritePct: 73 },
+        },
+      ],
+    },
+  })
+  assert.equal(tiles.find((t) => t.label === 'Biggest fav')?.value, '73%')
+  assert.equal(tiles.find((t) => t.label === 'Biggest fav')?.sub, 'Mordor SFG')
+  assert.equal(tiles.find((t) => t.label === 'Biggest underdog')?.value, '24%')
+  assert.equal(tiles.find((t) => t.label === 'Biggest underdog')?.sub, 'Atlético Bilbo')
 })
 
 test('personalityRecap is vegan for Mottershead and not a two-manager checklist', () => {

@@ -899,6 +899,17 @@ function buildPreviewForGw(gw) {
   const closest = [...matchups].sort(
     (a, b) => Math.abs(50 - (a.odds?.favoritePct ?? 50)) - Math.abs(50 - (b.odds?.favoritePct ?? 50)),
   )[0]
+  let underdog = null
+  for (const m of matchups) {
+    for (const [side, raw] of [
+      [m?.home, m?.odds?.home],
+      [m?.away, m?.odds?.away],
+    ]) {
+      const pct = Number(raw)
+      if (!side?.name || !Number.isFinite(pct)) continue
+      if (!underdog || pct < underdog.pct) underdog = { name: side.name, pct }
+    }
+  }
 
   const fun = playerFunStats(gw, { history, prevHistory, useActual: false })
 
@@ -915,6 +926,12 @@ function buildPreviewForGw(gw) {
         ? {
             name: favourite.odds.favoriteSide === 'home' ? favourite.home.name : favourite.away.name,
             pct: favourite.odds.favoritePct,
+          }
+        : null,
+      underdog: underdog
+        ? {
+            name: underdog.name,
+            pct: underdog.pct,
           }
         : null,
       closest: closest

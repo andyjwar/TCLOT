@@ -1070,6 +1070,45 @@ function highestPredicted(previewGw) {
   return best
 }
 
+function formatWinPct(n) {
+  if (!Number.isFinite(Number(n))) return null
+  return `${Math.round(Number(n))}%`
+}
+
+function favouriteFromMatchups(previewGw) {
+  const baked = previewGw?.superlatives?.favourite
+  if (baked?.name && Number.isFinite(Number(baked.pct))) {
+    return { name: baked.name, pct: Number(baked.pct) }
+  }
+  let best = null
+  for (const m of previewGw?.matchups || []) {
+    const side = m?.odds?.favoriteSide === 'away' ? m.away : m?.odds?.favoriteSide === 'home' ? m.home : null
+    const pct = Number(m?.odds?.favoritePct)
+    if (!side?.name || !Number.isFinite(pct)) continue
+    if (!best || pct > best.pct) best = { name: side.name, pct }
+  }
+  return best
+}
+
+function underdogFromMatchups(previewGw) {
+  const baked = previewGw?.superlatives?.underdog
+  if (baked?.name && Number.isFinite(Number(baked.pct))) {
+    return { name: baked.name, pct: Number(baked.pct) }
+  }
+  let worst = null
+  for (const m of previewGw?.matchups || []) {
+    for (const [side, raw] of [
+      [m?.home, m?.odds?.home],
+      [m?.away, m?.odds?.away],
+    ]) {
+      const pct = Number(raw)
+      if (!side?.name || !Number.isFinite(pct)) continue
+      if (!worst || pct < worst.pct) worst = { name: side.name, pct }
+    }
+  }
+  return worst
+}
+
 function modelDots(recapGw) {
   const calls = (recapGw?.model?.calls || []).filter(
     (c) => c.outcome === 'hit' || c.outcome === 'miss',
@@ -1102,23 +1141,31 @@ export function glanceTiles({ recapGw, previewGw, preview }) {
   const predicted = preview ? highestPredicted(previewGw) : null
   const scorer = preview
     ? tile(
-        'GW scorer',
+        'Top scorer',
         predicted?.xp ?? predicted?.pts ?? predicted?.name ?? null,
         predicted?.name,
         'win',
       )
     : tile('GW scorer', s.weekHigh?.points, shortTeam(s.weekHigh?.name), 'win')
   if (preview) {
+    const fav = favouriteFromMatchups(previewGw)
+    const dog = underdogFromMatchups(previewGw)
     return [
+      tile('Biggest fav', formatWinPct(fav?.pct), shortTeam(fav?.name), 'win'),
+      tile(
+        'Biggest underdog',
+        formatWinPct(dog?.pct),
+        shortTeam(dog?.name),
+      ),
       scorer,
       tile(
         'Best waiver',
-        s.bestWaiver?.pts ?? s.bestWaiver?.xp,
+        s.bestWaiver?.xp ?? s.bestWaiver?.pts,
         s.bestWaiver?.name,
       ),
       tile(
-        'Dud',
-        s.dud?.pts ?? s.dud?.xp,
+        'Potential dud',
+        s.dud?.xp ?? s.dud?.pts,
         s.dud
           ? `${s.dud.name}${s.dud.overallPick ? ` · pick ${s.dud.overallPick}` : ''}`
           : '',
