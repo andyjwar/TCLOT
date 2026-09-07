@@ -268,10 +268,12 @@ export function ScanMatchups({
       />
     ))
   }
-  const used = []
+  const used = { lines: [], kinds: [], stems: [] }
   return matchups.map((m) => {
     const fixture = glanceFixture(m, { preview, used })
-    used.push(...fixture.recap)
+    used.lines.push(...fixture.recap)
+    used.kinds.push(...(fixture.kinds || []))
+    used.stems.push(...(fixture.stems || []))
     return (
       <GlanceCard
         key={`${m.home.entryId}-${m.away.entryId}`}
