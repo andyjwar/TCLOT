@@ -7,6 +7,8 @@
 import {
   allManagerJokes,
   isMottershead,
+  loreTagsFromSide,
+  managerFunFact,
   mottersheadVeganLine,
 } from './leagueLore.js'
 import { standingsMobileTeamName } from './teamNameUtils.js'
@@ -84,13 +86,76 @@ export function pickQuip(sentences) {
   )
 }
 
-function jokeFromPool(manager, salt, usedSet) {
-  if (isMottershead(manager)) return null
-  const pool = allManagerJokes(manager).filter((t) => !STALE_TAKE.test(t))
-  if (!pool.length) return null
-  const fresh = pool.filter((t) => !usedSet.has(stripEnd(t).toLowerCase()))
-  const choice = pick(fresh.length ? fresh : pool, salt)
-  return stripEnd(choice)
+const STEM_RULES = [
+  ['projected-stack', /projected stack/i],
+  ['hinge', /hinge is|\bhinge\b/i],
+  ['biggest-return', /biggest return/i],
+  ['led-with', /\bled\b.+\bwith\b/i],
+  ['heavy-lift', /heavy lifting/i],
+  ['rode', /\brode\b/i],
+  ['dud-for', /the dud for/i],
+  ['clip', /will not want the clip/i],
+  ['blanked', /blanked from/i],
+  ['stale-take', /will have a take/i],
+  ['waiver-claimed', /claimed .+ on the /i],
+  ['waiver-new', /is the new (waiver|free-agent)/i],
+  ['waiver-dud', /returned \d/i],
+  ['waiver-paid', / paid \d/i],
+  ['streak', /\d+-game (winning|losing) streak/i],
+  ['winless', /waiting on a first win|kind of record/i],
+  ['table-talk', /not being subtle|doing some talking/i],
+  ['vegan', /vegan|oat milk|tofu|plant-based/i],
+  ['call-hit', /was the call|night agreed/i],
+  ['call-miss', /scoreboard disagreed|wrecked a/i],
+]
+
+export function recapStem(text) {
+  const s = String(text || '')
+  for (const [id, re] of STEM_RULES) {
+    if (re.test(s)) return id
+  }
+  const fallback = stripEnd(s).toLowerCase()
+  return fallback.slice(0, 48) || 'other'
+}
+
+function usedBag(used) {
+  if (Array.isArray(used)) return { lines: [...used], kinds: [], stems: [] }
+  return {
+    lines: [...(used?.lines || [])],
+    kinds: [...(used?.kinds || [])],
+    stems: [...(used?.stems || [])],
+  }
+}
+
+function angle(kind, text) {
+  const t = stripEnd(text)
+  if (!t) return null
+  return { kind, text: t, stem: recapStem(t) }
+}
+
+function isFree(a, bag) {
+  if (!a?.text || STALE_TAKE.test(a.text)) return false
+  if (overlaps(a.text, bag.lines)) return false
+  if (bag.stems.includes(a.stem)) return false
+  return true
+}
+
+const FOLLOW_ON =
+  /^(The|A|An|That|This|His|Her|Their|For|If|When|While|After|With|Question|Somewhere|Plant-based)\b/
+
+function lcFirst(s) {
+  return s ? s.charAt(0).toLowerCase() + s.slice(1) : s
+}
+
+function asFollowOn(s) {
+  const t = stripEnd(s)
+  return FOLLOW_ON.test(t) ? lcFirst(t) : t
+}
+
+function weave(lead, aside) {
+  if (!aside) return stripEnd(lead)
+  if (!lead) return stripEnd(aside)
+  return `${stripEnd(lead)}, ${asFollowOn(aside)}`
 }
 
 function pickupKind(kind) {
@@ -143,8 +208,36 @@ function streakLine(side) {
   return `${who(side)} is on a ${st.len}-game ${kind} streak`
 }
 
-/** Fixture notes: waivers, projected scorers, hauls, duds, streaks, bad records. */
-export function fixtureStoryLines(m, preview = false, key = 's') {
+function pushVariants(out, kind, texts) {
+  for (const t of texts) {
+    const a = angle(kind, t)
+    if (a) out.push(a)
+  }
+}
+
+function callAngles(m) {
+  const fav = favSide(m)
+  const dog = fav && fav.entryId === m?.home?.entryId ? m.away : m.home
+  if (m?.odds?.outcome === 'hit' && fav) {
+    return [
+      angle('call', `${who(fav)} was the call and it stood`),
+      angle('call', `The book had ${shortTeam(fav.name)} and the night agreed`),
+    ].filter(Boolean)
+  }
+  if (m?.odds?.outcome === 'miss' && fav) {
+    const pct = Number.isFinite(m.odds.favoritePct)
+      ? `${Math.round(m.odds.favoritePct)}%`
+      : 'pre-match'
+    return [
+      angle('call', `The model had ${who(fav)} and the scoreboard disagreed`),
+      angle('call', `${who(dog)} wrecked a ${pct} favourite`),
+    ].filter(Boolean)
+  }
+  return []
+}
+
+/** Tagged fixture notes: one kind per angle, several stems to rotate. */
+export function fixtureStoryAngles(m, preview = false, key = 's') {
   const out = []
   for (const [side, salt] of [
     [m?.home, `${key}-h`],
@@ -152,23 +245,18 @@ export function fixtureStoryLines(m, preview = false, key = 's') {
   ]) {
     if (!side) continue
     for (const p of pickupBits(side)) {
-      const kind = pickupKind(p.kind)
+      const label = pickupKind(p.kind)
       if (p.dud || (Number.isFinite(p.xp) && Number.isFinite(p.pts) && p.pts <= 2 && p.xp >= 4)) {
-        out.push(
-          `${who(side)}'s ${kind} ${p.name} returned ${p.pts ?? 0}${p.xp != null ? ` off ${p.xp}` : ''}`,
-        )
+        pushVariants(out, 'waiver', [
+          `${who(side)}'s ${label} ${p.name} returned ${p.pts ?? 0}${p.xp != null ? ` off ${p.xp}` : ''}`,
+        ])
       } else if (Number.isFinite(p.pts) && p.pts >= 8) {
-        out.push(`${who(side)}'s ${kind} ${p.name} paid ${p.pts}`)
+        pushVariants(out, 'waiver', [`${who(side)}'s ${label} ${p.name} paid ${p.pts}`])
       } else {
-        out.push(
-          pick(
-            [
-              `${who(side)} claimed ${p.name} on the ${kind}`,
-              `${p.name} is the new ${kind} in ${shortTeam(side.name)}`,
-            ],
-            `${salt}-waive-${p.name}`,
-          ),
-        )
+        pushVariants(out, 'waiver', [
+          `${who(side)} claimed ${p.name} on the ${label}`,
+          `${p.name} is the new ${label} in ${shortTeam(side.name)}`,
+        ])
       }
     }
 
@@ -177,122 +265,157 @@ export function fixtureStoryLines(m, preview = false, key = 's') {
         .filter((k) => k?.name)
         .sort((a, b) => (b.xp || 0) - (a.xp || 0))[0]
       if (watch) {
-        out.push(
-          pick(
-            [
-              `${who(side)}'s hinge is ${watch.name} at ${watch.xp}`,
-              `The projected stack for ${shortTeam(side.name)} runs through ${watch.name} (${watch.xp})`,
-            ],
-            `${salt}-xp`,
-          ),
-        )
+        pushVariants(out, 'projected', [
+          `${who(side)}'s hinge is ${watch.name} at ${watch.xp}`,
+          `The projected stack for ${shortTeam(side.name)} runs through ${watch.name} (${watch.xp})`,
+          `${watch.name} is the ${watch.xp} watch for ${who(side)}`,
+        ])
       }
     } else {
       const top = side.players?.top
       if (top?.name && Number.isFinite(top.pts)) {
-        out.push(
-          pick(
-            [
-              `${top.name} led ${shortTeam(side.name)} with ${top.pts}`,
-              `Biggest return in ${shortTeam(side.name)}: ${top.name} on ${top.pts}`,
-            ],
-            `${salt}-top`,
-          ),
-        )
+        pushVariants(out, 'haul', [
+          `${top.name} led ${shortTeam(side.name)} with ${top.pts}`,
+          `Biggest return in ${shortTeam(side.name)}: ${top.name} on ${top.pts}`,
+          `${who(side)} rode ${top.name} to ${top.pts}`,
+          `${top.name}'s ${top.pts} did the heavy lifting for ${shortTeam(side.name)}`,
+        ])
       }
       const flop = side.players?.flop
       if (flop?.name && Number.isFinite(flop.pts)) {
-        out.push(
-          pick(
-            [
-              `${flop.name} the dud for ${who(side)}: ${flop.pts}${flop.xp != null ? ` from ${flop.xp}` : ''}`,
-              `${who(side)} will not want the clip of ${flop.name} walking off with ${flop.pts}`,
-            ],
-            `${salt}-dud`,
-          ),
-        )
+        pushVariants(out, 'dud', [
+          `${flop.name} the dud for ${who(side)}: ${flop.pts}${flop.xp != null ? ` from ${flop.xp}` : ''}`,
+          `${who(side)} will not want the clip of ${flop.name} walking off with ${flop.pts}`,
+          `${flop.name} blanked from ${flop.xp ?? 'a decent projection'} for ${who(side)}`,
+        ])
       }
     }
 
     const streak = streakLine(side)
-    if (streak) out.push(streak)
+    if (streak) out.push(angle('streak', streak))
     const rec = recordLine(side, salt)
-    if (rec) out.push(rec)
+    if (rec) out.push(angle('record', rec))
   }
+  if (!preview) out.push(...callAngles(m))
   return out.filter(Boolean)
 }
 
-function takeSome(arr, n, key) {
-  const pool = [...arr]
+export function fixtureStoryLines(m, preview = false, key = 's') {
+  const seen = new Set()
   const out = []
-  for (let i = 0; i < n && pool.length; i++) {
-    const item = pick(pool, `${key}-${i}`)
-    out.push(item)
-    const idx = pool.indexOf(item)
-    if (idx >= 0) pool.splice(idx, 1)
+  for (const a of fixtureStoryAngles(m, preview, key)) {
+    if (seen.has(a.text)) continue
+    seen.add(a.text)
+    out.push(a.text)
   }
   return out
 }
 
+const JOKE_SKIP = new Set(['waiver', 'dud', 'streak', 'record'])
+
+function assignNews(angles, bag, key) {
+  const unusedKind = angles.filter((a) => isFree(a, bag) && !bag.kinds.includes(a.kind))
+  const pool = unusedKind.length ? unusedKind : angles.filter((a) => isFree(a, bag))
+  if (!pool.length) return null
+  return pick(pool, `${key}-news`)
+}
+
+function jokeAngle(side, salt, bag) {
+  if (!side?.manager || isMottershead(side.manager)) return null
+  const tags = loreTagsFromSide(side)
+  const hooked = managerFunFact(side.manager, pick, salt, tags)
+  const pool = [hooked, ...allManagerJokes(side.manager)]
+    .map((t) => angle('joke', t))
+    .filter((a) => isFree(a, bag))
+  if (!pool.length) return null
+  return pick(pool, salt)
+}
+
+function veganAngle(key, bag) {
+  const line = mottersheadVeganLine(pick, `${key}-vegan`)
+  const a = angle('vegan', line)
+  if (a && isFree(a, bag)) return a
+  const fresh = ['a', 'b', 'c', 'd', 'e']
+    .map((slot) => angle('vegan', mottersheadVeganLine(pick, `${key}-vegan-${slot}`)))
+    .filter((x) => isFree(x, bag))
+  return fresh[0] || a
+}
+
+function noteAngle(bag, kinds, stems, a) {
+  if (!a) return
+  kinds.push(a.kind)
+  stems.push(a.stem)
+  bag.lines.push(a.text)
+  bag.kinds.push(a.kind)
+  bag.stems.push(a.stem)
+}
+
 /**
- * Mixed recap/preview copy: vegan when Mottershead is on the card, then a
- * random blend of fixture notes and one-or-both manager jokes. Not a
- * two-manager checklist.
+ * One news angle per card, assigned so the page does not repeat a kind or
+ * stem. Jokes hang off the news as a clause. Mottershead vegan is required
+ * but not always first.
  */
 export function personalityRecap(m, preview = false, used = []) {
   const key = fixtureKey(m, preview)
-  const usedSet = new Set(
-    (used || []).map((s) => stripEnd(s).toLowerCase()).filter(Boolean),
-  )
-  const lines = []
-
-  const add = (line) => {
-    const s = stripEnd(line)
-    if (!s || usedSet.has(s.toLowerCase()) || STALE_TAKE.test(s)) return
-    usedSet.add(s.toLowerCase())
-    lines.push(s)
-  }
-
+  const bag = usedBag(used)
   const mottOn =
     isMottershead(m?.home?.manager) || isMottershead(m?.away?.manager)
-  if (mottOn) add(mottersheadVeganLine(pick, `${key}-vegan`))
 
-  const stories = fixtureStoryLines(m, preview, key).filter(
-    (s) => !overlaps(s, [...usedSet]),
-  )
-  if (stories.length) {
-    const n = pick(mottOn ? [1, 1, 2] : [1, 1, 2], `${key}-stories`)
-    for (const s of takeSome(stories, n, `${key}-story`)) add(s)
+  const news = assignNews(fixtureStoryAngles(m, preview, key), bag, key)
+  const skipJoke = news && JOKE_SKIP.has(news.kind)
+  let joke = null
+  if (!skipJoke) {
+    const sides = [m?.home, m?.away].filter(
+      (s) => s?.manager && !isMottershead(s.manager),
+    )
+    const side = sides.length > 1 ? pick(sides, `${key}-jside`) : sides[0]
+    joke = jokeAngle(side, `${key}-joke`, bag)
+  }
+  const vegan = mottOn ? veganAngle(key, bag) : null
+
+  const kinds = []
+  const stems = []
+  const lines = []
+
+  if (news && joke) {
+    lines.push(weave(news.text, joke.text))
+    noteAngle(bag, kinds, stems, news)
+    noteAngle(bag, kinds, stems, joke)
+  } else if (news) {
+    lines.push(news.text)
+    noteAngle(bag, kinds, stems, news)
   }
 
-  const jokeSides = [m?.home, m?.away].filter(
-    (s) => s?.manager && !isMottershead(s.manager),
-  )
-  const jokeMode = pick(['one', 'one', 'both', 'none'], `${key}-jokes`)
-  if (jokeMode !== 'none' && jokeSides.length) {
-    const chosen =
-      jokeMode === 'both' || jokeSides.length === 1
-        ? jokeSides
-        : [pick(jokeSides, `${key}-jside`)]
-    for (const side of chosen) {
-      if (lines.length >= 3) break
-      add(jokeFromPool(side.manager, `${key}-${side.entryId || side.manager}`, usedSet))
+  if (vegan) {
+    if (!lines.length) {
+      lines.push(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    } else if (pick(['aside', 'aside', 'lead'], `${key}-vegan-slot`) === 'lead') {
+      lines.unshift(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    } else {
+      lines[0] = weave(lines[0], vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
     }
   }
 
   if (!lines.length) {
-    add(
-      pick(
-        [
-          `${who(m.home)} is already narrating this like it was the plan`,
-          `${who(m.away)} has a theory, and the scoreboard is the footnote`,
-        ],
-        `${key}-fallback`,
-      ),
+    const fb = pick(
+      [
+        `${who(m.home)} is already narrating this like it was the plan`,
+        `${who(m.away)} has a theory, and the scoreboard is the footnote`,
+      ],
+      `${key}-fallback`,
     )
+    lines.push(fb)
+    kinds.push('fallback')
+    stems.push(recapStem(fb))
   }
 
-  return lines.slice(0, 3)
+  const out = lines.slice(0, 2)
+  out.kinds = kinds
+  out.stems = stems
+  return out
 }
 
 function formatTitlePct(n) {
@@ -494,7 +617,13 @@ export function interestingBullets(m, { preview = false, used = [] } = {}) {
 export function glanceFixture(m, { preview = false, used = [] } = {}) {
   const recap = personalityRecap(m, preview, used)
   const stats = fixtureStatTiles(m, { preview })
-  return { stats, bullets: [], recap }
+  return {
+    stats,
+    bullets: [],
+    recap,
+    kinds: recap.kinds || [],
+    stems: recap.stems || [],
+  }
 }
 
 export function matchupScanLines(m, { preview = false } = {}) {

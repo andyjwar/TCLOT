@@ -7,6 +7,7 @@ import {
   matchupChips,
   personalityRecap,
   polaroidFacts,
+  recapStem,
 } from './weeklyRecapScan.js'
 
 const recapGw = {
@@ -119,10 +120,11 @@ test('polaroidFacts follows the slim header', () => {
 test('personalityRecap is vegan for Mottershead and not a two-manager checklist', () => {
   const a = personalityRecap(recapMatch)
   const b = personalityRecap(recapMatch)
-  assert.ok(a.length >= 1 && a.length <= 3)
+  assert.ok(a.length >= 1 && a.length <= 2)
   assert.deepEqual(a, b)
   assert.match(a.join(' '), /vegan|oat milk|tofu|plant-based/i)
   assert.doesNotMatch(a.join(' '), /will have a take/i)
+  assert.ok(a.kinds.includes('vegan'))
 })
 
 test('fixture stories cover waiver, projected, scorer, dud, streak and bad record', () => {
@@ -191,7 +193,7 @@ test('recap fixture: model, top scorer, both title odds', () => {
   assert.equal(out.stats[2].sub, 'title')
   assert.equal(out.stats[2].tone, 'win')
   assert.equal(out.stats[3].tone, 'loss')
-  assert.ok(out.recap.length >= 1 && out.recap.length <= 3)
+  assert.ok(out.recap.length >= 1 && out.recap.length <= 2)
 })
 
 test('preview fixture is two team book squares plus top scorer', () => {
@@ -226,7 +228,172 @@ test('preview fixture is two team book squares plus top scorer', () => {
   assert.ok(!out.stats.some((t) => String(t.value).includes('25/1')))
   assert.equal(out.stats[1].tone, 'win')
   assert.equal(out.stats[2].sub, 'Petrović')
-  assert.ok(out.recap.length >= 1 && out.recap.length <= 3)
+  assert.ok(out.recap.length >= 1 && out.recap.length <= 2)
+})
+
+function accumulate(matchups, preview) {
+  const used = { lines: [], kinds: [], stems: [] }
+  return matchups.map((m) => {
+    const out = glanceFixture(m, { preview, used })
+    used.lines.push(...out.recap)
+    used.kinds.push(...out.kinds)
+    used.stems.push(...out.stems)
+    return out
+  })
+}
+
+test('four recap cards do not reuse a stem or joke line', () => {
+  const matchups = [
+    recapMatch,
+    {
+      gw: 1,
+      home: {
+        entryId: 3,
+        name: 'Seoul Shire',
+        manager: 'Luke Butcher',
+        points: 47,
+        players: { top: { name: 'Saka', pts: 9 }, flop: { name: 'Maguire', pts: 1, xp: 5.6 } },
+      },
+      away: {
+        entryId: 4,
+        name: 'Hackney Rohirrim',
+        manager: 'Mike Sutton',
+        points: 31,
+        players: { top: { name: 'Stach', pts: 8 }, flop: { name: 'Wood', pts: 2, xp: 4.9 } },
+      },
+      odds: { favoriteSide: 'away', favoritePct: 61, outcome: 'miss' },
+    },
+    {
+      gw: 1,
+      home: {
+        entryId: 5,
+        name: 'Brampton Balrogs',
+        manager: 'David Higman',
+        points: 38,
+        rank: 8,
+        record: { w: 0, d: 0, l: 4 },
+        streak: { type: 'L', len: 3 },
+        pickup: { name: 'Schade', pts: 2, xp: 5.1, kind: 'w' },
+        players: { top: { name: 'Palmer', pts: 7 }, flop: { name: 'Isak', pts: 1, xp: 6.2 } },
+      },
+      away: {
+        entryId: 6,
+        name: 'Rokesly Regorasu',
+        manager: 'Eddy Webster',
+        points: 55,
+        players: { top: { name: 'Gakpo', pts: 12 } },
+      },
+      odds: { favoriteSide: 'away', favoritePct: 58, outcome: 'hit' },
+    },
+    {
+      gw: 1,
+      home: {
+        entryId: 7,
+        name: 'Toronto Gimli',
+        manager: 'Jon Ward',
+        points: 39,
+        players: { top: { name: 'White', pts: 11 }, flop: { name: 'Lammens', pts: 1, xp: 5.7 } },
+      },
+      away: {
+        entryId: 8,
+        name: 'Suffolk Sméagol',
+        manager: 'Andy Ward',
+        points: 52,
+        players: { top: { name: 'Haaland', pts: 10 } },
+      },
+      odds: { favoriteSide: 'home', favoritePct: 55, outcome: 'miss' },
+    },
+  ]
+  const boxes = accumulate(matchups, false)
+  const stems = boxes.flatMap((b) => b.stems.filter((s) => s !== 'vegan'))
+  assert.equal(new Set(stems).size, stems.length)
+  const lines = boxes.flatMap((b) => b.recap.map((s) => s.toLowerCase()))
+  assert.equal(new Set(lines).size, lines.length)
+  const newsKinds = boxes.map((b) => b.kinds.find((k) => k !== 'vegan' && k !== 'joke'))
+  assert.ok(newsKinds.every(Boolean))
+  assert.match(boxes[0].recap.join(' '), /vegan|oat milk|tofu|plant-based/i)
+})
+
+test('same fixture recap and preview do not share a news stem', () => {
+  const m = {
+    gw: 2,
+    home: {
+      entryId: 1,
+      name: 'Seoul Shire',
+      manager: 'Luke Butcher',
+      points: 44,
+      keys: [{ name: 'Saka', xp: 6.1 }],
+      players: { top: { name: 'Saka', pts: 9 }, flop: { name: 'Maguire', pts: 1, xp: 5.6 } },
+    },
+    away: {
+      entryId: 2,
+      name: 'Hackney Rohirrim',
+      manager: 'Mike Sutton',
+      points: 30,
+      keys: [{ name: 'Gabriel', xp: 5.6 }],
+      players: { top: { name: 'Stach', pts: 8 } },
+    },
+    odds: { favoriteSide: 'home', favoritePct: 62, outcome: 'hit' },
+  }
+  const recap = personalityRecap(m, false)
+  const preview = personalityRecap(m, true)
+  const recapNews = recap.stems.filter((s) => s !== 'vegan' && s !== 'joke')
+  const previewNews = preview.stems.filter((s) => s !== 'vegan' && s !== 'joke')
+  assert.ok(recapNews.every((s) => !previewNews.includes(s)))
+  assert.ok(!/projected stack|hinge is/i.test(recap.join(' ')))
+  assert.ok(!/led .+ with|biggest return|the dud for/i.test(preview.join(' ')))
+})
+
+test('a joke line used on the first card does not return on the second', () => {
+  const first = glanceFixture({
+    gw: 3,
+    home: {
+      entryId: 1,
+      name: 'Toronto Gimli',
+      manager: 'Jon Ward',
+      points: 40,
+      players: { top: { name: 'White', pts: 11 } },
+    },
+    away: {
+      entryId: 2,
+      name: 'Hackney Rohirrim',
+      manager: 'Mike Sutton',
+      points: 33,
+      players: { top: { name: 'Stach', pts: 8 } },
+    },
+    odds: { favoriteSide: 'home', favoritePct: 54, outcome: 'hit' },
+  })
+  const second = glanceFixture(
+    {
+      gw: 3,
+      home: {
+        entryId: 1,
+        name: 'Toronto Gimli',
+        manager: 'Jon Ward',
+        points: 28,
+        players: { top: { name: 'Saliba', pts: 6 } },
+      },
+      away: {
+        entryId: 3,
+        name: 'Seoul Shire',
+        manager: 'Luke Butcher',
+        points: 41,
+        players: { top: { name: 'Saka', pts: 10 } },
+      },
+      odds: { favoriteSide: 'away', favoritePct: 57, outcome: 'hit' },
+    },
+    {
+      used: {
+        lines: [...first.recap],
+        kinds: [...first.kinds],
+        stems: [...first.stems],
+      },
+    },
+  )
+  for (const line of first.recap) {
+    assert.ok(!second.recap.some((s) => s.toLowerCase() === line.toLowerCase()))
+  }
+  assert.equal(recapStem('The projected stack for Seoul runs through Saka (6.1)'), 'projected-stack')
 })
 
 test('matchupChips flags upset and derby', () => {
