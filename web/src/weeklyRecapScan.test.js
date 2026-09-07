@@ -1,6 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
+  fixtureStoryLines,
   glanceFixture,
   glanceTiles,
   matchupChips,
@@ -115,35 +116,65 @@ test('polaroidFacts follows the slim header', () => {
   assert.ok(facts.some((f) => f.label === 'Top scorer'))
 })
 
-test('personalityRecap is two lines and never the stale take', () => {
+test('personalityRecap is vegan for Mottershead and not a two-manager checklist', () => {
   const a = personalityRecap(recapMatch)
   const b = personalityRecap(recapMatch)
-  assert.equal(a.length, 2)
+  assert.ok(a.length >= 1 && a.length <= 3)
   assert.deepEqual(a, b)
+  assert.match(a.join(' '), /vegan|oat milk|tofu|plant-based/i)
   assert.doesNotMatch(a.join(' '), /will have a take/i)
 })
 
-test('personality lines rotate when a joke is already used', () => {
-  const first = personalityRecap({
-    gw: 1,
-    home: { entryId: 1, name: 'Toronto Gimli', manager: 'Jon Ward' },
-    away: { entryId: 2, name: 'Hackney Rohirrim', manager: 'Mike Sutton' },
-  })
-  const second = personalityRecap(
+test('fixture stories cover waiver, projected, scorer, dud, streak and bad record', () => {
+  const recap = fixtureStoryLines(
     {
-      gw: 1,
-      home: { entryId: 1, name: 'Toronto Gimli', manager: 'Jon Ward' },
-      away: { entryId: 3, name: 'Seoul Shire', manager: 'Luke Butcher' },
+      home: {
+        name: 'Toronto Gimli',
+        manager: 'Jon Ward',
+        rank: 8,
+        record: { w: 0, d: 0, l: 4 },
+        streak: { type: 'L', len: 3 },
+        pickup: { name: 'Schade', pts: 2, xp: 5.1, kind: 'w' },
+        players: { top: { name: 'White', pts: 11 }, flop: { name: 'Isak', pts: 1, xp: 6.2 } },
+      },
+      away: {
+        name: 'Hackney Rohirrim',
+        manager: 'Mike Sutton',
+        record: { w: 5, d: 0, l: 0 },
+        streak: { type: 'W', len: 5 },
+        players: { top: { name: 'Stach', pts: 13 } },
+      },
     },
     false,
-    first,
+    'recap-stories',
   )
-  const jonFirst = first.find((s) => /Jon|Brother Ward/i.test(s))
-  const jonSecond = second.find((s) => /Jon|Brother Ward/i.test(s))
-  assert.ok(jonFirst)
-  assert.ok(jonSecond)
-  assert.notEqual(jonFirst, jonSecond)
-  assert.doesNotMatch([...first, ...second].join(' '), /will have a take/i)
+  const blob = recap.join(' ')
+  assert.match(blob, /Schade|waiver/i)
+  assert.match(blob, /White|Stach/i)
+  assert.match(blob, /Isak|dud/i)
+  assert.match(blob, /3-game losing|5-game winning/i)
+  assert.match(blob, /0-0-4|first win|8th/i)
+
+  const preview = fixtureStoryLines(
+    {
+      home: {
+        name: 'Seoul Shire',
+        manager: 'Luke Butcher',
+        recentPickups: [{ name: 'Tel', kind: 'w' }],
+        keys: [{ name: 'Saka', xp: 6.1 }],
+      },
+      away: {
+        name: 'Atlético Bilbo',
+        manager: 'Nick Goodacre',
+        keys: [{ name: 'Petrović', xp: 4.8 }],
+      },
+    },
+    true,
+    'preview-stories',
+  )
+  const pre = preview.join(' ')
+  assert.match(pre, /Tel|waiver/i)
+  assert.match(pre, /Saka|Petrović/i)
 })
 
 test('recap fixture: model, top scorer, both title odds', () => {
@@ -160,7 +191,7 @@ test('recap fixture: model, top scorer, both title odds', () => {
   assert.equal(out.stats[2].sub, 'title')
   assert.equal(out.stats[2].tone, 'win')
   assert.equal(out.stats[3].tone, 'loss')
-  assert.equal(out.recap.length, 2)
+  assert.ok(out.recap.length >= 1 && out.recap.length <= 3)
 })
 
 test('preview fixture is two team book squares plus top scorer', () => {
@@ -195,7 +226,7 @@ test('preview fixture is two team book squares plus top scorer', () => {
   assert.ok(!out.stats.some((t) => String(t.value).includes('25/1')))
   assert.equal(out.stats[1].tone, 'win')
   assert.equal(out.stats[2].sub, 'Petrović')
-  assert.equal(out.recap.length, 2)
+  assert.ok(out.recap.length >= 1 && out.recap.length <= 3)
 })
 
 test('matchupChips flags upset and derby', () => {
