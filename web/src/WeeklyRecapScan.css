@@ -37,12 +37,20 @@
   margin: 10px 0 8px;
   gap: 6px;
 }
+.recap-scan__tiles--fixture .recap-scan__tile {
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 8px 6px;
+  text-align: center;
+}
+.recap-scan__tiles--fixture .recap-scan__tile i,
+.recap-scan__tiles--fixture .recap-scan__tile em {
+  text-align: center;
+}
 .recap-scan__tiles--two {
   grid-template-columns: 1fr 1fr;
-}
-.recap-scan__tiles--two .recap-scan__tile b {
-  font-size: 15px;
-  letter-spacing: -0.02em;
 }
 .recap-scan__tile {
   background: var(--surface-2, var(--fm-surface-2, #171b26));

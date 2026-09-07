@@ -173,22 +173,37 @@ function recapStatTiles(m) {
   return [call, star, dud].filter(Boolean).slice(0, 3)
 }
 
-function previewStatTiles(m) {
-  const book =
-    m?.bookie?.home && m?.bookie?.away
-      ? tile(
-          'Book',
-          `${m.bookie.home} · ${m.bookie.draw ?? '–'} · ${m.bookie.away}`,
-          '',
-        )
-      : null
+function squareTeam(name) {
+  const s = shortTeam(name)
+  if (!s || s === '–') return s
+  if (/^msfg$/i.test(s)) return s
+  const parts = s.split(/\s+/).filter(Boolean)
+  if (parts.length > 1 && /^(atl[eé]tico|fc|afc|the)$/i.test(parts[0])) {
+    return parts[1]
+  }
+  return parts[0]
+}
 
+function previewStatTiles(m) {
+  const fav = m?.odds?.favoriteSide
+  const home = tile(
+    squareTeam(m?.home?.name),
+    m?.bookie?.home,
+    '',
+    fav === 'home' ? 'win' : 'neutral',
+  )
+  const away = tile(
+    squareTeam(m?.away?.name),
+    m?.bookie?.away,
+    '',
+    fav === 'away' ? 'win' : 'neutral',
+  )
   const watch = [m?.home?.keys?.[0], m?.away?.keys?.[0]]
     .filter((k) => k?.name)
     .sort((a, b) => (b.xp || 0) - (a.xp || 0))[0]
   const eye = tile('Top scorer', watch?.xp, watch?.name)
 
-  return [book, eye].filter(Boolean)
+  return [home, away, eye].filter(Boolean)
 }
 
 export function fixtureStatTiles(m, { preview = false } = {}) {
