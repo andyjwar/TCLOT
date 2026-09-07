@@ -32,6 +32,7 @@ const recapMatch = {
     rank: 3,
     record: { w: 1, d: 0, l: 0 },
     players: { top: { name: 'João Pedro', pts: 11 }, flop: { name: 'Roefs', pts: 1, xp: 5.4 } },
+    titleOdds: { before: 8.2, after: 11.6 },
   },
   away: {
     entryId: 4259,
@@ -41,6 +42,7 @@ const recapMatch = {
     rank: 8,
     record: { w: 0, d: 0, l: 1 },
     players: { top: { name: 'Branthwaite', pts: 6 }, flop: { name: 'Shaw', pts: 1, xp: 5.1 } },
+    titleOdds: { before: 6.4, after: 4.1 },
   },
   odds: { favoriteSide: 'home', favoritePct: 74, outcome: 'hit' },
   margin: 27,
@@ -144,16 +146,20 @@ test('personality lines rotate when a joke is already used', () => {
   assert.doesNotMatch([...first, ...second].join(' '), /will have a take/i)
 })
 
-test('recap fixture: model who, top scorer, dud', () => {
+test('recap fixture: model, top scorer, both title odds', () => {
   const out = glanceFixture(recapMatch)
   assert.deepEqual(
-    out.stats.map((t) => t.label),
-    ['Model', 'Top scorer', 'Dud'],
+    out.stats.map((t) => [t.label, t.value]),
+    [
+      ['Model', 'Right'],
+      ['Top scorer', '11'],
+      ['Mordor', '11.6%'],
+      ['Bilbo', '4.1%'],
+    ],
   )
-  assert.equal(out.stats[0].value, 'Right')
-  assert.match(out.stats[0].sub, /Mordor|MSFG/)
-  assert.equal(out.stats[1].value, '11')
-  assert.equal(out.stats[2].label, 'Dud')
+  assert.equal(out.stats[2].sub, 'title')
+  assert.equal(out.stats[2].tone, 'win')
+  assert.equal(out.stats[3].tone, 'loss')
   assert.equal(out.recap.length, 2)
 })
 

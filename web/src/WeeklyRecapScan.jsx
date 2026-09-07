@@ -87,6 +87,7 @@ function GlanceTiles({ tiles, compact }) {
         'recap-scan__tiles' +
         (compact ? ' recap-scan__tiles--fixture' : '') +
         (tiles.length === 2 ? ' recap-scan__tiles--two' : '') +
+        (tiles.length === 4 && compact ? ' recap-scan__tiles--four' : '') +
         (tiles.length >= 5 && !compact ? ' recap-scan__tiles--five' : '')
       }
     >
