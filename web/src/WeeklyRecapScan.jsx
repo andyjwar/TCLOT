@@ -62,7 +62,18 @@ function Tile({ tile: t }) {
   return (
     <div className={'recap-scan__tile recap-scan__tile--' + t.tone}>
       <i>{t.label}</i>
-      <b>{t.value}</b>
+      {t.dots?.length ? (
+        <span className="recap-scan__dots" aria-label={t.value}>
+          {t.dots.map((d, i) => (
+            <span
+              key={`${d}-${i}`}
+              className={'recap-scan__dot recap-scan__dot--' + d}
+            />
+          ))}
+        </span>
+      ) : (
+        <b>{t.value}</b>
+      )}
       {t.sub ? <em>{t.sub}</em> : null}
     </div>
   )
@@ -75,7 +86,8 @@ function GlanceTiles({ tiles, compact }) {
       className={
         'recap-scan__tiles' +
         (compact ? ' recap-scan__tiles--fixture' : '') +
-        (tiles.length === 2 ? ' recap-scan__tiles--two' : '')
+        (tiles.length === 2 ? ' recap-scan__tiles--two' : '') +
+        (tiles.length >= 5 && !compact ? ' recap-scan__tiles--five' : '')
       }
     >
       {tiles.map((t) => (

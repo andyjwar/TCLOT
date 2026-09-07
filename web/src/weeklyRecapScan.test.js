@@ -46,16 +46,35 @@ const recapMatch = {
   margin: 27,
 }
 
-test('glanceTiles header is GW scorer, best waiver, dud', () => {
-  const tiles = glanceTiles({ recapGw, preview: false, decided: 4 })
+test('glanceTiles header adds model dots and top scorer', () => {
+  const tiles = glanceTiles({
+    recapGw: {
+      ...recapGw,
+      model: {
+        ...recapGw.model,
+        calls: [
+          { outcome: 'hit' },
+          { outcome: 'miss' },
+          { outcome: 'hit' },
+          { outcome: 'hit' },
+        ],
+      },
+    },
+    preview: false,
+    decided: 4,
+  })
   assert.deepEqual(
     tiles.map((t) => t.label),
-    ['GW scorer', 'Best waiver', 'Dud'],
+    ['GW scorer', 'Best waiver', 'Dud', 'Model', 'Top scorer'],
   )
   assert.equal(tiles[0].value, '55')
   assert.equal(tiles[1].value, '8')
   assert.equal(tiles[2].value, '0')
-  assert.ok(!tiles.some((t) => t.label === 'Model' || t.label === 'Upset'))
+  const model = tiles.find((t) => t.label === 'Model')
+  assert.deepEqual(model.dots, ['win', 'loss', 'win', 'win'])
+  assert.equal(model.value, '3/4')
+  assert.equal(tiles.find((t) => t.label === 'Top scorer')?.value, '13')
+  assert.equal(tiles.find((t) => t.label === 'Top scorer')?.sub, 'Stach')
 })
 
 test('preview header derives GW scorer when baked topScorer is null', () => {
@@ -89,7 +108,9 @@ test('preview header derives GW scorer when baked topScorer is null', () => {
 
 test('polaroidFacts follows the slim header', () => {
   const facts = polaroidFacts({ recapGw, preview: false, decided: 4 })
-  assert.equal(facts.length, 3)
+  assert.equal(facts.length, 5)
+  assert.ok(facts.some((f) => f.label === 'Model'))
+  assert.ok(facts.some((f) => f.label === 'Top scorer'))
 })
 
 test('personalityRecap is two lines and never the stale take', () => {
