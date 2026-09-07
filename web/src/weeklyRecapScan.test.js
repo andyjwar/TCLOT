@@ -8,7 +8,9 @@ import {
   personalityRecap,
   polaroidFacts,
   recapStem,
+  themeSupport,
 } from './weeklyRecapScan.js'
+import { indexRecapSite } from './recapSiteContext.js'
 
 const recapGw = {
   model: {
@@ -33,7 +35,12 @@ const recapMatch = {
     points: 51,
     rank: 3,
     record: { w: 1, d: 0, l: 0 },
-    players: { top: { name: 'João Pedro', pts: 11 }, flop: { name: 'Roefs', pts: 1, xp: 5.4 } },
+    seasonAvg: 51,
+    players: {
+      top: { id: 165, name: 'João Pedro', pts: 11 },
+      share: 0.216,
+      flop: { id: 529, name: 'Roefs', pts: 1, xp: 5.4 },
+    },
     titleOdds: { before: 8.2, after: 11.6 },
   },
   away: {
@@ -43,10 +50,16 @@ const recapMatch = {
     points: 24,
     rank: 8,
     record: { w: 0, d: 0, l: 1 },
-    players: { top: { name: 'Branthwaite', pts: 6 }, flop: { name: 'Shaw', pts: 1, xp: 5.1 } },
+    seasonAvg: 24,
+    players: {
+      top: { id: 230, name: 'Branthwaite', pts: 6 },
+      share: 0.25,
+      flop: { id: 423, name: 'Shaw', pts: 1, xp: 5.1 },
+    },
     titleOdds: { before: 6.4, after: 4.1 },
   },
   odds: { favoriteSide: 'home', favoritePct: 74, outcome: 'hit' },
+  predicted: { home: 38.4, away: 30.6 },
   margin: 27,
 }
 
@@ -120,7 +133,7 @@ test('polaroidFacts follows the slim header', () => {
 test('personalityRecap is vegan for Mottershead and not a two-manager checklist', () => {
   const a = personalityRecap(recapMatch)
   const b = personalityRecap(recapMatch)
-  assert.ok(a.length >= 1 && a.length <= 2)
+  assert.ok(a.length >= 3 && a.length <= 4)
   assert.deepEqual(a, b)
   assert.match(a.join(' '), /vegan|oat milk|tofu|plant-based/i)
   assert.doesNotMatch(a.join(' '), /will have a take/i)
@@ -193,7 +206,7 @@ test('recap fixture: model, top scorer, both title odds', () => {
   assert.equal(out.stats[2].sub, 'title')
   assert.equal(out.stats[2].tone, 'win')
   assert.equal(out.stats[3].tone, 'loss')
-  assert.ok(out.recap.length >= 1 && out.recap.length <= 2)
+  assert.ok(out.recap.length >= 3 && out.recap.length <= 4)
 })
 
 test('preview fixture is two team book squares plus top scorer', () => {
@@ -228,7 +241,7 @@ test('preview fixture is two team book squares plus top scorer', () => {
   assert.ok(!out.stats.some((t) => String(t.value).includes('25/1')))
   assert.equal(out.stats[1].tone, 'win')
   assert.equal(out.stats[2].sub, 'Petrović')
-  assert.ok(out.recap.length >= 1 && out.recap.length <= 2)
+  assert.ok(out.recap.length >= 3 && out.recap.length <= 4)
 })
 
 function accumulate(matchups, preview) {
@@ -394,6 +407,94 @@ test('a joke line used on the first card does not return on the second', () => {
     assert.ok(!second.recap.some((s) => s.toLowerCase() === line.toLowerCase()))
   }
   assert.equal(recapStem('The projected stack for Seoul runs through Saka (6.1)'), 'projected-stack')
+})
+
+test('themeSupport stays on a haul and quotes share, projection and prior week', () => {
+  const news = {
+    kind: 'haul',
+    text: 'João Pedro led Mordor with 11',
+    stem: 'led-with',
+    about: {
+      side: recapMatch.home,
+      opp: recapMatch.away,
+      player: recapMatch.home.players.top,
+    },
+  }
+  const site = indexRecapSite({
+    historyByGw: {
+      1: {
+        h2h: [
+          {
+            xi1: [{ id: 165, name: 'João Pedro', pts: 4 }],
+            xi2: [],
+          },
+        ],
+      },
+    },
+    benchPoints: {
+      teams: [
+        {
+          leagueEntryId: 18279,
+          weeks: [
+            {
+              gw: 1,
+              benchLeft: 11,
+              leftOnBench: [{ id: 68, name: 'Tavernier', pts: 10 }],
+            },
+          ],
+        },
+      ],
+    },
+  })
+  const lines = themeSupport(
+    { ...recapMatch, gw: 2 },
+    news,
+    { site, key: 'haul-support' },
+  )
+  const blob = lines.join(' ')
+  assert.ok(lines.length >= 2)
+  assert.match(blob, /22%|38\.4|up from 4|Tavernier/)
+})
+
+test('streak brief uses table and title-model numbers from the site', () => {
+  const side = {
+    entryId: 6849,
+    name: 'Rokesly Regorasu',
+    manager: 'David Higman',
+    points: 55,
+    rank: 1,
+    prevRank: 3,
+    record: { w: 3, d: 0, l: 0 },
+    streak: { type: 'W', len: 3 },
+    seasonAvg: 44,
+  }
+  const news = {
+    kind: 'streak',
+    text: 'David is on a 3-game winning streak',
+    stem: 'streak',
+    about: { side, opp: recapMatch.away },
+  }
+  const site = indexRecapSite({
+    seasonPredictions: {
+      current: {
+        teams: [{ leagueEntryId: 6849, titlePct: 31.9, lastPct: 1.5, avgFinish: 2.8 }],
+      },
+    },
+  })
+  const lines = themeSupport(
+    {
+      gw: 3,
+      home: side,
+      away: recapMatch.away,
+      predicted: { home: 40, away: 30 },
+      margin: 12,
+      winner: 6849,
+    },
+    news,
+    { site, key: 'streak-support' },
+  )
+  const blob = lines.join(' ')
+  assert.match(blob, /1st|3-0-0|31\.9%|40|season clip/)
 })
 
 test('matchupChips flags upset and derby', () => {

@@ -256,6 +256,8 @@ export function ScanMatchups({
   preview,
   teamLogoMap,
   kitIndexByEntry,
+  priorGws = [],
+  site = null,
 }) {
   if (layout === 'polaroid') {
     return matchups.map((m) => (
@@ -270,7 +272,7 @@ export function ScanMatchups({
   }
   const used = { lines: [], kinds: [], stems: [] }
   return matchups.map((m) => {
-    const fixture = glanceFixture(m, { preview, used })
+    const fixture = glanceFixture(m, { preview, used, priorGws, site })
     used.lines.push(...fixture.recap)
     used.kinds.push(...(fixture.kinds || []))
     used.stems.push(...(fixture.stems || []))
