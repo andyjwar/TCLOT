@@ -98,10 +98,13 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         Points left on the bench
       </h3>
       <p className="standings-stats-hint">
-        Unused is FPL points a better legal XI would have scored (autosubs
-        already count). Table is the real standings: 3 for a win, 1 for a
-        draw. If XI is that same table if every finished fixture used both
-        sides' best legal 11.
+        “Unused” shows the additional FPL points each team could have earned
+        by fielding its best legal XI; autosub points are already included.
+      </p>
+      <p className="standings-stats-hint">
+        “Table” shows the actual standings: 3 points for a win and 1 for a
+        draw. “Best XI” shows how the standings would look if both teams had
+        fielded their highest-scoring legal XI in every completed fixture.
       </p>
 
       {loading ? (
@@ -160,12 +163,12 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                     className="win-margin-table__n tabular"
                     title="Table points if every finished fixture used both sides' best legal XI"
                   >
-                    If XI
+                    Best XI
                   </th>
                   <th
                     scope="col"
                     className="win-margin-table__n tabular standings-stats-bench-table__swing"
-                    title="Swing in table points (If XI minus Table)"
+                    title="Swing in table points (Best XI minus Table)"
                   >
                     +/−
                   </th>
