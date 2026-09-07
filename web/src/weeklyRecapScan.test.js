@@ -94,6 +94,8 @@ test('glanceFixture recap: stats, two bullets, recap never repeats a bullet', ()
   }
   assert.ok(!out.bullets.some((b) => /^Book /.test(b)))
   assert.ok(!out.bullets.join(' ').includes('That leaves'))
+  assert.ok(!out.bullets.some((b) => /João Pedro did 11/.test(b)))
+  assert.match(out.bullets.join(' '), /27|screenshotted|title|away|gear/i)
 })
 
 test('interesting preview bullets skip the raw book tape', () => {

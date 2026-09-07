@@ -215,60 +215,65 @@ export function fixtureStatTiles(m, { preview = false } = {}) {
 
 function recapBullets(m, used) {
   const out = []
-  const pct = Number.isFinite(m?.odds?.favoritePct)
-    ? Math.round(m.odds.favoritePct)
-    : null
-  const fav = favName(m)
   const key = fixtureKey(m, false)
+  const winner =
+    m?.winner === m?.home?.entryId
+      ? m.home
+      : m?.winner === m?.away?.entryId
+        ? m.away
+        : null
+  const loser =
+    winner && winner.entryId === m?.home?.entryId ? m.away : winner ? m.home : null
 
-  if (m?.odds?.outcome === 'miss' && fav && pct != null) {
+  if (Number.isFinite(m?.margin) && m.margin >= 15 && winner) {
     out.push(
       pick(
         [
-          `${shortTeam(fav)} were ${pct}% on the board and still walked away with nothing`,
-          `The model loved ${shortTeam(fav)} at ${pct}%. The scoreboard did not`,
+          `${m.margin} points — the kind of scoreline that gets screenshotted`,
+          `${shortTeam(winner.name)} by ${m.margin}, and it never looked like a scrap`,
         ],
-        `${key}-odds`,
+        `${key}-margin`,
       ),
     )
-  } else if (m?.odds?.outcome === 'hit' && pct != null && pct >= 65) {
-    out.push(
-      pick(
-        [
-          `A ${pct}% lean that played like a statement win`,
-          `Priced at ${pct}% and it never really looked like anything else`,
-        ],
-        `${key}-odds`,
-      ),
-    )
-  } else if (m?.odds && pct != null) {
-    out.push(`A coin-flip at ${pct}% that the favourite just about collected`)
+  } else if (Number.isFinite(m?.margin) && m.margin <= 5 && winner) {
+    out.push(`Decided by ${m.margin} — one bad bench call from a draw`)
   }
 
-  const tops = [m?.home?.players?.top, m?.away?.players?.top].filter((p) => p?.name)
-  const best = [...tops].sort((a, b) => (b.pts || 0) - (a.pts || 0))[0]
-  const sideOf = (p) =>
-    [m.home, m.away].find(
-      (s) => s?.players?.top?.id === p?.id || s?.players?.top?.name === p?.name,
-    )
-  if (best && Number.isFinite(best.pts) && sideOf(best)?.points) {
-    out.push(`${best.name} did ${best.pts} of ${sideOf(best).points}`)
-  }
-
-  const flops = [m?.home?.players?.flop, m?.away?.players?.flop].filter(
-    (p) => p?.name && Number.isFinite(p.pts) && Number.isFinite(p.xp) && p.pts < p.xp,
-  )
-  if (flops[0] && out.length < 3) {
+  const titleSwing = [m?.home, m?.away]
+    .map((s) => {
+      const before = s?.titleOdds?.before
+      const after = s?.titleOdds?.after
+      if (!Number.isFinite(before) || !Number.isFinite(after)) return null
+      return { name: s.name, delta: after - before, after }
+    })
+    .filter(Boolean)
+    .sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta))[0]
+  if (titleSwing && Math.abs(titleSwing.delta) >= 1.5) {
+    const dir = titleSwing.delta > 0 ? 'up' : 'down'
     out.push(
-      `${flops[0].name} was down for ${flops[0].xp} and came back with ${flops[0].pts}`,
+      `${shortTeam(titleSwing.name)} ${dir} to ${titleSwing.after.toFixed(1)}% for the title`,
     )
   }
 
   const pickup = [m?.home?.pickup, m?.away?.pickup].find((p) => p?.name)
-  if (pickup && out.length < 3) {
+  if (pickup) {
     const kind = pickup.kind === 'f' ? 'free-agent' : 'waiver'
     out.push(
       `${pickup.name} the ${kind} paid ${pickup.pts != null ? pickup.pts : 'a visit'}`,
+    )
+  }
+
+  if (winner?.isWeekHigh) {
+    out.push(`${shortTeam(winner.name)} posted the week high`)
+  } else if (loser && winner) {
+    out.push(
+      pick(
+        [
+          `${who(loser)} will be talking about the one that got away`,
+          `${shortTeam(loser.name)} never found a second gear`,
+        ],
+        `${key}-loser`,
+      ),
     )
   }
 
