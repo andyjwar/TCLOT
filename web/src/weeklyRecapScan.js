@@ -111,6 +111,11 @@ const STEM_RULES = [
   ['vegan', /vegan|oat milk|tofu|plant-based/i],
   ['call-hit', /was the call|night agreed/i],
   ['call-miss', /scoreboard disagreed|wrecked a/i],
+  ['book-both', /the book has/i],
+  ['board-both', /on the board/i],
+  ['engine-both', /the engine has/i],
+  ['watch-is', /'s watch is/i],
+  ['title-price', /for the title/i],
 ]
 
 export function recapStem(text) {
@@ -222,7 +227,14 @@ function pushVariants(out, kind, texts, about = null) {
 
 function otherSide(m, side) {
   if (!side) return null
-  return side.entryId != null && side.entryId === m?.home?.entryId ? m.away : m.home
+  const id = Number(side.entryId)
+  const homeId = Number(m?.home?.entryId)
+  if (Number.isFinite(id) && Number.isFinite(homeId)) {
+    return id === homeId ? m.away : m.home
+  }
+  if (side.name && side.name === m?.home?.name) return m.away
+  if (side.name && side.name === m?.away?.name) return m.home
+  return side === m?.home ? m.away : m.home
 }
 
 function recFmt(side) {
@@ -576,6 +588,132 @@ function resultLine(m, side) {
   return `${who(side)} lost to ${shortTeam(opp.name)} by ${margin}`
 }
 
+function teamTokens(side) {
+  const out = []
+  for (const raw of [side?.name, shortTeam(side?.name), squareTeam(side?.name)]) {
+    const s = String(raw || '')
+      .toLowerCase()
+      .trim()
+    if (s.length >= 3 && s !== '–') out.push(s)
+    for (const w of s.split(/[\s.]+/)) {
+      if (w.length >= 4) out.push(w)
+    }
+  }
+  return [...new Set(out)]
+}
+
+function mentionsSide(text, side) {
+  const blob = String(text || '').toLowerCase()
+  return teamTokens(side).some((t) => blob.includes(t))
+}
+
+function mentionsBothSides(lines, m) {
+  const blob = Array.isArray(lines) ? lines.join(' ') : String(lines || '')
+  return mentionsSide(blob, m?.home) && mentionsSide(blob, m?.away)
+}
+
+/** Theme-true sentence that still names the other side. */
+function oppOnTheme(m, news) {
+  const side = news?.about?.side || favSide(m) || m?.home
+  const opp = news?.about?.opp || otherSide(m, side)
+  if (!side || !opp?.name) return null
+  const kind = news?.kind
+  const result = resultLine(m, side)
+  const oppTop = opp.players?.top
+  if (kind === 'haul' || kind === 'waiver') {
+    if (oppTop?.name && Number.isFinite(oppTop.pts)) {
+      return `${shortTeam(opp.name)}'s best was ${oppTop.name} on ${oppTop.pts}`
+    }
+    return result
+  }
+  if (kind === 'dud') {
+    return (
+      result ||
+      (oppTop?.name && Number.isFinite(oppTop.pts)
+        ? `${who(opp)} still had ${oppTop.name} on ${oppTop.pts}`
+        : null)
+    )
+  }
+  if (kind === 'streak' || kind === 'record') {
+    return (
+      result ||
+      (Number.isFinite(opp.points) ? `${shortTeam(opp.name)} finished on ${opp.points}` : null)
+    )
+  }
+  if (kind === 'call') return result || vsPredLine(m, opp)
+  return (
+    result ||
+    (oppTop?.name ? `${shortTeam(opp.name)}'s night ran through ${oppTop.name}` : null)
+  )
+}
+
+function isVeganLine(s) {
+  return /vegan|oat milk|tofu|plant-based/i.test(s)
+}
+
+function sideOnTheme(m, news, side) {
+  if (!side?.name) return null
+  const kind = news?.kind
+  const top = side.players?.top
+  if ((kind === 'haul' || kind === 'waiver') && top?.name && Number.isFinite(top.pts)) {
+    return `${shortTeam(side.name)}'s best was ${top.name} on ${top.pts}`
+  }
+  if (kind === 'call' && Number.isFinite(m?.odds?.favoritePct) && favSide(m) === side) {
+    return `${shortTeam(side.name)} were the ${Math.round(m.odds.favoritePct)}% favourite`
+  }
+  if (Number.isFinite(side.points)) {
+    return `${shortTeam(side.name)} finished on ${side.points}`
+  }
+  if (top?.name) return `${shortTeam(side.name)}'s night ran through ${top.name}`
+  return `${shortTeam(side.name)} were the other name on the card`
+}
+
+function ensureBothSides(lines, m, news) {
+  if (mentionsBothSides(lines, m)) return
+  const missing = [m?.home, m?.away].filter((s) => s?.name && !mentionsSide(lines.join(' '), s))
+  for (const side of missing) {
+    if (mentionsBothSides(lines, m)) return
+    let extra = side === (news?.about?.opp || otherSide(m, news?.about?.side))
+      ? oppOnTheme(m, news)
+      : sideOnTheme(m, news, side)
+    if (extra && overlaps(extra, lines)) extra = null
+    if (!extra) extra = sideOnTheme(m, news, side)
+    if (!extra || overlaps(extra, lines)) continue
+    if (lines.length >= 4) {
+      let replaced = false
+      for (let i = lines.length - 1; i >= 1; i -= 1) {
+        if (isVeganLine(lines[i])) continue
+        const trial = lines.slice()
+        trial[i] = extra
+        if (mentionsBothSides(trial, m) || mentionsSide(extra, side)) {
+          lines[i] = extra
+          replaced = true
+          break
+        }
+      }
+      if (!replaced) lines.push(extra)
+    } else {
+      lines.push(extra)
+    }
+  }
+}
+
+/** Keep four lines without dropping vegan or the only mention of a side. */
+function trimRecap(lines, m) {
+  while (lines.length > 4) {
+    let idx = -1
+    for (let i = lines.length - 1; i >= 1; i -= 1) {
+      if (isVeganLine(lines[i])) continue
+      const without = lines.filter((_, j) => j !== i)
+      if (mentionsBothSides(lines, m) && !mentionsBothSides(without, m)) continue
+      idx = i
+      break
+    }
+    if (idx < 0) lines.pop()
+    else lines.splice(idx, 1)
+  }
+}
+
 function predPreviewLine(m, side) {
   const pred = predFor(m, side)
   const opp = otherSide(m, side)
@@ -624,6 +762,8 @@ export function themeSupport(m, news, { preview = false, priorGws = [], site = n
     if (pool.some((p) => overlaps(s, [p]))) return
     pool.push(s)
   }
+
+  add(oppOnTheme(m, news))
 
   if (news?.kind === 'haul') {
     add(shareLine(side, player))
@@ -753,12 +893,172 @@ function noteAngle(bag, kinds, stems, a) {
   bag.stems.push(a.stem)
 }
 
+function watchPlayer(side) {
+  return [...(side?.keys || [])]
+    .filter((k) => k?.name)
+    .sort((a, b) => (b.xp || 0) - (a.xp || 0))[0] || null
+}
+
+function previewBothLines(m) {
+  const home = m?.home
+  const away = m?.away
+  const out = []
+  if (home?.name && away?.name && m?.bookie?.home && m?.bookie?.away) {
+    out.push(
+      `The book has ${shortTeam(home.name)} at ${m.bookie.home} and ${shortTeam(away.name)} at ${m.bookie.away}`,
+    )
+  }
+  if (home?.name && away?.name && Number.isFinite(m?.odds?.home) && Number.isFinite(m?.odds?.away)) {
+    out.push(
+      `${shortTeam(home.name)} sit at ${Math.round(m.odds.home)}% on the board, ${shortTeam(away.name)} at ${Math.round(m.odds.away)}%`,
+    )
+  }
+  const hp = predFor(m, home)
+  const ap = predFor(m, away)
+  if (home?.name && away?.name && Number.isFinite(hp) && Number.isFinite(ap)) {
+    out.push(
+      `The engine has ${shortTeam(home.name)} at ${hp} and ${shortTeam(away.name)} at ${ap}`,
+    )
+  }
+  if (!out.length && home?.name && away?.name) {
+    out.push(`${shortTeam(home.name)} against ${shortTeam(away.name)} is the week's card`)
+  }
+  return out
+}
+
+function previewSideHooks(side) {
+  if (!side) return []
+  const out = []
+  const pickup = pickupBits(side)[0]
+  if (pickup?.name) {
+    out.push(
+      angle(
+        'waiver',
+        `${who(side)} claimed ${pickup.name} on the ${pickupKind(pickup.kind)}`,
+        { side, pickup },
+      ),
+    )
+  }
+  const watch = watchPlayer(side)
+  if (watch) {
+    out.push(
+      angle('projected', `${who(side)}'s watch is ${watch.name} at ${watch.xp}`, {
+        side,
+        player: watch,
+      }),
+    )
+  }
+  if (side.titlePrice) {
+    out.push(
+      angle('title', `${shortTeam(side.name)} are ${side.titlePrice} for the title`, { side }),
+    )
+  } else if (Number.isFinite(side.titlePct)) {
+    const pctLabel = formatTitlePct(side.titlePct)
+    if (pctLabel) {
+      out.push(
+        angle('title', `${shortTeam(side.name)} sit at ${pctLabel} for the title`, { side }),
+      )
+    }
+  }
+  return out.filter(Boolean)
+}
+
+function pickPreviewHook(angles, bag, key, avoidKind) {
+  const unusedKind = angles.filter(
+    (a) => isFree(a, bag) && a.kind !== avoidKind,
+  )
+  const pool = unusedKind.length
+    ? unusedKind
+    : angles.filter((a) => isFree(a, bag))
+  if (!pool.length) return angles.find((a) => !overlaps(a.text, bag.lines)) || null
+  return pick(pool, key)
+}
+
+function previewPersonality(m, used, ctx) {
+  const key = fixtureKey(m, true)
+  const bag = usedBag(used)
+  const mottOn =
+    isMottershead(m?.home?.manager) || isMottershead(m?.away?.manager)
+  const kinds = []
+  const stems = []
+  const lines = []
+
+  const both = previewBothLines(m)
+    .map((t) => angle('preview', t, { side: m.home, opp: m.away }))
+    .filter((a) => a && !overlaps(a.text, bag.lines))
+  const unusedBoth = both.filter((a) => !bag.stems.includes(a.stem))
+  const leadPool = unusedBoth.length ? unusedBoth : both
+  const lead = leadPool.length ? pick(leadPool, `${key}-lead`) : null
+  if (lead) {
+    lines.push(lead.text)
+    noteAngle(bag, kinds, stems, lead)
+  }
+
+  const homeHook = pickPreviewHook(
+    previewSideHooks(m.home),
+    bag,
+    `${key}-hh`,
+  )
+  const awayHook = pickPreviewHook(
+    previewSideHooks(m.away),
+    bag,
+    `${key}-ah`,
+    homeHook?.kind,
+  )
+  for (const hook of [homeHook, awayHook]) {
+    if (!hook || overlaps(hook.text, lines)) continue
+    lines.push(hook.text)
+    noteAngle(bag, kinds, stems, hook)
+  }
+
+  const vegan = mottOn ? veganAngle(key, bag) : null
+  if (vegan) {
+    if (!lines.length) {
+      lines.push(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    } else if (pick(['aside', 'aside', 'lead'], `${key}-vegan-slot`) === 'lead') {
+      lines.unshift(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    } else {
+      lines.push(vegan.text)
+      noteAngle(bag, kinds, stems, vegan)
+    }
+  }
+
+  const jokeSides = [m?.home, m?.away].filter(
+    (s) => s?.manager && !isMottershead(s.manager),
+  )
+  const jokeSide =
+    jokeSides.length > 1 ? pick(jokeSides, `${key}-jside`) : jokeSides[0]
+  const joke = jokeAngle(jokeSide, `${key}-joke`, bag)
+  if (joke && lines.length < 4) {
+    lines.push(joke.text)
+    noteAngle(bag, kinds, stems, joke)
+  }
+
+  if (lines.length < 3) {
+    for (const extra of both) {
+      if (lines.length >= 3) break
+      if (overlaps(extra.text, lines)) continue
+      lines.push(extra.text)
+      noteAngle(bag, kinds, stems, extra)
+    }
+  }
+
+  const out = lines.slice(0, 4)
+  out.kinds = kinds
+  out.stems = stems
+  return out
+}
+
 /**
  * One news theme per card, then two or three site-data sentences on that
  * theme. Jokes are a closing aside. Mottershead vegan is required but not
- * always first. Minimum three sentences.
+ * always first. Minimum three sentences. Recaps stay on theme and still
+ * name both teams. Previews name both teams.
  */
 export function personalityRecap(m, preview = false, used = [], ctx = {}) {
+  if (preview) return previewPersonality(m, used, ctx)
   const key = fixtureKey(m, preview)
   const bag = usedBag(used)
   const priorGws = ctx?.priorGws || []
@@ -836,6 +1136,14 @@ export function personalityRecap(m, preview = false, used = [], ctx = {}) {
     lines.push(fb)
     kinds.push('fallback')
     stems.push(recapStem(fb))
+  }
+
+  const about = news || { about: { side: m?.home, opp: m?.away } }
+  ensureBothSides(lines, m, about)
+  trimRecap(lines, m)
+  if (!mentionsBothSides(lines, m)) {
+    ensureBothSides(lines, m, about)
+    trimRecap(lines, m)
   }
 
   const out = lines.slice(0, 4)
@@ -1070,6 +1378,45 @@ function highestPredicted(previewGw) {
   return best
 }
 
+function formatWinPct(n) {
+  if (!Number.isFinite(Number(n))) return null
+  return `${Math.round(Number(n))}%`
+}
+
+function favouriteFromMatchups(previewGw) {
+  const baked = previewGw?.superlatives?.favourite
+  if (baked?.name && Number.isFinite(Number(baked.pct))) {
+    return { name: baked.name, pct: Number(baked.pct) }
+  }
+  let best = null
+  for (const m of previewGw?.matchups || []) {
+    const side = m?.odds?.favoriteSide === 'away' ? m.away : m?.odds?.favoriteSide === 'home' ? m.home : null
+    const pct = Number(m?.odds?.favoritePct)
+    if (!side?.name || !Number.isFinite(pct)) continue
+    if (!best || pct > best.pct) best = { name: side.name, pct }
+  }
+  return best
+}
+
+function underdogFromMatchups(previewGw) {
+  const baked = previewGw?.superlatives?.underdog
+  if (baked?.name && Number.isFinite(Number(baked.pct))) {
+    return { name: baked.name, pct: Number(baked.pct) }
+  }
+  let worst = null
+  for (const m of previewGw?.matchups || []) {
+    for (const [side, raw] of [
+      [m?.home, m?.odds?.home],
+      [m?.away, m?.odds?.away],
+    ]) {
+      const pct = Number(raw)
+      if (!side?.name || !Number.isFinite(pct)) continue
+      if (!worst || pct < worst.pct) worst = { name: side.name, pct }
+    }
+  }
+  return worst
+}
+
 function modelDots(recapGw) {
   const calls = (recapGw?.model?.calls || []).filter(
     (c) => c.outcome === 'hit' || c.outcome === 'miss',
@@ -1102,23 +1449,31 @@ export function glanceTiles({ recapGw, previewGw, preview }) {
   const predicted = preview ? highestPredicted(previewGw) : null
   const scorer = preview
     ? tile(
-        'GW scorer',
+        'Top scorer',
         predicted?.xp ?? predicted?.pts ?? predicted?.name ?? null,
         predicted?.name,
         'win',
       )
     : tile('GW scorer', s.weekHigh?.points, shortTeam(s.weekHigh?.name), 'win')
   if (preview) {
+    const fav = favouriteFromMatchups(previewGw)
+    const dog = underdogFromMatchups(previewGw)
     return [
+      tile('Biggest fav', formatWinPct(fav?.pct), shortTeam(fav?.name), 'win'),
+      tile(
+        'Biggest underdog',
+        formatWinPct(dog?.pct),
+        shortTeam(dog?.name),
+      ),
       scorer,
       tile(
         'Best waiver',
-        s.bestWaiver?.pts ?? s.bestWaiver?.xp,
+        s.bestWaiver?.xp ?? s.bestWaiver?.pts,
         s.bestWaiver?.name,
       ),
       tile(
-        'Dud',
-        s.dud?.pts ?? s.dud?.xp,
+        'Potential dud',
+        s.dud?.xp ?? s.dud?.pts,
         s.dud
           ? `${s.dud.name}${s.dud.overallPick ? ` · pick ${s.dud.overallPick}` : ''}`
           : '',

@@ -92,33 +92,148 @@ test('glanceTiles header adds model dots and top scorer', () => {
   assert.equal(tiles.find((t) => t.label === 'Top scorer')?.sub, 'Stach')
 })
 
-test('preview header derives GW scorer when baked topScorer is null', () => {
+test('preview header is fav, underdog, top scorer, waiver and potential dud', () => {
   const tiles = glanceTiles({
     preview: true,
     previewGw: {
       superlatives: {
+        favourite: { name: 'Hackney Rohirrim', pct: 77 },
         topScorer: null,
         bestWaiver: { name: 'Schade', xp: 4.2 },
         dud: { name: 'Isak', xp: 1.2, overallPick: 3 },
       },
       matchups: [
         {
-          home: { keys: [{ name: 'Verbruggen', xp: 3.9 }] },
-          away: { keys: [{ name: 'Donnarumma', xp: 4.9 }] },
+          home: { name: 'Mordor S.F.G', keys: [{ name: 'Verbruggen', xp: 3.9 }] },
+          away: { name: 'Atlético Bilbo', keys: [{ name: 'Donnarumma', xp: 4.9 }] },
+          odds: { home: 73, away: 24, favoriteSide: 'home', favoritePct: 73 },
         },
         {
-          home: { keys: [{ name: 'Salah', xp: 6.1 }] },
-          away: { keys: [{ name: 'Haaland', xp: 5.5 }] },
+          home: { name: 'Seoul Shire', keys: [{ name: 'Salah', xp: 6.1 }] },
+          away: { name: 'Hackney Rohirrim', keys: [{ name: 'Haaland', xp: 5.5 }] },
+          odds: { home: 21, away: 77, favoriteSide: 'away', favoritePct: 77 },
         },
       ],
     },
   })
   assert.deepEqual(
     tiles.map((t) => t.label),
-    ['GW scorer', 'Best waiver', 'Dud'],
+    ['Biggest fav', 'Biggest underdog', 'Top scorer', 'Best waiver', 'Potential dud'],
   )
-  assert.equal(tiles[0].value, '6.1')
-  assert.equal(tiles[0].sub, 'Salah')
+  assert.equal(tiles[0].value, '77%')
+  assert.equal(tiles[0].sub, 'Hackney Rohirrim')
+  assert.equal(tiles[1].value, '21%')
+  assert.equal(tiles[1].sub, 'Seoul Shire')
+  assert.equal(tiles[2].value, '6.1')
+  assert.equal(tiles[2].sub, 'Salah')
+  assert.equal(tiles[3].value, '4.2')
+  assert.equal(tiles[3].sub, 'Schade')
+  assert.equal(tiles[4].value, '1.2')
+  assert.equal(tiles[4].sub, 'Isak · pick 3')
+})
+
+test('preview header derives favourite and underdog from matchup odds', () => {
+  const tiles = glanceTiles({
+    preview: true,
+    previewGw: {
+      superlatives: {
+        bestWaiver: { name: 'Schade', xp: 4.2 },
+        dud: { name: 'Isak', xp: 1.2 },
+      },
+      matchups: [
+        {
+          home: { name: 'Mordor S.F.G', keys: [{ name: 'Roefs', xp: 5.4 }] },
+          away: { name: 'Atlético Bilbo' },
+          odds: { home: 73, away: 24, favoriteSide: 'home', favoritePct: 73 },
+        },
+      ],
+    },
+  })
+  assert.equal(tiles.find((t) => t.label === 'Biggest fav')?.value, '73%')
+  assert.equal(tiles.find((t) => t.label === 'Biggest fav')?.sub, 'Mordor SFG')
+  assert.equal(tiles.find((t) => t.label === 'Biggest underdog')?.value, '24%')
+  assert.equal(tiles.find((t) => t.label === 'Biggest underdog')?.sub, 'Atlético Bilbo')
+})
+
+test('preview brief names both teams', () => {
+  const lines = personalityRecap(
+    {
+      gw: 2,
+      home: {
+        entryId: 18279,
+        name: 'Mordor S.F.G',
+        manager: 'Nick Mottershead',
+        keys: [{ name: 'Roefs', xp: 5.4 }],
+        titlePrice: '9/4',
+      },
+      away: {
+        entryId: 4259,
+        name: 'Atlético Bilbo',
+        manager: 'Nick Goodacre',
+        keys: [{ name: 'Shaw', xp: 5.1 }],
+        recentPickups: [{ name: 'Dorgu', kind: 'w' }],
+        titlePrice: '100/1',
+      },
+      odds: { home: 73, away: 24, favoriteSide: 'home', favoritePct: 73 },
+      bookie: { home: '4/11', away: '3/1' },
+      predicted: { home: 38.4, away: 30.6 },
+    },
+    true,
+  )
+  assert.ok(lines.length >= 3 && lines.length <= 4)
+  const blob = lines.join(' ')
+  assert.match(blob, /Mordor/)
+  assert.match(blob, /Bilbo/)
+  assert.match(blob, /vegan|oat milk|tofu|plant-based/i)
+  assert.match(blob, /Roefs|Shaw|Dorgu/)
+})
+
+test('every preview card names both teams even after leads repeat', () => {
+  const matchups = [
+    {
+      gw: 1,
+      home: { entryId: 1, name: 'Mordor S.F.G', manager: 'Nick Mottershead', keys: [{ name: 'Roefs', xp: 5.4 }] },
+      away: { entryId: 2, name: 'Atlético Bilbo', manager: 'Nick Goodacre', keys: [{ name: 'Shaw', xp: 5.1 }] },
+      odds: { home: 73, away: 24 },
+      bookie: { home: '4/11', away: '3/1' },
+      predicted: { home: 38.4, away: 30.6 },
+    },
+    {
+      gw: 1,
+      home: { entryId: 3, name: 'Seoul Shire', manager: 'Luke Butcher', keys: [{ name: 'Saka', xp: 6.1 }] },
+      away: { entryId: 4, name: 'Hackney Rohirrim', manager: 'Mike Sutton', keys: [{ name: 'Gabriel', xp: 5.6 }] },
+      odds: { home: 21, away: 77 },
+      bookie: { home: '4/1', away: '3/10' },
+      predicted: { home: 35.5, away: 45.6 },
+    },
+    {
+      gw: 1,
+      home: { entryId: 5, name: 'Brampton Balrogs', manager: 'Eddy Webster', keys: [{ name: 'Semenyo', xp: 5.2 }] },
+      away: { entryId: 6, name: 'Rokesly Regorasu', manager: 'David Higman', keys: [{ name: 'Calafiori', xp: 5.5 }] },
+      odds: { home: 48, away: 50 },
+      bookie: { home: '11/10', away: 'Evs' },
+      predicted: { home: 39.1, away: 39.6 },
+    },
+    {
+      gw: 1,
+      home: { entryId: 7, name: 'Toronto Gimli', manager: 'Jon Ward', keys: [{ name: 'White', xp: 4.8 }] },
+      away: { entryId: 8, name: 'Suffolk Sméagol', manager: 'Andy Ward', keys: [{ name: 'Haaland', xp: 5.8 }] },
+      odds: { home: 40, away: 58 },
+      bookie: { home: '6/4', away: '4/6' },
+      predicted: { home: 36.2, away: 41.6 },
+    },
+  ]
+  const used = { lines: [], kinds: [], stems: [] }
+  for (const m of matchups) {
+    const { recap } = glanceFixture(m, { preview: true, used })
+    used.lines.push(...recap)
+    used.kinds.push(...(recap.kinds || []))
+    used.stems.push(...(recap.stems || []))
+    const blob = recap.join(' ')
+    assert.match(blob, new RegExp(m.home.name.split(/\s/)[0], 'i'))
+    assert.match(blob, new RegExp(m.away.name.split(/\s/)[0].replace('é', 'é'), 'i'))
+    assert.ok(recap.length >= 3)
+  }
 })
 
 test('personalityRecap is vegan for Mottershead and not a two-manager checklist', () => {
@@ -129,6 +244,8 @@ test('personalityRecap is vegan for Mottershead and not a two-manager checklist'
   assert.match(a.join(' '), /vegan|oat milk|tofu|plant-based/i)
   assert.doesNotMatch(a.join(' '), /will have a take/i)
   assert.ok(a.kinds.includes('vegan'))
+  assert.match(a.join(' '), /Mordor|SFG/i)
+  assert.match(a.join(' '), /Bilbo|Atlético/i)
 })
 
 test('fixture stories cover waiver, projected, scorer, dud, streak and bad record', () => {
@@ -311,6 +428,17 @@ test('four recap cards do not reuse a stem or joke line', () => {
   const boxes = accumulate(matchups, false)
   const stems = boxes.flatMap((b) => b.stems.filter((s) => s !== 'vegan'))
   assert.equal(new Set(stems).size, stems.length)
+  const pairRe = [
+    [/Mordor|SFG/i, /Bilbo|Atlético/i],
+    [/Seoul|Shire/i, /Hackney|Rohirrim/i],
+    [/Brampton|Balrogs/i, /Rokesly|Regorasu/i],
+    [/Toronto|Gimli/i, /Suffolk|Sméagol/i],
+  ]
+  boxes.forEach((b, i) => {
+    const blob = b.recap.join(' ')
+    assert.match(blob, pairRe[i][0], `card ${i} missing home`)
+    assert.match(blob, pairRe[i][1], `card ${i} missing away`)
+  })
   const lines = boxes.flatMap((b) => b.recap.map((s) => s.toLowerCase()))
   assert.equal(new Set(lines).size, lines.length)
   const newsKinds = boxes.map((b) => b.kinds.find((k) => k !== 'vegan' && k !== 'joke'))
@@ -398,6 +526,65 @@ test('a joke line used on the first card does not return on the second', () => {
     assert.ok(!second.recap.some((s) => s.toLowerCase() === line.toLowerCase()))
   }
   assert.equal(recapStem('The projected stack for Seoul runs through Saka (6.1)'), 'projected-stack')
+})
+
+test('recap waiver theme still names the other team', () => {
+  const lines = personalityRecap({
+    gw: 3,
+    home: {
+      entryId: 1,
+      name: 'Toronto Gimli',
+      manager: 'Jon Ward',
+      points: 38,
+      players: { top: { name: 'Saka', pts: 8 } },
+    },
+    away: {
+      entryId: 2,
+      name: 'Hackney Rohirrim',
+      manager: 'Mike Sutton',
+      points: 50,
+      pickup: { name: 'King', pts: 10, xp: 4.1, kind: 'w' },
+      players: { top: { name: 'King', pts: 10 } },
+      record: { w: 1, d: 0, l: 2 },
+      rank: 8,
+    },
+    odds: { favoriteSide: 'home', favoritePct: 61, outcome: 'miss' },
+    predicted: { home: 41.2, away: 26.1 },
+    winner: 2,
+    margin: 12,
+  })
+  const blob = lines.join(' ')
+  assert.match(blob, /Gimli|Toronto/i)
+  assert.match(blob, /Hackney|Rohirrim/i)
+})
+
+test('recap streak theme still names the other team', () => {
+  const lines = personalityRecap({
+    gw: 3,
+    home: {
+      entryId: 8,
+      name: 'Suffolk Sméagol',
+      manager: 'Andy Ward',
+      points: 34,
+      players: { top: { name: 'Haaland', pts: 7 } },
+    },
+    away: {
+      entryId: 6,
+      name: 'Rokesly Regorasu',
+      manager: 'David Higman',
+      points: 47,
+      streak: { type: 'W', len: 3 },
+      record: { w: 3, d: 0, l: 0 },
+      rank: 1,
+      players: { top: { name: 'Gakpo', pts: 11 } },
+    },
+    odds: { favoriteSide: 'away', favoritePct: 70, outcome: 'hit' },
+    winner: 6,
+    margin: 13,
+  })
+  const blob = lines.join(' ')
+  assert.match(blob, /Suffolk|Sméagol/i)
+  assert.match(blob, /Rokesly|Regorasu/i)
 })
 
 test('themeSupport stays on a haul and quotes share, projection and prior week', () => {
