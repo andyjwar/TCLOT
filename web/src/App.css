@@ -14775,6 +14775,23 @@ button.live-xp__player-name:focus-visible {
   color: var(--fm-text-strong);
 }
 
+.standings-stats-bench-table .standings-stats-bench-table__sort {
+  display: inline-flex;
+  grid-template-columns: unset;
+  width: auto;
+  max-width: 100%;
+  gap: 3px;
+  justify-content: center;
+}
+
+.standings-stats-bench-table .win-margin-table__team .standings-stats-bench-table__sort {
+  justify-content: flex-start;
+}
+
+.standings-stats-bench-table .standings-stats-bench-table__sort .standings-sort-btn__label {
+  text-align: inherit;
+}
+
 .standings-stats-bench-table__bar-fill {
   background: color-mix(in srgb, var(--tclot-logo-purple) 72%, transparent);
 }
@@ -15194,7 +15211,7 @@ button.live-xp__player-name:focus-visible {
     width: 1.95rem;
   }
   .standings-stats-bench-table .win-margin-table__n {
-    width: 2.55rem;
+    width: 2.9rem;
   }
   .standings-stats-bench-table.win-margin-table thead th.win-margin-table__n {
     white-space: normal;

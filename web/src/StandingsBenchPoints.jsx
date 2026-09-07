@@ -4,14 +4,60 @@ import {
   fixtureTableSummary,
   fixturesForGw,
   formatSatPlayers,
+  nextBenchSort,
+  sortBenchPointRows,
 } from './benchPoints.js'
 import { formatSwing, leaguePtsFromRecord } from './bestXi.js'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
+import { SortArrow } from './SortArrow.jsx'
 import { TeamAvatar } from './TeamAvatar'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
 import { firstWord } from './teamNameUtils.js'
 import { useBenchPoints } from './useBenchPoints.js'
 import { useMobileNarrowViewport } from './usePortraitMobile'
+
+const DEFAULT_BENCH_SORT = /** @type {const} */ ({ key: 'unused', dir: 'desc' })
+
+function BenchSortTh({
+  colKey,
+  label,
+  sort,
+  onSort,
+  className,
+  title,
+}) {
+  const active = sort?.key === colKey
+  const dir = active ? sort.dir : null
+  const ariaSort = active
+    ? dir === 'asc'
+      ? 'ascending'
+      : 'descending'
+    : 'none'
+  const orderLabel =
+    colKey === 'team'
+      ? dir === 'asc'
+        ? 'A to Z'
+        : 'Z to A'
+      : dir === 'desc'
+        ? 'high to low'
+        : 'low to high'
+  const ariaLabel = active
+    ? `${label}: sorted ${orderLabel}. Click to reverse.`
+    : `Sort by ${label}`
+  return (
+    <th scope="col" className={className} title={title} aria-sort={ariaSort}>
+      <button
+        type="button"
+        className="standings-sort-btn standings-stats-bench-table__sort"
+        onClick={() => onSort(colKey)}
+        aria-label={ariaLabel}
+      >
+        <span className="standings-sort-btn__label">{label}</span>
+        <SortArrow active={active} dir={dir} />
+      </button>
+    </th>
+  )
+}
 
 function scoreText(a, b) {
   return `${a}–${b}`
@@ -58,6 +104,11 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
     gwPick != null && gameweeks.includes(gwPick) ? gwPick : latestGw
 
   const teamRows = report?.teams || []
+  const [sort, setSort] = useState(DEFAULT_BENCH_SORT)
+  const sortedRows = useMemo(
+    () => sortBenchPointRows(teamRows, sort),
+    [teamRows, sort],
+  )
   const maxLeft = useMemo(() => {
     let max = 0
     for (const r of teamRows) {
@@ -65,6 +116,18 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
       if (n > max) max = n
     }
     return max
+  }, [teamRows])
+  const worstUnusedId = useMemo(() => {
+    let id = null
+    let max = 0
+    for (const r of teamRows) {
+      const n = Number(r?.benchLeft) || 0
+      if (n > max) {
+        max = n
+        id = r.leagueEntryId
+      }
+    }
+    return max > 0 ? id : null
   }, [teamRows])
 
   const gwFixtures = useMemo(
@@ -109,37 +172,45 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
             <table className="win-margin-table standings-stats-bench-table">
               <thead>
                 <tr>
-                  <th scope="col" className="win-margin-table__team">
-                    Team
-                  </th>
-                  <th
-                    scope="col"
+                  <BenchSortTh
+                    colKey="team"
+                    label="Team"
+                    sort={sort}
+                    onSort={(key) => setSort((cur) => nextBenchSort(cur, key))}
+                    className="win-margin-table__team"
+                  />
+                  <BenchSortTh
+                    colKey="unused"
+                    label="Unused"
+                    sort={sort}
+                    onSort={(key) => setSort((cur) => nextBenchSort(cur, key))}
                     className="win-margin-table__n tabular"
                     title="FPL points a legal best XI would have added after autosubs"
-                  >
-                    Unused
-                  </th>
-                  <th
-                    scope="col"
+                  />
+                  <BenchSortTh
+                    colKey="actual"
+                    label="Actual"
+                    sort={sort}
+                    onSort={(key) => setSort((cur) => nextBenchSort(cur, key))}
                     className="win-margin-table__n tabular"
                     title="Current H2H table points (3 for a win, 1 for a draw)"
-                  >
-                    Actual
-                  </th>
-                  <th
-                    scope="col"
+                  />
+                  <BenchSortTh
+                    colKey="bestXi"
+                    label="Best XI"
+                    sort={sort}
+                    onSort={(key) => setSort((cur) => nextBenchSort(cur, key))}
                     className="win-margin-table__n tabular"
                     title="Table points if every finished fixture used both sides' best legal XI"
-                  >
-                    Best XI
-                  </th>
-                  <th
-                    scope="col"
+                  />
+                  <BenchSortTh
+                    colKey="swing"
+                    label="+/−"
+                    sort={sort}
+                    onSort={(key) => setSort((cur) => nextBenchSort(cur, key))}
                     className="win-margin-table__n tabular standings-stats-bench-table__swing"
                     title="Swing in table points (Best XI minus Actual)"
-                  >
-                    +/−
-                  </th>
+                  />
                   <th
                     scope="col"
                     className="standings-stats-weeks-table__bar-head"
@@ -148,7 +219,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                 </tr>
               </thead>
               <tbody>
-                {teamRows.map((row, i) => {
+                {sortedRows.map((row) => {
                   const left = Number(row.benchLeft) || 0
                   const tablePts = tablePtsForRow(row)
                   const bestPts = bestTablePtsForRow(row)
@@ -159,7 +230,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                     <tr
                       key={row.leagueEntryId}
                       className={
-                        i === 0 && left > 0
+                        row.leagueEntryId === worstUnusedId
                           ? 'standings-stats-bench-table__worst'
                           : undefined
                       }

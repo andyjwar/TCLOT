@@ -330,3 +330,59 @@ export function fixtureTablePtsLabel(result, homeName, awayName) {
   if (result === 'A') return `${awayName || 'Away'} +3`
   return ''
 }
+
+/** @typedef {'team' | 'unused' | 'actual' | 'bestXi' | 'swing'} BenchSortKey */
+
+export const BENCH_SORT_KEYS = /** @type {const} */ ([
+  'team',
+  'unused',
+  'actual',
+  'bestXi',
+  'swing',
+])
+
+export function defaultBenchSortDir(key) {
+  return key === 'team' ? 'asc' : 'desc'
+}
+
+/**
+ * @param {{ key: BenchSortKey, dir: 'asc' | 'desc' } | null | undefined} current
+ * @param {string} clickedKey
+ */
+export function nextBenchSort(current, clickedKey) {
+  const key = BENCH_SORT_KEYS.includes(clickedKey)
+    ? clickedKey
+    : 'unused'
+  if (current?.key === key) {
+    return { key, dir: current.dir === 'desc' ? 'asc' : 'desc' }
+  }
+  return { key, dir: defaultBenchSortDir(key) }
+}
+
+function benchSortValue(row, key) {
+  if (key === 'team') return String(row?.teamName || '')
+  if (key === 'unused') return Number(row?.benchLeft) || 0
+  if (key === 'actual') return Number(row?.actualLeaguePts) || 0
+  if (key === 'bestXi') return Number(row?.bestLeaguePts) || 0
+  if (key === 'swing') return Number(row?.leaguePtsSwing) || 0
+  return 0
+}
+
+/**
+ * @param {object[]} rows
+ * @param {{ key?: string, dir?: 'asc' | 'desc' } | null | undefined} sort
+ */
+export function sortBenchPointRows(rows, sort) {
+  const key = BENCH_SORT_KEYS.includes(sort?.key) ? sort.key : 'unused'
+  const dir = sort?.dir === 'asc' ? 1 : -1
+  return [...(Array.isArray(rows) ? rows : [])].sort((a, b) => {
+    if (key === 'team') {
+      const cmp = String(a?.teamName || '').localeCompare(String(b?.teamName || ''))
+      return cmp * (sort?.dir === 'desc' ? -1 : 1)
+    }
+    const av = benchSortValue(a, key)
+    const bv = benchSortValue(b, key)
+    if (av !== bv) return (av - bv) * dir
+    return String(a?.teamName || '').localeCompare(String(b?.teamName || ''))
+  })
+}
