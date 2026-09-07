@@ -10,6 +10,15 @@ import {
   visibleRecapOptions,
   mergeRecapOptions,
 } from './weeklyRecapView.js'
+import {
+  readRecapLayout,
+  writeRecapLayout,
+} from './weeklyRecapScan.js'
+import {
+  RecapLayoutSwitch,
+  ScanHeader,
+  ScanMatchups,
+} from './WeeklyRecapScan.jsx'
 import './WeeklyRecap.css'
 
 /**
@@ -35,6 +44,7 @@ export function WeeklyRecap({
   const [failed, setFailed] = useState(false)
   const [selectedGw, setSelectedGw] = useState(null)
   const [requestedMode, setRequestedMode] = useState(null)
+  const [layout, setLayout] = useState(readRecapLayout)
 
   useEffect(() => {
     let alive = true
@@ -214,32 +224,62 @@ export function WeeklyRecap({
           </div>
         </div>
 
-        {showingPreview ? (
-          <PreviewHeader preview={previewGw} />
-        ) : recapGw ? (
-          <RecapHeader recapGw={recapGw} decided={decided} />
-        ) : null}
+        <RecapLayoutSwitch
+          layout={layout}
+          onChange={(next) => {
+            setLayout(next)
+            writeRecapLayout(next)
+          }}
+        />
+
+        {layout === 'classic' ? (
+          showingPreview ? (
+            <PreviewHeader preview={previewGw} />
+          ) : recapGw ? (
+            <RecapHeader recapGw={recapGw} decided={decided} />
+          ) : null
+        ) : (
+          <ScanHeader
+            layout={layout}
+            recapGw={recapGw}
+            previewGw={previewGw}
+            preview={showingPreview}
+            decided={decided}
+          />
+        )}
       </section>
 
-      {showingPreview
-        ? previewGw.matchups.map((m) => (
-            <PreviewMatchupCard
-              key={`${m.home.entryId}-${m.away.entryId}`}
-              matchup={m}
-              teamLogoMap={teamLogoMap}
-              kitIndexByEntry={kitIndexByEntry}
-            />
-          ))
-        : recapGw
-          ? recapGw.matchups.map((m) => (
-              <MatchupCard
+      {layout === 'classic' ? (
+        showingPreview
+          ? previewGw.matchups.map((m) => (
+              <PreviewMatchupCard
                 key={`${m.home.entryId}-${m.away.entryId}`}
                 matchup={m}
                 teamLogoMap={teamLogoMap}
                 kitIndexByEntry={kitIndexByEntry}
               />
             ))
-          : null}
+          : recapGw
+            ? recapGw.matchups.map((m) => (
+                <MatchupCard
+                  key={`${m.home.entryId}-${m.away.entryId}`}
+                  matchup={m}
+                  teamLogoMap={teamLogoMap}
+                  kitIndexByEntry={kitIndexByEntry}
+                />
+              ))
+            : null
+      ) : (
+        <ScanMatchups
+          layout={layout}
+          matchups={
+            showingPreview ? previewGw.matchups : recapGw ? recapGw.matchups : []
+          }
+          preview={showingPreview}
+          teamLogoMap={teamLogoMap}
+          kitIndexByEntry={kitIndexByEntry}
+        />
+      )}
     </>
   )
 }
