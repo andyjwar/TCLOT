@@ -237,6 +237,7 @@ export const BENCH_DETAIL_MIN_PTS = 2
 /**
  * Flatten leftover best-XI sit-outs across a team's finished weeks.
  * Only players with more than {@link BENCH_DETAIL_MIN_PTS} points.
+ * Ordered by gameweek, then leftover points (high to low).
  *
  * @param {{ weeks?: { gw?: number, leftOnBench?: { id?: number, name?: string, pos?: string, pts?: number }[] }[] } | null | undefined} teamRow
  * @param {number} [minPts]
@@ -261,8 +262,8 @@ export function leftoverBenchPlayers(teamRow, minPts = BENCH_DETAIL_MIN_PTS) {
     }
   }
   rows.sort((a, b) => {
-    if (b.pts !== a.pts) return b.pts - a.pts
     if (a.gw !== b.gw) return a.gw - b.gw
+    if (b.pts !== a.pts) return b.pts - a.pts
     return (a.name || '').localeCompare(b.name || '')
   })
   return rows

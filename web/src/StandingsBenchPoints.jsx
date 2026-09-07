@@ -12,6 +12,8 @@ import {
 import { formatSwing, leaguePtsFromRecord } from './bestXi.js'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { ClickablePlayerName } from './PlayerHistoryContext.jsx'
+import { PlayerKit } from './PlayerKit.jsx'
+import { usePlayerClubBadges } from './usePlayerClubBadges.js'
 import { SortArrow } from './SortArrow.jsx'
 import { TeamAvatar } from './TeamAvatar'
 import { ClickableTeamName } from './TeamDetailOverlay.jsx'
@@ -100,6 +102,7 @@ function swingForRow(row) {
 export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} }) {
   const isMobileNarrow = useMobileNarrowViewport()
   const { report, loading } = useBenchPoints(true)
+  const clubBadges = usePlayerClubBadges(true)
   const gameweeks = report?.gameweeks || []
   const latestGw = gameweeks.length ? gameweeks[gameweeks.length - 1] : null
   const [gwPick, setGwPick] = useState(/** @type {number | null} */ (null))
@@ -207,7 +210,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                     label="Best XI"
                     sort={sort}
                     onSort={(key) => setSort((cur) => nextBenchSort(cur, key))}
-                    className="win-margin-table__n tabular"
+                    className="win-margin-table__n tabular standings-stats-bench-table__bestxi"
                     title="Table points if every finished fixture used both sides' best legal XI"
                   />
                   <BenchSortTh
@@ -233,7 +236,14 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   const swing = swingForRow(row)
                   const fillPct = maxLeft > 0 ? Math.round((left / maxLeft) * 100) : 0
                   const recTitle = `Played ${row.actualRecord || '—'}. If best XIs: ${row.bestRecord || '—'}.`
-                  const leftover = leftoverBenchPlayers(row)
+                  const leftover = leftoverBenchPlayers(row).map((p) => {
+                    const club = clubBadges.get(p.id)
+                    return {
+                      ...p,
+                      badgeUrl: club?.badgeUrl ?? null,
+                      teamShort: club?.teamShort ?? '',
+                    }
+                  })
                   const open = expandedId === row.leagueEntryId
                   const toggleId = `standings-bench-team-${row.leagueEntryId}`
                   const panelId = `standings-bench-detail-${row.leagueEntryId}`
@@ -262,6 +272,17 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                             setExpandedId(open ? null : row.leagueEntryId)
                           }
                         >
+                          <span
+                            className={
+                              'standings-stats-bench-table__chevron' +
+                              (open
+                                ? ' standings-stats-bench-table__chevron--open'
+                                : '')
+                            }
+                            aria-hidden="true"
+                          >
+                            ▶
+                          </span>
                           <span className="win-margin-table__team-inner">
                             <TeamAvatar
                               entryId={row.leagueEntryId}
@@ -285,7 +306,9 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                         <strong>{left}</strong>
                       </td>
                       <td className="tabular win-margin-table__n">{tablePts}</td>
-                      <td className="tabular win-margin-table__n">{bestPts}</td>
+                      <td className="tabular win-margin-table__n standings-stats-bench-table__bestxi">
+                        {bestPts}
+                      </td>
                       <td
                         className={
                           'tabular win-margin-table__n standings-stats-bench-table__swing' +
@@ -342,14 +365,24 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                                   {leftover.map((p) => (
                                     <tr key={`${p.id}-${p.gw}`}>
                                       <td>
-                                        <ClickablePlayerName
-                                          element={p.id}
-                                          displayName={p.name}
-                                          web_name={p.name}
-                                          leagueEntryId={row.leagueEntryId}
-                                        >
-                                          {p.name}
-                                        </ClickablePlayerName>
+                                        <span className="standings-stats-bench-misses__player">
+                                          <span className="standings-stats-bench-misses__kit">
+                                            <PlayerKit
+                                              badgeUrl={p.badgeUrl}
+                                              teamShort={p.teamShort}
+                                            />
+                                          </span>
+                                          <ClickablePlayerName
+                                            element={p.id}
+                                            displayName={p.name}
+                                            web_name={p.name}
+                                            teamShort={p.teamShort}
+                                            leagueEntryId={row.leagueEntryId}
+                                            className="standings-stats-bench-misses__name"
+                                          >
+                                            {p.name}
+                                          </ClickablePlayerName>
+                                        </span>
                                       </td>
                                       <td className="tabular standings-stats-bench-misses__gw">
                                         {p.gw}

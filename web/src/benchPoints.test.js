@@ -12,6 +12,7 @@ import {
   sortBenchPointRows,
   tablePtsFromResult,
 } from './benchPoints.js'
+import { clubBadgeIndexFromBootstrap, plClubBadgeUrl } from './playerClubBadge.js'
 
 function p(id, pos, pts, name = `P${id}`) {
   return { id, pos, pts, name }
@@ -112,12 +113,13 @@ test('buildBenchPointsReport totals leftover and flips a fixture', () => {
   assert.equal(fx.bestAwayTablePts, 1)
 })
 
-test('leftoverBenchPlayers lists sit-outs above 2 pts with GW', () => {
+test('leftoverBenchPlayers lists sit-outs above 2 pts ordered by GW', () => {
   const rows = leftoverBenchPlayers({
     weeks: [
       {
         gw: 2,
         leftOnBench: [
+          { id: 6, name: 'Haaland', pts: 15 },
           { id: 1, name: 'Tavernier', pts: 10 },
           { id: 2, name: 'Thiaw', pts: 3 },
           { id: 3, name: 'Henderson', pts: 2 },
@@ -134,12 +136,30 @@ test('leftoverBenchPlayers lists sit-outs above 2 pts with GW', () => {
     rows.map((r) => ({ name: r.name, gw: r.gw, pts: r.pts })),
     [
       { name: 'Salah', gw: 1, pts: 12 },
+      { name: 'Haaland', gw: 2, pts: 15 },
       { name: 'Tavernier', gw: 2, pts: 10 },
       { name: 'Thiaw', gw: 2, pts: 3 },
     ],
   )
   assert.equal(leftoverBenchPlayers({ weeks: [] }).length, 0)
   assert.equal(leftoverBenchPlayers(null).length, 0)
+})
+
+test('clubBadgeIndexFromBootstrap maps element ids to PL crests', () => {
+  assert.equal(
+    plClubBadgeUrl(3),
+    'https://resources.premierleague.com/premierleague/badges/50/t3.png',
+  )
+  assert.equal(plClubBadgeUrl(null), null)
+  const index = clubBadgeIndexFromBootstrap({
+    teams: [{ id: 7, code: 3, short_name: 'ARS' }],
+    elements: [{ id: 11, team: 7 }, { id: 'x' }],
+  })
+  assert.deepEqual(index.get(11), {
+    badgeUrl: 'https://resources.premierleague.com/premierleague/badges/50/t3.png',
+    teamShort: 'ARS',
+  })
+  assert.equal(clubBadgeIndexFromBootstrap(null).size, 0)
 })
 
 test('fixturesForGw and formatBenchMisses', () => {
