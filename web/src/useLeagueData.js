@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fplElementWebName } from './fplElementNames.js';
 import {
-  finishedEventIdsFromEvents,
   applyLeagueResults,
+  compareH2hStandingsKeys,
+  finishedEventIdsFromEvents,
 } from './h2hEffectiveFinished.js';
 import { draftResourceUrl } from './fplDraftUrl.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
@@ -633,11 +634,15 @@ function buildGwRankExtremes(matchList, leagueEntries, teams) {
       const total = s.w * 3 + s.d;
       return { id, total, pf: s.pf, pa: s.pa };
     });
-    rows.sort(
-      (a, b) =>
-        b.total - a.total ||
-        b.pf - a.pf ||
-        a.pa - b.pa,
+    rows.sort((a, b) =>
+      compareH2hStandingsKeys(
+        a.total,
+        b.total,
+        a.pf,
+        b.pf,
+        teams[a.id]?.entry_name,
+        teams[b.id]?.entry_name,
+      ),
     );
     firstMap[rows[0].id].push(gw);
     lastMap[rows[teamCount - 1].id].push(gw);

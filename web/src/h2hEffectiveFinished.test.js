@@ -1,16 +1,18 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  applyLeagueResults,
+  compareH2hStandingsKeys,
+  compareStandingsRows,
   completedFootballGameweeks,
+  deriveStandingsFromFinishedMatches,
   finishedEventIdsFromEvents,
   matchEffectivelyFinished,
-  normalizeMatchesFinished,
-  deriveStandingsFromFinishedMatches,
-  reconcileMatchPointsFromStandings,
-  overlayFresherMatchPoints,
   mergeStandingsPreferringHigherFor,
-  applyLeagueResults,
-  compareStandingsRows,
+  normalizeMatchesFinished,
+  overlayFresherMatchPoints,
+  reconcileMatchPointsFromStandings,
+  sortH2hStandingsRows,
 } from './h2hEffectiveFinished.js'
 
 const fixturesGw1Done = [
@@ -148,6 +150,45 @@ test('normalizeMatchesFinished — event.finished promotes GW2 even if one PL fi
   assert.equal(out[3].finished, false)
 })
 
+test('compareH2hStandingsKeys — official PTS then PF; name after a PF tie (no PA)', () => {
+  assert.ok(compareH2hStandingsKeys(6, 9, 154, 163, 'Mordor', 'Rokesly') > 0)
+  assert.ok(compareH2hStandingsKeys(6, 6, 154, 136, 'Mordor', 'Brampton') < 0)
+  // Same PTS + PF: Seoul before Suffolk even though Suffolk has the better PA.
+  assert.ok(
+    compareH2hStandingsKeys(3, 3, 131, 131, 'Seoul Shire', 'Suffolk Sméagol') < 0,
+  )
+  assert.ok(
+    compareH2hStandingsKeys(3, 3, 131, 131, 'Suffolk Sméagol', 'Toronto Gimli') < 0,
+  )
+})
+
+test('sortH2hStandingsRows — GW3 three-way 3pts/131 PF lists Seoul then Suffolk then Toronto', () => {
+  const rows = [
+    { league_entry: 5220, total: 3, points_for: 131, points_against: 132, teamName: 'Suffolk Sméagol' },
+    { league_entry: 4898, total: 3, points_for: 131, points_against: 149, teamName: 'Toronto Gimli' },
+    { league_entry: 30728, total: 3, points_for: 131, points_against: 135, teamName: 'Seoul Shire' },
+    { league_entry: 44904, total: 6, points_for: 136, points_against: 148, teamName: 'Brampton Balrogs' },
+    { league_entry: 6849, total: 9, points_for: 163, points_against: 116, teamName: 'Rokesly Regorasu' },
+    { league_entry: 18279, total: 6, points_for: 154, points_against: 105, teamName: 'Mordor S.F.G' },
+    { league_entry: 4259, total: 3, points_for: 114, points_against: 145, teamName: 'Atlético Bilbo' },
+    { league_entry: 10173, total: 3, points_for: 110, points_against: 140, teamName: 'Hackney Rohirrim' },
+  ]
+  sortH2hStandingsRows(rows)
+  assert.deepEqual(
+    rows.map((r) => r.teamName),
+    [
+      'Rokesly Regorasu',
+      'Mordor S.F.G',
+      'Brampton Balrogs',
+      'Seoul Shire',
+      'Suffolk Sméagol',
+      'Toronto Gimli',
+      'Atlético Bilbo',
+      'Hackney Rohirrim',
+    ],
+  )
+})
+
 test('deriveStandingsFromFinishedMatches — W/L/PF from finished H2H rows', () => {
   const finished = normalizeMatchesFinished(matches, fixturesGw1Done)
   const entries = [{ id: 10 }, { id: 20 }, { id: 30 }, { id: 40 }]
@@ -164,17 +205,61 @@ test('deriveStandingsFromFinishedMatches — W/L/PF from finished H2H rows', () 
   assert.equal(loser.total, 0)
 })
 
-test('compareStandingsRows — official FPL order is PTS, FOR, then fewer against (not waivers)', () => {
-  const suffolk = { total: 3, points_for: 131, points_against: 132, waiver_pick: 4 }
-  const seoul = { total: 3, points_for: 131, points_against: 135, waiver_pick: 5 }
-  const toronto = { total: 3, points_for: 131, points_against: 149, waiver_pick: 3 }
-  const rows = [toronto, seoul, suffolk].sort(compareStandingsRows)
+test('deriveStandingsFromFinishedMatches — same PTS+PF sorts A–Z, ignores PA', () => {
+  const entries = [
+    { id: 1, entry_name: 'Suffolk Sméagol' },
+    { id: 2, entry_name: 'Seoul Shire' },
+    { id: 3, entry_name: 'Toronto Gimli' },
+    { id: 4, entry_name: 'Dummy High' },
+    { id: 5, entry_name: 'Dummy Low' },
+  ]
+  const finished = [
+    { finished: true, league_entry_1: 2, league_entry_2: 4, league_entry_1_points: 70, league_entry_2_points: 10 },
+    { finished: true, league_entry_1: 2, league_entry_2: 5, league_entry_1_points: 11, league_entry_2_points: 60 },
+    { finished: true, league_entry_1: 1, league_entry_2: 4, league_entry_1_points: 70, league_entry_2_points: 40 },
+    { finished: true, league_entry_1: 1, league_entry_2: 5, league_entry_1_points: 11, league_entry_2_points: 51 },
+    { finished: true, league_entry_1: 3, league_entry_2: 4, league_entry_1_points: 70, league_entry_2_points: 30 },
+    { finished: true, league_entry_1: 3, league_entry_2: 5, league_entry_1_points: 11, league_entry_2_points: 41 },
+  ]
+  // Trio: 1-0-1, 81 PF. PA: Seoul 70, Toronto 71, Suffolk 91.
+  const rows = deriveStandingsFromFinishedMatches(entries, finished)
+  const trio = rows.filter((r) => r.total === 3)
   assert.deepEqual(
-    rows.map((r) => r.points_against),
-    [132, 135, 149],
+    trio.map((r) => r.league_entry),
+    [2, 1, 3],
   )
-  // Fewer waivers / lower waiver_pick would have put Toronto first — official does not.
-  assert.equal(rows[0], suffolk)
+  assert.equal(trio[0].points_for, 81)
+  assert.equal(trio[0].points_against, 70)
+  assert.equal(trio[1].points_against, 91)
+})
+
+test('compareStandingsRows — official FPL order is PTS, FOR, then name (not PA or waivers)', () => {
+  const suffolk = {
+    total: 3,
+    points_for: 131,
+    points_against: 132,
+    waiver_pick: 4,
+    teamName: 'Suffolk Sméagol',
+  }
+  const seoul = {
+    total: 3,
+    points_for: 131,
+    points_against: 135,
+    waiver_pick: 5,
+    teamName: 'Seoul Shire',
+  }
+  const toronto = {
+    total: 3,
+    points_for: 131,
+    points_against: 149,
+    waiver_pick: 3,
+    teamName: 'Toronto Gimli',
+  }
+  const rows = [toronto, suffolk, seoul].sort(compareStandingsRows)
+  assert.deepEqual(
+    rows.map((r) => r.teamName),
+    ['Seoul Shire', 'Suffolk Sméagol', 'Toronto Gimli'],
+  )
 })
 
 test('reconcileMatchPointsFromStandings — lifts Saturday leftovers to official FOR', () => {

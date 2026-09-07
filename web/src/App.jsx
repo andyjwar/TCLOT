@@ -3228,7 +3228,7 @@ function App() {
    * option B from the `?leader=1` gallery). Desktop renders whatever
    * order the user sorted (league order if unsorted); mobile always
    * renders PTS-desc, which is league order (`tableRows` is already
-   * sorted by total desc with tiebreakers). */
+   * sorted by official H2H order: PTS, then points for, then name). */
   const desktopStandingsRows = sortedStandingsRows ?? []
   const mobileStandingsRows = tableRows ?? []
 

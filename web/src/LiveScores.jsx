@@ -38,6 +38,7 @@ import {
 } from './championOfRecord.js';
 import { useMobileNarrowViewport } from './usePortraitMobile.js';
 import { standingsMobileTeamName } from './teamNameUtils.js';
+import { compareH2hStandingsKeys } from './h2hEffectiveFinished.js';
 import { usePredictions } from './usePredictions.js';
 import { useModelCalibration } from './useModelCalibration.js';
 import { predictionsById, h2hWinProbs } from './forecastHelpers.js';
@@ -862,9 +863,11 @@ export function LiveScores({
   }, [eventSnapshot?.finished, gwMatches, gameweek, fplDraftCurrentGw]);
 
   /**
-   * Projected For / Faced / GD / PTS from this GW’s live fixtures, then sorted by projected PTS,
-   * then For, then GD. `liveRank` = competition rank (ties share a #). `rankMove` uses ordinal
-   * list position (i + 1) vs season rank so movement still shows inside tied groups.
+   * Projected For / Faced / GD / PTS from this GW’s live fixtures, then sorted by
+   * official H2H order: projected PTS, then For, then team name (no GD / PA
+   * step — same as FPL Draft). `liveRank` = competition rank (ties share a #).
+   * `rankMove` uses ordinal list position (i + 1) vs season rank so movement
+   * still shows inside tied groups.
    *
    * When this GW is already finished, league `tableRows` totals (PTS, For, Faced) already include
    * it — do not add live H2H points or GW FPL totals again (would double-count e.g. +3).
@@ -961,12 +964,15 @@ export function LiveScores({
       };
     });
     const sorted = [...enriched].sort((a, b) => {
-      const d = (b.projectedPts ?? 0) - (a.projectedPts ?? 0);
-      if (d !== 0) return d;
-      const f = (b.projectedFor ?? 0) - (a.projectedFor ?? 0);
-      if (f !== 0) return f;
-      const g = (b.projectedGd ?? 0) - (a.projectedGd ?? 0);
-      if (g !== 0) return g;
+      const byOfficial = compareH2hStandingsKeys(
+        a.projectedPts,
+        b.projectedPts,
+        a.projectedFor,
+        b.projectedFor,
+        a.teamName,
+        b.teamName,
+      );
+      if (byOfficial !== 0) return byOfficial;
       return (a.rank ?? 999) - (b.rank ?? 999);
     });
     let currentLiveRank = 0;
