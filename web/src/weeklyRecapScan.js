@@ -1,7 +1,7 @@
 /**
- * Scan-first recap/preview copy. Turns baked weekly-recaps.json into
- * header tiles, per-fixture stat boxes, and a mixed recap box — jokes,
- * waivers, scorers, duds, streaks — not a per-manager checklist.
+ * Scan-first recap/preview copy. Header tiles, per-fixture stat boxes, and
+ * a reporter-style recap box: one unused news angle per card, jokes as
+ * asides, Mottershead vegan required but not always first.
  */
 
 import {
