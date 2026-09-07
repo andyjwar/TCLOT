@@ -155,16 +155,8 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         Points left on the bench
       </h3>
       <p className="standings-stats-hint">
-        “Unused” shows the additional FPL points each team could have earned
-        by fielding its best legal XI; autosub points are already included.
-      </p>
-      <p className="standings-stats-hint">
-        “Actual” shows the current standings: 3 points for a win and 1 for a
-        draw. “Best XI” shows how the standings would look if both teams had
-        fielded their highest-scoring legal XI in every completed fixture.
-      </p>
-      <p className="standings-stats-hint">
-        Tap a team to see sit-outs of more than {BENCH_DETAIL_MIN_PTS} points.
+        “Actual” shows the current standings. “Best XI” shows how total points
+        if each team fielded their highest-scoring team selection.
       </p>
 
       {loading ? (
@@ -188,7 +180,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   />
                   <BenchSortTh
                     colKey="unused"
-                    label="Unused"
+                    label="Benched"
                     sort={sort}
                     onSort={(key) => setSort((cur) => nextBenchSort(cur, key))}
                     className="win-margin-table__n tabular"
@@ -221,7 +213,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   <th
                     scope="col"
                     className="standings-stats-weeks-table__bar-head"
-                    aria-label="Unused bar"
+                    aria-label="Benched bar"
                   />
                 </tr>
               </thead>
@@ -458,7 +450,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                             </ClickableTeamName>
                             {homeLeft > 0 ? (
                               <span className="standings-bench-fx__unused muted">
-                                {homeLeft} unused
+                                {homeLeft} benched
                               </span>
                             ) : null}
                           </span>
@@ -474,7 +466,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                             </ClickableTeamName>
                             {awayLeft > 0 ? (
                               <span className="standings-bench-fx__unused muted">
-                                {awayLeft} unused
+                                {awayLeft} benched
                               </span>
                             ) : null}
                           </span>
