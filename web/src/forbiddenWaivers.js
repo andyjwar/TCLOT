@@ -69,3 +69,26 @@ export function pickupIdSetFromMoves(moves) {
   }
   return out
 }
+
+const PLACEHOLDER_NAME = /^Player #\d+$/
+
+/**
+ * Display name for a pickup. `fpl-mini` omits post-cutoff players, so weekly
+ * rows would otherwise show `Player #595`. Prefer the forbidden-list web name.
+ *
+ * @param {string | null | undefined} pickedName
+ * @param {number | null | undefined} elementId
+ * @param {Array<{ id?: number, webName?: string, fullName?: string }> | null | undefined} players
+ */
+export function forbiddenPickupDisplayName(pickedName, elementId, players) {
+  const id = Number(elementId)
+  if (!Number.isFinite(id) || !Array.isArray(players)) {
+    return pickedName
+  }
+  const row = players.find((p) => Number(p?.id) === id)
+  if (!row) return pickedName
+  const label = row.webName || row.fullName
+  if (!label) return pickedName
+  if (!pickedName || PLACEHOLDER_NAME.test(String(pickedName))) return label
+  return pickedName
+}

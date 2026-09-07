@@ -2,6 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
   forbiddenIdSetFromPayload,
+  forbiddenPickupDisplayName,
   isForbiddenWaiverPickup,
   pickupElementId,
   pickupIdSetFromMoves,
@@ -72,4 +73,19 @@ test('pickupIdSetFromMoves — all successful pickup ids', () => {
   assert.equal(set.has(DEDIC), true)
   assert.equal(set.has(415), true)
   assert.equal(set.size, 2)
+})
+
+test('forbiddenPickupDisplayName — replaces Player #id with Dedic web name', () => {
+  assert.equal(
+    forbiddenPickupDisplayName('Player #595', DEDIC, PAYLOAD.players),
+    'Dedić',
+  )
+  assert.equal(
+    forbiddenPickupDisplayName('Dedić', DEDIC, PAYLOAD.players),
+    'Dedić',
+  )
+  assert.equal(
+    forbiddenPickupDisplayName('Dorgu', 415, PAYLOAD.players),
+    'Dorgu',
+  )
 })

@@ -5,13 +5,14 @@ import { gameWeekSelectLabel } from './gwLabel.js'
 import { flattenWaiverGroups, sortMovesWaiverThenFa } from './waiverMovesSort.js'
 import { CompactSelectPill } from './CompactSelectPill.jsx'
 import { teamChipAbbr } from './liveScoresDerivations.js'
-import { isForbiddenWaiverPickup } from './forbiddenWaivers.js'
+import { forbiddenPickupDisplayName, isForbiddenWaiverPickup } from './forbiddenWaivers.js'
 import { useForbiddenWaivers } from './useForbiddenWaivers.js'
 import './WaiversPanel.css'
 
 /** Plain-text line for one move — no `W` prefix for waivers; FA lines keep `FA`. */
-function moveLineForCopy(r) {
-  const inN = r.pickedName ?? '—'
+function moveLineForCopy(r, forbiddenPlayers) {
+  const inN =
+    forbiddenPickupDisplayName(r.pickedName, r.element_in, forbiddenPlayers) ?? '—'
   const outN = r.droppedName ?? '—'
   const ord =
     r.waiverProcessOrder != null && Number.isFinite(Number(r.waiverProcessOrder))
@@ -26,14 +27,20 @@ function moveLineForCopy(r) {
 /**
  * @param {{ gw: number | null, flatRows: Array<object>, leagueTitleAbbr: string, leagueTitle: string }} args
  */
-function buildWaiverShareText({ gw, flatRows, leagueTitleAbbr, leagueTitle }) {
+function buildWaiverShareText({
+  gw,
+  flatRows,
+  leagueTitleAbbr,
+  leagueTitle,
+  forbiddenPlayers,
+}) {
   if (gw == null || !flatRows?.length) return ''
   const lines = []
   lines.push(`${leagueTitleAbbr} · GW ${gw}`)
   lines.push(leagueTitle)
   lines.push('')
   for (const r of flatRows) {
-    lines.push(`${moveLineForCopy(r)}  |  ${teamChipAbbr(r.teamName)}`)
+    lines.push(`${moveLineForCopy(r, forbiddenPlayers)}  |  ${teamChipAbbr(r.teamName)}`)
   }
   return lines.join('\n').trimEnd()
 }
@@ -108,6 +115,7 @@ function WaiverShareCard({
   teamLogoMap,
   kitIndexByEntry,
   forbiddenIds,
+  forbiddenPlayers,
 }) {
   const density = shareCardDensity(rows.length)
   return (
@@ -144,7 +152,11 @@ function WaiverShareCard({
               <SharePlayer
                 badgeUrl={r.pickedBadgeUrl}
                 teamShort={r.pickedTeamShort}
-                name={r.pickedName}
+                name={forbiddenPickupDisplayName(
+                  r.pickedName,
+                  r.element_in,
+                  forbiddenPlayers,
+                )}
               />
               <span className="waivers-share__arrow" aria-hidden="true">←</span>
               <SharePlayer
@@ -183,7 +195,7 @@ export function WaiverSummaryShare({
   onGwChange,
   showGwPicker = true,
 }) {
-  const { ids: forbiddenIds } = useForbiddenWaivers()
+  const { ids: forbiddenIds, players: forbiddenPlayers } = useForbiddenWaivers()
   const [copied, setCopied] = useState(false)
 
   const flatRows = useMemo(() => {
@@ -192,8 +204,15 @@ export function WaiverSummaryShare({
   }, [groups])
 
   const shareText = useMemo(
-    () => buildWaiverShareText({ gw, flatRows, leagueTitleAbbr, leagueTitle }),
-    [gw, flatRows, leagueTitleAbbr, leagueTitle],
+    () =>
+      buildWaiverShareText({
+        gw,
+        flatRows,
+        leagueTitleAbbr,
+        leagueTitle,
+        forbiddenPlayers,
+      }),
+    [gw, flatRows, leagueTitleAbbr, leagueTitle, forbiddenPlayers],
   )
 
   const onCopy = useCallback(async () => {
@@ -271,6 +290,7 @@ export function WaiverSummaryShare({
         teamLogoMap={teamLogoMap}
         kitIndexByEntry={kitIndexByEntry}
         forbiddenIds={forbiddenIds}
+        forbiddenPlayers={forbiddenPlayers}
       />
     </div>
   )
