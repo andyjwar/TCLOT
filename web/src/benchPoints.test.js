@@ -231,3 +231,19 @@ test('sortBenchPointRows orders unused desc by default and team A–Z', () => {
     ['Mordor S.F.G', 'Seoul Shire', 'Suffolk Sméagol'],
   )
 })
+
+test('sortBenchPointRows uses W–D–L when league pts fields are missing', () => {
+  const rows = [
+    { teamName: 'Alpha', benchLeft: 1, actualW: 1, actualD: 0, actualL: 2 },
+    { teamName: 'Zulu', benchLeft: 2, actualW: 3, actualD: 0, actualL: 0 },
+    { teamName: 'Mid', benchLeft: 3, actualW: 1, actualD: 0, actualL: 2 },
+  ]
+  assert.deepEqual(
+    sortBenchPointRows(rows, { key: 'actual', dir: 'desc' }).map((r) => r.teamName),
+    ['Zulu', 'Alpha', 'Mid'],
+  )
+  assert.deepEqual(
+    sortBenchPointRows(rows, { key: 'actual', dir: 'asc' }).map((r) => r.teamName),
+    ['Alpha', 'Mid', 'Zulu'],
+  )
+})

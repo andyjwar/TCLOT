@@ -359,12 +359,35 @@ export function nextBenchSort(current, clickedKey) {
   return { key, dir: defaultBenchSortDir(key) }
 }
 
+function actualTablePts(row) {
+  if (row?.actualLeaguePts != null) return Number(row.actualLeaguePts) || 0
+  return leaguePtsFromRecord({
+    w: row?.actualW,
+    d: row?.actualD,
+    l: row?.actualL,
+  })
+}
+
+function bestTablePts(row) {
+  if (row?.bestLeaguePts != null) return Number(row.bestLeaguePts) || 0
+  return leaguePtsFromRecord({
+    w: row?.bestW,
+    d: row?.bestD,
+    l: row?.bestL,
+  })
+}
+
+function swingTablePts(row) {
+  if (row?.leaguePtsSwing != null) return Number(row.leaguePtsSwing) || 0
+  return bestTablePts(row) - actualTablePts(row)
+}
+
 function benchSortValue(row, key) {
   if (key === 'team') return String(row?.teamName || '')
   if (key === 'unused') return Number(row?.benchLeft) || 0
-  if (key === 'actual') return Number(row?.actualLeaguePts) || 0
-  if (key === 'bestXi') return Number(row?.bestLeaguePts) || 0
-  if (key === 'swing') return Number(row?.leaguePtsSwing) || 0
+  if (key === 'actual') return actualTablePts(row)
+  if (key === 'bestXi') return bestTablePts(row)
+  if (key === 'swing') return swingTablePts(row)
   return 0
 }
 
