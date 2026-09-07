@@ -210,6 +210,14 @@ export function loreTagsFromSide(side) {
  * @param {string[]} [tags]
  * @returns {string|null}
  */
+/** Every joke we have for a manager, vegan lines included for Mottershead. */
+export function allManagerJokes(manager) {
+  const lore = MANAGER_LORE[canonicalManager(manager)]
+  const facts = (lore?.facts || []).map(factText).filter(Boolean)
+  if (isMottershead(manager)) return [...VEGAN_LINES, ...facts]
+  return facts
+}
+
 export function managerFunFact(manager, pick, key, tags = [], { excludeTags = [] } = {}) {
   const lore = MANAGER_LORE[canonicalManager(manager)]
   if (!lore || !lore.facts || lore.facts.length === 0) return null

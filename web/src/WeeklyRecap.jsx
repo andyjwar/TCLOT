@@ -1,7 +1,31 @@
 import { useEffect, useMemo, useState } from 'react'
 import { TeamAvatar } from './TeamAvatar'
 import { standingsMobileTeamName } from './teamNameUtils.js'
-import { fetchLeagueDataJson } from './leagueDataFetch.js'
+import { fetchLeagueDataJson, fetchLeagueDataJsonOptional } from './leagueDataFetch.js'
+import { indexRecapSite, padGw } from './recapSiteContext.js'
+
+async function loadRecapSiteData() {
+  const [benchPoints, seasonPredictions, draftPicks, histIndex] = await Promise.all([
+    fetchLeagueDataJsonOptional('bench-points.json'),
+    fetchLeagueDataJsonOptional('season-predictions.json'),
+    fetchLeagueDataJsonOptional('draft_picks.json'),
+    fetchLeagueDataJsonOptional('projections-history/index.json'),
+  ])
+  const gws = Array.isArray(histIndex?.gameweeks) ? histIndex.gameweeks : []
+  const pairs = await Promise.all(
+    gws.map(async (gw) => {
+      const json = await fetchLeagueDataJsonOptional(
+        `projections-history/gw-${padGw(gw)}.json`,
+      )
+      return [Number(gw), json]
+    }),
+  )
+  const historyByGw = {}
+  for (const [gw, json] of pairs) {
+    if (json) historyByGw[gw] = json
+  }
+  return { benchPoints, seasonPredictions, draftPicks, historyByGw }
+}
 import { namedFixtureFor, derbyChipLabel } from './leagueLore.js'
 import {
   defaultRecapView,
@@ -41,6 +65,7 @@ export function WeeklyRecap({
   leagueEntries = [],
 }) {
   const [data, setData] = useState(null)
+  const [siteRaw, setSiteRaw] = useState(null)
   const [failed, setFailed] = useState(false)
   const [selectedGw, setSelectedGw] = useState(null)
   const [requestedMode, setRequestedMode] = useState(null)
@@ -48,9 +73,14 @@ export function WeeklyRecap({
 
   useEffect(() => {
     let alive = true
-    fetchLeagueDataJson('weekly-recaps.json')
-      .then((json) => {
-        if (alive) setData(json)
+    Promise.all([
+      fetchLeagueDataJson('weekly-recaps.json'),
+      loadRecapSiteData().catch(() => null),
+    ])
+      .then(([json, site]) => {
+        if (!alive) return
+        setData(json)
+        setSiteRaw(site)
       })
       .catch(() => {
         if (alive) setFailed(true)
@@ -121,6 +151,11 @@ export function WeeklyRecap({
     onMenuLabelChange?.(menuLabel)
   }, [menuLabel, onMenuLabelChange])
 
+  const site = useMemo(
+    () => indexRecapSite({ ...(siteRaw || {}), matches }),
+    [siteRaw, matches],
+  )
+
   if (failed) {
     return (
       <section className="tile tile--compact" aria-label="Weekly recap">
@@ -157,6 +192,7 @@ export function WeeklyRecap({
   const previewGw = active.preview
   const heading = showingPreview ? `GW${active.gw} preview` : `GW${active.gw} recap`
   const decided = recapGw ? recapGw.model.hits + recapGw.model.misses : 0
+  const priorGws = (data?.gameweeks || []).filter((g) => Number(g.gw) < Number(active.gw))
 
   return (
     <>
@@ -276,6 +312,8 @@ export function WeeklyRecap({
             showingPreview ? previewGw.matchups : recapGw ? recapGw.matchups : []
           }
           preview={showingPreview}
+          priorGws={priorGws}
+          site={site}
           teamLogoMap={teamLogoMap}
           kitIndexByEntry={kitIndexByEntry}
         />
