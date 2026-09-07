@@ -1,10 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { fplElementWebName } from './fplElementNames.js';
 import {
+  applyLeagueResults,
   compareH2hStandingsKeys,
   finishedEventIdsFromEvents,
-  normalizeMatchesFinished,
-  sortH2hStandingsRows,
 } from './h2hEffectiveFinished.js';
 import { draftResourceUrl } from './fplDraftUrl.js';
 import { fplShirtImageUrl } from './fplShirtUrl';
@@ -69,6 +68,19 @@ async function fetchLiveDraftBootstrap() {
     if (r.ok) return await r.json();
   } catch {
     /* fall through — committed bootstrap_draft.json is the fallback */
+  }
+  return null;
+}
+
+/** Live `league/{id}/details` — official FOR / H2H points, not the last Vercel bake. */
+async function fetchLiveLeagueDetails(leagueId) {
+  const id = Number(leagueId);
+  if (!Number.isFinite(id) || id < 1) return null;
+  try {
+    const r = await fetch(draftResourceUrl(`league/${id}/details`), { cache: 'no-store' });
+    if (r.ok) return await r.json();
+  } catch {
+    /* proxy / CORS — keep the baked details.json */
   }
   return null;
 }
@@ -366,6 +378,9 @@ export function useLeagueData() {
         const finishedEventIds = finishedEventIdsFromEvents(
           liveBootstrap ?? (await fetchJSONOptional('bootstrap_draft.json', leagueDataV)),
         );
+        const liveDetails = isArchiveView()
+          ? null
+          : await fetchLiveLeagueDetails(details?.league?.id);
         let teamLogoMap = {};
         try {
           const r = await fetch(
@@ -409,6 +424,7 @@ export function useLeagueData() {
               tradesPanel,
               fixtures,
               finishedEventIds,
+              liveDetails,
               currentSeasonNameByManager,
             }),
             teamLogoMap,
@@ -534,80 +550,6 @@ function buildDefaultKitIndexByLeagueEntry(sortedByRank, teams) {
   return out;
 }
 
-/**
- * Rebuild cumulative H2H table from finished matches only (official PTS → PF → name).
- * The draft API often updates `matches[].finished` and points shortly before `standings`
- * totals catch up after a GW — deriving here keeps PTS / PL / form / next in sync with fixtures.
- */
-function deriveStandingsFromMatches(leagueEntries, matchList, teams) {
-  const idSet = new Set();
-  for (const e of leagueEntries || []) {
-    if (e?.id != null) idSet.add(e.id);
-  }
-  for (const m of matchList) {
-    if (!m.finished) continue;
-    idSet.add(m.league_entry_1);
-    idSet.add(m.league_entry_2);
-  }
-  const ids = [...idSet].filter((x) => x != null).sort((a, b) => a - b);
-  if (ids.length === 0) return [];
-  for (const id of ids) {
-    if (!teams[id]) {
-      teams[id] = { id, entry_id: id, entry_name: `Team ${id}` };
-    }
-  }
-  const st = Object.fromEntries(
-    ids.map((id) => [
-      id,
-      { league_entry: id, w: 0, d: 0, l: 0, pf: 0, pa: 0 },
-    ])
-  );
-  for (const m of matchList) {
-    if (!m.finished) continue;
-    const id1 = m.league_entry_1;
-    const id2 = m.league_entry_2;
-    const p1 = m.league_entry_1_points ?? 0;
-    const p2 = m.league_entry_2_points ?? 0;
-    if (!st[id1] || !st[id2]) continue;
-    st[id1].pf += p1;
-    st[id1].pa += p2;
-    st[id2].pf += p2;
-    st[id2].pa += p1;
-    if (p1 > p2) {
-      st[id1].w += 1;
-      st[id2].l += 1;
-    } else if (p2 > p1) {
-      st[id2].w += 1;
-      st[id1].l += 1;
-    } else {
-      st[id1].d += 1;
-      st[id2].d += 1;
-    }
-  }
-  const rows = ids.map((id) => {
-    const s = st[id];
-    const total = s.w * 3 + s.d;
-    return {
-      league_entry: id,
-      rank: 0,
-      total,
-      matches_won: s.w,
-      matches_drawn: s.d,
-      matches_lost: s.l,
-      points_for: s.pf,
-      points_against: s.pa,
-    };
-  });
-  sortH2hStandingsRows(
-    rows,
-    (r) => teams[r.league_entry]?.entry_name ?? `Team ${r.league_entry}`,
-  );
-  rows.forEach((r, i) => {
-    r.rank = i + 1;
-  });
-  return rows;
-}
-
 /** e.g. [1,2,3,7] → "GW 1–3, GW 7" */
 function formatGwWeekRangeList(gameweeks) {
   if (!gameweeks?.length) return '—';
@@ -629,7 +571,8 @@ function formatGwWeekRangeList(gameweeks) {
 
 /**
  * After each finished gameweek G, cumulative H2H table through G (same ordering as
- * deriveStandingsFromMatches). Records which weeks each team ranks 1st or last.
+ * official FPL Draft: PTS, then FOR, then fewer against). Records which weeks
+ * each team ranks 1st or last.
  */
 function buildGwRankExtremes(matchList, leagueEntries, teams) {
   const idSet = new Set();
@@ -768,23 +711,32 @@ function processLeagueData(raw, extras = {}) {
     ...e,
     entry_name: displayEntryName(e, extras.currentSeasonNameByManager),
   }));
-  // Promote `finished` on H2H rows once that GW's PL football is complete —
-  // FPL's own `matches[].finished` lags by many hours after the games end, and
-  // every results / standings / form path keys off it. See h2hEffectiveFinished.js.
-  const matches = normalizeMatchesFinished(
-    details.matches || [],
+  // Promote finished + lift leftover H2H points to official/live FOR so the
+  // table matches draft.premierleague.com (see h2hEffectiveFinished.js).
+  const applied = applyLeagueResults(
+    details,
     extras.fixtures,
     extras.finishedEventIds,
+    extras.liveDetails,
   );
-  let standingsRaw = details.standings || [];
+  const matches = applied.matches;
+  let standingsRaw = applied.standings || [];
 
   const teams = buildTeamsMap(leagueEntries, extras.currentSeasonNameByManager);
   const finishedCount = matches.filter((m) => m.finished).length;
 
-  if (finishedCount > 0 && leagueEntries.length > 0) {
-    standingsRaw = deriveStandingsFromMatches(leagueEntries, matches, teams);
-  } else if (!standingsRaw.length && finishedCount > 0 && leagueEntries.length === 0) {
-    standingsRaw = deriveStandingsFromMatches([], matches, teams);
+  if (finishedCount > 0) {
+    for (const m of matches) {
+      if (!m.finished) continue;
+      for (const id of [m.league_entry_1, m.league_entry_2]) {
+        if (id != null && !teams[id]) {
+          teams[id] = { id, entry_id: id, entry_name: `Team ${id}` };
+        }
+      }
+    }
+    if (leagueEntries.length === 0 && !standingsRaw.length) {
+      standingsRaw = applied.standings;
+    }
   }
 
   const standings = standingsRaw.map((s) => ({

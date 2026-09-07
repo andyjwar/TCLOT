@@ -1,4 +1,4 @@
-import { recapFactsForGw } from './seasonPredictionsModel.js'
+import { recapFactsForGw, reconcileTeamPoints } from './seasonPredictionsModel.js'
 import { matchupRecapSentences, recapWeekWrapSentences } from './weeklyRecapText.js'
 import { namedFixtureFor } from './leagueLore.js'
 
@@ -236,6 +236,155 @@ export function provisionalRecapFromMatches(matches, leagueEntries, gw) {
  *   lastFinishedGw?: number | null,
  * }} [live]
  */
+function matchupPairKey(homeId, awayId) {
+  const a = Number(homeId)
+  const b = Number(awayId)
+  return a < b ? `${a}-${b}` : `${b}-${a}`
+}
+
+function recapOddsOutcome(m) {
+  if (!m?.odds || m.winner == null) return m?.odds ? 'draw' : null
+  const favId = m.odds.favoriteSide === 'home' ? m.home.entryId : m.away.entryId
+  return Number(m.winner) === Number(favId) ? 'hit' : 'miss'
+}
+
+/**
+ * Baked recaps can freeze Saturday leftover scores (Seoul 9 while Mitchell
+ * has 15). Prefer live H2H points and implied XI totals, then rewrite the
+ * scoreline + prose.
+ */
+export function refreshRecapFromLiveScores(recap, matches, leagueEntries) {
+  if (!recap?.matchups?.length) return recap
+  const gw = Number(recap.gw)
+  const live = Number.isFinite(gw)
+    ? provisionalRecapFromMatches(matches, leagueEntries, gw)
+    : null
+  const liveByPair = new Map()
+  for (const row of live?.matchups ?? []) {
+    liveByPair.set(matchupPairKey(row.home.entryId, row.away.entryId), row)
+  }
+
+  let changed = false
+  const matchups = recap.matchups.map((m) => {
+    const liveRow = liveByPair.get(matchupPairKey(m.home.entryId, m.away.entryId))
+    let liveHomePts = null
+    let liveAwayPts = null
+    let liveHome = null
+    let liveAway = null
+    if (liveRow) {
+      if (Number(liveRow.home.entryId) === Number(m.home.entryId)) {
+        liveHomePts = liveRow.home.points
+        liveAwayPts = liveRow.away.points
+        liveHome = liveRow.home
+        liveAway = liveRow.away
+      } else {
+        liveHomePts = liveRow.away.points
+        liveAwayPts = liveRow.home.points
+        liveHome = liveRow.away
+        liveAway = liveRow.home
+      }
+    }
+    const homePts = reconcileTeamPoints(liveHomePts ?? m.home.points, {
+      players: m.home.players,
+    })
+    const awayPts = reconcileTeamPoints(liveAwayPts ?? m.away.points, {
+      players: m.away.players,
+    })
+    const tableChanged =
+      homePts !== m.home.points ||
+      awayPts !== m.away.points ||
+      (liveHome != null && liveHome.rank !== m.home.rank)
+    if (!tableChanged) return m
+    changed = true
+    const home = {
+      ...m.home,
+      points: homePts,
+      ...(liveHome
+        ? {
+            rank: liveHome.rank,
+            prevRank: liveHome.prevRank,
+            record: liveHome.record,
+            streak: liveHome.streak,
+            seasonAvg: liveHome.seasonAvg,
+            isSeasonHigh: liveHome.isSeasonHigh,
+            isWeekHigh: liveHome.isWeekHigh,
+          }
+        : {}),
+    }
+    const away = {
+      ...m.away,
+      points: awayPts,
+      ...(liveAway
+        ? {
+            rank: liveAway.rank,
+            prevRank: liveAway.prevRank,
+            record: liveAway.record,
+            streak: liveAway.streak,
+            seasonAvg: liveAway.seasonAvg,
+            isSeasonHigh: liveAway.isSeasonHigh,
+            isWeekHigh: liveAway.isWeekHigh,
+          }
+        : {}),
+    }
+    const winner =
+      homePts > awayPts ? home.entryId : awayPts > homePts ? away.entryId : null
+    const next = {
+      ...m,
+      gw: m.gw ?? gw,
+      home,
+      away,
+      winner,
+      margin: Math.abs(homePts - awayPts),
+    }
+    if (next.odds) {
+      next.odds = { ...next.odds, outcome: recapOddsOutcome(next) }
+    }
+    const leagueAvg =
+      recap.matchups.reduce((s, row) => s + row.home.points + row.away.points, 0) /
+      (recap.matchups.length * 2)
+    next.sentences = matchupRecapSentences({ ...next, leagueAvg })
+    return next
+  })
+
+  if (!changed) return recap
+
+  let weekHigh = recap.superlatives?.weekHigh ?? null
+  let closest = recap.superlatives?.closest ?? null
+  for (const m of matchups) {
+    for (const side of [m.home, m.away]) {
+      if (!weekHigh || side.points > weekHigh.points) {
+        weekHigh = { name: side.name, points: side.points }
+      }
+    }
+    if (!closest || m.margin < closest.margin) {
+      closest = { homeName: m.home.name, awayName: m.away.name, margin: m.margin }
+    }
+  }
+  const calls = (recap.model?.calls || []).map((c) => {
+    const m = matchups.find(
+      (row) => row.home.name === c.homeName && row.away.name === c.awayName,
+    )
+    return m?.odds ? { ...c, outcome: m.odds.outcome } : c
+  })
+  const decided = calls.filter((c) => c.outcome === 'hit' || c.outcome === 'miss')
+  return {
+    ...recap,
+    matchups,
+    wrap: recapWeekWrapSentences({ gw, matchups }),
+    model: {
+      ...(recap.model || {}),
+      hits: decided.filter((c) => c.outcome === 'hit').length,
+      misses: decided.filter((c) => c.outcome === 'miss').length,
+      calls,
+    },
+    superlatives: {
+      ...(recap.superlatives || {}),
+      weekHigh,
+      closest,
+    },
+  }
+}
+
 export function mergeRecapOptions(data, live = {}) {
   const options = mergeRecapJsonOptions(data)
   const byGw = new Map(options.map((g) => [Number(g.gw), { ...g }]))
@@ -257,6 +406,11 @@ export function mergeRecapOptions(data, live = {}) {
       cur.recap = provisionalRecapFromMatches(matches, entries, gw)
     }
     if (cur.recap || cur.preview) byGw.set(gw, cur)
+  }
+  for (const cur of byGw.values()) {
+    if (cur.recap) {
+      cur.recap = refreshRecapFromLiveScores(cur.recap, matches, entries)
+    }
   }
   return [...byGw.values()].sort((a, b) => a.gw - b.gw)
 }

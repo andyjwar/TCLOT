@@ -1,12 +1,17 @@
 import assert from 'node:assert/strict'
 import test from 'node:test'
 import {
+  applyLeagueResults,
   compareH2hStandingsKeys,
+  compareStandingsRows,
   completedFootballGameweeks,
+  deriveStandingsFromFinishedMatches,
   finishedEventIdsFromEvents,
   matchEffectivelyFinished,
+  mergeStandingsPreferringHigherFor,
   normalizeMatchesFinished,
-  deriveStandingsFromFinishedMatches,
+  overlayFresherMatchPoints,
+  reconcileMatchPointsFromStandings,
   sortH2hStandingsRows,
 } from './h2hEffectiveFinished.js'
 
@@ -226,4 +231,154 @@ test('deriveStandingsFromFinishedMatches — same PTS+PF sorts A–Z, ignores PA
   assert.equal(trio[0].points_for, 81)
   assert.equal(trio[0].points_against, 70)
   assert.equal(trio[1].points_against, 91)
+})
+
+test('compareStandingsRows — official FPL order is PTS, FOR, then name (not PA or waivers)', () => {
+  const suffolk = {
+    total: 3,
+    points_for: 131,
+    points_against: 132,
+    waiver_pick: 4,
+    teamName: 'Suffolk Sméagol',
+  }
+  const seoul = {
+    total: 3,
+    points_for: 131,
+    points_against: 135,
+    waiver_pick: 5,
+    teamName: 'Seoul Shire',
+  }
+  const toronto = {
+    total: 3,
+    points_for: 131,
+    points_against: 149,
+    waiver_pick: 3,
+    teamName: 'Toronto Gimli',
+  }
+  const rows = [toronto, suffolk, seoul].sort(compareStandingsRows)
+  assert.deepEqual(
+    rows.map((r) => r.teamName),
+    ['Seoul Shire', 'Suffolk Sméagol', 'Toronto Gimli'],
+  )
+})
+
+test('reconcileMatchPointsFromStandings — lifts Saturday leftovers to official FOR', () => {
+  const matches = [
+    {
+      event: 1,
+      finished: true,
+      league_entry_1: 30728,
+      league_entry_2: 10173,
+      league_entry_1_points: 47,
+      league_entry_2_points: 31,
+    },
+    {
+      event: 2,
+      finished: true,
+      league_entry_1: 6849,
+      league_entry_2: 30728,
+      league_entry_1_points: 61,
+      league_entry_2_points: 44,
+    },
+    {
+      event: 2,
+      finished: true,
+      league_entry_1: 4259,
+      league_entry_2: 5220,
+      league_entry_1_points: 40,
+      league_entry_2_points: 38,
+    },
+    {
+      event: 1,
+      finished: true,
+      league_entry_1: 4259,
+      league_entry_2: 18279,
+      league_entry_1_points: 31,
+      league_entry_2_points: 50,
+    },
+    {
+      event: 3,
+      finished: true,
+      league_entry_1: 30728,
+      league_entry_2: 4259,
+      league_entry_1_points: 9,
+      league_entry_2_points: 31,
+    },
+  ]
+  const official = [
+    { league_entry: 30728, points_for: 131 },
+    { league_entry: 4259, points_for: 114 },
+  ]
+  const gw3In = matches.find((m) => m.event === 3)
+  const out = reconcileMatchPointsFromStandings(matches, official)
+  const gw3 = out.find((m) => m.event === 3)
+  assert.equal(gw3.league_entry_1_points, 40)
+  assert.equal(gw3.league_entry_2_points, 43)
+  assert.equal(gw3In.league_entry_1_points, 9, 'input left untouched')
+})
+
+test('overlayFresherMatchPoints — live details win when they have more points', () => {
+  const base = [
+    {
+      event: 3,
+      finished: true,
+      started: true,
+      league_entry_1: 30728,
+      league_entry_2: 4259,
+      league_entry_1_points: 9,
+      league_entry_2_points: 31,
+    },
+  ]
+  const live = [
+    {
+      event: 3,
+      finished: true,
+      started: true,
+      league_entry_1: 4259,
+      league_entry_2: 30728,
+      league_entry_1_points: 43,
+      league_entry_2_points: 40,
+    },
+  ]
+  const out = overlayFresherMatchPoints(base, live)
+  assert.equal(out[0].league_entry_1_points, 40)
+  assert.equal(out[0].league_entry_2_points, 43)
+})
+
+test('applyLeagueResults — official FOR beats leftover H2H and rewrites the table', () => {
+  const details = {
+    league_entries: [{ id: 30728 }, { id: 4259 }],
+    matches: [
+      {
+        event: 3,
+        finished: true,
+        started: true,
+        league_entry_1: 30728,
+        league_entry_2: 4259,
+        league_entry_1_points: 9,
+        league_entry_2_points: 31,
+      },
+    ],
+    standings: [
+      { league_entry: 30728, points_for: 40, points_against: 43, total: 0 },
+      { league_entry: 4259, points_for: 43, points_against: 40, total: 3 },
+    ],
+  }
+  const { matches, standings } = applyLeagueResults(details, [], new Set())
+  assert.equal(matches[0].league_entry_1_points, 40)
+  assert.equal(matches[0].league_entry_2_points, 43)
+  const seoul = standings.find((s) => s.league_entry === 30728)
+  const bilbo = standings.find((s) => s.league_entry === 4259)
+  assert.equal(seoul.points_for, 40)
+  assert.equal(bilbo.points_for, 43)
+  assert.equal(bilbo.total, 3)
+  assert.equal(seoul.total, 0)
+})
+
+test('mergeStandingsPreferringHigherFor — keeps the website-fresh FOR', () => {
+  const baked = [{ league_entry: 30728, points_for: 100, points_against: 104, total: 3 }]
+  const live = [{ league_entry: 30728, points_for: 131, points_against: 135, total: 3 }]
+  const out = mergeStandingsPreferringHigherFor(baked, live)
+  assert.equal(out[0].points_for, 131)
+  assert.equal(out[0].points_against, 135)
 })

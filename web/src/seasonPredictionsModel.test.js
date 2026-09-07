@@ -17,6 +17,9 @@ import {
   archivedXi,
   sidePlayerFacts,
   h2hSeriesAsOf,
+  sumArchivedXiPoints,
+  impliedXiPoints,
+  reconcileTeamPoints,
 } from './seasonPredictionsModel.js'
 
 const IDS = [1, 2, 3, 4]
@@ -379,4 +382,20 @@ test('sidePlayerFacts: modest score still counts as haul when it doubles the cal
     { id: 2, name: 'B', pos: 'FWD', pts: 4, xp: 4.0 },
   ]
   assert.deepEqual(sidePlayerFacts(xi).haul, { id: 1, name: 'Mbeumo', pts: 13 })
+})
+
+test('reconcileTeamPoints lifts a stale official total to the XI / top scorer', () => {
+  const xi = [
+    { id: 204, name: 'Mitchell', pos: 'DEF', pts: 15 },
+    { id: 2, name: 'Saka', pos: 'MID', pts: 8 },
+    { id: 3, name: 'Rest', pos: 'FWD', pts: 17 },
+  ]
+  const players = sidePlayerFacts(xi)
+  assert.equal(sumArchivedXiPoints(xi), 40)
+  assert.equal(impliedXiPoints(players), 40)
+  // Official H2H still on Saturday leftovers (9) while Mitchell already has 15.
+  assert.equal(reconcileTeamPoints(9, { players, xi }), 40)
+  assert.equal(reconcileTeamPoints(9, { players }), 40)
+  assert.equal(reconcileTeamPoints(9, { players: { top: { pts: 15 }, share: 0 } }), 15)
+  assert.equal(reconcileTeamPoints(43, { players, xi }), 43)
 })
