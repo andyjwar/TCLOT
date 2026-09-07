@@ -247,12 +247,18 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
             </table>
           </div>
 
-          <div className="standings-bench-gw">
-            <div className="standings-bench-gw__head">
+          <details className="standings-bench-gw">
+            <summary className="standings-bench-gw__summary">
               <h4 className="standings-stats-eyebrow standings-bench-gw__title">
                 Would the result have changed?
               </h4>
-              {gwOptions.length > 1 ? (
+              {gw != null ? (
+                <span className="standings-bench-gw__single muted">GW {gw}</span>
+              ) : null}
+            </summary>
+            <div className="standings-bench-gw__body">
+            {gwOptions.length > 1 ? (
+              <div className="standings-bench-gw__toolbar">
                 <CompactSelectPill
                   label="GW"
                   value={gw}
@@ -260,10 +266,8 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   onChange={(next) => setGwPick(Number(next))}
                   ariaLabel="Game week for table-point comparison"
                 />
-              ) : gw != null ? (
-                <span className="standings-bench-gw__single muted">GW {gw}</span>
-              ) : null}
-            </div>
+              </div>
+            ) : null}
             <p className="standings-stats-hint">
               Left column is what was played (and the 3 / 1 / 0 table pts it
               paid). Right column is the same fixture if both managers had
@@ -421,7 +425,8 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
             ) : (
               <p className="muted muted--tight">No fixtures for this gameweek.</p>
             )}
-          </div>
+            </div>
+          </details>
         </>
       )}
     </section>
