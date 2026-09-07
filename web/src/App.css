@@ -14751,9 +14751,9 @@ button.live-xp__player-name:focus-visible {
 .standings-stats-bench-table__team-btn {
   display: flex;
   align-items: center;
-  gap: 8px;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
   padding: 0;
   margin: 0;
   border: none;
@@ -14766,6 +14766,11 @@ button.live-xp__player-name:focus-visible {
   border-radius: 6px;
 }
 
+.standings-stats-bench-table__team-btn .win-margin-table__team-inner {
+  flex: 1;
+  min-width: 0;
+}
+
 .standings-stats-bench-table__team-btn:hover .win-margin-table__name {
   color: var(--fm-text-strong);
 }
@@ -14773,22 +14778,6 @@ button.live-xp__player-name:focus-visible {
 .standings-stats-bench-table__team-btn:focus-visible {
   outline: 2px solid var(--tclot-logo-purple);
   outline-offset: 2px;
-}
-
-.standings-stats-bench-table__chevron {
-  display: inline-block;
-  width: 6px;
-  height: 6px;
-  flex-shrink: 0;
-  border-right: 2px solid var(--fm-muted);
-  border-bottom: 2px solid var(--fm-muted);
-  transform: rotate(-45deg);
-  transition: transform 0.15s ease;
-}
-
-.standings-stats-bench-table__chevron--open {
-  transform: rotate(45deg);
-  border-color: var(--tclot-logo-purple);
 }
 
 .standings-stats-bench-table__row--open > th,
@@ -14803,7 +14792,7 @@ button.live-xp__player-name:focus-visible {
 }
 
 .standings-stats-bench-misses {
-  padding: 2px 0 2px 18px;
+  padding: 2px 0;
 }
 
 .standings-stats-bench-misses__table {
@@ -15268,14 +15257,8 @@ button.live-xp__player-name:focus-visible {
     width: 2.35rem;
     font-size: 0.68rem;
   }
-  .standings-stats-bench-table__team-btn {
-    gap: 6px;
-  }
   .standings-stats-bench-table__detail > td {
     padding: 0 4px 8px;
-  }
-  .standings-stats-bench-misses {
-    padding-left: 12px;
   }
   .standings-stats-bench-misses__table {
     font-size: 0.72rem;
