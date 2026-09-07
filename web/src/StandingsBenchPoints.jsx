@@ -102,7 +102,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
         by fielding its best legal XI; autosub points are already included.
       </p>
       <p className="standings-stats-hint">
-        “Table” shows the actual standings: 3 points for a win and 1 for a
+        “Actual” shows the current standings: 3 points for a win and 1 for a
         draw. “Best XI” shows how the standings would look if both teams had
         fielded their highest-scoring legal XI in every completed fixture.
       </p>
@@ -156,7 +156,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                     className="win-margin-table__n tabular"
                     title="Current H2H table points (3 for a win, 1 for a draw)"
                   >
-                    Table
+                    Actual
                   </th>
                   <th
                     scope="col"
@@ -168,7 +168,7 @@ export function StandingsBenchPoints({ teamLogoMap = {}, kitIndexByEntry = {} })
                   <th
                     scope="col"
                     className="win-margin-table__n tabular standings-stats-bench-table__swing"
-                    title="Swing in table points (Best XI minus Table)"
+                    title="Swing in table points (Best XI minus Actual)"
                   >
                     +/−
                   </th>
